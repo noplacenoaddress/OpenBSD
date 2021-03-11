@@ -1,0 +1,6 @@
+description "RT-01.cat.telecomlobby.com"
+mtu 1392
+keepalive 5 2
+!ifconfig gre1 10.10.10.229 10.10.10.230 netmask 0xfffffffc up
+!ifconfig gre1 tunnel 78.141.201.0 81.44.32.47
+
