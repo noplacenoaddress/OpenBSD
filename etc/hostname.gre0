@@ -1,0 +1,6 @@
+description "fr.telecomlobby.com"
+keepalive 5 2
+mtu 1392
+!ifconfig gre0 10.10.10.249 10.10.10.250 netmask 0xfffffffc up
+!ifconfig gre0 tunnel 78.141.201.0 45.32.144.15
+
