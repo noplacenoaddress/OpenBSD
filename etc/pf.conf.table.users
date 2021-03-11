@@ -1,0 +1,6 @@
+# /sbin/pfctl -t users -T replace -f /etc/pf.conf.table.users
+#
+172.16.19.0/24
+172.16.16.0/24
+172.16.18.0/24
+
