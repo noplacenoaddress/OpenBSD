@@ -1,0 +1,4 @@
+# /sbin/pfctl -t nsd -T replace -f /etc/pf.conf.table.nsd
+#
+10.10.10.116/32
+10.10.10.226/32
