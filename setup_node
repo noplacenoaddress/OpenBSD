@@ -1,16 +1,37 @@
 #!/bin/ksh
+
 #	$Telecomlobby: setup_node,v 0.1 11/3/2021 21:01:04 taglio$
 #
 
-
-
-
 function pkg {
 	phase = $1
-	pkg_add colorls nano wget
+
+	case $phase in
+		"shell")
+			pkg_add colorls nano wget;;
+	esac
+}
+
+function conf {
+	phase = $1
+	
+	case $phase in
+		"basic")
+			echo "dhclient, resolv.conf.tail"
+			install -o root -g wheel -m 0644 -b src/etc/{dhclient.conf,resolv.conf.tail} /etc/
+			install -o root -g wheel -m 0640 -b src/etc/hostname.vio0 /etc/
+			sh /etc/netstart vio0
+			echo "ntp client"
+			install -o root -g wheel -m 0644 -b src/etc/ntpd.conf /etc/
+			rcctl restart ntpd
+			
+			;;
+	esac
 }
 
 echo "changing installurl"
-echo "https://cdn.openbsd.org/pub/OpenBSD" > /etc/installurl
-echo "adding packages basic shell packages"
+install -o root -g wheel -m 0644 -b src/etc/installurl /etc/			
+echo "adding basic shell packages"
 pkg "shell"
+echo "configuring basic"
+conf "basic" 
