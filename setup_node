@@ -8,7 +8,7 @@ function pkg {
 
 	case $phase in
 		"shell")
-			pkg_add colorls nano wget;;
+			pkg_add colorls nano wget fping;;
 	esac
 }
 
@@ -23,8 +23,13 @@ function conf {
 			sh /etc/netstart vio0
 			echo "ntp client"
 			install -o root -g wheel -m 0644 -b src/etc/ntpd.conf /etc/
-			rcctl restart ntpd
-			
+			rcctl restart ntpd ;;
+		"users")
+			echo "vmail, dsync, _iperfd, wwwuser"
+			useradd -m -u 2000 -g =uid -c "Virtual Mail" -d /var/vmail -s /sbin/nologin vmail
+			useradd -m -u 2001 -g =uid -c "Dsync Replication" -d /home/dsync -s /bin/ksh vmail
+			useradd -m -u 2002 -g =uid -c "Iperfd Daemon" -d /nonexistent -s /sbin/nologin _iperfd
+			useradd -m -u 2003 -g =uid -c "WWW Ftpd user" -d /var/www/htdocs -s /root/Bin/fake_shell.sh _iperfd
 			;;
 	esac
 }
@@ -33,5 +38,9 @@ echo "changing installurl"
 install -o root -g wheel -m 0644 -b src/etc/installurl /etc/			
 echo "adding basic shell packages"
 pkg "shell"
+echo "configuring users"
+mkdir /root/Bin
+chmod 600 /root/Bin
+conf "users"
 echo "configuring basic"
 conf "basic" 
