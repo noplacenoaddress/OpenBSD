@@ -1,7 +1,7 @@
 # /sbin/pfctl -t ipsec -T replace -f /etc/pf.conf.table.ipsec
 #
-45.32.144.15/32
-139.180.206.19/32
-78.141.201.0/32
-155.138.247.27/32
-cat-01.hopto.org
+fr.telecomlobby.com
+uk.telecomlobby.com
+us.telecomlobby.com
+jp.telecomlobby.com
+cat-01.telecomlobby.com
