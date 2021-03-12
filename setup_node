@@ -1,0 +1,16 @@
+#!/bin/ksh
+#	$Telecomlobby: setup_node,v 0.1 11/3/2021 21:01:04 taglio$
+#
+
+
+
+
+function pkg {
+	phase = $1
+	pkg_add colorls nano wget
+}
+
+echo "changing installurl"
+echo "https://cdn.openbsd.org/pub/OpenBSD" > /etc/installurl
+echo "adding packages basic shell packages"
+pkg "shell"
