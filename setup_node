@@ -31,6 +31,11 @@ function conf {
 			useradd -m -u 2002 -g =uid -c "Iperfd Daemon" -d /nonexistent -s /sbin/nologin _iperfd
 			useradd -m -u 2003 -g =uid -c "WWW Ftpd user" -d /var/www/htdocs -s /root/Bin/fake_shell.sh _iperfd
 			;;
+		"scripts")
+			for file in src/root/Bin/*.sh; do
+				install -o root -g wheel -m 0700 -b src/root/Bin/$file /root/Bin/
+			done
+			;;
 	esac
 }
 
@@ -41,6 +46,8 @@ pkg "shell"
 echo "configuring users"
 mkdir /root/Bin
 chmod 600 /root/Bin
+mkdir /home/taglio/Bin
 conf "users"
+conf "scripts"
 echo "configuring basic"
 conf "basic" 
