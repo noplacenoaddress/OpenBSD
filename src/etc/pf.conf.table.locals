@@ -1,0 +1,3 @@
+# /sbin/pfctl -t locals -T replace -f /etc/pf.conf.table.locals
+#
+

@@ -1,0 +1,4 @@
+wgport 65313
+wgpeer 8omljvl9VJWZRET20t3GrUOjLWHzTZv0uAxAe+YmxUg= wgaip 192.168.23.2/32
+inet 192.168.23.1/24
+up
