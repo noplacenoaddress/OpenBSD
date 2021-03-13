@@ -30,6 +30,13 @@ function conf {
 			useradd -m -u 2001 -g =uid -c "Dsync Replication" -d /home/dsync -s /bin/ksh vmail
 			useradd -m -u 2002 -g =uid -c "Iperfd Daemon" -d /nonexistent -s /sbin/nologin _iperfd
 			useradd -m -u 2003 -g =uid -c "WWW Ftpd user" -d /var/www/htdocs -s /root/Bin/fake_shell.sh _iperfd
+			for file in src/home/taglio/Bin/.*; do
+				install -o taglio -g wheel -m 0750 -b src/home/taglio/Bin/$file /home/taglio/Bin/
+			done
+			su taglio -
+			ssh-keygen -t ed25519 -N "" -f /home/taglio/.ssh/id_ed25519
+			exit
+			
 			;;
 		"scripts")
 			for file in src/root/Bin/*.sh; do
