@@ -22,3 +22,4 @@ fi
 git add .
 git commit -S
 git push --force
+print "ok"
