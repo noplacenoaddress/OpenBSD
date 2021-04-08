@@ -21,5 +21,4 @@ then
 fi	
 git add .
 git commit -S
-
-
+git push --force
