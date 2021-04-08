@@ -28,7 +28,7 @@ case $OPTION in
 		rcctl restart httpd ;;
 		
 	* )
-		print "use b or u"
+		print "use b, u or c"
 		exit 1 ;;
 esac
 
