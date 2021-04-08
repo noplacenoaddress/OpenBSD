@@ -22,6 +22,7 @@ case $OPTION in
 		httpd -n
 		rcctl restart httpd ;;
 	"c" )
+		tar -cvf /root/Backups/ssl_backup.tar backup/
 		rm -rf backup/*
 		cp /home/taglio/Sources/Git/OpenBSD/src/etc/httpd.conf /etc/
 		httpd -n
