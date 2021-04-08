@@ -6,17 +6,24 @@ cd /etc/ssl
 case $OPTION in
 	"b" )
 		mv *telecomlobby* backup/
+		mv *redama* backup/
 		mv private/*telecomlobby* backup/private/ 
+		mv private/*redama* backup/private/
 		cp /etc/httpd.conf backup/ 
-		cp /home/taglio/Sources/Git/OpenBSD/src/etc/httpd.conf /etc
+		cp /home/taglio/Sources/Git/OpenBSD/src/etc/httpd-nossl.conf /etc/httpd.conf
 		httpd -n 
 		rcctl restart httpd ;;
 	"u" )
 		mv backup/*telecomlobby* .
+		mv backup/*redama* .
 		mv backup/private/*telecomlobby* private/ 
+		mv backup/private/*redama* private/
 		mv backup/httpd.conf /etc 
 		httpd -n
 		rcctl restart httpd ;;
+	"c" )
+		rm -rf backup/*
+		
 	* )
 		print "use b or u"
 		exit 1 ;;
