@@ -23,6 +23,9 @@ case $OPTION in
 		rcctl restart httpd ;;
 	"c" )
 		rm -rf backup/*
+		cp /home/taglio/Sources/Git/OpenBSD/src/etc/httpd.conf /etc/
+		httpd -n
+		rcctl restart httpd ;;
 		
 	* )
 		print "use b or u"
