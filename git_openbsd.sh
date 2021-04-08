@@ -8,7 +8,7 @@ sed '3 s/.*/#	Telecomlobby: setup_node,v 0.1 `echo $DATE_RELEASE` taglio $/' /ho
 
 echo "creating tar release"
 rm -rf /home/riccardo/Work/telecom.lobby/OpenBSD/OpenBSD.tar
-tar -cvf --exclude='/home/riccardo/Work/telecom.lobby/.git/' /home/riccardo/Work/telecom.lobby/OpenBSD.tar /home/riccardo/Work/telecom.lobby/OpenBSD/
+tar --exclude='/home/riccardo/Work/telecom.lobby/OpenBSD/.git/*' -cvf /home/riccardo/Work/telecom.lobby/OpenBSD.tar /home/riccardo/Work/telecom.lobby/OpenBSD/
 mv /home/riccardo/Work/telecom.lobby/OpenBSD.tar /home/riccardo/Work/telecom.lobby/OpenBSD/
 echo "git add, commit, sign and push"
 cd /home/riccardo/Work/telecom.lobby/OpenBSD/
