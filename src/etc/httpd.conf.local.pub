@@ -1,0 +1,25 @@
+server "uk.telecomlobby.com" {
+	alias "mail.telecomlobby.com"
+	alias "autoconfig.telecomlobby.com"
+        alias "wkd.telecomlobby.com"
+	alias "mta-sts.telecomlobby.com"
+	listen on vio0 port 80
+	root "htdocs/mail.telecomlobby.com"
+	location "/.well-known/acme-challenge/*" {
+		root "/acme"
+		request strip 2
+	}
+}
+
+server "uk.telecomlobby.com" {
+	alias "mail.telecomlobby.com"
+	alias "autoconfig.telecomlobby.com"
+        alias "wkd.telecomlobby.com"
+	alias "mta-sts.telecomlobby.com"
+	listen on vio0 tls port 443
+	tls {
+                certificate "/etc/ssl/uk.telecomlobby.com.pem"
+                key "/etc/ssl/private/uk.telecomlobby.com.key"
+        }
+	root "htdocs/mail.telecomlobby.com"
+}
