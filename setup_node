@@ -58,3 +58,6 @@ conf "users"
 conf "scripts"
 echo "configuring basic"
 conf "basic" 
+echo "configuring nsd"
+
+echo "configuring acme and httpd"
