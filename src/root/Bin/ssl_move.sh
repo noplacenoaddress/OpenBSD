@@ -1,18 +1,34 @@
 #!/bin/ksh
 
 OPTION=$1
+if [[ -z $2 ]]; then
+	STATE=$2
+fi
 
 cd /etc/ssl
+
 case $OPTION in
 	"b" )
+		cp /etc/httpd.conf backup/
+		if [[ -z $STATE ]]; then
+			case $STATE in
+				"us" )
+					;;
+				"jp")
+					;;
+				* )
+					print "country not allowed"
+					exit 1 ;;
+			esac
+		else 
+			cp /home/taglio/Sources/Git/OpenBSD/src/etc/httpd-nossl.conf /etc/httpd.conf
+		fi
 		mv *telecomlobby* backup/
 		mv *redama* backup/
 		mv private/*telecomlobby* backup/private/ 
 		mv private/*redama* backup/private/
-		cp /etc/httpd.conf backup/ 
-		cp /home/taglio/Sources/Git/OpenBSD/src/etc/httpd-nossl.conf /etc/httpd.conf
 		httpd -n 
-		rcctl restart httpd ;;
+		rcctl restart httpd
 	"u" )
 		mv backup/*telecomlobby* .
 		mv backup/*redama* .
@@ -29,7 +45,7 @@ case $OPTION in
 		rcctl restart httpd ;;
 		
 	* )
-		print "use b, u or c"
+		print "use b, u or c & complementary country if necessary"
 		exit 1 ;;
 esac
 
