@@ -20,8 +20,9 @@ case $OPTION in
 		httpd -n
 		rcctl restart httpd ;;
 	"c" )
-		tar -cvf /root/$BACKUPs/ssl_backup.tar $BACKUP/
+		tar -cvf /root/Backups/ssl_backup2.tar $BACKUP/
 		rm -rf $BACKUP/*
+		mkdir $BACKUP/private
 		cp /home/taglio/Sources/Git/OpenBSD/src/etc/httpd.conf /etc/
 		httpd -n
 		rcctl restart httpd ;;
