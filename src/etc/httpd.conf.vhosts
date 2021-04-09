@@ -1,31 +1,3 @@
-# $OpenBSD: httpd.conf,v 1.20 2018/06/13 15:08:24 reyk Exp $
-
-types {
-	include "/usr/share/misc/mime.types"
-}
-
-server "us.telecomlobby.com" {
-        listen on vio0 port 80
-        root "htdocs/us.telecomlobby.com"
-        location "/.well-known/acme-challenge/*" {
-                root "/acme"
-                request strip 2
-        }
-}
-
-
-server "us.telecomlobby.com" {
-        listen on vio0 tls port 443
-        root "htdocs/us.telecomlobby.com"
-        tls {
-                certificate "/etc/ssl/us.telecomlobby.com.pem"
-                key "/etc/ssl/private/us.telecomlobby.com.key"
-        }
-        
-
-
-}
-
 server "telecomlobby.com" {
 	alias "www.telecomlobby.com"
 	alias "rnmnetwork.telecomlobby.com"
@@ -363,32 +335,6 @@ server "united.telecomlobby.com" {
                 key "/etc/ssl/private/www.telecomlobby.com.key"
         }
         root "htdocs/united.telecomlobby.com"
-}
-
-server "mail.telecomlobby.com" {
-	alias "uk.telecomlobby.com"
-	alias "autoconfig.telecomlobby.com"
-        alias "wkd.telecomlobby.com"
-	alias "mta-sts.telecomlobby.com"
-	listen on vio0 port 80
-	root "htdocs/mail.telecomlobby.com"
-	location "/.well-known/acme-challenge/*" {
-		root "/acme"
-		request strip 2
-	}
-}
-
-server "mail.telecomlobby.com" {
-	alias "uk.telecomlobby.com"
-	alias "autoconfig.telecomlobby.com"
-        alias "wkd.telecomlobby.com"
-	alias "mta-sts.telecomlobby.com"
-	listen on vio0 tls port 443
-	tls {
-                certificate "/etc/ssl/www.telecomlobby.com.pem"
-                key "/etc/ssl/private/www.telecomlobby.com.key"
-        }
-	root "htdocs/mail.telecomlobby.com"
 }
 
 
@@ -991,13 +937,5 @@ server "mensajeria.redama.pe" {
                 key "/etc/ssl/private/www.telecomlobby.com.key"
         }
         root "htdocs/mensajeria.redama.pe"
-}
-
-server "saraswati.telecom.lobby" {
-	listen on vether0 port 80
-	root "htdocs/saraswati.telecom.lobby"
-	location "/*" {
-                directory auto index
-        }
 }
 
