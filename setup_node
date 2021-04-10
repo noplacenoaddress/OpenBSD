@@ -58,6 +58,7 @@ function conf {
 				"local")
 					unbound-anchor -a /var/unbound/db/root.key
 					wget https://www.internic.net/domain/named.root -O /var/unbound/db/root.hints
+					install -o _unbound -g _unbound -m 0750 -b src/var/unbound/db /home/taglio/
 					chown _unbound:_unbound /var/unbound/db/*
 					
 				;;
