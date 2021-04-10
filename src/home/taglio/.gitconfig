@@ -1,0 +1,7 @@
+[gpg]
+	program = /usr/local/bin/gpg2
+[user]
+	name = Riccardo Giuntoli
+	email = riccardo@telecomlobby.com
+	signingkey = 0x2ABDCF97424D2736
+
