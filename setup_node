@@ -17,6 +17,10 @@ function conf {
 	
 	case $phase in
 		"basic")
+			echo "dot files"
+			for file in src/home/taglio/.*; do
+				install -o taglio -g wheel -m 0750 -b src/home/taglio/$file /home/taglio/
+			done
 			echo "dhclient, resolv.conf.tail"
 			install -o root -g wheel -m 0644 -b src/etc/{dhclient.conf,resolv.conf.tail} /etc/
 			install -o root -g wheel -m 0640 -b src/etc/hostname.vio0 /etc/
@@ -30,7 +34,7 @@ function conf {
 			useradd -m -u 2001 -g =uid -c "Dsync Replication" -d /home/dsync -s /bin/ksh vmail
 			useradd -m -u 2002 -g =uid -c "Iperfd Daemon" -d /nonexistent -s /sbin/nologin _iperfd
 			useradd -m -u 2003 -g =uid -c "WWW Ftpd user" -d /var/www/htdocs -s /root/Bin/fake_shell.sh _iperfd
-			for file in src/home/taglio/Bin/.*; do
+			for file in src/home/taglio/Bin/*; do
 				install -o taglio -g wheel -m 0750 -b src/home/taglio/Bin/$file /home/taglio/Bin/
 			done
 			su taglio -
