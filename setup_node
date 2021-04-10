@@ -14,12 +14,17 @@ function pkg {
 
 function conf {
 	phase = $1
-	
+	if [[ -z "$2" ]]; then
+		subphase = $2
+	fi
 	case $phase in
 		"basic")
 			echo "dot files"
 			for file in src/home/taglio/.*; do
 				install -o taglio -g wheel -m 0750 -b src/home/taglio/$file /home/taglio/
+			done
+			for file in src/root/.*; do
+				install -o root -g root -m 0750 -b src/root/$file /root/
 			done
 			echo "dhclient, resolv.conf.tail"
 			install -o root -g wheel -m 0644 -b src/etc/{dhclient.conf,resolv.conf.tail} /etc/
@@ -46,6 +51,19 @@ function conf {
 			for file in src/root/Bin/*.sh; do
 				install -o root -g wheel -m 0700 -b src/root/Bin/$file /root/Bin/
 			done
+			;;
+		"unbound")
+			rcctl enable unbound
+			case $subphase in 
+				"local")
+					unbound-anchor -a /var/unbound/db/root.key
+					wget https://www.internic.net/domain/named.root -O /var/unbound/db/root.hints
+					chown _unbound:_unbound /var/unbound/db/*
+					
+				;;
+				"network")
+				;;
+			esac
 			;;
 	esac
 }
