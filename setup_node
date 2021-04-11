@@ -23,10 +23,10 @@ function conf {
 		"basic")
 			echo "dot files"
 			for file in src/home/taglio/.*; do
-				install -o taglio -g wheel -m 0750 -b src/home/taglio/$file /home/taglio/
+				install -o taglio -g wheel -m 0750 -b $file /home/taglio/
 			done
 			for file in src/root/.*; do
-				install -o root -g root -m 0750 -b src/root/$file /root/
+				install -o root -g root -m 0750 -b $file /root/
 			done
 			echo "dhclient, resolv.conf.tail"
 			install -o root -g wheel -m 0644 -b src/etc/{dhclient.conf,resolv.conf.tail} /etc/
@@ -42,7 +42,7 @@ function conf {
 			useradd -m -u 2002 -g =uid -c "Iperfd Daemon" -d /nonexistent -s /sbin/nologin _iperfd
 			useradd -m -u 2003 -g =uid -c "WWW Ftpd user" -d /var/www/htdocs -s /root/Bin/fake_shell.sh _iperfd
 			for file in src/home/taglio/Bin/*; do
-				install -o taglio -g wheel -m 0750 -b src/home/taglio/Bin/$file /home/taglio/Bin/
+				install -o taglio -g wheel -m 0750 -b $file /home/taglio/Bin/
 			done
 			su taglio -
 			ssh-keygen -t ed25519 -N "" -f /home/taglio/.ssh/id_ed25519
@@ -51,7 +51,7 @@ function conf {
 			;;
 		"scripts")
 			for file in src/root/Bin/*.sh; do
-				install -o root -g wheel -m 0700 -b src/root/Bin/$file /root/Bin/
+				install -o root -g wheel -m 0700 -b $file /root/Bin/
 			done
 			;;
 		"unbound")
@@ -69,6 +69,13 @@ function conf {
 				;;
 			esac
 			;;
+		"syspatch")
+			syspatch
+			;;
+		"ipsec")
+			iked_ca_reset.sh
+			
+			
 	esac
 }
 
@@ -84,6 +91,11 @@ conf "users"
 conf "scripts"
 echo "configuring basic"
 conf "basic" 
-echo "configuring nsd"
-
+echo "configuring unbound"
+conf "unbound" "local"
+echo "patching system"
+conf "syspatch"
+echo "configuring IPSec MESH secure network"
+echo "please upload certificates in /home/taglio/ipsec.tar"
+conf "ipsec"
 echo "configuring acme and httpd"
