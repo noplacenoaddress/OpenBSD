@@ -25,7 +25,7 @@ CHMOD=/bin/chmod
 TR=/usr/bin/tr
 RCCTL=/usr/sbin/rcctl
 
-hostsurl="https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
+hostsurl="https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-gambling/hosts"
 
 hoststmp="$(mktemp -t ${hostsurl##*/}.XXXXXXXXXX)" || exit 1
 dnsblocktmp="$(mktemp)" || exit 1
