@@ -52,7 +52,7 @@ error_exit () {
     "${dnsblocktmp}"
 
 # Install
-"${RM}" "${unboundchroot}"/etc/"${dnsblock}"
+
 "${CP}" "${dnsblocktmp}" "${unboundchroot}"/etc/"${dnsblock}" || \
     error_exit "$LINENO: ERROR: ${dnsblock} copy failed."
 "${CHMOD}" 600 "${unboundchroot}"/etc/"${dnsblock}" || exit
