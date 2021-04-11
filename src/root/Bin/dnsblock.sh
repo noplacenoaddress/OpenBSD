@@ -1,95 +1,66 @@
-#!/bin/ksh
+#!/bin/sh
+# Update the DNS based adblock (var/unbound/etc/dnsblock.conf)
+# https://www.filters.com
+# https://github.com/StevenBlack/hosts
+# https://deadc0de.re/articles/unbound-blocking-ads.html
+# https://pgl.yoyo.org/adservers/serverlist.php?hostformat=unbound&showintro=0&mimetype=plaintext
 
-UPSTREAM_HOSTS_FILE='https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-gambling-porn/hosts'
+#set -eu
+set -o errexit
+set -o nounset
 
-TMP="$(mktemp)"
-SRC="$(mktemp)"
-CONF_DIR='/var/unbound/etc/mfs'
-BLOCKLIST_FILE="${CONF_DIR}/blocklist.conf"
-PRIVOXY_TMP="$(mktemp)"
-PRIVOXY_CONF='/etc/privoxy/dnsblock.action'
+PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin
 
-case "$(uname)" in
-	Linux) FETCH="/usr/bin/curl -Lso ${SRC} ${UPSTREAM_HOSTS_FILE}" ;;
-	OpenBSD) FETCH="/usr/bin/ftp -Vo ${SRC} ${UPSTREAM_HOSTS_FILE}" ;;
-	*) echo 'ERROR: Unsupported OS' && return 1 ;;
-esac
+app=$(basename $0)
+AWK=/usr/bin/awk
+FTP=/usr/bin/ftp
+CAT=/bin/cat
+GREP=/usr/bin/grep
+EGREP=/usr/bin/egrep
+SORT=/usr/bin/sort
+PFCTL=/sbin/pfctl
+RM=/bin/rm
+CP=/bin/cp
+CHMOD=/bin/chmod
+TR=/usr/bin/tr
+RCCTL=/usr/sbin/rcctl
 
-# first verify we can reach upstream
-if ${FETCH} 2>/dev/null; then
-	if pgrep -x -u _unwind unwind >/dev/null 2>&1; then
-		# build for unwind(8)
-		awk '$1 == "0.0.0.0" {print $2}' "${SRC}" | tee "${TMP}" >/dev/null 2>&1
-	else
-		# build for unbound(8)
-		awk '$1 == "0.0.0.0" {print "local-zone: \""$2"\" always_nxdomain"}' "${SRC}" | tee "${TMP}" >/dev/null 2>&1
-		# ref: https://support.mozilla.org/en-US/kb/configuring-networks-disable-dns-over-https
-		echo 'local-zone: "use-application-dns.net" always_nxdomain' | tee -a "${TMP}" >/dev/null 2>&1
-	fi
-	# create a backup of any existing, working blocklist
-	if [[ -f "${BLOCKLIST_FILE}" ]]; then
-		cp -p "${BLOCKLIST_FILE}" "${BLOCKLIST_FILE}.bak"
-	else
-		# if this is a first-run, ensure the destination dir exists
-		mkdir -p "${CONF_DIR}"
-	fi
-	# copy in the new blocklist
-	cp "${TMP}" "${BLOCKLIST_FILE}"
-	chmod 0444 "${BLOCKLIST_FILE}"
+hostsurl="https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
 
-	# unwind(8)
-	if rcctl ls on 2>/dev/null | grep -qE "^unwind$"; then
-		rcctl restart unwind >/dev/null 2>&1
-	# syntax check for sanity - we do NOT want to break the DNS!!
-	elif /usr/sbin/unbound-checkconf >/dev/null 2>&1; then
-		# OpenBSD
-		if rcctl ls on 2>/dev/null | grep -qE "^unbound$"; then
-			rcctl restart unbound >/dev/null 2>&1
-		# Linux with systemd
-		elif systemctl is-enabled unbound >/dev/null 2>&1; then
-			systemctl restart unbound >/dev/null 2>&1
-		fi
-	elif [[ -f "${BLOCKLIST_FILE}.bak" ]]; then
-		mv "${BLOCKLIST_FILE}.bak" "${BLOCKLIST_FILE}"
-	else
-		# if unbound-checkconf fails AND there is no backup blocklist.. remove the new blocklist
-		rm "${BLOCKLIST_FILE}"
-		touch "${BLOCKLIST_FILE}"
-		chmod 0444 "${BLOCKLIST_FILE}"
-	fi
+hoststmp="$(mktemp -t ${hostsurl##*/}.XXXXXXXXXX)" || exit 1
+dnsblocktmp="$(mktemp)" || exit 1
 
-	if [[ -d /etc/privoxy ]]; then
-		# generate a privoxy(1) blocklist while we're at it
-		echo '{ +block{dnsblock} }' | tee "${PRIVOXY_TMP}" >/dev/null 2>&1
-		awk '$1 == "0.0.0.0" {print $2}' "${SRC}" | tee -a "${PRIVOXY_TMP}" >/dev/null 2>&1
-		# create a backup
-		if [[ -f "${PRIVOXY_CONF}" ]]; then
-			cp -p "${PRIVOXY_CONF}" "${PRIVOXY_CONF}.bak"
-		fi
-		# copy in the new blocklist
-		cp "${PRIVOXY_TMP}" "${PRIVOXY_CONF}"
-		chmod 0444 "${PRIVOXY_CONF}"
-		# syntax check for sanity
-		if privoxy --config-test --chroot /etc/privoxy >/dev/null 2>&1; then
-			# BSD
-			if rcctl ls on 2>/dev/null | grep -qE "^privoxy$"; then
-				rcctl restart privoxy >/dev/null 2>&1
-			# Linux with systemd
-			elif systemctl is-enabled privoxy >/dev/null 2>&1; then
-				systemctl restart privoxy >/dev/null 2>&1
-			fi
-		elif [[ -f "${PRIVOXY_CONF}.bak" ]]; then
-			mv "${PRIVOXY_CONF}.bak" "${PRIVOXY_CONF}"
-		else
-			# if privoxy --config-test fails AND there is no backup blocklist.. remove the new blocklist
-			rm "${PRIVOXY_CONF}"
-			touch "${PRIVOXY_CONF}"
-			chmod 0444 "${PRIVOXY_CONF}"
-		fi
-	fi
+dnsblock=dnsblock.conf
+unboundchroot=/var/unbound
 
-	rm "${TMP}" "${SRC}"
-else
-	echo 'ERROR: Upstream blocklist is unreachable.'
-	return 1
-fi
+error_exit () {
+    echo "${app}: ${1:-"Unknown Error"}" 1>&2
+    exit 1
+}
+
+# Bail out if non-privileged UID
+[ 0 = "$(id -u)" ] || \
+    error_exit "$LINENO: ERROR: You are using a non-privileged account."
+
+# Download
+"${FTP}" -o "${hoststmp}" "${hostsurl}" || \
+    error_exit "$LINENO: ERROR: download failed."
+
+# Convert hosts to unbound.conf
+"${CAT}" "${hoststmp}" | "${GREP}" '^0\.0\.0\.0' | \
+    "${AWK}" '{print "local-zone: \""$2"\" redirect\nlocal-data: \""$2" A 0.0.0.0\""}' > \
+    "${dnsblocktmp}"
+
+# Install
+"${RM}" "${unboundchroot}"/etc/"${dnsblock}"
+"${CP}" "${dnsblocktmp}" "${unboundchroot}"/etc/"${dnsblock}" || \
+    error_exit "$LINENO: ERROR: ${dnsblock} copy failed."
+"${CHMOD}" 600 "${unboundchroot}"/etc/"${dnsblock}" || exit
+
+# Populate unbound dns block
+"${RCCTL}" stop unbound
+"${RCCTL}" start unbound || \
+    error_exit "$LINENO: ERROR: unbound failed."
+
+# Remove temp files
+"${RM}" -rf "${hoststmp}" "${dnsblocktmp}"

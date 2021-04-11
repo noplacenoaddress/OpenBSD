@@ -60,7 +60,7 @@ function conf {
 					wget https://www.internic.net/domain/named.root -O /var/unbound/db/root.hints
 					install -o _unbound -g _unbound -m 0750 -b src/var/unbound/db/ca-certificates.crt /var/unbound/db/
 					chown _unbound:_unbound /var/unbound/db/*
-					install -o _unbound -g _unbound -m 0750 -b src/var/unbound/etc/unbound-local.conf /var/unbound/etc/
+					install -o _unbound -g _unbound -m 0750 -b src/var/unbound/etc/unbound-local.conf /var/unbound/etc/unbound.conf
 					install -o _unbound -g _unbound -m 0750 -b src/var/unbound/etc/remote-control.conf /var/unbound/etc/
 					install -o _unbound -g _unbound -m 0750 -b src/var/unbound/etc/forward-zone.conf /var/unbound/etc/ ;;
 				"network")

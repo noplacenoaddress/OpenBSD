@@ -26,8 +26,10 @@ Try to understand that we've got to build a network of VPS interconnected site t
 
 #### Registered domains application
 
+Start with two VPS, one master in DNS service and the other slave. All the others services will be replicated. Some providers doesn't permit the installation of OpenBSD as a default option so install Linux and then rewrite the disc with `dd` as explained:
+
 
 
 Nice Regards,
 
-Riccardo <taglio> Giuntoli.
+Riccardo `<taglio>` Giuntoli.
