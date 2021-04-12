@@ -5,6 +5,23 @@
 #unbound: https://blog.c6h12o6.org/post/unbound-dnssec-dns-over-tls/
 
 
+set -o errexit
+set -o nounset
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin:/root/Bin
+
+function error_exit {
+    echo "${app}: ${1:-"Unknown Error"}" 1>&2
+    exit 1
+}
+
+app=$(basename $0)
+INSTALL=/usr/bin/install
+RCCTL=/usr/sbin/rcctl
+USERADD=/usr/sbin/useradd
+PKG_ADD=/usr/sbin/pkg_add
+SH=/bin/ksh
+
 function pkg {
 	phase = $1
 
@@ -23,26 +40,26 @@ function conf {
 		"basic")
 			echo "dot files"
 			for file in src/home/taglio/.*; do
-				install -o taglio -g wheel -m 0750 -b $file /home/taglio/
+				$INSTALL -o taglio -g wheel -m 0750 -b $file /home/taglio/
 			done
 			for file in src/root/.*; do
-				install -o root -g root -m 0750 -b $file /root/
+				$INSTALL -o root -g root -m 0750 -b $file /root/
 			done
 			echo "dhclient, resolv.conf.tail"
-			install -o root -g wheel -m 0644 -b src/etc/{dhclient.conf,resolv.conf.tail} /etc/
-			install -o root -g wheel -m 0640 -b src/etc/hostname.vio0 /etc/
-			sh /etc/netstart vio0
+			$INSTALL -o root -g wheel -m 0644 -b src/etc/{dhclient.conf,resolv.conf.tail} /etc/
+			$INSTALL -o root -g wheel -m 0640 -b src/etc/hostname.vio0 /etc/
+			$SH /etc/netstart vio0
 			echo "ntp client"
-			install -o root -g wheel -m 0644 -b src/etc/ntpd.conf /etc/
-			rcctl restart ntpd ;;
+			$INSTALL -o root -g wheel -m 0644 -b src/etc/ntpd.conf /etc/
+			$RCCTL restart ntpd ;;
 		"users")
 			echo "vmail, dsync, _iperfd, wwwuser"
-			useradd -m -u 2000 -g =uid -c "Virtual Mail" -d /var/vmail -s /sbin/nologin vmail
-			useradd -m -u 2001 -g =uid -c "Dsync Replication" -d /home/dsync -s /bin/ksh vmail
-			useradd -m -u 2002 -g =uid -c "Iperfd Daemon" -d /nonexistent -s /sbin/nologin _iperfd
-			useradd -m -u 2003 -g =uid -c "WWW Ftpd user" -d /var/www/htdocs -s /root/Bin/fake_shell.sh _iperfd
+			$USERADD -m -u 2000 -g =uid -c "Virtual Mail" -d /var/vmail -s /sbin/nologin vmail
+			$USERADD -m -u 2001 -g =uid -c "Dsync Replication" -d /home/dsync -s /bin/ksh vmail
+			$USERADD -m -u 2002 -g =uid -c "Iperfd Daemon" -d /nonexistent -s /sbin/nologin _iperfd
+			$USERADD -m -u 2003 -g =uid -c "WWW Ftpd user" -d /var/www/htdocs -s /root/Bin/fake_shell.sh _iperfd
 			for file in src/home/taglio/Bin/*; do
-				install -o taglio -g wheel -m 0750 -b $file /home/taglio/Bin/
+				$INSTALL -o taglio -g wheel -m 0750 -b $file /home/taglio/Bin/
 			done
 			su taglio -
 			ssh-keygen -t ed25519 -N "" -f /home/taglio/.ssh/id_ed25519
@@ -51,20 +68,20 @@ function conf {
 			;;
 		"scripts")
 			for file in src/root/Bin/*.sh; do
-				install -o root -g wheel -m 0700 -b $file /root/Bin/
+				$INSTALL -o root -g wheel -m 0700 -b $file /root/Bin/
 			done
 			;;
 		"unbound")
-			rcctl enable unbound
+			$RCCTL enable unbound
 			case $subphase in 
 				"local")
 					unbound-anchor -a /var/unbound/db/root.key
 					wget https://www.internic.net/domain/named.root -O /var/unbound/db/root.hints
-					install -o _unbound -g _unbound -m 0750 -b src/var/unbound/db/ca-certificates.crt /var/unbound/db/
+					$INSTALL -o _unbound -g _unbound -m 0750 -b src/var/unbound/db/ca-certificates.crt /var/unbound/db/
 					chown _unbound:_unbound /var/unbound/db/*
-					install -o _unbound -g _unbound -m 0750 -b src/var/unbound/etc/unbound-local.conf /var/unbound/etc/unbound.conf
-					install -o _unbound -g _unbound -m 0750 -b src/var/unbound/etc/remote-control.conf /var/unbound/etc/
-					install -o _unbound -g _unbound -m 0750 -b src/var/unbound/etc/forward-zone.conf /var/unbound/etc/ ;;
+					$INSTALL -o _unbound -g _unbound -m 0750 -b src/var/unbound/etc/unbound-local.conf /var/unbound/etc/unbound.conf
+					$INSTALL -o _unbound -g _unbound -m 0750 -b src/var/unbound/etc/remote-control.conf /var/unbound/etc/
+					$INSTALL -o _unbound -g _unbound -m 0750 -b src/var/unbound/etc/forward-zone.conf /var/unbound/etc/ ;;
 				"network")
 				;;
 			esac
@@ -74,19 +91,24 @@ function conf {
 			;;
 		"ipsec")
 			iked_ca_reset.sh
-			install -o root -g wheel -m 0640 -b src/etc/iked/ca/ca.crt /etc/iked/ca/
+			$INSTALL -o root -g wheel -m 0640 -b src/etc/iked/ca/ca.crt /etc/iked/ca/
 			ssl_pk12_cert_pub_priv_extract.sh uk.telecomlobby.com.p12
-			rcctl enable iked
-			rcctl set iked flags "-vv"
-			install -o root -g wheel -m 0640 -b src/etc/iked.conf /etc/
-			
+			$RCCTL enable iked
+			$RCCTL set iked flags "-vv"
+			$INSTALL -o root -g wheel -m 0640 -b src/etc/iked.conf /etc/
+			$RCCTL start iked ;;
+		"gre")
+			for file in src/etc/hostname.gre? ; do
+				$INSTALL -o root -g wheel -m 0700 -b $file /etc/
+				sh /etc/netstart $(echo $file | awk -F. '{print $2}')
+			done ;;
 			
 			
 	esac
 }
 
 echo "changing installurl"
-install -o root -g wheel -m 0644 -b src/etc/installurl /etc/			
+$INSTALL -o root -g wheel -m 0644 -b src/etc/installurl /etc/			
 echo "adding basic shell packages"
 pkg "shell"
 echo "configuring users"
@@ -104,4 +126,6 @@ conf "syspatch"
 echo "configuring IPSec MESH secure network"
 echo "please upload certificates in /home/taglio/ipsec.tar"
 conf "ipsec"
+echo "configuring GRE"
+conf "gre"
 echo "configuring acme and httpd"
