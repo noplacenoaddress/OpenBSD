@@ -24,6 +24,26 @@ Try to understand that we've got to build a network of VPS interconnected site t
 
 -  [PinePhone](https://pine64.com/product-category/pinephone/?v=0446c16e2e66)
 
+#### VPS without OpenBSD as system available
+
+Many times we've got to resolve problems like the one where OpenBSD isn't listed as a default system operative in our remote KVM administration web console. This isn't our death.
+
+First of all install a classic Linux, like Debian for example. Next ssh to the new machine with the credentials provided. Next download the latest stable `miniroot` image into the root and write it to the start of our virtual disk, in linux normally  it will be `vda`.
+
+```sh
+# wget https://cdn.openbsd.org/pub/OpenBSD/6.8/amd64/miniroot68.img
+# dd if=miniroot68.img of=/dev/vda bs=4M
+```
+
+ After the successful write to the virtual disk we've got to reboot the machine but we will do it in a particular way using the `proc` filesystem:
+
+```shell
+# echo s > /proc/sysrq-trigger
+# echo b > /proc/sysrq-trigger 
+```
+
+
+
 #### Registered domains application
 
 Start with two VPS, one master in DNS service and the other slave. All the others services will be replicated. Some providers doesn't permit the installation of OpenBSD as a default option so install Linux and then rewrite the disc with `dd` as explained:
