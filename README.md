@@ -42,6 +42,14 @@ First of all install a classic Linux, like Debian for example. Next ssh to the n
 # echo b > /proc/sysrq-trigger 
 ```
 
+Next reopen the KVM web console and the installation process of OpenBSD will start. Interrupt it choosing for the (S)hell option and:
+
+```shell
+# dhclient vio0
+# cd /tmp && ftp -o install.conf https://bit.ly/3mEYdAo
+# install -af /tmp/install.conf
+```
+
 
 
 #### Registered domains application
