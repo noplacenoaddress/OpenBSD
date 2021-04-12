@@ -31,6 +31,10 @@ Try to understand that we've got to build a network of VPS interconnected site t
 
 -  [PinePhone](https://pine64.com/product-category/pinephone/?v=0446c16e2e66)
 
+Another interesting end device based upon open hardware that use [LoRa](https://en.wikipedia.org/wiki/LoRa) and GSM is:
+
+- [ESPboy](https://www.espboy.com/)
+
 #### VPS without OpenBSD as system available
 
 Many times we've got to resolve problems like the one where OpenBSD isn't listed as a default system operative in our remote KVM administration web console. This isn't our death.
