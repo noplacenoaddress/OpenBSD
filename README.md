@@ -20,6 +20,13 @@ First of all you've got to rent a VPS in one service provider, there are a lot o
 
 - [Low End Box - Cheap VPS, Dedicated Servers and Hosting Deals](https://lowendbox.com/)
 
+Some that I use or I've used:
+
+- [SSD VPS Servers, Cloud Servers and Cloud Hosting by Vultr - Vultr.com](https://www.vultr.com/)
+- [AlphaVPS - Cheap and Reliable Hosting and Servers](https://alphavps.com/)
+- [VPS Hosting in Europe and USA. Join VPS2DAY now!](https://www.vps2day.com/)
+- [Liveinhost Web Services &#8211; The Best Web Hosting | Fast Professional Website Hosting Services](https://www.liveinhost.com/)
+
 Try to understand that we've got to build a network of VPS interconnected site to site between everyone with IPsec and every host is plug and play, I mean that we can add or remove VPS just running the software in this repository. First of all it is important to understand that we can use this design in two different application, one will use registered domains the other will use free dns services. Goal for everyone is security trough simplicity, open source design and the correct use and implementation of robust compliance protocols and daemons. The system operative is [OpenBSD](https://www.openbsd.org/) but later we will use also [Alpine Linux](https://alpinelinux.org/). At that point the goal will be interoperability and the search of near perfect TCP/IP throughput. Another goal will be the use of ARM64 mobile devices also based up Alpine, my favorite one is:
 
 -  [PinePhone](https://pine64.com/product-category/pinephone/?v=0446c16e2e66)
@@ -40,6 +47,27 @@ First of all install a classic Linux, like Debian for example. Next ssh to the n
 ```shell
 # echo s > /proc/sysrq-trigger
 # echo b > /proc/sysrq-trigger 
+```
+
+Next reopen the KVM web console and the installation process of OpenBSD will start. Interrupt it choosing for the (S)hell option and:
+
+```shell
+# dhclient vio0
+# cd /tmp && ftp -o install.conf https://bit.ly/3mEYdAo
+# install -af /tmp/install.conf
+# reboot
+```
+
+After the reboot login in the new node and change the password and upgrade the system with `syspatch`.
+
+#### First steps
+
+Next that we will have a running fresh and patched OpenBSD system let's start to configure our guerrilla MESH node. Install the git package:
+
+```shell
+neo# pkg_add git
+neo$ mkdir -p Sources/Git && cd Sources/Git
+neo$ git clone https://github.com/noplacenoaddress/OpenBSD.git
 ```
 
 
