@@ -1,0 +1,50 @@
+$ORIGIN             redama.cat.
+$TTL    86400
+@       IN SOA   uk.telecomlobby.com. riccardo.telecomlobby.com. (
+        2021040900  ; serial YYYYMMDDnn
+        28800       ; refresh
+        7200        ; retry
+        864000      ; expire
+        86400 )     ; minimum TTL
+
+;TLD
+@		IN NS uk.telecomlobby.com.
+@		IN NS us.telecomlobby.com.
+@		IN NS jp.telecomlobby.com.
+@		IN NS b.ns.buddyns.com.
+@               IN NS d.ns.buddyns.com.
+
+@		IN MX 1 uk.telecomlobby.com.
+@               IN MX 5 us.telecomlobby.com.
+@               IN MX 10  jp.telecomlobby.com.
+
+@		IN CAA 128 issue "letsencrypt.org"
+
+@		IN TXT "keybase-site-verification=MMs_Z-xvQNVBEePMzmrzfyjTvsO9rIxLZmRuYY4NKv4"
+@		IN TXT "google-site-verification=KyYjCdETKXJgohk6dnTtAxuE8DzrWomGEKSNsseS3LM"
+
+02022021._domainkey IN TXT "v=DKIM1;k=rsa;p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDeNwFTyKRPTSMgSc3IF6Ye3Lg3QmYCZQhsBoprfktVrpn0nUheTTEPFUJ/rf6U6z9gDg2BSwCA0ubgRwPUpWt+oifKbCWndIHwoMX9dKWqxIrAQ504V1vfPlPg9xl7Zd+VUNfgAMdYtvTXwsuz0UO/kcOiehYSiM3NzjdOCtD/8QIDAQAB;"
+;DMARC
+_dmarc		IN TXT "v=DMARC1;p=none;pct=100;rua=mailto:postmaster@telecomlobby.com;"
+
+@		IN A 78.141.201.0
+@		IN AAAA 2001:19f0:7401:8c01:5400:2ff:fe79:3b4d
+@		IN TXT "v=spf1 mx:telecomlobby.com -all"
+
+
+www		IN CNAME redama.cat.
+internet	IN CNAME redama.cat.
+radioenllac	IN CNAME redama.cat.
+catalunya	IN CNAME redama.cat.
+wifi4eu		IN CNAME redama.cat.
+blog		IN CNAME redama.cat.
+clientes	IN CNAME redama.cat.
+missatgeria	IN CNAME redama.cat.
+wifi		IN CNAME redama.cat.
+osint		IN CNAME redama.cat.
+
+wdk			IN CNAME wdk.telecomlobby.com.
+
+_mta-sts		IN CNAME _mta-sts.telecomlobby.
+mta-sts			IN CNAME uk.telecomlobby.com.
+_smtp._tls		IN TXT "v=TLSRPTv1;rua=mailto:postmaster@telecomlobby.com;"
