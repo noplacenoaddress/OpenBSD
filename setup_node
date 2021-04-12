@@ -151,5 +151,6 @@ echo "configuring OSPF"
 conf "ospf"
 echo "configuring unbound network"
 conf "unbound" "network"
-
+echo "configuring NSD"
+conf "nsd"
 echo "configuring acme and httpd"
