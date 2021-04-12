@@ -1,0 +1,40 @@
+$ORIGIN             9-rg.com.
+$TTL    86400
+@       IN SOA   nameserver.telecomlobby.com. taglio.telecomlobby.com. (
+        2021022800  ; serial YYYYMMDDnn
+        28800       ; refresh
+        7200        ; retry
+        864000      ; expire
+        86400 )     ; minimum TTL
+
+;TLD
+@		IN NS uk.telecomlobby.com.
+@		IN NS us.telecomlobby.com.
+@		IN NS jp.telecomlobby.com.
+@		IN NS b.ns.buddyns.com.
+@               IN NS d.ns.buddyns.com.
+
+@               IN MX 1 uk.telecomlobby.com.	
+@		IN MX 5	us.telecomlobby.com.
+@		IN MX 10 jp.telecomlobby.com.
+
+@		IN A 139.180.206.19
+@		IN AAAA 2001:19f0:7001:5d4d:f7a0:513e:3feb:6850
+@		IN CAA 128 issue "letsencrypt.org"
+@		IN CAA 128 issuewild ";"
+@		IN TXT "v=spf1 mx:telecomlobby.com -all"
+@		IN TXT "google-site-verification=oZnckgQepq1NbvusU3awjzVIYrGhgO7YTxAL7jNs-Dg"
+@		IN TXT "keybase-site-verification=1oLeXTVVyv-msF_TFcq3vFrhXeVnxgtl_zMGZVUlUN4"
+
+;SECURE
+mail._domainkey IN TXT ( "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlfb5pXyn4QPqVtUjv8BEFLUjwEHComfzSnbjQGom6SLBctCJs6+YrgkysNq9FprMwf6/YP"
+	                     "qsffnbrf9T1n6aFK0CkqEjfiBI67uOU3QsZyPKp57EwP9V5Gph1w9QfGC6EjcgyE79u9lBUz3Ex1qrZs7/Q2BkF86NWT84mtQK6lTk+TdZAXxDCdcmptGgaGPy+WRxvPxN"
+	                     "RrGQFWqZaA0iuyM8lF41ER7/lvayXotlYTPeDTwmFI516pHBoJOvKJwlrJXN9CB6xzQwDiPJdDNqE9rD2cv/Yf8ZWMFRjLJIgVJs+C6I6x9YzKA7Xhieg4RhFMUyUmR9JMEgJavlWuJiUQIDAQAB" ) ;
+
+;HOSTS
+
+www             IN CNAME 9-rg.com.
+mirror		IN A 45.32.144.15
+shiva 		IN A 139.180.206.19
+shiva		IN AAAA 2001:19f0:7001:5d4d:f7a0:513e:3feb:6850
+
