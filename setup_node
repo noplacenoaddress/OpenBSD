@@ -87,7 +87,9 @@ function conf {
 					$INSTALL -o _unbound -g _unbound -m 0750 -b src/var/unbound/etc/remote-control.conf /var/unbound/etc/
 					$INSTALL -o _unbound -g _unbound -m 0750 -b src/var/unbound/etc/forward-zone.conf /var/unbound/etc/ ;;
 				"network")
-				;;
+					$INSTALL -o _unbound -g _unbound -m 0750 -b src/var/unbound/etc/unbound.conf /var/unbound/etc/unbound.conf
+					$INSTALL -o _unbound -g _unbound -m 0750 -b src/var/unbound/etc/stub-zone.conf /var/unbound/etc/stub-zone.conf
+					$RCCTL restart unbound ||  error_exit "$LINENO: ERROR: UNBOUND failed." ;;
 			esac
 			;;
 		"syspatch")
@@ -113,8 +115,9 @@ function conf {
 			$PFCTL -nf /etc/pf.conf ||  error_exit "$LINENO: ERROR: PF failed."
 			$PFCTL -f /etc/pf.conf ;;
 		"ospf")
-			
-			;;
+			$RCCTL enable ospfd
+			$INSTALL -o root -g wheel -m 0600 -b src/etc/ospfd.conf /etc/
+			$RCCTL start ospfd ||  error_exit "$LINENO: ERROR: OSPFD failed." ;;
 			
 			
 			
@@ -146,4 +149,7 @@ echo "configuring PF"
 conf "pf"
 echo "configuring OSPF"
 conf "ospf"
+echo "configuring unbound network"
+conf "unbound" "network"
+
 echo "configuring acme and httpd"
