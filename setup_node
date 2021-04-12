@@ -20,6 +20,7 @@ INSTALL=/usr/bin/install
 RCCTL=/usr/sbin/rcctl
 USERADD=/usr/sbin/useradd
 PKG_ADD=/usr/sbin/pkg_add
+PFCTL=/sbin/pfctl
 SH=/bin/ksh
 
 function pkg {
@@ -52,6 +53,9 @@ function conf {
 			echo "ntp client"
 			$INSTALL -o root -g wheel -m 0644 -b src/etc/ntpd.conf /etc/
 			$RCCTL restart ntpd ;;
+			echo "vether"
+			$INSTALL -o root -g wheel -m 0644 -b src/etc/hostname.vether0 /etc/
+			$SH /etc/netstart vether0
 		"users")
 			echo "vmail, dsync, _iperfd, wwwuser"
 			$USERADD -m -u 2000 -g =uid -c "Virtual Mail" -d /var/vmail -s /sbin/nologin vmail
@@ -100,8 +104,18 @@ function conf {
 		"gre")
 			for file in src/etc/hostname.gre? ; do
 				$INSTALL -o root -g wheel -m 0700 -b $file /etc/
-				sh /etc/netstart $(echo $file | awk -F. '{print $2}')
+				$SH /etc/netstart $(echo $file | awk -F. '{print $2}')
 			done ;;
+		"pf")
+			for file in src/etc/pf.* ; do
+				$INSTALL -o root -g wheel -m 0700 -b $file /etc/
+			done 
+			$PFCTL -nf /etc/pf.conf ||  error_exit "$LINENO: ERROR: PF failed."
+			$PFCTL -f /etc/pf.conf ;;
+		"ospf")
+			
+			;;
+			
 			
 			
 	esac
@@ -128,4 +142,8 @@ echo "please upload certificates in /home/taglio/ipsec.tar"
 conf "ipsec"
 echo "configuring GRE"
 conf "gre"
+echo "configuring PF"
+conf "pf"
+echo "configuring OSPF"
+conf "ospf"
 echo "configuring acme and httpd"
