@@ -74,6 +74,12 @@ function conf {
 			;;
 		"ipsec")
 			iked_ca_reset.sh
+			install -o root -g wheel -m 0640 -b src/etc/iked/ca/ca.crt /etc/iked/ca/
+			ssl_pk12_cert_pub_priv_extract.sh uk.telecomlobby.com.p12
+			rcctl enable iked
+			rcctl set iked flags "-vv"
+			install -o root -g wheel -m 0640 -b src/etc/iked.conf /etc/
+			
 			
 			
 	esac
