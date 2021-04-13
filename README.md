@@ -74,13 +74,27 @@ neo$ mkdir -p Sources/Git && cd Sources/Git
 neo$ git clone https://github.com/noplacenoaddress/OpenBSD.git
 ```
 
+Next let's start to configure the system with our script `setup_node`, you've got to go ahead to every point pressing `1` or to type different variables:
 
+- `hostname`, the name of the machine.
+- `routerid`, the OSPFD router id and the IP of the `vether0` interface.
+- `publichost`, the DNS of the public ip of the `vio0` interface.
+
+```shell
+root@neo:/home/taglio/Sources/Git/OpenBSD# sh setup_node                                                                                                                                                                                                  
+changing installurl
+Go ahead type 1 
+```
 
 #### Registered domains application
 
 Start with two VPS, one master in DNS service and the other slave. All the others services will be replicated. Some providers doesn't permit the installation of OpenBSD as a default option so install Linux and then rewrite the disc with `dd` as explained:
 
+#### Possible applications
 
+Let's start discussing how we can boost our presence in Internet using that guerrilla MESH system that guaranty our privacy and security on the web. My first project is regarding a website replicated over different countries in all the languages over the world. Something very important to obtain maximum results about clients, about web goods sell, about be recognized over it and about whatever we want to obtain searching for visibility.
+
+I've got to cases, one is about the correct information about the modern slavery network transmitted by electromagnetic weapons to the marginal and worker class of many countries, also Europeans. The other is to have got a great site about my professional work, Redama, a wireless ISP but also an Internet website that sold security focused end devices and gateways.   
 
 Nice Regards,
 
