@@ -52,10 +52,10 @@ function conf {
 			$SH /etc/netstart vio0
 			echo "ntp client"
 			$INSTALL -o root -g wheel -m 0644 -b src/etc/ntpd.conf /etc/
-			$RCCTL restart ntpd ;;
+			$RCCTL restart ntpd 
 			echo "vether"
 			$INSTALL -o root -g wheel -m 0644 -b src/etc/hostname.vether0 /etc/
-			$SH /etc/netstart vether0
+			$SH /etc/netstart vether0 ;;
 		"users")
 			echo "vmail, dsync, _iperfd, wwwuser"
 			$USERADD -m -u 2000 -g =uid -c "Virtual Mail" -d /var/vmail -s /sbin/nologin vmail
