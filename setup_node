@@ -24,7 +24,7 @@ PFCTL=/sbin/pfctl
 SH=/bin/ksh
 
 function pkg {
-	phase = $1
+	phase=$1
 
 	case $phase in
 		"shell")
@@ -32,8 +32,8 @@ function pkg {
 	esac
 }
 
-function conf (){
-	phase = $1
+function conf {
+	phase=$1
 	if [[ -z "$2" ]]; then
 		subphase = $2
 	fi
