@@ -153,8 +153,13 @@ do
 	echo -n 'Go ahead type 1 '
 	read ctrl
 	if [[ "$ctrl" -eq 1 ]]; then
-		mkdir /root/Bin
+		if [ ! -d /root/Bin ]; then 
+			mkdir /root/Bin
+		fi
 		chmod 700 /root/Bin
+		if [ ! -d /home/taglio/Bin ]; then 
+			mkdir /home/taglio/Bin 
+		fi
 		mkdir /home/taglio/Bin
 		chown taglio:wheel /home/taglio/Bin
 		conf "users"
