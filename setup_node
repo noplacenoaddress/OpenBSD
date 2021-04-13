@@ -79,8 +79,8 @@ function configuration {
 				$INSTALL -o taglio -g wheel -m 0750 -b $file /home/taglio/Bin/
 			done
 			if [[ ! -e /home/taglio/.ssh/id_ed25519 ]]; then
-				$DOAS -u taglio $SSHKEYGEN -t ed25519 -N "" -f /home/taglio/.ssh/id_ed25519;;
-			fi
+				$DOAS -u taglio $SSHKEYGEN -t ed25519 -N "" -f /home/taglio/.ssh/id_ed25519
+			fi;;
 		"scripts")
 			for file in src/root/Bin/*.sh; do
 				$INSTALL -o root -g wheel -m 0700 -b $file /root/Bin/
@@ -185,7 +185,7 @@ do
 	echo -n 'Type the hostname '
 	read hostname
 	echo $hostname > conf/hostname
-	sed -i "s/$hostname/\/HOSTNAME\//g" {src/etc/*,src/var/unbound/etc/*}
+	find . -type f | xargs -I {} sed -i "s/\/HOSTNAME\//$hostname/g" {}
 done
 routerid=
 while [ -z $routerid ]
@@ -193,7 +193,7 @@ do
 	echo -n 'Type the routerid '
 	read routerid
 	echo $routerid > conf/routerid
-	sed -i "s/$routerid/\/ROUTERID\//g" {src/etc/*,src/var/unbound/etc/*}
+	find . -type f | xargs -I {} sed -i "s/\/ROUTERID\//$routerid/g" {}
 done
 publichost=
 while [ -z $publichost ]
@@ -201,7 +201,7 @@ do
 	echo -n 'Type the publichost '
 	read publichost
 	echo $publichost > conf/publichost
-	sed -i "s/$publichost/\/PUBLICHOST\//g" {src/etc/*,src/var/unbound/etc/*}
+	find . -type f | xargs -I {} sed -i "s/\/PUBLICHOST\//$publichost/g" {}
 done
 echo "configuring basic"
 ctrl=
