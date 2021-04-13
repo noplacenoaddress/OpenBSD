@@ -23,6 +23,8 @@ PKG_ADD=/usr/sbin/pkg_add
 PFCTL=/sbin/pfctl
 SH=/bin/ksh
 GETENT=/usr/bin/getent
+SSHKEYGEN=/usr/bin/ssh-keygen3
+DOAS=/usr/bin/doas
 
 function pkg {
 	phase=$1
@@ -76,9 +78,9 @@ function configuration {
 			for file in src/home/taglio/Bin/*; do
 				$INSTALL -o taglio -g wheel -m 0750 -b $file /home/taglio/Bin/
 			done
-			su taglio -
-			ssh-keygen -t ed25519 -N "" -f /home/taglio/.ssh/id_ed25519
-			exit;;
+			if [[ ! -e /home/taglio/.ssh/id_ed25519 ]]; then
+				$DOAS -u taglio $SSHKEYGEN -t ed25519 -N "" -f /home/taglio/.ssh/id_ed25519;;
+			fi
 		"scripts")
 			for file in src/root/Bin/*.sh; do
 				$INSTALL -o root -g wheel -m 0700 -b $file /root/Bin/
@@ -155,7 +157,6 @@ do
     
 done	
 echo "configuring users"
-configuration "users"
 ctrl=
 while [ -z $ctrl ]
 do
