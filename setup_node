@@ -57,7 +57,7 @@ function conf {
 			$RCCTL enable uptimed
 			$RCCTL start uptimed
 			$INSTALL -o root -g wheel -m 0640 -b src/etc/rc.local /etc/
-			$SH /etc/rc.local ;;
+			$SH /etc/rc.local ;;	
 		"users")
 			echo "vmail, dsync, _iperfd, wwwuser"
 			$USERADD -m -u 2000 -g =uid -c "Virtual Mail" -d /var/vmail -s /sbin/nologin vmail
@@ -69,14 +69,11 @@ function conf {
 			done
 			su taglio -
 			ssh-keygen -t ed25519 -N "" -f /home/taglio/.ssh/id_ed25519
-			exit
-			
-			;;
+			exit ;;
 		"scripts")
 			for file in src/root/Bin/*.sh; do
 				$INSTALL -o root -g wheel -m 0700 -b $file /root/Bin/
-			done
-			;;
+			done ;;
 		"unbound")
 			$RCCTL enable unbound
 			case $subphase in 
@@ -157,8 +154,9 @@ do
 	read ctrl
 	if [[ "$ctrl" -eq 1 ]]; then
 		mkdir /root/Bin
-		chmod 600 /root/Bin
+		chmod 700 /root/Bin
 		mkdir /home/taglio/Bin
+		chown taglio:wheel /home/taglio/Bin
 		conf "users"
 		conf "scripts"
 	else
