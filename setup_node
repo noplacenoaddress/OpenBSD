@@ -151,7 +151,7 @@ ctrl=
 while [ -z $ctrl ]
 do
 	echo -n 'Go ahead type 1 '
-	read ctrl
+	read $ctrl
 	if [[ "$ctrl" -eq 1 ]]; then
 		if [ ! -d /root/Bin ]; then 
 			mkdir /root/Bin
@@ -167,7 +167,8 @@ do
 		error_exit "$LINENO: EXIT FROM USER." 
 	fi
     
-done	
+done
+	
 hostname=
 while [ -z $hostname ]
 do
@@ -190,7 +191,7 @@ do
 	echo -n 'Type the publichost '
 	read publichost
 	echo $publichost > conf/publichost
-	sed -i "s/$publichost/\/ROUTERID\//g" {src/etc/*,src/var/unbound/etc/*}
+	sed -i "s/$publichost/\/PUBLICHOST\//g" {src/etc/*,src/var/unbound/etc/*}
 done
 echo "configuring basic"
 ctrl=
