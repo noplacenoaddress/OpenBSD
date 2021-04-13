@@ -34,7 +34,7 @@ function pkg {
 
 function configuration {
 	phase=$1
-	if [[ ! -z $2 ]]; then
+	if [[ $# -eq 2 ]]; then
 		subphase=$2
 	fi
 	case $phase in
