@@ -28,7 +28,7 @@ function pkg {
 
 	case $phase in
 		"shell")
-			pkg_add colorls nano wget fping iperf;;
+			pkg_add colorls nano wget fping iperf uptimed oidentd;;
 	esac
 }
 
@@ -46,14 +46,18 @@ function conf {
 			for file in src/root/.*; do
 				$INSTALL -o root -g root -m 0750 -b $file /root/
 			done
-			echo "dhclient, resolv.conf.tail"
-			$INSTALL -o root -g wheel -m 0644 -b src/etc/{dhclient.conf,resolv.conf.tail} /etc/
+			echo "dhclient, resolv.conf.tail and doas.conf"
+			$INSTALL -o root -g wheel -m 0644 -b src/etc/{dhclient.conf,resolv.conf.tail,doas.conf} /etc/
 			$INSTALL -o root -g wheel -m 0640 -b src/etc/hostname.vio0 /etc/
 			$SH /etc/netstart vio0
-			
 			echo "vether"
 			$INSTALL -o root -g wheel -m 0644 -b src/etc/hostname.vether0 /etc/
-			$SH /etc/netstart vether0 ;;
+			$SH /etc/netstart vether0 
+			echo "configuring iperf uptimed and oidentd"
+			$RCCTL enable uptimed
+			$RCCTL start uptimed
+			$INSTALL -o root -g wheel -m 0640 -b src/etc/rc.local /etc/
+			$SH /etc/rc.local ;;
 		"users")
 			echo "vmail, dsync, _iperfd, wwwuser"
 			$USERADD -m -u 2000 -g =uid -c "Virtual Mail" -d /var/vmail -s /sbin/nologin vmail
