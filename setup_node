@@ -169,7 +169,7 @@ do
     
 done	
 hostname=
-while [ -z $ctrl ]
+while [ -z $hostname ]
 do
 	echo -n 'Type the hostname '
 	read hostname
