@@ -61,12 +61,10 @@ function configuration {
 			$SH /etc/rc.local;;	
 		"users")
 			echo "vmail, dsync, _iperfd, wwwuser"
-			$GETENT passwd vmail > /dev/null 2&>1
-			if [ $? -ne 0 ]; then
+			if [[ ! -z `$GETENT passwd vmail` ]]; then 
 				$USERADD -m -u 2000 -g =uid -c "Virtual Mail" -d /var/vmail -s /sbin/nologin vmail
 			fi
-			$GETENT passwd dsync > /dev/null 2&>1
-			if [ $? -ne 0 ]; then
+			if [[ ! -z `$GETENT passwd dsync` ]]; then 
 				$USERADD -m -u 2001 -g =uid -c "Dsync Replication" -d /home/dsync -s /bin/ksh dsync
 			fi
 			$GETENT passwd _iperfd > /dev/null 2&>1
