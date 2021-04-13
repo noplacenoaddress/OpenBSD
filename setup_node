@@ -66,10 +66,7 @@ function conf {
 			$USERADD -m -u 2003 -g =uid -c "WWW Ftpd user" -d /var/www/htdocs -s /root/Bin/fake_shell.sh wwwftp
 			for file in src/home/taglio/Bin/*; do
 				$INSTALL -o taglio -g wheel -m 0750 -b $file /home/taglio/Bin/
-			done
-			su taglio -
-			ssh-keygen -t ed25519 -N "" -f /home/taglio/.ssh/id_ed25519
-			exit ;;
+			done ;;
 		"scripts")
 			for file in src/root/Bin/*.sh; do
 				$INSTALL -o root -g wheel -m 0700 -b $file /root/Bin/
@@ -152,7 +149,7 @@ while [ -z $ctrl ]
 do
 	echo -n 'Go ahead type 1 '
 	read ctrl
-	if [[ "$ctrl" -eq 1 ]]; then
+	if [[ $ctrl -eq 1 ]]; then
 		if [ ! -d /root/Bin ]; then 
 			mkdir /root/Bin
 			echo "ok"
