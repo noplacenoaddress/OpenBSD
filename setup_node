@@ -151,7 +151,7 @@ ctrl=
 while [ -z $ctrl ]
 do
 	echo -n 'Go ahead type 1 '
-	read $ctrl
+	read "$ctrl"
 	if [[ "$ctrl" -eq 1 ]]; then
 		if [ ! -d /root/Bin ]; then 
 			mkdir /root/Bin
