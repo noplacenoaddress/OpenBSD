@@ -125,7 +125,18 @@ function conf {
 }
 
 echo "changing installurl"
-$INSTALL -o root -g wheel -m 0644 -b src/etc/installurl /etc/			
+ctrl=
+while [ -z $date ]
+do
+	echo -n 'Go ahead type 1 '
+	read ctrl
+	if [[ "$ctrl" -eq 1 ]]; then
+		$INSTALL -o root -g wheel -m 0644 -b src/etc/installurl /etc/
+	else
+		error_exit "$LINENO: EXIT FROM USER." 
+	fi
+    
+done		
 echo "adding basic shell packages"
 pkg "shell"
 echo "configuring users"
