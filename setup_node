@@ -32,7 +32,7 @@ function pkg {
 	esac
 }
 
-function conf {
+function conf (){
 	phase = $1
 	if [[ -z "$2" ]]; then
 		subphase = $2
