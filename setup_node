@@ -126,7 +126,7 @@ function conf {
 
 echo "changing installurl"
 ctrl=
-while [ -z $date ]
+while [ -z $ctrl ]
 do
 	echo -n 'Go ahead type 1 '
 	read ctrl
@@ -138,7 +138,18 @@ do
     
 done		
 echo "adding basic shell packages"
-pkg "shell"
+ctrl=
+while [ -z $ctrl ]
+do
+	echo -n 'Go ahead type 1 '
+	read ctrl
+	if [[ "$ctrl" -eq 1 ]]; then
+		pkg "shell"
+	else
+		error_exit "$LINENO: EXIT FROM USER." 
+	fi
+    
+done	
 echo "configuring users"
 mkdir /root/Bin
 chmod 600 /root/Bin
