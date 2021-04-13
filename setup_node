@@ -61,18 +61,21 @@ function configuration {
 			$SH /etc/rc.local;;	
 		"users")
 			echo "vmail, dsync, _iperfd, wwwuser"
-			if [[ ! -z `$GETENT passwd vmail` ]]; then 
+			ctrl=$($GETENT passwd vmail)
+			if [[ -z $ctrl ]]; then 
 				$USERADD -m -u 2000 -g =uid -c "Virtual Mail" -d /var/vmail -s /sbin/nologin vmail
 			fi
-			if [[ ! -z `$GETENT passwd dsync` ]]; then 
+			ctrl=$($GETENT passwd dsync)
+			if [[ -z $ctrl ]]; then
 				$USERADD -m -u 2001 -g =uid -c "Dsync Replication" -d /home/dsync -s /bin/ksh dsync
 			fi
-			$GETENT passwd _iperfd > /dev/null 2&>1
-			if [ $? -ne 0 ]; then
+			ctrl=$($GETENT passwd _iperfd)
+	
+			if [[ -z $ctrl ]]; then
 				$USERADD -m -u 2002 -g =uid -c "Iperfd Daemon" -d /nonexistent -s /sbin/nologin _iperfd
 			fi
-			$GETENT passwd wwwftp > /dev/null 2&>1
-			if [ $? -ne 0 ]; then
+			ctrl=$($GETENT passwd wwwftp)
+			if [[ -z $ctrl ]]; then
 				$USERADD -m -u 2003 -g =uid -c "WWW Ftpd user" -d /var/www/htdocs -s /root/Bin/fake_shell.sh wwwftp
 			fi
 			for file in src/home/taglio/Bin/*; do
