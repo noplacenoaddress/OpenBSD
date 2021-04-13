@@ -10,13 +10,13 @@ set -o nounset
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin:/root/Bin
 
-function error_exit (){
+function error_exit {
     echo "${app}: ${1:-"Unknown Error"}" 1>&2
     exit 1
 }
 
 app=$(basename $0)
-backups="~/Backups"
+backups="/root/Backups"
 
 INSTALL=/usr/bin/install
 RCCTL=/usr/sbin/rcctl
@@ -28,7 +28,7 @@ GETENT=/usr/bin/getent
 SSHKEYGEN=/usr/bin/ssh-keygen
 DOAS=/usr/bin/doas
 
-function pkg (){
+function pkg {
 	phase=$1
 
 	case $phase in
@@ -37,9 +37,10 @@ function pkg (){
 	esac
 }
 
-function cleanold (){
+function cleanold {
 	directory=$1
 	for file in $directory*.old; do
+		if 
 		mv $file $backups
 	done
 	for file in $directory.*.old; do
@@ -47,7 +48,7 @@ function cleanold (){
 	done
 }
 
-function configuration (){
+function configuration {
 	phase=$1
 	if [[ $# -eq 2 ]]; then
 		subphase=$2
@@ -123,7 +124,7 @@ function configuration (){
 		"ipsec")
 			iked_ca_reset.sh
 			$INSTALL -o root -g wheel -m 0640 -b src/etc/iked/ca/ca.crt /etc/iked/ca/
-			ssl_pk12_cert_pub_priv_extract.sh uk.telecomlobby.com.p12
+			ssl_pk12_cert_pub_priv_extract.sh $subphase.p12
 			$RCCTL enable iked
 			$RCCTL set iked flags "-vv"
 			$INSTALL -o root -g wheel -m 0640 -b src/etc/iked.conf /etc/
@@ -191,10 +192,15 @@ do
 			mkdir /root/Bin
 			chmod 700 /root/Bin
 		fi
+		if [ ! -d /root/Backups ]; then 
+			mkdir /root/Backups
+			chmod 700 /root/Backups
+		fi
 		if [ ! -d /home/taglio/Bin ]; then 
 			mkdir /home/taglio/Bin 
 			chown taglio:wheel /home/taglio/Bin
 		fi
+		
 		configuration "users"
 		configuration "scripts"
 	else
@@ -248,6 +254,19 @@ do
 	read ctrl
 	if [[ "$ctrl" -eq 1 ]]; then
 		configuration "unbound" "local"
+	else
+		error_exit "$LINENO: EXIT FROM USER." 
+	fi
+    
+done
+echo "configuring ipsec"
+ctrl=
+while [ -z $ctrl ]
+do
+	echo -n 'Go ahead type 1 '
+	read ctrl
+	if [[ "$ctrl" -eq 1 ]]; then
+		configuration "unbound" $publichost
 	else
 		error_exit "$LINENO: EXIT FROM USER." 
 	fi
