@@ -10,12 +10,14 @@ set -o nounset
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin:/root/Bin
 
-function error_exit {
+function error_exit (){
     echo "${app}: ${1:-"Unknown Error"}" 1>&2
     exit 1
 }
 
 app=$(basename $0)
+backups="~/Backups"
+
 INSTALL=/usr/bin/install
 RCCTL=/usr/sbin/rcctl
 USERADD=/usr/sbin/useradd
@@ -23,10 +25,10 @@ PKG_ADD=/usr/sbin/pkg_add
 PFCTL=/sbin/pfctl
 SH=/bin/ksh
 GETENT=/usr/bin/getent
-SSHKEYGEN=/usr/bin/ssh-keygen3
+SSHKEYGEN=/usr/bin/ssh-keygen
 DOAS=/usr/bin/doas
 
-function pkg {
+function pkg (){
 	phase=$1
 
 	case $phase in
@@ -35,7 +37,17 @@ function pkg {
 	esac
 }
 
-function configuration {
+function cleanold (){
+	directory=$1
+	for file in $directory*.old; do
+		mv $file $backups
+	done
+	for file in $directory.*.old; do
+		mv $file $backups
+	done
+}
+
+function configuration (){
 	phase=$1
 	if [[ $# -eq 2 ]]; then
 		subphase=$2
@@ -44,11 +56,13 @@ function configuration {
 		"basic")
 			echo "dot files"
 			for file in src/home/taglio/.*; do
-				$INSTALL -o taglio -g wheel -m 0750 -b $file /home/taglio/
+				$INSTALL -o taglio -g wheel -m 0750 -b $file /home/taglio/ 
 			done
+			cleanold "/home/taglio/"
 			for file in src/root/.*; do
-				$INSTALL -o root -g root -m 0750 -b $file /root/
+				$INSTALL -o root -g wheel -m 0750 -b $file /root/
 			done
+			cleanold "/root/"
 			echo "dhclient, resolv.conf.tail and doas.conf"
 			$INSTALL -o root -g wheel -m 0644 -b src/etc/{dhclient.conf,resolv.conf.tail,doas.conf} /etc/
 			$INSTALL -o root -g wheel -m 0640 -b src/etc/hostname.vio0 /etc/
@@ -60,7 +74,8 @@ function configuration {
 			$RCCTL enable uptimed
 			$RCCTL start uptimed
 			$INSTALL -o root -g wheel -m 0640 -b src/etc/rc.local /etc/
-			$SH /etc/rc.local;;	
+			$SH /etc/rc.local
+			cleanold "/etc/";;	
 		"users")
 			echo "vmail, dsync, _iperfd, wwwuser"
 			if ! $GETENT passwd vmail 1>&-; then 
@@ -77,6 +92,7 @@ function configuration {
 			fi
 			for file in src/home/taglio/Bin/*; do
 				$INSTALL -o taglio -g wheel -m 0750 -b $file /home/taglio/Bin/
+				mv $file $backups
 			done
 			if [[ ! -e /home/taglio/.ssh/id_ed25519 ]]; then
 				$DOAS -u taglio $SSHKEYGEN -t ed25519 -N "" -f /home/taglio/.ssh/id_ed25519
@@ -84,7 +100,8 @@ function configuration {
 		"scripts")
 			for file in src/root/Bin/*.sh; do
 				$INSTALL -o root -g wheel -m 0700 -b $file /root/Bin/
-			done;;
+			done
+			cleanold "/root/Bin/";;
 		"unbound")
 			$RCCTL enable unbound
 			case $subphase in 
@@ -95,11 +112,13 @@ function configuration {
 					chown _unbound:_unbound /var/unbound/db/*
 					$INSTALL -o _unbound -g _unbound -m 0750 -b src/var/unbound/etc/unbound-local.conf /var/unbound/etc/unbound.conf
 					$INSTALL -o _unbound -g _unbound -m 0750 -b src/var/unbound/etc/remote-control.conf /var/unbound/etc/
-					$INSTALL -o _unbound -g _unbound -m 0750 -b src/var/unbound/etc/forward-zone.conf /var/unbound/etc/;;
+					$INSTALL -o _unbound -g _unbound -m 0750 -b src/var/unbound/etc/forward-zone.conf /var/unbound/etc/
+					cleanold "/var/unbound/etc/";;
 				"network")
 					$INSTALL -o _unbound -g _unbound -m 0750 -b src/var/unbound/etc/unbound.conf /var/unbound/etc/unbound.conf
 					$INSTALL -o _unbound -g _unbound -m 0750 -b src/var/unbound/etc/stub-zone.conf /var/unbound/etc/stub-zone.conf
-					$RCCTL restart unbound ||  error_exit "$LINENO: ERROR: UNBOUND failed.";;
+					$RCCTL restart unbound ||  error_exit "$LINENO: ERROR: UNBOUND failed."
+					cleanold "/var/unbound/etc/";;
 			esac;;
 		"ipsec")
 			iked_ca_reset.sh
@@ -108,24 +127,29 @@ function configuration {
 			$RCCTL enable iked
 			$RCCTL set iked flags "-vv"
 			$INSTALL -o root -g wheel -m 0640 -b src/etc/iked.conf /etc/
-			$RCCTL start iked;;
+			$RCCTL start iked
+			cleanold "/etc/";;
 		"gre")
 			for file in src/etc/hostname.gre? ; do
 				$INSTALL -o root -g wheel -m 0700 -b $file /etc/
+				cleanold "/etc/"
 				$SH /etc/netstart $(echo $file | awk -F. '{print $2}')
 			done;;
 		"pf")
 			for file in src/etc/pf.* ; do
 				$INSTALL -o root -g wheel -m 0700 -b $file /etc/
+				cleanold "/etc/"
 			done 
 			$PFCTL -nf /etc/pf.conf ||  error_exit "$LINENO: ERROR: PF failed."
 			$PFCTL -f /etc/pf.conf;;
 		"ospf")
 			$RCCTL enable ospfd
 			$INSTALL -o root -g wheel -m 0600 -b src/etc/ospfd.conf /etc/
+			cleanold "/etc/"
 			$RCCTL start ospfd ||  error_exit "$LINENO: ERROR: OSPFD failed.";;
 		"ntpd")
 			$INSTALL -o root -g wheel -m 0644 -b src/etc/ntpd.conf /etc/
+			cleanold "/etc/"
 			$RCCTL restart ntpd  ||  error_exit "$LINENO: ERROR: NTPD failed.";;		
 	esac
 }
@@ -210,7 +234,7 @@ do
 	echo -n 'Go ahead type 1 '
 	read ctrl
 	if [[ "$ctrl" -eq 1 ]]; then
-		conf "basic" 
+		configuration "basic" 
 	else
 		error_exit "$LINENO: EXIT FROM USER." 
 	fi
