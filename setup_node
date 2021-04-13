@@ -169,11 +169,12 @@ do
     
 done	
 hostname=
-while [ -z $ctrl ]
+while [ -z $hostname ]
 do
 	echo -n 'Type the hostname '
 	read hostname
 	echo $hostname > conf/hostname
+	sed -i "s/$hostname/\/HOSTNAME\//g" {src/etc/*,src/var/unbound/etc/*}
 done
 routerid=
 while [ -z $routerid ]
@@ -181,6 +182,7 @@ do
 	echo -n 'Type the routerid '
 	read routerid
 	echo $routerid > conf/routerid
+	sed -i "s/$routerid/\/ROUTERID\//g" {src/etc/*,src/var/unbound/etc/*}
 done
 publichost=
 while [ -z $publichost ]
@@ -188,6 +190,7 @@ do
 	echo -n 'Type the publichost '
 	read publichost
 	echo $publichost > conf/publichost
+	sed -i "s/$publichost/\/ROUTERID\//g" {src/etc/*,src/var/unbound/etc/*}
 done
 echo "configuring basic"
 ctrl=
