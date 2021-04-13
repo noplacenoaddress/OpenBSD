@@ -28,7 +28,7 @@ function pkg {
 
 	case $phase in
 		"shell")
-			pkg_add colorls nano wget fping;;
+			pkg_add colorls nano wget fping iperf;;
 	esac
 }
 
@@ -50,9 +50,7 @@ function conf {
 			$INSTALL -o root -g wheel -m 0644 -b src/etc/{dhclient.conf,resolv.conf.tail} /etc/
 			$INSTALL -o root -g wheel -m 0640 -b src/etc/hostname.vio0 /etc/
 			$SH /etc/netstart vio0
-			echo "ntp client"
-			$INSTALL -o root -g wheel -m 0644 -b src/etc/ntpd.conf /etc/
-			$RCCTL restart ntpd 
+			
 			echo "vether"
 			$INSTALL -o root -g wheel -m 0644 -b src/etc/hostname.vether0 /etc/
 			$SH /etc/netstart vether0 ;;
@@ -92,9 +90,6 @@ function conf {
 					$RCCTL restart unbound ||  error_exit "$LINENO: ERROR: UNBOUND failed." ;;
 			esac
 			;;
-		"syspatch")
-			syspatch
-			;;
 		"ipsec")
 			iked_ca_reset.sh
 			$INSTALL -o root -g wheel -m 0640 -b src/etc/iked/ca/ca.crt /etc/iked/ca/
@@ -118,9 +113,9 @@ function conf {
 			$RCCTL enable ospfd
 			$INSTALL -o root -g wheel -m 0600 -b src/etc/ospfd.conf /etc/
 			$RCCTL start ospfd ||  error_exit "$LINENO: ERROR: OSPFD failed." ;;
-			
-			
-			
+		"ntpd")
+			$INSTALL -o root -g wheel -m 0644 -b src/etc/ntpd.conf /etc/
+			$RCCTL restart ntpd  ||  error_exit "$LINENO: ERROR: NTPD failed." ;;		
 	esac
 }
 
@@ -151,28 +146,67 @@ do
     
 done	
 echo "configuring users"
-mkdir /root/Bin
-chmod 600 /root/Bin
-mkdir /home/taglio/Bin
-conf "users"
-conf "scripts"
+ctrl=
+while [ -z $ctrl ]
+do
+	echo -n 'Go ahead type 1 '
+	read ctrl
+	if [[ "$ctrl" -eq 1 ]]; then
+		mkdir /root/Bin
+		chmod 600 /root/Bin
+		mkdir /home/taglio/Bin
+		conf "users"
+		conf "scripts"
+	else
+		error_exit "$LINENO: EXIT FROM USER." 
+	fi
+    
+done	
+hostname=
+while [ -z $ctrl ]
+do
+	echo -n 'Type the hostname '
+	read hostname
+	echo $hostname > conf/hostname
+done
+routerid=
+while [ -z $routerid ]
+do
+	echo -n 'Type the routerid '
+	read routerid
+	echo $routerid > conf/routerid
+done
+publichost=
+while [ -z $publichost ]
+do
+	echo -n 'Type the publichost '
+	read publichost
+	echo $publichost > conf/publichost
+done
 echo "configuring basic"
-conf "basic" 
+ctrl=
+while [ -z $ctrl ]
+do
+	echo -n 'Go ahead type 1 '
+	read ctrl
+	if [[ "$ctrl" -eq 1 ]]; then
+		conf "basic" 
+	else
+		error_exit "$LINENO: EXIT FROM USER." 
+	fi
+    
+done
 echo "configuring unbound"
-conf "unbound" "local"
-echo "patching system"
-conf "syspatch"
-echo "configuring IPSec MESH secure network"
-echo "please upload certificates in /home/taglio/ipsec.tar"
-conf "ipsec"
-echo "configuring GRE"
-conf "gre"
-echo "configuring PF"
-conf "pf"
-echo "configuring OSPF"
-conf "ospf"
-echo "configuring unbound network"
-conf "unbound" "network"
-echo "configuring NSD"
-conf "nsd"
-echo "configuring acme and httpd"
+ctrl=
+while [ -z $ctrl ]
+do
+	echo -n 'Go ahead type 1 '
+	read ctrl
+	if [[ "$ctrl" -eq 1 ]]; then
+		conf "unbound" "local"
+	else
+		error_exit "$LINENO: EXIT FROM USER." 
+	fi
+    
+done
+

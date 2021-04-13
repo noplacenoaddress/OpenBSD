@@ -1,10 +1,6 @@
-# https://man.openbsd.org/hostname.if
-# reset interface to its default state
 -inet
 -inet6
 dhcp
 inet6 -autoconfprivacy
 inet6 -soii
 inet6 autoconf
-# change prefixlen e.g. 56 for gateways on different network
-#inet6 alias 2001:0db8::1 64
