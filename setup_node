@@ -32,7 +32,7 @@ function pkg {
 	esac
 }
 
-function conf {
+function configuration {
 	phase=$1
 	if [[ -z "$2" ]]; then
 		subphase = $2
@@ -57,7 +57,7 @@ function conf {
 			$RCCTL enable uptimed
 			$RCCTL start uptimed
 			$INSTALL -o root -g wheel -m 0640 -b src/etc/rc.local /etc/
-			$SH /etc/rc.local ;;	
+			$SH /etc/rc.local;;	
 		"users")
 			echo "vmail, dsync, _iperfd, wwwuser"
 			$USERADD -m -u 2000 -g =uid -c "Virtual Mail" -d /var/vmail -s /sbin/nologin vmail
@@ -66,11 +66,14 @@ function conf {
 			$USERADD -m -u 2003 -g =uid -c "WWW Ftpd user" -d /var/www/htdocs -s /root/Bin/fake_shell.sh wwwftp
 			for file in src/home/taglio/Bin/*; do
 				$INSTALL -o taglio -g wheel -m 0750 -b $file /home/taglio/Bin/
-			done ;;
+			done
+			su taglio -
+			ssh-keygen -t ed25519 -N "" -f /home/taglio/.ssh/id_ed25519
+			exit;;
 		"scripts")
 			for file in src/root/Bin/*.sh; do
 				$INSTALL -o root -g wheel -m 0700 -b $file /root/Bin/
-			done ;;
+			done;;
 		"unbound")
 			$RCCTL enable unbound
 			case $subphase in 
@@ -86,8 +89,7 @@ function conf {
 					$INSTALL -o _unbound -g _unbound -m 0750 -b src/var/unbound/etc/unbound.conf /var/unbound/etc/unbound.conf
 					$INSTALL -o _unbound -g _unbound -m 0750 -b src/var/unbound/etc/stub-zone.conf /var/unbound/etc/stub-zone.conf
 					$RCCTL restart unbound ||  error_exit "$LINENO: ERROR: UNBOUND failed." ;;
-			esac
-			;;
+			esac;;
 		"ipsec")
 			iked_ca_reset.sh
 			$INSTALL -o root -g wheel -m 0640 -b src/etc/iked/ca/ca.crt /etc/iked/ca/
@@ -95,25 +97,25 @@ function conf {
 			$RCCTL enable iked
 			$RCCTL set iked flags "-vv"
 			$INSTALL -o root -g wheel -m 0640 -b src/etc/iked.conf /etc/
-			$RCCTL start iked ;;
+			$RCCTL start iked;;
 		"gre")
 			for file in src/etc/hostname.gre? ; do
 				$INSTALL -o root -g wheel -m 0700 -b $file /etc/
 				$SH /etc/netstart $(echo $file | awk -F. '{print $2}')
-			done ;;
+			done;;
 		"pf")
 			for file in src/etc/pf.* ; do
 				$INSTALL -o root -g wheel -m 0700 -b $file /etc/
 			done 
 			$PFCTL -nf /etc/pf.conf ||  error_exit "$LINENO: ERROR: PF failed."
-			$PFCTL -f /etc/pf.conf ;;
+			$PFCTL -f /etc/pf.conf;;
 		"ospf")
 			$RCCTL enable ospfd
 			$INSTALL -o root -g wheel -m 0600 -b src/etc/ospfd.conf /etc/
-			$RCCTL start ospfd ||  error_exit "$LINENO: ERROR: OSPFD failed." ;;
+			$RCCTL start ospfd ||  error_exit "$LINENO: ERROR: OSPFD failed.";;
 		"ntpd")
 			$INSTALL -o root -g wheel -m 0644 -b src/etc/ntpd.conf /etc/
-			$RCCTL restart ntpd  ||  error_exit "$LINENO: ERROR: NTPD failed." ;;		
+			$RCCTL restart ntpd  ||  error_exit "$LINENO: ERROR: NTPD failed.";;		
 	esac
 }
 
@@ -152,15 +154,14 @@ do
 	if [[ $ctrl -eq 1 ]]; then
 		if [ ! -d /root/Bin ]; then 
 			mkdir /root/Bin
-			echo "ok"
+			chmod 700 /root/Bin
 		fi
-		chmod 700 /root/Bin
 		if [ ! -d /home/taglio/Bin ]; then 
 			mkdir /home/taglio/Bin 
+			chown taglio:wheel /home/taglio/Bin
 		fi
-		chown taglio:wheel /home/taglio/Bin
-		conf "users"
-		conf "scripts"
+		configuration "users"
+		configuration "scripts"
 	else
 		error_exit "$LINENO: EXIT FROM USER." 
 	fi
@@ -211,7 +212,7 @@ do
 	echo -n 'Go ahead type 1 '
 	read ctrl
 	if [[ "$ctrl" -eq 1 ]]; then
-		conf "unbound" "local"
+		configuration "unbound" "local"
 	else
 		error_exit "$LINENO: EXIT FROM USER." 
 	fi
