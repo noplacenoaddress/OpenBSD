@@ -61,9 +61,9 @@ function conf {
 		"users")
 			echo "vmail, dsync, _iperfd, wwwuser"
 			$USERADD -m -u 2000 -g =uid -c "Virtual Mail" -d /var/vmail -s /sbin/nologin vmail
-			$USERADD -m -u 2001 -g =uid -c "Dsync Replication" -d /home/dsync -s /bin/ksh vmail
+			$USERADD -m -u 2001 -g =uid -c "Dsync Replication" -d /home/dsync -s /bin/ksh dsync
 			$USERADD -m -u 2002 -g =uid -c "Iperfd Daemon" -d /nonexistent -s /sbin/nologin _iperfd
-			$USERADD -m -u 2003 -g =uid -c "WWW Ftpd user" -d /var/www/htdocs -s /root/Bin/fake_shell.sh _iperfd
+			$USERADD -m -u 2003 -g =uid -c "WWW Ftpd user" -d /var/www/htdocs -s /root/Bin/fake_shell.sh wwwftp
 			for file in src/home/taglio/Bin/*; do
 				$INSTALL -o taglio -g wheel -m 0750 -b $file /home/taglio/Bin/
 			done
@@ -151,10 +151,11 @@ ctrl=
 while [ -z $ctrl ]
 do
 	echo -n 'Go ahead type 1 '
-	read "$ctrl"
+	read ctrl
 	if [[ "$ctrl" -eq 1 ]]; then
 		if [ ! -d /root/Bin ]; then 
 			mkdir /root/Bin
+			echo "ok"
 		fi
 		chmod 700 /root/Bin
 		if [ ! -d /home/taglio/Bin ]; then 
