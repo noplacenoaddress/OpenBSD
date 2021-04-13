@@ -160,7 +160,6 @@ do
 		if [ ! -d /home/taglio/Bin ]; then 
 			mkdir /home/taglio/Bin 
 		fi
-		mkdir /home/taglio/Bin
 		chown taglio:wheel /home/taglio/Bin
 		conf "users"
 		conf "scripts"
