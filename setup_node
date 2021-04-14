@@ -130,6 +130,7 @@ function configuration {
 					$INSTALL -o _unbound -g _unbound -m 0750 -b src/var/unbound/etc/unbound-local.conf /var/unbound/etc/unbound.conf
 					$INSTALL -o _unbound -g _unbound -m 0750 -b src/var/unbound/etc/remote-control.conf /var/unbound/etc/
 					$INSTALL -o _unbound -g _unbound -m 0750 -b src/var/unbound/etc/forward-zone.conf /var/unbound/etc/
+					$RCCTL start unbound ||  error_exit "$LINENO: ERROR: UNBOUND failed."
 					cleanold "/var/unbound/etc/";;
 				"network")
 					$INSTALL -o _unbound -g _unbound -m 0750 -b src/var/unbound/etc/unbound.conf /var/unbound/etc/unbound.conf
@@ -200,7 +201,9 @@ do
 		error_exit "$LINENO: EXIT FROM USER." 
 	fi
     
-done	
+done
+$RCCTL disable sndiod
+$RCCTL disable check_quotas	
 echo "configuring users"
 ctrl=
 while [ -z $ctrl ]
