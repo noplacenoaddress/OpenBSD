@@ -53,6 +53,9 @@ function cleanold {
 	done
 }
 
+function startnet {
+	$SH /etc/netstart $1
+}
 function configuration {
 	phase=$1
 	if [[ $# -eq 2 ]]; then
@@ -83,8 +86,8 @@ function configuration {
 			$RCCTL start uptimed
 			$INSTALL -o root -g wheel -m 0640 -b src/etc/rc.local /etc/
 			cleanold "/etc/"
-			$SH /etc/netstart vio0 
-			$SH /etc/netstart vether0
+			startnet vio0 
+			startnet vether0
 			$SH /etc/rc.local;;	
 		"users")
 			echo "vmail, dsync, _iperfd, wwwuser"
