@@ -19,6 +19,7 @@ app=$(basename $0)
 backups="/root/Backups"
 publicip=$(ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
 dyndns=$(host -t a cat-01.hopto.org | cut -d ' ' -f4)
+basedir=$(pwd)
 
 INSTALL=/usr/bin/install
 RCCTL=/usr/sbin/rcctl
@@ -86,8 +87,10 @@ function configuration {
 			$RCCTL start uptimed
 			$INSTALL -o root -g wheel -m 0640 -b src/etc/rc.local /etc/
 			cleanold "/etc/"
+			cd /tmp
 			nohup $SH /etc/netstart vio0 & 
 			nohup $SH /etc/netstart vether0 &
+			cd $basedir
 			$SH /etc/rc.local;;	
 		"users")
 			echo "vmail, dsync, _iperfd, wwwuser"
@@ -290,7 +293,8 @@ do
 done
 echo -n "configuring ipsec \
 	\nplease add ${publichost} to \
-	\n/etc/pf.conf/table.ipsec and reload it!"
+	\n/etc/pf.conf/table.ipsec \
+	\n to the others nodes and reload them!"
 ctrl=
 while [ -z $ctrl ]
 do
