@@ -58,11 +58,15 @@ function configuration {
 		"basic")
 			echo "dot files"
 			for file in src/home/taglio/.*; do
-				$INSTALL -o taglio -g wheel -m 0750 -b $file /home/taglio/ 
+				if [[ -e "$file" ]]; then
+					$INSTALL -o taglio -g wheel -m 0750 -b $file /home/taglio/ 
+				fi
 			done
 			cleanold "/home/taglio/"
 			for file in src/root/.*; do
-				$INSTALL -o root -g wheel -m 0750 -b $file /root/
+				if [[ -e "$file" ]]; then
+					$INSTALL -o root -g wheel -m 0750 -b $file /root/
+				fi
 			done
 			cleanold "/root/"
 			echo "dhclient, resolv.conf.tail and doas.conf"
@@ -93,15 +97,19 @@ function configuration {
 				$USERADD -u 2003 -g =uid -c "WWW Ftpd user" -d /var/www/htdocs -s /root/Bin/fake_shell.sh wwwftp
 			fi
 			for file in src/home/taglio/Bin/*; do
-				$INSTALL -o taglio -g wheel -m 0750 -b $file /home/taglio/Bin/
-				mv $file $backups
+				if [[ -e "$file" ]]; then
+					$INSTALL -o taglio -g wheel -m 0750 -b $file /home/taglio/Bin/
+					mv $file $backups
+				fi
 			done
 			if [[ ! -e /home/taglio/.ssh/id_ed25519 ]]; then
 				$DOAS -u taglio $SSHKEYGEN -t ed25519 -N "" -f /home/taglio/.ssh/id_ed25519
 			fi;;
 		"scripts")
 			for file in src/root/Bin/*.sh; do
-				$INSTALL -o root -g wheel -m 0700 -b $file /root/Bin/
+				if [[ -e "$file" ]]; then
+					$INSTALL -o root -g wheel -m 0700 -b $file /root/Bin/
+				fi
 			done
 			cleanold "/root/Bin/";;
 		"unbound")
@@ -133,15 +141,19 @@ function configuration {
 			cleanold "/etc/";;
 		"gre")
 			for file in src/etc/hostname.gre? ; do
-				$INSTALL -o root -g wheel -m 0700 -b $file /etc/
-				cleanold "/etc/"
-				$SH /etc/netstart $(echo $file | awk -F. '{print $2}')
-			done;;
+				if [[ -e "$file" ]]; then
+					$INSTALL -o root -g wheel -m 0700 -b $file /etc/
+					$SH /etc/netstart $(echo $file | awk -F. '{print $2}')
+				fi
+			done
+			cleanold "/etc/";;
 		"pf")
 			for file in src/etc/pf.* ; do
-				$INSTALL -o root -g wheel -m 0700 -b $file /etc/
-				cleanold "/etc/"
+				if [[ -e "$file" ]]; then
+					$INSTALL -o root -g wheel -m 0700 -b $file /etc/
+				fi
 			done 
+			cleanold "/etc/"
 			$PFCTL -nf /etc/pf.conf ||  error_exit "$LINENO: ERROR: PF failed."
 			$PFCTL -f /etc/pf.conf;;
 		"ospf")
