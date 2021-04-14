@@ -16,7 +16,7 @@ PasswordAuthentication	no
 UseDNS yes
 
 
-Subsystem	sftp	/usr/libexec/sftp-server
+Subsystem	sftp	internal-sftp 
 
 Match Group wheel
 	AllowTcpForwarding yes
@@ -26,3 +26,15 @@ Match User dsync
 	PasswordAuthentication no
 	Banner none
 
+Match User pauth
+	AllowTcpForwarding no
+	ClientAliveInterval 15 # default 0
+	ClientAliveCountMax 3 # default 3
+	ForceCommand /sbin/nologin # disable sftp
+
+Match User psftp
+	AllowTcpForwarding no
+	ClientAliveInterval 15 # default 0
+	ClientAliveCountMax 3 # default 3
+	ForceCommand internal-sftp
+	ChrootDirectory %h
