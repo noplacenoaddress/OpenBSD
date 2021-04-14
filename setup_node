@@ -42,10 +42,14 @@ function pkg {
 function cleanold {
 	directory=$1
 	for file in $directory*.old; do
-		mv $file $backups
+		if [[ -e "$file" ]]; then
+			mv $file $backups
+		fi
 	done
 	for file in $directory.*.old; do
-		mv $file $backups
+		if [[ -e "$file" ]]; then
+			mv $file $backups
+		fi
 	done
 }
 
