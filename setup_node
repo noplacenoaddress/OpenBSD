@@ -29,6 +29,8 @@ SH=/bin/ksh
 GETENT=/usr/bin/getent
 SSHKEYGEN=/usr/bin/ssh-keygen
 DOAS=/usr/bin/doas
+WGET=/usr/local/bin/wget
+CHOWN=/sbin/chown
 
 function pkg {
 	phase=$1
@@ -84,8 +86,8 @@ function configuration {
 			$RCCTL start uptimed
 			$INSTALL -o root -g wheel -m 0640 -b src/etc/rc.local /etc/
 			cleanold "/etc/"
-			$SH /etc/netstart vio0 & 
-			$SH /etc/netstart vether0 &
+			nohup $SH /etc/netstart vio0 & 
+			nohup $SH /etc/netstart vether0 &
 			$SH /etc/rc.local;;	
 		"users")
 			echo "vmail, dsync, _iperfd, wwwuser"
@@ -122,9 +124,9 @@ function configuration {
 			case $subphase in 
 				"local")
 					unbound-anchor -a /var/unbound/db/root.key
-					wget https://www.internic.net/domain/named.root -O /var/unbound/db/root.hints
+					$WGET --no-check-certificate https://192.0.47.9/domain/named.root -O /var/unbound/db/root.hints
 					$INSTALL -o _unbound -g _unbound -m 0750 -b src/var/unbound/db/ca-certificates.crt /var/unbound/db/
-					chown _unbound:_unbound /var/unbound/db/*
+					$CHOWN _unbound:_unbound /var/unbound/db/*
 					$INSTALL -o _unbound -g _unbound -m 0750 -b src/var/unbound/etc/unbound-local.conf /var/unbound/etc/unbound.conf
 					$INSTALL -o _unbound -g _unbound -m 0750 -b src/var/unbound/etc/remote-control.conf /var/unbound/etc/
 					$INSTALL -o _unbound -g _unbound -m 0750 -b src/var/unbound/etc/forward-zone.conf /var/unbound/etc/
