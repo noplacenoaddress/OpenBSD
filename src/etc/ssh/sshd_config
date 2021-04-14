@@ -4,6 +4,7 @@ AllowGroups wheel dsync
 
 ListenAddress /PUBLICIP/
 ListenAddress /ROUTERID/
+ListenAddress ::1
 
 HostKey /etc/ssh/ssh_host_ed25519_key
 
