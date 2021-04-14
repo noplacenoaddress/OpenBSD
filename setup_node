@@ -3,7 +3,7 @@
 #	$Telecomlobby: setup_node,v 0.1 11/3/2021 21:01:04 taglio$
 #
 #unbound: https://blog.c6h12o6.org/post/unbound-dnssec-dns-over-tls/
-#sshd: https://github.com/vedetta-com/vedetta/blob/master/src/usr/local/share/doc/vedetta/OpenSSH_Principals.md
+#sshd: https://github.com/vedetta-com/vedetta/blob/master/src/usr/local/share/doc/vedetta/OpenSSH_Principals.md	
 
 
 set -o errexit
@@ -216,6 +216,7 @@ do
     
 done
 $RCCTL disable sndiod
+$RCCTL stop sndiod
 $RCCTL disable check_quotas	
 echo "configuring users"
 ctrl=
@@ -313,14 +314,15 @@ echo -n "configuring ssh \
 	\nto the others nodes \
 	\nplease add \
 	\n${sshfp} \
-	\nto /var/nsd/zones/master/telecom.lobby.zone in cyberanarkhia"
+	\nto /var/nsd/zones/master/telecom.lobby.zone in cyberanarkhia \
+	\n"
 ctrl=
 while [ -z $ctrl ]
 do
 	echo -n 'Go ahead type 1 '
 	read ctrl
 	if [[ "$ctrl" -eq 1 ]]; then
-		configuration "ssh" "public"
+		configuration "ssh"
 	else
 		error_exit "$LINENO: EXIT FROM USER." 
 	fi
@@ -328,7 +330,8 @@ done
 echo -n "configuring ipsec \
 	\nplease add ${publicip}/32 to \
 	\n/etc/pf.conf/table.ipsec \
-	\nto the others nodes and reload them!"
+	\nto the others nodes and reload them! \
+	\n"
 ctrl=
 while [ -z $ctrl ]
 do
