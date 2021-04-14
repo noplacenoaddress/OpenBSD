@@ -1,0 +1,28 @@
+#	$OpenBSD: sshd_config,v 1.103 2018/04/09 20:41:22 tj Exp $
+
+AllowGroups wheel dsync
+
+ListenAddress /PUBLICIP/
+ListenAddress /ROUTERID/
+
+HostKey /etc/ssh/ssh_host_ed25519_key
+
+PermitRootLogin no
+PubkeyAuthentication yes
+AuthorizedKeysFile	.ssh/authorized_keys
+
+
+PasswordAuthentication	no
+UseDNS yes
+
+
+Subsystem	sftp	/usr/libexec/sftp-server
+
+Match Group wheel
+	AllowTcpForwarding yes
+
+Match User dsync
+	AllowTcpForwarding no
+	PasswordAuthentication no
+	Banner none
+
