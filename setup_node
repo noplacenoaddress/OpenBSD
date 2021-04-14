@@ -49,7 +49,7 @@ function cleanold {
 	for file in $directory.*.old; do
 		if [[ -e "$file" ]]; then
 			mv $file $backups
-		fi
+		fi	
 	done
 }
 
@@ -63,29 +63,29 @@ function configuration {
 			echo "dot files"
 			for file in src/home/taglio/.*; do
 				if [[ -e "$file" ]]; then
-					$INSTALL -o taglio -g wheel -m 0750 -b $file /home/taglio/ 
+					$INSTALL -o taglio -g wheel -m 0640 -b $file /home/taglio/ 
 				fi
 			done
 			cleanold "/home/taglio/"
 			for file in src/root/.*; do
 				if [[ -e "$file" ]]; then
-					$INSTALL -o root -g wheel -m 0750 -b $file /root/
+					$INSTALL -o root -g wheel -m 0640 -b $file /root/
 				fi
 			done
 			cleanold "/root/"
 			echo "dhclient, resolv.conf.tail and doas.conf"
 			$INSTALL -o root -g wheel -m 0644 -b src/etc/{dhclient.conf,resolv.conf.tail,doas.conf} /etc/
 			$INSTALL -o root -g wheel -m 0640 -b src/etc/hostname.vio0 /etc/
-			$SH /etc/netstart vio0
 			echo "vether"
 			$INSTALL -o root -g wheel -m 0644 -b src/etc/hostname.vether0 /etc/
-			$SH /etc/netstart vether0 
 			echo "configuring iperf uptimed and oidentd"
 			$RCCTL enable uptimed
 			$RCCTL start uptimed
 			$INSTALL -o root -g wheel -m 0640 -b src/etc/rc.local /etc/
 			$SH /etc/rc.local
-			cleanold "/etc/";;	
+			cleanold "/etc/"
+			$SH /etc/netstart vio0 
+			$SH /etc/netstart vether0;;	
 		"users")
 			echo "vmail, dsync, _iperfd, wwwuser"
 			if ! $GETENT passwd vmail 1>&-; then 
