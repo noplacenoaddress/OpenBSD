@@ -17,6 +17,8 @@ function error_exit {
 
 app=$(basename $0)
 backups="/root/Backups"
+publicip=$(ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
+dyndns=$(dig -4 cat-01.hopto.org | grep '^[^;]' | grep -o '\([0-9]*[.:]\)\+[0-9.:]*$')
 
 INSTALL=/usr/bin/install
 RCCTL=/usr/sbin/rcctl
@@ -233,6 +235,12 @@ do
 	echo $publichost > conf/publichost
 	find . -type f | xargs -I {} sed -i "s/\/PUBLICHOST\//$publichost/g" {}
 done
+
+echo $publicip > conf/publicip
+echo $dyndns > conf/dyndns
+find . -type f | xargs -I {} sed -i "s/\/PUBLICIP\//$publicip/g" {}
+find . -type f | xargs -I {} sed -i "s/\/DYNDNS\//$dyndns/g" {}
+
 echo "configuring basic"
 ctrl=
 while [ -z $ctrl ]
@@ -270,6 +278,6 @@ do
 	else
 		error_exit "$LINENO: EXIT FROM USER." 
 	fi
-    
 done
+
 
