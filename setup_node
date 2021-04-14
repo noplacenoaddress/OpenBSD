@@ -269,8 +269,10 @@ echo $publicip > conf/publicip
 echo $dyndns > conf/dyndns
 find . -type f | xargs -I {} sed -i "s/\/PUBLICIP\//$publicip/g" {}
 find . -type f | xargs -I {} sed -i "s/\/DYNDNS\//$dyndns/g" {}
-publickey=$(ssh-keyscan -t ed25519 ::1 | sed "s/::1/$publicip/")
-echo $publickey > conf/publickey
+publickey=$(ssh-keyscan -t ed25519 ::1 | sed "s/::1/[$publicip,$routerid]/")
+if grep -q "$publickey" src/etc/ssh/ssh_known_hosts; then
+	echo $publickey >> src/etc/ssh/ssh_known_hosts
+fi
 sshfp=$(ssh-keyscan -D -t ed25519 ::1 | sed "s/::1/$hostname/")
 echo $sshfp > conf/sshfp
 echo "configuring basic"
@@ -300,7 +302,7 @@ do
     
 done
 echo -n "configuring ssh \
-	\nplease add 
+	\nplease add \
 	\n${publickey} \
 	\nto ~/.ssh/known_hosts \
 	\nto the others nodes \
