@@ -157,6 +157,11 @@ function configuration {
 			ssl_pk12_cert_pub_priv_extract.sh $subphase.p12
 			$RCCTL enable iked
 			$RCCTL set iked flags "-vv"
+			for file in src/etc/iked.conf* ; do
+				if [[ -e "$file" ]]; then
+					$INSTALL -o root -g wheel -m 0700 -b $file /etc/
+				fi
+			done
 			$INSTALL -o root -g wheel -m 0640 -b src/etc/iked.conf /etc/
 			$RCCTL start iked
 			cleanold "/etc/";;
