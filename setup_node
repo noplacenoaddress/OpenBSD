@@ -294,7 +294,7 @@ done
 echo -n "configuring ipsec \
 	\nplease add ${publichost} to \
 	\n/etc/pf.conf/table.ipsec \
-	\n to the others nodes and reload them!"
+	\nto the others nodes and reload them!"
 ctrl=
 while [ -z $ctrl ]
 do
