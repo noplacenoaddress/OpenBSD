@@ -144,8 +144,13 @@ function configuration {
 					cleanold "/var/unbound/etc/";;
 			esac;;
 		"ssh") 
-			
-			;;
+			for file in src/etc/ssh/*; do
+				if [[ -e "$file" ]]; then
+					$INSTALL -o root -g wheel -m 0650 -b $file /etc/ssh/
+				fi
+			done
+			$RCCTL restart sshd ||  error_exit "$LINENO: ERROR: UNBOUND failed."
+			cleanold "/etc/ssh/";;
 		"ipsec")
 			iked_ca_reset.sh
 			$INSTALL -o root -g wheel -m 0640 -b src/etc/iked/ca/ca.crt /etc/iked/ca/
