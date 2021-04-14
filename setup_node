@@ -288,7 +288,9 @@ do
 	fi
     
 done
-echo "configuring ipsec"
+echo -n "configuring ipsec \
+	\nplease add ${publichost} to \
+	\n/etc/pf.conf/table.ipsec and reload it!"
 ctrl=
 while [ -z $ctrl ]
 do
