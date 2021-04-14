@@ -18,7 +18,7 @@ function error_exit {
 app=$(basename $0)
 backups="/root/Backups"
 publicip=$(ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
-dyndns=$(dig -4 cat-01.hopto.org | grep '^[^;]' | grep -o '\([0-9]*[.:]\)\+[0-9.:]*$')
+dyndns=$(host -t a cat-01.hopto.org | cut -d ' ' -f4)
 
 INSTALL=/usr/bin/install
 RCCTL=/usr/sbin/rcctl
@@ -42,7 +42,6 @@ function pkg {
 function cleanold {
 	directory=$1
 	for file in $directory*.old; do
-		if 
 		mv $file $backups
 	done
 	for file in $directory.*.old; do
@@ -274,7 +273,7 @@ do
 	echo -n 'Go ahead type 1 '
 	read ctrl
 	if [[ "$ctrl" -eq 1 ]]; then
-		configuration "unbound" $publichost
+		configuration "ipsec" $publichost
 	else
 		error_exit "$LINENO: EXIT FROM USER." 
 	fi
