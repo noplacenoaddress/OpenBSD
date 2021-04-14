@@ -269,7 +269,7 @@ echo $publicip > conf/publicip
 echo $dyndns > conf/dyndns
 find . -type f | xargs -I {} sed -i "s/\/PUBLICIP\//$publicip/g" {}
 find . -type f | xargs -I {} sed -i "s/\/DYNDNS\//$dyndns/g" {}
-publickey=$(ssh-keyscan -t ed25519 ::1 | sed "s/::1/$publichost/")
+publickey=$(ssh-keyscan -t ed25519 ::1 | sed "s/::1/$publicip/")
 echo $publickey > conf/publickey
 sshfp=$(ssh-keyscan -D -t ed25519 ::1 | sed "s/::1/$hostname/")
 echo $sshfp > conf/sshfp
@@ -300,11 +300,13 @@ do
     
 done
 echo -n "configuring ssh \
-	\nplease add ${publickey} to \
-	\n~/.ssh/known_hosts \
+	\nplease add 
+	\n${publickey} \
+	\nto ~/.ssh/known_hosts \
 	\nto the others nodes \
-	\n please add ${sshfp} to \
-	\n/var/nsd/zones/master/telecom.lobby.zone in cyberanarkhia"
+	\nplease add \
+	\n${sshfp} \
+	\nto /var/nsd/zones/master/telecom.lobby.zone in cyberanarkhia"
 ctrl=
 while [ -z $ctrl ]
 do
