@@ -82,10 +82,10 @@ function configuration {
 			$RCCTL enable uptimed
 			$RCCTL start uptimed
 			$INSTALL -o root -g wheel -m 0640 -b src/etc/rc.local /etc/
-			$SH /etc/rc.local
 			cleanold "/etc/"
 			$SH /etc/netstart vio0 
-			$SH /etc/netstart vether0;;	
+			$SH /etc/netstart vether0
+			$SH /etc/rc.local;;	
 		"users")
 			echo "vmail, dsync, _iperfd, wwwuser"
 			if ! $GETENT passwd vmail 1>&-; then 
