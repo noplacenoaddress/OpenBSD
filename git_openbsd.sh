@@ -2,16 +2,16 @@
 
 DATE=$(date +%d%m%Y)
 DATE_RELEASE=$(date +"%d/%m/%Y %H:%m:%S")
-
-echo "updating date in scripts"
-sed '3 s/.*/#	Telecomlobby: setup_node,v 0.1 `echo $DATE_RELEASE` taglio $/' /home/riccardo/Work/telecom.lobby/OpenBSD/setup_node
+HOMEWRKWRK="/HOMEWRK/riccardo/Work/telecom.lobby"
+REPO="/OpenBSD-private-CA"
+RELEASE="/OpenBSD$DATE.tar"
 
 echo "creating tar release"
-rm -rf /home/riccardo/Work/telecom.lobby/OpenBSD/OpenBSD.tar
-tar --exclude='/home/riccardo/Work/telecom.lobby/OpenBSD/.git/*' -cvf /home/riccardo/Work/OpenBSD.tar /home/riccardo/Work/telecom.lobby/OpenBSD/
+rm -rf "$HOMEWRK$RELEASE"
+tar --exclude="$HOMEWRK$REPO/.git/*" -cvf "$HOMEWRK$RELEASE" "$HOMEWRK$REPO"
 
 echo "git add, commit, sign and push"
-cd /home/riccardo/Work/telecom.lobby/OpenBSD/
+cd "$HOMEWRK$REPO"
 echo "check branch"
 BRANCHCTRL=$(git branch | grep $DATE)
 if [ -z "${BRANCHCTRL}" ]
