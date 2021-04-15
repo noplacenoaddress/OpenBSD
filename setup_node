@@ -11,6 +11,11 @@ set -o nounset
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin:/root/Bin
 
+if [[ $UID -ne 0 ]]; then
+	print $0 "you've got to run $0 as UID=0 \n"
+	exit 1
+fi
+
 function error_exit {
     echo "${app}: ${1:-"Unknown Error"}" 1>&2
     exit 1
