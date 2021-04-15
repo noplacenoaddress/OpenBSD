@@ -159,7 +159,7 @@ function configuration {
 			$RCCTL set iked flags "-vv"
 			for file in src/etc/iked.conf* ; do
 				if [[ -e "$file" ]]; then
-					$INSTALL -o root -g wheel -m 0700 -b $file /etc/
+					$INSTALL -o root -g wheel -m 0640 -b $file /etc/
 				fi
 			done
 			$INSTALL -o root -g wheel -m 0640 -b src/etc/iked.conf /etc/
