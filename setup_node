@@ -130,7 +130,8 @@ function configuration {
 			cleanold "/root/Bin/"
 			;;
 		"unbound")
-			if [[ -z pidof "unbound" ]]; then
+			pidof_unbound=$(pidof "unbound")
+			if [[ -z $pidof_unbound ]]; then
 				rcctl enable unbound
 			fi
 			case $subphase in 
