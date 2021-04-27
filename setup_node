@@ -121,7 +121,8 @@ function configuration {
 			done
 			if [[ ! -e /home/taglio/.ssh/id_ed25519 ]]; then
 				doas -u taglio ssh-keygen -t ed25519 -N "" -f /home/taglio/.ssh/id_ed25519
-			fi;;
+			fi
+			;;
 		"scripts")
 			for file in src/root/Bin/*.sh; do
 				if [[ -e "$file" ]]; then
@@ -161,13 +162,10 @@ function configuration {
 			esac
 			;;
 		"ssh") 
-			for file in src/etc/ssh/*; do
-				if [[ -e "$file" ]]; then
-					install -o root -g wheel -m 0650  $file /etc/ssh/
-				fi
-			done
-			rcctl restart sshd ||  error_exit "$LINENO: ERROR: UNBOUND failed."
-			cleanold "/etc/ssh/";;
+			cp -r "src/etc/ssh/"* "/etc/ssh/"
+			rcctl restart sshd ||  error_exit "$LINENO: ERROR: SSHD failed."
+			cleanold "/etc/ssh/"
+			;;
 		"ipsec")
 			iked_ca_reset.sh
 			install -o root -g wheel -m 0640  src/etc/iked/ca/ca.crt /etc/iked/ca/
@@ -181,7 +179,8 @@ function configuration {
 			done
 			install -o root -g wheel -m 0640  src/etc/iked.conf /etc/
 			rcctl start iked
-			cleanold "/etc/";;
+			cleanold "/etc/"
+			;;
 		"gre")
 			for file in src/etc/hostname.gre? ; do
 				if [[ -e "$file" ]]; then
@@ -189,7 +188,8 @@ function configuration {
 					sh	 /etc/netstart $(echo $file | awk -F. '{print $2}')
 				fi
 			done
-			cleanold "/etc/";;
+			cleanold "/etc/"
+			;;
 		"pf")
 			for file in src/etc/pf.* ; do
 				if [[ -e "$file" ]]; then
@@ -198,16 +198,19 @@ function configuration {
 			done 
 			cleanold "/etc/"
 			pfctl -nf /etc/pf.conf ||  error_exit "$LINENO: ERROR: PF failed."
-			pfctl -f /etc/pf.conf;;
+			pfctl -f /etc/pf.conf
+			;;
 		"ospf")
 			rcctl enable ospfd
 			install -o root -g wheel -m 0600  src/etc/ospfd.conf /etc/
 			cleanold "/etc/"
-			rcctl start ospfd ||  error_exit "$LINENO: ERROR: OSPFD failed.";;
+			rcctl start ospfd ||  error_exit "$LINENO: ERROR: OSPFD failed."
+			;;
 		"ntpd")
 			install -o root -g wheel -m 0644  src/etc/ntpd.conf /etc/
 			cleanold "/etc/"
-			rcctl restart ntpd  ||  error_exit "$LINENO: ERROR: NTPD failed.";;		
+			rcctl restart ntpd  ||  error_exit "$LINENO: ERROR: NTPD failed."
+			;;		
 	esac
 }
 
