@@ -1,2 +1,4 @@
-up
+-inet
+-inet6
+lladdr random
 inet /ROUTERID/
