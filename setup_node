@@ -94,8 +94,8 @@ function configuration {
 			install -o root -g wheel -m 0640  src/etc/rc.local /etc/
 			cleanold "/etc/"
 			cd /tmp
-			nohup $SH /etc/netstart vio0 & 
-			nohup $SH /etc/netstart vether0 &
+			nohup sh /etc/netstart vio0 & 
+			nohup sh /etc/netstart vether0 &
 			cd $basedir
 			sh /etc/rc.local
 			;;	
