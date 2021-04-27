@@ -118,7 +118,7 @@ function configuration {
 				fi
 			done
 			if [[ ! -e /home/taglio/.ssh/id_ed25519 ]]; then
-				doas -u taglio $SSHKEYGEN -t ed25519 -N "" -f /home/taglio/.ssh/id_ed25519
+				doas -u taglio ssh-keygen -t ed25519 -N "" -f /home/taglio/.ssh/id_ed25519
 			fi;;
 		"scripts")
 			for file in src/root/Bin/*.sh; do
@@ -183,7 +183,7 @@ function configuration {
 			for file in src/etc/hostname.gre? ; do
 				if [[ -e "$file" ]]; then
 					install -o root -g wheel -m 0700  $file /etc/
-					$SH /etc/netstart $(echo $file | awk -F. '{print $2}')
+					sh	 /etc/netstart $(echo $file | awk -F. '{print $2}')
 				fi
 			done
 			cleanold "/etc/";;
