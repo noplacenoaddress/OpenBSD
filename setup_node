@@ -83,7 +83,8 @@ function configuration {
 			echo "vether"
 			install -o root -g wheel -m 0644  src/etc/hostname.vether0 /etc/
 			echo "configuring iperf uptimed and oidentd"
-			if [[ -z pidof "uptimed" ]]; then
+			pidof_uptimed=$(pidof "uptimed")
+			if [[ -z $pidof_uptimed ]]; then
 				rcctl enable uptimed
 				rcctl start uptimed || error_exit "$LINENO: ERROR: UPTIMED failed."
 			else
