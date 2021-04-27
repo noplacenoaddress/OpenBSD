@@ -1,0 +1,3 @@
+next_part "Checking packages:"
+pkg_add -su
+
