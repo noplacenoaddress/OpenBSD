@@ -83,7 +83,8 @@ function configuration {
 			echo "vether"
 			install -o root -g wheel -m 0644  src/etc/hostname.vether0 /etc/
 			echo "configuring iperf uptimed and oidentd"
-			if [[ -z pidof "uptimed" ]]; then
+			pidof_uptimed=$(pidof "uptimed")
+			if [[ -z $pidof_uptimed ]]; then
 				rcctl enable uptimed
 				rcctl start uptimed || error_exit "$LINENO: ERROR: UPTIMED failed."
 			else
@@ -118,7 +119,7 @@ function configuration {
 				fi
 			done
 			if [[ ! -e /home/taglio/.ssh/id_ed25519 ]]; then
-				doas -u taglio $SSHKEYGEN -t ed25519 -N "" -f /home/taglio/.ssh/id_ed25519
+				doas -u taglio ssh-keygen -t ed25519 -N "" -f /home/taglio/.ssh/id_ed25519
 			fi;;
 		"scripts")
 			for file in src/root/Bin/*.sh; do
@@ -183,7 +184,7 @@ function configuration {
 			for file in src/etc/hostname.gre? ; do
 				if [[ -e "$file" ]]; then
 					install -o root -g wheel -m 0700  $file /etc/
-					$SH /etc/netstart $(echo $file | awk -F. '{print $2}')
+					sh	 /etc/netstart $(echo $file | awk -F. '{print $2}')
 				fi
 			done
 			cleanold "/etc/";;
