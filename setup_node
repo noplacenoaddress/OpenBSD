@@ -161,13 +161,10 @@ function configuration {
 			esac
 			;;
 		"ssh") 
-			for file in src/etc/ssh/*; do
-				if [[ -e "$file" ]]; then
-					install -o root -g wheel -m 0650  $file /etc/ssh/
-				fi
-			done
-			rcctl restart sshd ||  error_exit "$LINENO: ERROR: UNBOUND failed."
-			cleanold "/etc/ssh/";;
+			cp -r src/etc/ssh/ /etc/ssh/
+			rcctl restart sshd ||  error_exit "$LINENO: ERROR: SSHD failed."
+			cleanold "/etc/ssh/"
+			;;
 		"ipsec")
 			iked_ca_reset.sh
 			install -o root -g wheel -m 0640  src/etc/iked/ca/ca.crt /etc/iked/ca/
