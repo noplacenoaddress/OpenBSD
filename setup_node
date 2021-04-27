@@ -3,7 +3,7 @@
 #	$Telecomlobby: setup_node,v 0.1 11/3/2021 21:01:04 taglio$
 #
 #unbound: https://blog.c6h12o6.org/post/unbound-dnssec-dns-over-tls/
-#sshd: https://github.com/vedetta-com/vedetta/blob/master/src/usr/local/share/doc/vedetta/OpenSSH_Principals.md	
+#sshd: 			
 
 
 set -o errexit
@@ -27,6 +27,7 @@ backups="/root/Backups"
 publicip=$(ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
 dyndns=$(host -t a cat-01.hopto.org | cut -d ' ' -f4)
 basedir=$(pwd)
+tmpdir=$(mktemp -d)
 
 
 function pidof {
@@ -163,7 +164,12 @@ function configuration {
 			;;
 		"ssh") 
 			cp -r "src/etc/ssh/"* "/etc/ssh/"
+			mv /etc/ssh/sshd_config /etc/ssh/sshd_config.ca
+			mv /etc/ssh/sshd_public /etc/ssh/sshd_config
 			rcctl restart sshd ||  error_exit "$LINENO: ERROR: SSHD failed."
+			echo -e 'wheel' > /etc/ssh/ca/principals/taglio
+			cd $tmpdir
+			tar xvf "/tmp/"CA_transfer.tar .
 			cleanold "/etc/ssh/"
 			;;
 		"ipsec")
