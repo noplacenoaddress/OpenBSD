@@ -38,7 +38,8 @@ function pkg {
 
 	case $phase in
 		"shell")
-			pkg_add colorls nano wget fping iperf uptimed oidentd;;
+			pkg_add colorls nano wget fping iperf uptimed oidentd
+			;;
 	esac
 }
 
@@ -236,6 +237,12 @@ do
 	fi
     
 done
+echo "installing automatic update \n"
+if [[ ! -e "/etc/daily.local" ]]; then
+	install -o root -g wheel -m 0640  src/etc/daily.local /etc/
+elif ! grep -q "pkg_add" "/etc/daily.local"; then
+	cat src/etc/daily.local >> "/etc/daily.local"
+fi
 rcctl disable sndiod
 rcctl stop sndiod
 rcctl disable check_quotas	
