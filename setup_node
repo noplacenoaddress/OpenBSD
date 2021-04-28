@@ -177,20 +177,18 @@ function configuration {
 			\n${sshfp} \
 			\nto /var/nsd/zones/master/telecom.lobby.zone in cyberanarkhia \
 			\n"
-			case $subphase in
-				"public")
-					cp -r "src/etc/ssh/"* "/etc/ssh/"
-					mv /etc/ssh/sshd_config /etc/ssh/sshd_config.ca
-					mv /etc/ssh/sshd_public /etc/ssh/sshd_config
-					rcctl restart sshd ||  error_exit "$LINENO: ERROR: SSHD failed."
-					echo -e 'wheel' > /etc/ssh/ca/principals/taglio
-					cd $tmpdir
-					tar xvf "/tmp/"CA_transfer.tar .
-					cleanold "/etc/ssh/"
-				;;
-				"vpn")
-				;;
-			esac
+			ctrl=
+			while [ -z $ctrl ]
+			do
+				echo -n 'waiting.. press 1 when done '
+				read ctrl
+				if [[ "$ctrl" -eq 1 ]]; then
+					cd "$basedir/../"
+				else
+					error_exit "$LINENO: EXIT FROM USER." 
+				fi
+			    
+			done
 			;;
 		"ipsec")
 			iked_ca_reset.sh
