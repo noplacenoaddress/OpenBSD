@@ -163,6 +163,20 @@ function configuration {
 			esac
 			;;
 		"ssh") 
+			publickey=$(ssh-keyscan -t ed25519 ::1 | sed "s/::1/[$publicip,$routerid]/")
+			if grep -q "$publickey" src/etc/ssh/ssh_known_hosts; then
+				echo $publickey >> src/etc/ssh/ssh_known_hosts
+			fi
+			sshfp=$(ssh-keyscan -D -t ed25519 ::1 | sed "s/::1/$hostname/")
+			echo $sshfp > conf/sshfp
+			echo -n "please add \
+			\n${publickey} \
+			\nto ~/.ssh/known_hosts \
+			\nto the others nodes \
+			\nplease add \
+			\n${sshfp} \
+			\nto /var/nsd/zones/master/telecom.lobby.zone in cyberanarkhia \
+			\n"
 			case $subphase in
 				"public")
 					cp -r "src/etc/ssh/"* "/etc/ssh/"
@@ -318,12 +332,8 @@ echo $publicip > conf/publicip
 echo $dyndns > conf/dyndns
 find . -type f | xargs -I {} sed -i "s/\/PUBLICIP\//$publicip/g" {}
 find . -type f | xargs -I {} sed -i "s/\/DYNDNS\//$dyndns/g" {}
-publickey=$(ssh-keyscan -t ed25519 ::1 | sed "s/::1/[$publicip,$routerid]/")
-if grep -q "$publickey" src/etc/ssh/ssh_known_hosts; then
-	echo $publickey >> src/etc/ssh/ssh_known_hosts
-fi
-sshfp=$(ssh-keyscan -D -t ed25519 ::1 | sed "s/::1/$hostname/")
-echo $sshfp > conf/sshfp
+
+
 echo "configuring basic"
 ctrl=
 while [ -z $ctrl ]
@@ -350,15 +360,7 @@ do
 	fi
     
 done
-echo -n "configuring ssh \
-	\nplease add \
-	\n${publickey} \
-	\nto ~/.ssh/known_hosts \
-	\nto the others nodes \
-	\nplease add \
-	\n${sshfp} \
-	\nto /var/nsd/zones/master/telecom.lobby.zone in cyberanarkhia \
-	\n"
+echo -n "configuring ssh \n"
 ctrl=
 while [ -z $ctrl ]
 do
