@@ -192,6 +192,7 @@ function configuration {
 			;;
 		"ipsec")
 			iked_ca_reset.sh
+			cd $basedir
 			install -o root -g wheel -m 0640  src/etc/iked/ca/ca.crt /etc/iked/ca/
 			ssl_pk12_cert_pub_priv_extract.sh "/tmp/$subphase.p12"
 			rcctl enable iked

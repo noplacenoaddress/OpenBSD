@@ -1,7 +1,10 @@
-# /sbin/pfctl -t ipsec -T replace -f /etc/pf.conf.table.ipsec
+# /sbin/pfctl -t ipsec -T kill -f /etc/pf.conf.table.ipsec
+# /sbin/pfctl -t ipsec -T add -f /etc/pf.conf.table.ipsec
+# /sbin/pfctl -t ipsec -T show
 #
 fr.telecomlobby.com
 uk.telecomlobby.com
 us.telecomlobby.com
 jp.telecomlobby.com
 cat-01.telecomlobby.com
+bg.telecomlobby.com
