@@ -319,7 +319,7 @@ do
 	echo -n 'Type the hostname '
 	read hostname
 	echo $hostname > conf/hostname
-	find . -type f | xargs -I {} sed -i "s/\/HOSTNAME\//$hostname/g" {}
+	find {src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/HOSTNAME\//$hostname/g" {}
 done
 landomainname=
 while [ -z $landomainname ]
@@ -327,7 +327,7 @@ do
 	echo -n 'Type the LAN domain name '
 	read landomainname
 	echo $landomainname > conf/landomainname
-	find . -type f | xargs -I {} sed -i "s/\/LANDOMAINNAME\//$landomainname/g" {}
+	find {src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/LANDOMAINNAME\//$landomainname/g" {}
 done
 routerid=
 while [ -z $routerid ]
@@ -335,7 +335,7 @@ do
 	echo -n 'Type the routerid '
 	read routerid
 	echo $routerid > conf/routerid
-	find . -type f | xargs -I {} sed -i "s/\/ROUTERID\//$routerid/g" {}
+	find {src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/ROUTERID\//$routerid/g" {}
 done
 publichost=
 while [ -z $publichost ]
@@ -343,13 +343,13 @@ do
 	echo -n 'Type the publichost '
 	read publichost
 	echo $publichost > conf/publichost
-	find . -type f | xargs -I {} sed -i "s/\/PUBLICHOST\//$publichost/g" {}
+	find {src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/PUBLICHOST\//$publichost/g" {}
 done
 
 echo $publicip > conf/publicip
 echo $dyndns > conf/dyndns
-find . -type f | xargs -I {} sed -i "s/\/PUBLICIP\//$publicip/g" {}
-find . -type f | xargs -I {} sed -i "s/\/DYNDNS\//$dyndns/g" {}
+find {src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/PUBLICIP\//$publicip/g" {}
+find {src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/DYNDNS\//$dyndns/g" {}
 
 
 echo "configuring basic"
