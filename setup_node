@@ -213,11 +213,6 @@ function configuration {
 			openssl x509 -pubkey -noout -in "/etc/iked/certs/$publichost.crt"  > /etc/iked/local.pub
 			rcctl enable iked
 			rcctl set iked flags "-vv"
-			for file in src/etc/iked.conf* ; do
-				if [[ -e "$file" ]]; then
-					install -o root -g wheel -m 0640  $file /etc/
-				fi
-			done
 			typeset -i i=0
 			for vpnc_ip in $(dig vpnc.telecomlobby.com A +short)
 			do
