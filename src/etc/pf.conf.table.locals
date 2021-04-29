@@ -1,3 +1,6 @@
-# /sbin/pfctl -t locals -T replace -f /etc/pf.conf.table.locals
+# /sbin/pfctl -t locals -T kill -f /etc/pf.conf.table.locals
+# /sbin/pfctl -t locals -T add -f /etc/pf.conf.table.locals
+# /sbin/pfctl -t locals -T show
+#
 #
 
