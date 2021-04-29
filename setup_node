@@ -79,12 +79,24 @@ function configuration {
 				fi
 			done
 			cleanold "/root/"
-			echo "dhclient, resolv.conf.tail and doas.conf"
-			install -o root -g wheel -m 0644  src/etc/{dhclient.conf,resolv.conf.tail,doas.conf} /etc/
+			echo "timezone from public ip \n"
+			tmp=$(mktemp)
+			curl "http://ipinfo.io/$publicip" > $tmp
+			iptmz=$(cat $tmp | grep timezone | cut -d \" -f4)
+			rm -rf {/etc/localtime,$tmp}
+			ln -fs "/usr/share/zoneinfo/$iptmz" /etc/localtime
+			echo "installing automatic update \n"
+			if [[ ! -e "/etc/daily.local" ]]; then
+				install -o root -g wheel -m 0640  src/etc/daily.local /etc/
+			elif ! grep -q "pkg_add" "/etc/daily.local"; then
+				cat src/etc/daily.local >> "/etc/daily.local"
+			fi
+			echo "dhclient, resolv.conf.tail and doas.conf \n"
+			install -o root -g wheel -m 0644  src/etc/{dhclient.conf,resolv.conf.tail,doas.conf,myname} /etc/
 			install -o root -g wheel -m 0640  src/etc/hostname.vio0 /etc/
 			echo "vether"
 			install -o root -g wheel -m 0644  src/etc/hostname.vether0 /etc/
-			echo "configuring iperf uptimed and oidentd"
+			echo "configuring iperf uptimed and oidentd \n"
 			pidof_uptimed=$(pidof "uptimed")
 			if [[ -z $pidof_uptimed ]]; then
 				rcctl enable uptimed
@@ -269,12 +281,7 @@ do
 	fi
     
 done
-echo "installing automatic update \n"
-if [[ ! -e "/etc/daily.local" ]]; then
-	install -o root -g wheel -m 0640  src/etc/daily.local /etc/
-elif ! grep -q "pkg_add" "/etc/daily.local"; then
-	cat src/etc/daily.local >> "/etc/daily.local"
-fi
+
 rcctl disable sndiod
 rcctl stop sndiod
 rcctl disable check_quotas	
@@ -313,6 +320,14 @@ do
 	read hostname
 	echo $hostname > conf/hostname
 	find . -type f | xargs -I {} sed -i "s/\/HOSTNAME\//$hostname/g" {}
+done
+landomainname=
+while [ -z $landomainname ]
+do
+	echo -n 'Type the LAN domain name '
+	read hostname
+	echo $landomainname > conf/landomainname
+	find . -type f | xargs -I {} sed -i "s/\/LANDOMAINNAME\//$landomainname/g" {}
 done
 routerid=
 while [ -z $routerid ]
