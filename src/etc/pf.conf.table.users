@@ -1,5 +1,5 @@
-# /sbin/pfctl -t locals -T kill -f /etc/pf.conf.table.locals
-# /sbin/pfctl -t locals -T add -f /etc/pf.conf.table.locals
-# /sbin/pfctl -t locals -T show
+# /sbin/pfctl -t users -T kill -f /etc/pf.conf.table.users
+# /sbin/pfctl -t users -T add -f /etc/pf.conf.table.users
+# /sbin/pfctl -t users -T show
 #
 
