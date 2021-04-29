@@ -282,9 +282,9 @@ do
     
 done
 
-rcctl disable sndiod
-rcctl stop sndiod
-rcctl disable check_quotas	
+rcctl disable {sndiod,slaacd,check_quotas}
+rcctl stop {sndiod,slaacd}
+
 echo "configuring users"
 ctrl=
 while [ -z $ctrl ]
