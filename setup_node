@@ -227,14 +227,10 @@ function configuration {
 				vpnc_hosts[$i]="$vpnc_host"
 				((i=i+1))
 			done
-			vpnc_ips[$i]=dig $(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g') A +short | tail -n 1
-			vpnc_hosts[$i]=$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')
-			for value in "${vpnc_ips[@]}";do
-				echo $value; 
+			for value in "${vpnc_hosts[@]}"; do
+				echo include "/etc/iked.conf.$value" >> src/etc/iked.conf
 			done
-			for value in "${vpnc_hosts[@]}";do
-				echo $value; 
-			done
+			echo include "/etc/iked.conf.$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')" >> src/etc/iked.conf
 			install -o root -g wheel -m 0640  src/etc/iked.conf /etc/
 			rcctl start iked ||  error_exit "$LINENO: ERROR: IKED failed."
 			cleanold "/etc/" 
