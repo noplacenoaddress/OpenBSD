@@ -225,11 +225,13 @@ function configuration {
 				vpnc_ips[i]="$vpnc_ip"
 				vpnc_hosts[i]="$vpnc_host"
 				echo include \"/etc/iked.conf.$vpnc_host\" >> src/etc/iked.conf
+				cp src/etc/iked.conf.-POP- "/etc/iked.conf.$vpnc_host"
 				((i=i+1))
 			done
 			echo include \"/etc/iked.conf.$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')\" >> src/etc/iked.conf
+			cp src/etc/iked.conf.-POP- "/etc/iked.conf.$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')"
 			install -o root -g wheel -m 0640  src/etc/iked.conf /etc/
-			rcctl start iked ||  error_exit "$LINENO: ERROR: IKED failed."
+			
 			cleanold "/etc/" 
 			;;
 		"gre")		
