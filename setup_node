@@ -218,6 +218,7 @@ function configuration {
 					install -o root -g wheel -m 0640  $file /etc/
 				fi
 			done
+			
 			typeset -i i
 			for vpnc_ip in $(dig vpnc.telecomlobby.com A +short)
 			do
@@ -226,8 +227,14 @@ function configuration {
 				vpnc_hosts[$i]="$vpnc_host"
 				((i=i+1))
 			done
-			vpnc_ips[$i]=dig $(dig vpnc.telecomlobby.com TXT +short @8.8.8.8| sed 's/\"//g') A +short | tail -n 1
-			vpnc_hosts[$i]=$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8| sed 's/\"//g')
+			vpnc_ips[$i]=dig $(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g') A +short | tail -n 1
+			vpnc_hosts[$i]=$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')
+			for value in "${vpnc_ips[@]}";do
+				echo $value; 
+			done
+			for value in "${vpnc_hosts[@]}";do
+				echo $value; 
+			done
 			install -o root -g wheel -m 0640  src/etc/iked.conf /etc/
 			rcctl start iked ||  error_exit "$LINENO: ERROR: IKED failed."
 			cleanold "/etc/" 
