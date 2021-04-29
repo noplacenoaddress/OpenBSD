@@ -227,9 +227,9 @@ function configuration {
 				((i=i+1))
 			done
 			for value in "${vpnc_hosts[@]}"; do
-				echo include "/etc/iked.conf.$value" >> src/etc/iked.conf
+				echo include \"/etc/iked.conf.$value\" >> src/etc/iked.conf
 			done
-			echo include "/etc/iked.conf.$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')" >> src/etc/iked.conf
+			echo include \"/etc/iked.conf.$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')\" >> src/etc/iked.conf
 			install -o root -g wheel -m 0640  src/etc/iked.conf /etc/
 			rcctl start iked ||  error_exit "$LINENO: ERROR: IKED failed."
 			cleanold "/etc/" 
