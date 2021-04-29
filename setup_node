@@ -222,8 +222,8 @@ function configuration {
 			for vpnc_ip in $(dig vpnc.telecomlobby.com A +short)
 			do
 				vpnc_host=$(dig -x $vpnc_ip +short | sed 's/.$//')
-				set -A vpnc_ips[$i]="$vpnc_ip"
-				set -A vpnc_hosts[$i]="$vpnc_host"
+				vpnc_ips[i]="$vpnc_ip"
+				vpnc_hosts[i]="$vpnc_host"
 				((i=i+1))
 			done
 			for value in "${vpnc_hosts[@]}"; do
