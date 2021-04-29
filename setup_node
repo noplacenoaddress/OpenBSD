@@ -221,12 +221,17 @@ function configuration {
 				vpnc_hosts[i]="$vpnc_host"
 				echo include \"/etc/iked.conf.$vpnc_host\" >> src/etc/iked.conf
 				cp src/etc/iked.conf.-POP- "/etc/iked.conf.$vpnc_host"
+				sed -i "s/\/PUBLICIP\//$publicip/g" "/etc/iked.conf.$vpnc_host"
+				sed -i "s/\/POPIP\//$vpnc_ip/g" "/etc/iked.conf.$vpnc_host"
+				sed -i "s/\/POP\//$vpnc_host/g" "/etc/iked.conf.$vpnc_host"
+				sed -i "s/\/HOSTNAME\//$hostname/g" "/etc/iked.conf.$vpnc_host"
+				sed -i "s/\/DOMAINNAME\//$domainname/g" "/etc/iked.conf.$vpnc_host"
 				((i=i+1))
 			done
 			echo include \"/etc/iked.conf.$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')\" >> src/etc/iked.conf
 			cp src/etc/iked.conf.-POP- "/etc/iked.conf.$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')"
 			install -o root -g wheel -m 0640  src/etc/iked.conf /etc/
-			
+			find /etc/ -type f -name "iked.*" | xargs -I {} 
 			cleanold "/etc/" 
 			;;
 		"gre")		
