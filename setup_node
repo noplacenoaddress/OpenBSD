@@ -325,7 +325,7 @@ landomainname=
 while [ -z $landomainname ]
 do
 	echo -n 'Type the LAN domain name '
-	read hostname
+	read landomainname
 	echo $landomainname > conf/landomainname
 	find . -type f | xargs -I {} sed -i "s/\/LANDOMAINNAME\//$landomainname/g" {}
 done
