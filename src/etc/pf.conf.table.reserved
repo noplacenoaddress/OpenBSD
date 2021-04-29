@@ -1,4 +1,6 @@
-# /sbin/pfctl -t reserved -T replace -f /etc/pf.conf.table.reserved
+# /sbin/pfctl -t reserved -T kill -f /etc/pf.conf.table.reserved
+# /sbin/pfctl -t reserved -T add -f /etc/pf.conf.table.reserved
+# /sbin/pfctl -t reserved -T show
 #
 # https://www.iana.org/assignments/iana-ipv4-special-registry/
 0.0.0.0/8

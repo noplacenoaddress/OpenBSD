@@ -1,4 +1,6 @@
-# /sbin/pfctl -t nsd -T replace -f /etc/pf.conf.table.nsd
+# /sbin/pfctl -t nsd -T kill -f /etc/pf.conf.table.nsd
+# /sbin/pfctl -t nsd -T add -f /etc/pf.conf.table.nsd
+# /sbin/pfctl -t nsd -T show
 #
 10.10.10.116/32
 10.10.10.226/32
