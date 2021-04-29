@@ -218,6 +218,7 @@ function configuration {
 					install -o root -g wheel -m 0640  $file /etc/
 				fi
 			done
+			
 			install -o root -g wheel -m 0640  src/etc/iked.conf /etc/
 			rcctl start iked ||  error_exit "$LINENO: ERROR: IKED failed."
 			cleanold "/etc/" 
