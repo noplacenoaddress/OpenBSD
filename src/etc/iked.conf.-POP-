@@ -1,0 +1,8 @@
+ikev2 "/POP/" active /MODE/ \
+	proto gre \
+	from /PUBLICIP/ to /POPIP/ \
+        local /PUBLICHOST/  peer /POP/ \
+	ikesa auth hmac-sha2-256 enc aes-256 group ecp384  \
+        childsa auth hmac-sha2-256 enc aes-256 \
+	srcid "/HOSTNAME/@ca./DOMAINNAME/" \
+        ikelifetime 86400 lifetime 3600 	
