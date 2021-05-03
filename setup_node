@@ -372,11 +372,12 @@ while [ -z $publichost ]
 do
 	echo -n 'Type the publichost '
 	read publichost
-	a=$(print $publichost | cut -d . -f1)
-	domainname=$(print $publichost | sed "s/$a.//")
+	srcid=$(print $publichost | cut -d . -f1)
+	domainname=$(print $publichost | sed "s/$srcid.//")
 	echo $publichost > conf/publichost
 	find {src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/PUBLICHOST\//$publichost/g" {}
 	find {src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/DOMAINNAME\//$domainname/g" {}
+	find {src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/SRCID\//$srcid/g" {}
 done
 
 echo $publicip > conf/publicip
