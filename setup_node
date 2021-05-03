@@ -234,6 +234,7 @@ function configuration {
 						case $x in
 							1)
 								sed -i "s/\/TYPE\//active/g" "/etc/iked.conf.$vpnc_host"
+								
 							;;
 							2)
 								sed -i "s/\/TYPE\//passive/g" "/etc/iked.conf.$vpnc_host"
@@ -352,7 +353,7 @@ do
 	echo -n 'Type the hostname '
 	read hostname
 	echo $hostname > conf/hostname
-	find {src/mikrotik,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/HOSTNAME\//$hostname/g" {}
+	find {src/mikrotik,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/HOSTNAME\//$hostname/g" {}
 done
 landomainname=
 while [ -z $landomainname ]
@@ -360,7 +361,7 @@ do
 	echo -n 'Type the LAN domain name '
 	read landomainname
 	echo $landomainname > conf/landomainname
-	find {src/mikrotik,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/LANDOMAINNAME\//$landomainname/g" {}
+	find {src/mikrotik,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/LANDOMAINNAME\//$landomainname/g" {}
 done
 routerid=
 while [ -z $routerid ]
@@ -368,7 +369,7 @@ do
 	echo -n 'Type the routerid '
 	read routerid
 	echo $routerid > conf/routerid
-	find {src/mikrotik,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/ROUTERID\//$routerid/g" {}
+	find {src/mikrotik,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/ROUTERID\//$routerid/g" {}
 done
 publichost=
 while [ -z $publichost ]
@@ -378,15 +379,15 @@ do
 	srcid=$(print $publichost | cut -d . -f1)
 	domainname=$(print $publichost | sed "s/$srcid.//")
 	echo $publichost > conf/publichost
-	find {src/mikrotik,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/PUBLICHOST\//$publichost/g" {}
-	find {src/mikrotik,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/DOMAINNAME\//$domainname/g" {}
-	find {src/mikrotik,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/SRCID\//$srcid/g" {}
+	find {src/mikrotik,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/PUBLICHOST\//$publichost/g" {}
+	find {src/mikrotik,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/DOMAINNAME\//$domainname/g" {}
+	find {src/mikrotik,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/SRCID\//$srcid/g" {}
 done
 
 echo $publicip > conf/publicip
 echo $dyndns > conf/dyndns
-find {src/mikrotik,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/PUBLICIP\//$publicip/g" {}
-find {src/mikrotik,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/DYNDNS\//$dyndns/g" {}
+find {src/mikrotik,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/PUBLICIP\//$publicip/g" {}
+find {src/mikrotik,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/DYNDNS\//$dyndns/g" {}
 
 
 echo "configuring basic"
