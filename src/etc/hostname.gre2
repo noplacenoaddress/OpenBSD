@@ -1,6 +1,0 @@
-description "us.telecomlobby.com"
-mtu 1392
-keepalive 5 2
-group nsd
-!ifconfig gre2 10.10.10.226 10.10.10.225 netmask 0xfffffffc up
-!ifconfig gre2 tunnel 78.141.201.0 155.138.247.27

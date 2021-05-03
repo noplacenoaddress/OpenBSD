@@ -1,0 +1,6 @@
+description "/PUBLICHOST/"
+keepalive 5 2
+mtu 1392
+!ifconfig gre/X/ /GRELOCALIP/ /GREPOPIP/ netmask 0xfffffffc up
+!ifconfig gre/X/ tunnel /PUBLICIP/ /POPIP/
+
