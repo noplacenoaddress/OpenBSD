@@ -1,6 +1,0 @@
-description "jp.telecomlobby.com"
-keepalive 5 2
-mtu 1392
-group nsd
-!ifconfig gre3 10.10.10.116 10.10.10.115 netmask 0xfffffffc up
-!ifconfig gre3 tunnel 78.141.201.0 139.180.206.19
