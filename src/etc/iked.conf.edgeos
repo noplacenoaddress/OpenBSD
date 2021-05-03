@@ -1,0 +1,8 @@
+ikev2 "/POP/" /TYPE/ transport \
+	proto gre \
+	from /PUBLICIP/ to /POPIP/ \
+        local /PUBLICHOST/ peer /POP/ \
+	ikesa  prf hmac-sha2-512  enc aes-256-gcm-12 group brainpool512  \
+        childsa  enc chacha20-poly1305 group curve25519 \
+	srcid "/HOSTNAME/@ca./DOMAINNAME/" \
+        ikelifetime 86400 lifetime 3600 	
