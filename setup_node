@@ -261,6 +261,7 @@ function configuration {
 			rcctl start iked ||  error_exit "$LINENO: ERROR: IKED failed."
 			;;
 		"gre")		
+			
 			for file in src/etc/hostname.gre? ; do
 				if [[ -e "$file" ]]; then
 					install -o root -g wheel -m 0700  $file /etc/
