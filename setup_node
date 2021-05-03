@@ -39,7 +39,7 @@ function pkg {
 
 	case $phase in
 		"shell")
-			pkg_add colorls nano wget fping iperf uptimed oidentd
+			pkg_add colorls nano wget fping iperf uptimed oidentd sqlite3
 			;;
 	esac
 }
@@ -254,11 +254,11 @@ function configuration {
 				"/etc/iked.conf.$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')"
 			cp src/edgeos/ipsec.conf /tmp 
 			cp "/etc/iked/certs/$publichost.crt" /tmp
-			echo "use /tmp/ipsec.conf in your EdgeOS endpoint \n
-				use /tmp/$publichost.crt \n"
+			echo "use /tmp/ipsec.conf in your EdgeOS endpoint  and /tmp/$publichost.crt \n"
 			install -o root -g wheel -m 0640  src/etc/iked.conf /etc/
 			find /etc/ -type f -name "iked.*" | xargs -I {} 
 			cleanold "/etc/" 
+			rcctl start iked ||  error_exit "$LINENO: ERROR: IKED failed."
 			;;
 		"gre")		
 			for file in src/etc/hostname.gre? ; do
