@@ -253,7 +253,9 @@ function configuration {
 			sed -i "s/\/POP\//$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')/g" \
 				"/etc/iked.conf.$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')"
 			cp src/edgeos/ipsec.conf /tmp 
-			echo "use /tmp/ipsec.conf in your EdgeOS endpoint \n"
+			cp "/etc/iked/certs/$publichost.crt" /tmp
+			echo "use /tmp/ipsec.conf in your EdgeOS endpoint \n
+				use /tmp/$publichost.crt \n"
 			install -o root -g wheel -m 0640  src/etc/iked.conf /etc/
 			find /etc/ -type f -name "iked.*" | xargs -I {} 
 			cleanold "/etc/" 
