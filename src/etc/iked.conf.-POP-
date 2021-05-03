@@ -1,4 +1,4 @@
-ikev2 "/POP/" active transport \
+ikev2 "/POP/" /TYPE/ transport \
 	proto gre \
 	from /PUBLICIP/ to /POPIP/ \
         local /PUBLICHOST/ peer /POP/ \
