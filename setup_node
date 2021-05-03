@@ -222,16 +222,24 @@ function configuration {
 				vpnc_hosts[i]="$vpnc_host"
 				echo include \"/etc/iked.conf.$vpnc_host\" >> src/etc/iked.conf
 				cp src/etc/iked.conf.-POP- "/etc/iked.conf.$vpnc_host"
+				case $vpnc_host in
+					"fr.telecomlobby.com")
+						cp src/etc/iked.conf.mikrotik "/etc/iked.conf.$vpnc_host"
+						;;
+					*)
+						cp src/etc/iked.conf.openbsd "/etc/iked.conf.$vpnc_host"
+						x=$((RANDOM%2+1))
+						case $x in
+							1)
+								sed -i "s/\/TYPE\//active/g" "/etc/iked.conf.$vpnc_host"
+							;;
+							2)
+								sed -i "s/\/TYPE\//passive/g" "/etc/iked.conf.$vpnc_host"
+							;;
+						esac 
+						;;
+				esac
 				sed -i "s/\/PUBLICIP\//$publicip/g" "/etc/iked.conf.$vpnc_host"
-				x=$((RANDOM%2+1))
-				case $x in
-					1)
-						sed -i "s/\/TYPE\//active/g" "/etc/iked.conf.$vpnc_host"
-					;;
-					2)
-						sed -i "s/\/TYPE\//passive/g" "/etc/iked.conf.$vpnc_host"
-					;;
-				esac 
 				sed -i "s/\/POPIP\//$vpnc_ip/g" "/etc/iked.conf.$vpnc_host"
 				sed -i "s/\/POP\//$vpnc_host/g" "/etc/iked.conf.$vpnc_host"
 				#sed -i "s/\/HOSTNAME\//$hostname/g" "/etc/iked.conf.$vpnc_host"
@@ -239,8 +247,7 @@ function configuration {
 				((i=i+1))
 			done
 			echo include \"/etc/iked.conf.$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')\" >> src/etc/iked.conf
-			cp src/etc/iked.conf.-POP- "/etc/iked.conf.$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')"
-			install -o root -g wheel -m 0640  src/etc/iked.conf /etc/
+			cp src/etc/iked.conf.edgeos "/etc/iked.conf.$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')"
 			find /etc/ -type f -name "iked.*" | xargs -I {} 
 			cleanold "/etc/" 
 			;;
