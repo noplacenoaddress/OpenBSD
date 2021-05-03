@@ -207,8 +207,7 @@ function configuration {
 			mkdir -p /etc/iked/{ca,certs,crls,export,private,pubkeys}
 			mkdir -p /etc/iked/pubkeys/{ipv4,ipv6,fqdn,ufqdn}
 			cd $basedir
-			install -o root -g wheel -m 0640  src/etc/iked/ca/ca.crt /etc/iked/ca/
-			
+			install -o root -g wheel -m 0640  src/etc/iked/ca/ca.crt /etc/iked/ca/	
 			openssl pkcs12 -in "/tmp/$publichost.p12" -nocerts -out /etc/iked/private/local.key
 			openssl pkcs12 -in "/tmp/$publichost.p12" -clcerts -nokeys -out "/etc/iked/certs/$publichost.crt"
 			openssl x509 -pubkey -noout -in "/etc/iked/certs/$publichost.crt"  > /etc/iked/local.pub
