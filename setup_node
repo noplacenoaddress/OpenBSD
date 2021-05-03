@@ -208,6 +208,7 @@ function configuration {
 			mkdir -p /etc/iked/pubkeys/{ipv4,ipv6,fqdn,ufqdn}
 			cd $basedir
 			install -o root -g wheel -m 0640  src/etc/iked/ca/ca.crt /etc/iked/ca/
+			
 			openssl pkcs12 -in "/tmp/$publichost.p12" -nocerts -out /etc/iked/private/local.key
 			openssl pkcs12 -in "/tmp/$publichost.p12" -clcerts -nokeys -out "/etc/iked/certs/$publichost.crt"
 			openssl x509 -pubkey -noout -in "/etc/iked/certs/$publichost.crt"  > /etc/iked/local.pub
@@ -222,6 +223,15 @@ function configuration {
 				echo include \"/etc/iked.conf.$vpnc_host\" >> src/etc/iked.conf
 				cp src/etc/iked.conf.-POP- "/etc/iked.conf.$vpnc_host"
 				sed -i "s/\/PUBLICIP\//$publicip/g" "/etc/iked.conf.$vpnc_host"
+				x=$((RANDOM%2+1))
+				case $x in
+					1)
+						sed -i "s/\/TYPE\//active/g" "/etc/iked.conf.$vpnc_host"
+					;;
+					2)
+						sed -i "s/\/TYPE\//passive/g" "/etc/iked.conf.$vpnc_host"
+					;;
+				esac 
 				sed -i "s/\/POPIP\//$vpnc_ip/g" "/etc/iked.conf.$vpnc_host"
 				sed -i "s/\/POP\//$vpnc_host/g" "/etc/iked.conf.$vpnc_host"
 				sed -i "s/\/HOSTNAME\//$hostname/g" "/etc/iked.conf.$vpnc_host"
