@@ -246,8 +246,10 @@ function configuration {
 			done
 			echo include \"/etc/iked.conf.$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')\" >> src/etc/iked.conf
 			cp src/etc/iked.conf.edgeos "/etc/iked.conf.$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')"
-			sed -i "s/\/POPIP\//$(dig $(dig vpnc.telecomlobby.com TXT +short @8.8.8.8  | sed 's/\"//g') A +short | tail -n 1)/g" "/etc/iked.conf.$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')"
-			sed -i "s/\/POP\//$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')/g" "/etc/iked.conf.$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')"
+			sed -i "s/\/POPIP\//$(dig $(dig vpnc.telecomlobby.com TXT +short @8.8.8.8  | sed 's/\"//g') A +short | tail -n 1)/g" \
+				"/etc/iked.conf.$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')"
+			sed -i "s/\/POP\//$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')/g" \
+				"/etc/iked.conf.$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')"
 			install -o root -g wheel -m 0640  src/etc/iked.conf /etc/
 			find /etc/ -type f -name "iked.*" | xargs -I {} 
 			cleanold "/etc/" 
