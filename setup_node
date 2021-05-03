@@ -237,11 +237,8 @@ function configuration {
 						esac 
 						;;
 				esac
-				#sed -i "s/\/PUBLICIP\//$publicip/g" "/etc/iked.conf.$vpnc_host"
 				sed -i "s/\/POPIP\//$vpnc_ip/g" "/etc/iked.conf.$vpnc_host"
 				sed -i "s/\/POP\//$vpnc_host/g" "/etc/iked.conf.$vpnc_host"
-				#sed -i "s/\/HOSTNAME\//$hostname/g" "/etc/iked.conf.$vpnc_host"
-				#sed -i "s/\/DOMAINNAME\//$publichost/g" "/etc/iked.conf.$vpnc_host"
 				((i=i+1))
 			done
 			echo include \"/etc/iked.conf.$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')\" >> src/etc/iked.conf
