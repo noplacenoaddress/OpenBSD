@@ -4,5 +4,5 @@ ikev2 "/POP/" passive transport \
         local /PUBLICHOST/ peer /POP/ \
 	ikesa auth hmac-sha2-256 enc aes-256 group ecp256  \
         childsa auth hmac-sha2-256 enc aes-256 group ecp256 \
-	srcid "/HOSTNAME/@ca./DOMAINNAME/" \
+	srcid "/SRCID/@ca./DOMAINNAME/" \
         ikelifetime 86400 lifetime 3600 	
