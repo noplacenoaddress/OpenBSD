@@ -234,8 +234,8 @@ function configuration {
 				esac 
 				sed -i "s/\/POPIP\//$vpnc_ip/g" "/etc/iked.conf.$vpnc_host"
 				sed -i "s/\/POP\//$vpnc_host/g" "/etc/iked.conf.$vpnc_host"
-				sed -i "s/\/HOSTNAME\//$hostname/g" "/etc/iked.conf.$vpnc_host"
-				sed -i "s/\/DOMAINNAME\//$publichost/g" "/etc/iked.conf.$vpnc_host"
+				#sed -i "s/\/HOSTNAME\//$hostname/g" "/etc/iked.conf.$vpnc_host"
+				#sed -i "s/\/DOMAINNAME\//$publichost/g" "/etc/iked.conf.$vpnc_host"
 				((i=i+1))
 			done
 			echo include \"/etc/iked.conf.$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')\" >> src/etc/iked.conf
@@ -364,8 +364,11 @@ while [ -z $publichost ]
 do
 	echo -n 'Type the publichost '
 	read publichost
+	a=$(print $publichost | cut -d . -f1)
+	domainname=$(print $publichost | sed "s/$a.//")
 	echo $publichost > conf/publichost
 	find {src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/PUBLICHOST\//$publichost/g" {}
+	find {src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/DOMAINNAME\//$domainname/g" {}
 done
 
 echo $publicip > conf/publicip
