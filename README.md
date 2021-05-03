@@ -66,7 +66,7 @@ After the reboot login in the new node and change the password and upgrade the s
 
 #### First steps
 
-Next that we will have a running fresh and patched OpenBSD system let's start to configure our guerrilla MESH node. Install the git package:
+#### Next that we will have a running fresh and patched OpenBSD system let's start to configure our guerrilla MESH node. Install the git package:
 
 ```shell
 neo# pkg_add git
@@ -85,6 +85,14 @@ root@neo:/home/taglio/Sources/Git/OpenBSD# sh setup_node
 changing installurl
 Go ahead type 1 
 ```
+
+#### Remote upgrade
+
+![](https://redama.es/Imagenes/varuna_shell.png)
+
+If the VPS provider got the option to install OpenBSD, a custom ISO or hasn't the solution is always the same, use `sysupgrade`.
+
+The upgrade our git repository and launch the `upgrade.sh` script. Remember to wait a couple of days after the [release announce](https://www.openbsd.org/69.html) is published by [Theo de Raddt](https://www.theos.com/deraadt/).
 
 #### Registered domains application
 
