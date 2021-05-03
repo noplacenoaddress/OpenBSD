@@ -1,3 +1,5 @@
+#Mikrotik POP VPN template site to site OpenBSD
+
 /ip ipsec profile
 add dh-group=ecp384,modp3072 dpd-interval=15s dpd-maximum-failures=1 enc-algorithm=aes-256 hash-algorithm=sha256 name=NSA-RECOMMENDED nat-traversal=no
 
