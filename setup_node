@@ -221,7 +221,6 @@ function configuration {
 				vpnc_ips[i]="$vpnc_ip"
 				vpnc_hosts[i]="$vpnc_host"
 				echo include \"/etc/iked.conf.$vpnc_host\" >> src/etc/iked.conf
-				cp src/etc/iked.conf.-POP- "/etc/iked.conf.$vpnc_host"
 				case $vpnc_host in
 					"fr.telecomlobby.com")
 						cp src/etc/iked.conf.mikrotik "/etc/iked.conf.$vpnc_host"
@@ -248,6 +247,7 @@ function configuration {
 			done
 			echo include \"/etc/iked.conf.$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')\" >> src/etc/iked.conf
 			cp src/etc/iked.conf.edgeos "/etc/iked.conf.$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')"
+			install -o root -g wheel -m 0640  src/etc/iked.conf /etc/
 			find /etc/ -type f -name "iked.*" | xargs -I {} 
 			cleanold "/etc/" 
 			;;
