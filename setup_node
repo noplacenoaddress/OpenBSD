@@ -264,17 +264,27 @@ function configuration {
 			i=0
 			for file in "/etc/iked.conf.*.$domainname" ; do
 				cp src/etc/hostname.gre-X- "/etc/hostname.gre$i"
-				
+				pophost=$(print $file | sed "s/iked.conf.//")
+				sed -i "s/$pophost/\/POPHOST\//" "/etc/hostname.gre$i"
+				sed -i "s/$publicip/\/PUBLICIP\//" "/etc/hostname.gre$i"
+				popip=$(dig $pophost A +short)
+				sed -i "s/$popip/\/POPIP\//" "/etc/hostname.gre$i"
+				if [[ -z $lastnet ]]; then
+					typeset -i lastnet=$(dig "gre7058.$domainname" TXT +short @8.8.8.8)
+				else
+					((lastnet=lastnet-4))
+				fi
+				typeset -i grepopip
+				((grepopip=lastnet-2))
+				sed -i "s/$grepopip/\/GREPOPIP\//" "/etc/hostname.gre$i"
+				typeset -i grelocalip
+				((grelocalip=lastnet-3))
+				sed -i "s/$grelocalip/\/GRELOCALIP\//" "/etc/hostname.gre$i"
 				((i=i+1))
 			done
-			for gretxt in $(dig gre10199.telecomlobby.com TXT +short @8.8.8.8 | sed -e "s/\"//g" | tr \; '\n' | head -n -1)
-			do
-				
-				
 			for file in src/etc/hostname.gre? ; do
-				if [[ -e "$file" ]]; then
-					install -o root -g wheel -m 0700  $file /etc/
-					sh	 /etc/netstart $(echo $file | awk -F. '{print $2}')
+					echo $file
+					sh /etc/netstart $(echo $file | awk -F. '{print $2}')
 				fi
 			done
 			cleanold "/etc/"
