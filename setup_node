@@ -203,7 +203,11 @@ function configuration {
 			done
 			;;
 		"ipsec")
-			rm -rf /etc/{iked,iked.conf,iked.conf.*}
+			if [[ -e "/etc/iked.conf" ]]; then
+				rm -rf /etc/{iked,iked.conf,iked.conf.*}
+			else
+				rm -rf /etc/iked
+			fi
 			mkdir -p /etc/iked/{ca,certs,crls,export,private,pubkeys}
 			mkdir -p /etc/iked/pubkeys/{ipv4,ipv6,fqdn,ufqdn}
 			cd $basedir
@@ -214,23 +218,23 @@ function configuration {
 			rcctl enable iked
 			rcctl set iked flags "-vv"
 			typeset -i i=0
-			for vpnc_ip in $(dig vpnc.telecomlobby.com A +short)
+			for vpnc_ip in $(dig vpnc.telecomlobby.com A +short @8.8.8.8)
 			do
-				vpnc_host=$(dig -x $vpnc_ip +short | sed 's/.$//')
+				vpnc_host=$(dig -x $vpnc_ip +short @8.8.8.8 | sed 's/.$//')
 				vpnc_ips[i]="$vpnc_ip"
 				vpnc_hosts[i]="$vpnc_host"
 				install -o root -g wheel -m 0640  src/etc/iked.conf /etc/
 				echo include \"/etc/iked.conf.$vpnc_host\" >> /etc/iked.conf
 				case $vpnc_host in
 					"fr.telecomlobby.com")
-						cp src/etc/iked.conf.mikrotik "/etc/iked.conf.$vpnc_host"
+						install -o root -g wheel -m 0640 src/etc/iked.conf.mikrotik "/etc/iked.conf.$vpnc_host"
 						cp src/mikrotik/template.rsc "/tmp/$vpnc_host.rsc"
 						sed -i "s/\/POPIP\//$vpnc_ip/g" "/tmp/$vpnc_host.rsc"
 						sed -i "s/\/POP\//$vpnc_host/g" "/tmp/$vpnc_host.rsc"
 						echo "use /tmp/$vpnc_host.rsc in your Mikrotik endpoint \n"
 						;;
 					*)
-						cp src/etc/iked.conf.openbsd "/etc/iked.conf.$vpnc_host"
+						install -o root -g wheel -m 0640 src/etc/iked.conf.openbsd "/etc/iked.conf.$vpnc_host"
 						x=$((RANDOM%2+1))
 						case $x in
 							1)
@@ -248,7 +252,7 @@ function configuration {
 				((i=i+1))
 			done
 			echo include \"/etc/iked.conf.$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')\" >> /etc/iked.conf
-			cp src/etc/iked.conf.edgeos "/etc/iked.conf.$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')"
+			install -o root -g wheel -m 0640 src/etc/iked.conf.edgeos "/etc/iked.conf.$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')"
 			sed -i "s/\/POPIP\//$(dig $(dig vpnc.telecomlobby.com TXT +short @8.8.8.8  | sed 's/\"//g') A +short | tail -n 1)/g" \
 				"/etc/iked.conf.$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')"
 			sed -i "s/\/POP\//$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')/g" \
