@@ -266,7 +266,7 @@ function configuration {
 			;;
 		"gre")	
 			i=0
-			for file in (find /etc -name "iked.conf.*") ; do
+			for file in $(find /etc -name "iked.conf.*") ; do
 				cp src/etc/hostname.gre-X- "/etc/hostname.gre$i"
 				pophost=$(echo $file | sed "s/\/etc\/iked.conf.//")
 				sed -i "s/\/POPHOST\//$pophost/g" "/etc/hostname.gre$i"
