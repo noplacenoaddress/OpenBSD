@@ -260,8 +260,17 @@ function configuration {
 			cleanold "/etc/" 
 			rcctl start iked ||  error_exit "$LINENO: ERROR: IKED failed."
 			;;
-		"gre")		
-			
+		"gre")	
+			i=0
+			for file in "/etc/iked.conf.*.$domainname" ; do
+				cp src/etc/hostname.gre-X- "/etc/hostname.gre$i"
+				
+				((i=i+1))
+			done
+			for gretxt in $(dig gre10199.telecomlobby.com TXT +short @8.8.8.8 | sed -e "s/\"//g" | tr \; '\n' | head -n -1)
+			do
+				
+				
 			for file in src/etc/hostname.gre? ; do
 				if [[ -e "$file" ]]; then
 					install -o root -g wheel -m 0700  $file /etc/
