@@ -276,7 +276,7 @@ function configuration {
 				sed -i "s/\/POPIP\//$popip/g" "/etc/hostname.gre$i"
 					typeset -i lastnet
 					if [[ -z $lastnet ]]; then
-						lastnet=$(dig gre7058.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')
+						lastnet=$(dig gre7058.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')
 					else
 						((lastnet=lastnet-4))
 					fi
