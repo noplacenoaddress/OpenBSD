@@ -173,7 +173,7 @@ function configuration {
 					cleanold "/var/unbound/etc/"
 					;;
 			esac
-			;;
+			;;		
 		"ssh") 
 			publickey=$(ssh-keyscan -t ed25519 ::1 | sed "s/::1/[$publicip,$routerid]/")
 			if grep -q "$publickey" src/etc/ssh/ssh_known_hosts; then
@@ -266,10 +266,10 @@ function configuration {
 			;;
 		"gre")	
 			i=0
-			for file in "/etc/iked.conf.*.$domainname" ; do
+			for file in (find /etc -name "iked.conf.*") ; do
 				cp src/etc/hostname.gre-X- "/etc/hostname.gre$i"
 				pophost=$(echo $file | sed "s/\/etc\/iked.conf.//")
-				sed -i "s/\/POPHOST\//${pophost}/g" "/etc/hostname.gre$i"
+				sed -i "s/\/POPHOST\//$pophost/g" "/etc/hostname.gre$i"
 				sed -i "s/\/PUBLICIP\//$publicip/g" "/etc/hostname.gre$i"
 				sed -i "s/\/X\/$i/g" "/etc/hostname.gre$i"
 				popip=$(dig $pophost A +short)
