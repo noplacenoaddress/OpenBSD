@@ -223,6 +223,7 @@ function configuration {
 				vpnc_host=$(dig -x $vpnc_ip +short @8.8.8.8 | sed 's/.$//')
 				vpnc_ips[i]="$vpnc_ip"
 				vpnc_hosts[i]="$vpnc_host"
+				printf "%s\n" "include /etc/iked.conf.$vpnc_host" >> /etc/iked.conf
 				install -o root -g wheel -m 0640  src/etc/iked.conf /etc/
 				case $vpnc_host in
 					"fr.telecomlobby.com")
@@ -250,7 +251,7 @@ function configuration {
 				sed -i "s/\/POP\//$vpnc_host/g" "/etc/iked.conf.$vpnc_host"
 				((i=i+1))
 			done
-			#echo include \"/etc/iked.conf.$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')\" >> /etc/iked.conf
+			echo include /etc/iked.conf.$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g') >> /etc/iked.conf
 			install -o root -g wheel -m 0640 src/etc/iked.conf.edgeos "/etc/iked.conf.$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')"
 			sed -i "s/\/POPIP\//$(dig $(dig vpnc.telecomlobby.com TXT +short @8.8.8.8  | sed 's/\"//g') A +short | tail -n 1)/g" \
 				"/etc/iked.conf.$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')"
@@ -261,10 +262,6 @@ function configuration {
 			echo "use /tmp/ipsec.conf in your EdgeOS endpoint  and /tmp/$publichost.crt \n"
 			find /etc/ -type f -name "iked.*" | xargs -I {} 
 			cleanold "/etc/" 
-			for file in "/etc/iked.conf.*.$domainname" ; do
-				vpnc_host=$(print $file | sed "s/iked.conf.//")
-				printf "%s\n" "include /etc/iked.conf.$vpnc_host" >> /etc/iked.conf
-			done
 			rcctl start iked ||  error_exit "$LINENO: ERROR: IKED failed."
 			;;
 		"gre")	
