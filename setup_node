@@ -283,9 +283,8 @@ function configuration {
 				((i=i+1))
 			done
 			for file in src/etc/hostname.gre? ; do
-					echo $file
-					sh /etc/netstart $(echo $file | awk -F. '{print $2}')
-				fi
+				echo $file
+				sh /etc/netstart $(echo $file | awk -F. '{print $2}')
 			done
 			cleanold "/etc/"
 			;;
