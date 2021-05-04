@@ -203,7 +203,7 @@ function configuration {
 			done
 			;;
 		"ipsec")
-			rm -rf /etc/iked
+			rm -rf /etc/{iked,iked.conf,iked.conf.*}
 			mkdir -p /etc/iked/{ca,certs,crls,export,private,pubkeys}
 			mkdir -p /etc/iked/pubkeys/{ipv4,ipv6,fqdn,ufqdn}
 			cd $basedir
