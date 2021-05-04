@@ -263,7 +263,7 @@ function configuration {
 			cleanold "/etc/" 
 			for file in "/etc/iked.conf.*.$domainname" ; do
 				vpnc_host=$(print $file | sed "s/iked.conf.//")
-				echo include \"/etc/iked.conf.$vpnc_host\" >> /etc/iked.conf
+				printf "%s\n" "include /etc/iked.conf.$vpnc_host" >> /etc/iked.conf
 			done
 			rcctl start iked ||  error_exit "$LINENO: ERROR: IKED failed."
 			;;
