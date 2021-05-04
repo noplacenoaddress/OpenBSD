@@ -224,7 +224,7 @@ function configuration {
 				vpnc_ips[i]="$vpnc_ip"
 				vpnc_hosts[i]="$vpnc_host"
 				install -o root -g wheel -m 0640  src/etc/iked.conf /etc/
-				echo include \"/etc/iked.conf.$vpnc_host\" >> /etc/iked.conf
+				print include \"/etc/iked.conf.$vpnc_host\" >> /etc/iked.conf
 				case $vpnc_host in
 					"fr.telecomlobby.com")
 						install -o root -g wheel -m 0640 src/etc/iked.conf.mikrotik "/etc/iked.conf.$vpnc_host"
