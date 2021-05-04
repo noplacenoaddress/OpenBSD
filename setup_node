@@ -218,13 +218,13 @@ function configuration {
 			rcctl enable iked
 			rcctl set iked flags "-vv"
 			typeset -i i=0
+			install -o root -g wheel -m 0640  src/etc/iked.conf /etc/
 			for vpnc_ip in $(dig vpnc.telecomlobby.com A +short @8.8.8.8)
 			do
 				vpnc_host=$(dig -x $vpnc_ip +short @8.8.8.8 | sed 's/.$//')
 				vpnc_ips[i]="$vpnc_ip"
 				vpnc_hosts[i]="$vpnc_host"
-				printf "%s\n" "include /etc/iked.conf.$vpnc_host" >> /etc/iked.conf
-				install -o root -g wheel -m 0640  src/etc/iked.conf /etc/
+				echo include \"/etc/iked.conf.$vpnc_host\" >> /etc/iked.conf
 				case $vpnc_host in
 					"fr.telecomlobby.com")
 						install -o root -g wheel -m 0640 src/etc/iked.conf.mikrotik "/etc/iked.conf.$vpnc_host"
