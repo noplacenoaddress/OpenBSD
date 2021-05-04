@@ -268,8 +268,8 @@ function configuration {
 			i=0
 			for file in "/etc/iked.conf.*.$domainname" ; do
 				cp src/etc/hostname.gre-X- "/etc/hostname.gre$i"
-				pophost=$(print $file | sed "s/iked.conf.//")
-				sed -i "s/$pophost/\/POPHOST\//" "/etc/hostname.gre$i"
+				pophost=$(echo $file | sed "s/iked.conf.//")
+				sed -i "s/${pophost}/\/POPHOST\//" "/etc/hostname.gre$i"
 				sed -i "s/$publicip/\/PUBLICIP\//" "/etc/hostname.gre$i"
 				sed -i "s/$i/\/X\//" "/etc/hostname.gre$i"
 				popip=$(dig $pophost A +short)
