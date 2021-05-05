@@ -228,7 +228,7 @@ function configuration {
 				case $vpnc_host in
 					"fr.telecomlobby.com")
 						install -o root -g wheel -m 0640 src/etc/iked.conf.mikrotik "/etc/iked.conf.$vpnc_host"
-						cp src/mikrotik/template.rsc "/tmp/$vpnc_host.rsc"
+						cp src/mikrotik/ipsec.rsc "/tmp/$vpnc_host.rsc"
 						sed -i "s/\/POPIP\//$vpnc_ip/g" "/tmp/$vpnc_host.rsc"
 						sed -i "s/\/POP\//$vpnc_host/g" "/tmp/$vpnc_host.rsc"
 						echo "use /tmp/$vpnc_host.rsc in your Mikrotik endpoint \n"
@@ -271,7 +271,6 @@ function configuration {
 			typeset -i i
 			i=0
 			for file in $(find /etc -maxdepth 1 -name "iked.conf.*") ; do
-				echo $i
 				install -o root -g wheel -m 0640 src/etc/hostname.gre-X- "/etc/hostname.gre$i"
 				pophost=$(echo $file | sed "s/\/etc\/iked.conf.//")
 				sed -i "s/\/POPHOST\//$pophost/g" "/etc/hostname.gre$i"
@@ -290,19 +289,16 @@ function configuration {
 				else
 					lastnet=$lastnet-4
 				fi
-				echo $lastnet
 				typeset -i grepopip
 				grepopip=$lastnet-2
-				echo $grepopip
 				sed -i "s/\/GREPOPIP\//10.10.10.$grepopip\/32/g" "/etc/hostname.gre$i"
 				typeset -i  grelocalip
 				grelocalip=$lastnet-3
-				echo $grelocalip
 				sed -i "s/\/GRELOCALIP\//10.10.10.$grelocalip\/32/g" "/etc/hostname.gre$i"
 				i=$i+1
 			done
+			echo "update re7058.telecomlobby.com TXT to $lastnet \n"
 			for file in /etc/hostname.gre? ; do
-				echo $file
 				sh /etc/netstart $(echo $file | awk -F. '{print $2}')
 			done
 			cleanold "/etc/"
