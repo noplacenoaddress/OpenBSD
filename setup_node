@@ -232,7 +232,7 @@ function configuration {
 				fi
 				echo include \"/etc/iked.conf.$vpnc_host\" >> /etc/iked.conf
 				sshbanner=$(nc -w1 $vpnc_host 22)
-				if [ ! -z $sshbanner ]; then
+				if grep -q "ROSSSH" $sshbanner; then
 					install -o root -g wheel -m 0640 src/etc/iked.conf.mikrotik "/etc/iked.conf.$vpnc_host"
 					cp src/mikrotik/ipsec.rsc "/tmp/$vpnc_host/$vpnc_host.rsc"
 					sed -i "s/\/POPIP\//$vpnc_ip/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
@@ -263,7 +263,7 @@ function configuration {
 						fi
 					done
 					sed -i "s/\/POPID\//$srcid/g" "/tmp/$vpnc_host/iked.conf.$publichost"
-				fi
+				fi	
 				sed -i "s/\/POPIP\//$vpnc_ip/g" "/etc/iked.conf.$vpnc_host"
 				sed -i "s/\/POP\//$vpnc_host/g" "/etc/iked.conf.$vpnc_host"
 				((i=i+1))
