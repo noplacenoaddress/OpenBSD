@@ -267,6 +267,7 @@ function configuration {
 		"gre")	
 			typeset -i i=0
 			for file in $(find /etc -name "iked.conf.*") ; do
+				echo $i
 				install -o root -g wheel -m 0640 src/etc/hostname.gre-X- "/etc/hostname.gre$i"
 				pophost=$(echo $file | sed "s/\/etc\/iked.conf.//")
 				sed -i "s/\/POPHOST\//$pophost/g" "/etc/hostname.gre$i"
@@ -286,12 +287,11 @@ function configuration {
 					((lastnet=lastnet-4))
 				fi
 				echo $lastnet
-				grepopip=
+				typeset -i grepopip=
 				((grepopip=lastnet-2))
 				echo $grepopip
 				sed -i "s/\/GREPOPIP\//10.10.10.$grepopip\/32/g" "/etc/hostname.gre$i"
-				grelocalip=
-				echo $grelocalip
+				typeset -i  grelocalip=
 				((grelocalip=lastnet-3))
 				echo $grelocalip
 				sed -i "s/\/GRELOCALIP\//10.10.10.$grelocalip\/32/g" "/etc/hostname.gre$i"
