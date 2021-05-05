@@ -426,13 +426,16 @@ do
 	echo -n 'Type the publichost '
 	read publichost
 	srcid=$(print $publichost | cut -d . -f1)
+	echo $srcid
 	domainname=$(print $publichost | sed "s/$srcid.//")
 	echo $publichost > conf/publichost
 	for a in $(dig conf20591.telecomlobby.com TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 		b=$(echo $a | cut -d : -f1)
+		echo $b
 		if [ "$b" = "$srcid" ]; then
 			srcid=$(echo $a | cut -d : -f2)
 		fi
+		echo $srcid
 	done
 	find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/PUBLICHOST\//$publichost/g" {}
 	find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/DOMAINNAME\//$domainname/g" {}
