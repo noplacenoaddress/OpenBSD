@@ -265,7 +265,7 @@ function configuration {
 			rcctl start iked ||  error_exit "$LINENO: ERROR: IKED failed."
 			;;
 		"gre")	
-			i=0
+			typeset -i i=0
 			for file in $(find /etc -name "iked.conf.*") ; do
 				install -o root -g wheel -m 0640 src/etc/hostname.gre-X- "/etc/hostname.gre$i"
 				pophost=$(echo $file | sed "s/\/etc\/iked.conf.//")
@@ -280,7 +280,7 @@ function configuration {
 				fi
 				sed -i "s/\/POPIP\//$popip/g" "/etc/hostname.gre$i"
 				if [ $i -eq 0 ]; then
-					lastnet=$(dig gre7058.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')
+					typeset -i lastnet=$(dig gre7058.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')
 					echo "ok"
 				else
 					((lastnet=lastnet-4))
