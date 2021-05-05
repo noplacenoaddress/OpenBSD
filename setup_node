@@ -279,11 +279,11 @@ function configuration {
 					popip=$(dig $pophost A +short @8.8.8.8)
 				fi
 				sed -i "s/\/POPIP\//$popip/g" "/etc/hostname.gre$i"
-					if ((${#lastnet[@]})); then
-						((lastnet=lastnet-4))
-					else
-						lastnet=$(dig gre7058.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')
-					fi
+				if [ $i -eq 0 ]; then
+					lastnet=$(dig gre7058.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')
+				else
+					((lastnet=lastnet-4))
+				fi
 				grepopip=
 				((grepopip=lastnet-2))
 				echo $grepopip
