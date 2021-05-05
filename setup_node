@@ -255,7 +255,7 @@ function configuration {
 							;;
 						esac 
 						sed -i "s/\/POPIP\//$vpnc_ip/g" "/tmp/$vpnc_host/iked.conf.$publichost"
-						sed -i "s/\/POP\//$vpnc_ip/g" "/tmp/$vpnc_host/iked.conf.$publichost"
+						sed -i "s/\/POP\//$vpnc_host/g" "/tmp/$vpnc_host/iked.conf.$publichost"
 						;;
 				esac
 				sed -i "s/\/POPIP\//$vpnc_ip/g" "/etc/iked.conf.$vpnc_host"
