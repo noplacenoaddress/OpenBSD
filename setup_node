@@ -288,18 +288,18 @@ function configuration {
 					typeset -i lastnet
 					lastnet=$(dig gre7058.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')
 				else
-					((lastnet=lastnet-4))
+					lastnet=$lastnet-4
 				fi
 				echo $lastnet
 				typeset -i grepopip
-				((grepopip=lastnet-2))
+				grepopip=$lastnet-2
 				echo $grepopip
 				sed -i "s/\/GREPOPIP\//10.10.10.$grepopip\/32/g" "/etc/hostname.gre$i"
 				typeset -i  grelocalip
-				((grelocalip=lastnet-3))
+				grelocalip=$lastnet-3
 				echo $grelocalip
 				sed -i "s/\/GRELOCALIP\//10.10.10.$grelocalip\/32/g" "/etc/hostname.gre$i"
-				((i=i+1))
+				i=$i+1
 			done
 			for file in /etc/hostname.gre? ; do
 				echo $file
