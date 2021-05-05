@@ -228,6 +228,7 @@ function configuration {
 					mkdir "/tmp/$vpnc_host"
 				else
 					rm -rf "/tmp/$vpnc_host"
+					mkdir "/tmp/$vpnc_host"
 				fi
 				echo include \"/etc/iked.conf.$vpnc_host\" >> /etc/iked.conf
 				case $vpnc_host in
