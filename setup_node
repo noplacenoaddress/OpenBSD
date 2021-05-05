@@ -281,9 +281,11 @@ function configuration {
 				sed -i "s/\/POPIP\//$popip/g" "/etc/hostname.gre$i"
 				if [ $i -eq 0 ]; then
 					lastnet=$(dig gre7058.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')
+					echo "ok"
 				else
 					((lastnet=lastnet-4))
 				fi
+				echo $lastnet
 				grepopip=
 				((grepopip=lastnet-2))
 				echo $grepopip
