@@ -231,41 +231,39 @@ function configuration {
 					mkdir "/tmp/$vpnc_host"
 				fi
 				echo include \"/etc/iked.conf.$vpnc_host\" >> /etc/iked.conf
-				case $vpnc_host in
-					"fr.telecomlobby.com")
-						install -o root -g wheel -m 0640 src/etc/iked.conf.mikrotik "/etc/iked.conf.$vpnc_host"
-						cp src/mikrotik/ipsec.rsc "/tmp/$vpnc_host/$vpnc_host.rsc"
-						sed -i "s/\/POPIP\//$vpnc_ip/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
-						sed -i "s/\/POP\//$vpnc_ip/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
-						echo "use /tmp/$vpnc_host/$vpnc_host.rsc in your Mikrotik endpoint \n"
+				sshbanner=$(nc -w1 $vpnc_host 22)
+				if [ ! -z $sshbanner ]; then
+					install -o root -g wheel -m 0640 src/etc/iked.conf.mikrotik "/etc/iked.conf.$vpnc_host"
+					cp src/mikrotik/ipsec.rsc "/tmp/$vpnc_host/$vpnc_host.rsc"
+					sed -i "s/\/POPIP\//$vpnc_ip/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
+					sed -i "s/\/POP\//$vpnc_ip/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
+					echo "use /tmp/$vpnc_host/$vpnc_host.rsc in your Mikrotik endpoint \n"
+				else
+					install -o root -g wheel -m 0640 src/etc/iked.conf.openbsd "/etc/iked.conf.$vpnc_host"
+					cp src/openbsd/iked.conf.openbsd "/tmp/$vpnc_host/iked.conf.$publichost"
+					x=$((RANDOM%2+1))
+					case $x in
+						1)
+							sed -i "s/\/TYPE\//active/g" "/etc/iked.conf.$vpnc_host"
+							sed -i "s/\/TYPE\//passive/g" "/tmp/$vpnc_host/iked.conf.$publichost"
+							
 						;;
-					*)
-						install -o root -g wheel -m 0640 src/etc/iked.conf.openbsd "/etc/iked.conf.$vpnc_host"
-						cp src/openbsd/iked.conf.openbsd "/tmp/$vpnc_host/iked.conf.$publichost"
-						x=$((RANDOM%2+1))
-						case $x in
-							1)
-								sed -i "s/\/TYPE\//active/g" "/etc/iked.conf.$vpnc_host"
-								sed -i "s/\/TYPE\//passive/g" "/tmp/$vpnc_host/iked.conf.$publichost"
-								
-							;;
-							2)
-								sed -i "s/\/TYPE\//passive/g" "/etc/iked.conf.$vpnc_host"
-								sed -i "s/\/TYPE\//active/g" "/tmp/$vpnc_host/iked.conf.$publichost"
-							;;
-						esac 
-						sed -i "s/\/POPIP\//$vpnc_ip/g" "/tmp/$vpnc_host/iked.conf.$publichost"
-						sed -i "s/\/POP\//$vpnc_host/g" "/tmp/$vpnc_host/iked.conf.$publichost"
-						srcid=$(print $vpnc_host | cut -d . -f1)
-						for a in $(dig conf20591.telecomlobby.com TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
-							b=$(echo $a | cut -d : -f1)
-							if [ "$b" = "$srcid" ]; then
-								srcid=$(echo $a | cut -d : -f2)
-							fi
-						done
-						sed -i "s/\/POPID\//$srcid/g" "/tmp/$vpnc_host/iked.conf.$publichost"
+						2)
+							sed -i "s/\/TYPE\//passive/g" "/etc/iked.conf.$vpnc_host"
+							sed -i "s/\/TYPE\//active/g" "/tmp/$vpnc_host/iked.conf.$publichost"
 						;;
-				esac
+					esac 
+					sed -i "s/\/POPIP\//$vpnc_ip/g" "/tmp/$vpnc_host/iked.conf.$publichost"
+					sed -i "s/\/POP\//$vpnc_host/g" "/tmp/$vpnc_host/iked.conf.$publichost"
+					srcid=$(print $vpnc_host | cut -d . -f1)
+					for a in $(dig conf20591.telecomlobby.com TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+						b=$(echo $a | cut -d : -f1)
+						if [ "$b" = "$srcid" ]; then
+							srcid=$(echo $a | cut -d : -f2)
+						fi
+					done
+					sed -i "s/\/POPID\//$srcid/g" "/tmp/$vpnc_host/iked.conf.$publichost"
+				fi
 				sed -i "s/\/POPIP\//$vpnc_ip/g" "/etc/iked.conf.$vpnc_host"
 				sed -i "s/\/POP\//$vpnc_host/g" "/etc/iked.conf.$vpnc_host"
 				((i=i+1))
@@ -314,6 +312,9 @@ function configuration {
 				typeset -i  grelocalip
 				grelocalip=$lastnet-3
 				sed -i "s/\/GRELOCALIP\//10.10.10.$grelocalip/g" "/etc/hostname.gre$i"
+				if grep -q "ecp256" $file; then
+					cat src/mikrotik/gre.rsc >> "/tmp/$pophost/$pophost.rsc"
+				fi
 				i=$i+1
 			done
 			echo "update gre7058.telecomlobby.com TXT to $lastnet \n"
