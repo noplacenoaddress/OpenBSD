@@ -268,7 +268,7 @@ function configuration {
 				((i=i+1))
 			done
 			dyndnshost=$(dig vpnc.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')
-			if [[ ! -d $dyndnshost ]]; then
+			if [[ ! -d "/tmp/$dyndnshost" ]]; then
 				mkdir "/tmp/$dyndnshost"
 			else
 				rm -rf "/tmp/$dyndnshost"
