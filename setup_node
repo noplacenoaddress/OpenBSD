@@ -311,7 +311,7 @@ function configuration {
 				typeset -i  grelocalip
 				grelocalip=$lastnet-3
 				sed -i "s/\/GRELOCALIP\//10.10.10.$grelocalip/g" "/etc/hostname.gre$i"
-				if grep -q "ecp256" $file; then
+				if grep -q "ecp384" $file; then
 					cat src/mikrotik/gre.rsc >> "/tmp/$pophost/$pophost.rsc"
 				fi
 				i=$i+1
