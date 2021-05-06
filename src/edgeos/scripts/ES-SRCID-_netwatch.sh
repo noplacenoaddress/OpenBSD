@@ -1,7 +1,7 @@
 #!/bin/bash
 
-ROUTER_IP=10.10.10.254
-IPSEC="telecomlobby-/SRCID/"
+ROUTER_IP=/GREPOPIP/
+IPSEC="telecomlobby-/PUBLICHOSTNAME/"
 GRE="tun0"
 
 PING_RESULT=$(/usr/bin/fping -I$GRE $ROUTER_IP 2>&1)
