@@ -25,7 +25,7 @@ function error_exit {
 app=$(basename $0)
 backups="/root/Backups"
 publicip=$(ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
-publichost=$(dig $publicip PTR +short @8.8.8.8)
+publichost=$(dig -x $publicip +short @8.8.8.8 | sed 's/.$//')
 dyndns=$(host -t a cat-01.hopto.org | cut -d ' ' -f4)
 basedir=$(pwd)
 tmpdir=$(mktemp -d)
