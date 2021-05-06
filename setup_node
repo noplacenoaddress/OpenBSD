@@ -267,7 +267,7 @@ function configuration {
 				sed -i "s/\/POP\//$vpnc_host/g" "/etc/iked.conf.$vpnc_host"
 				((i=i+1))
 			done
-			dydnshost=$(dig vpnc.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')
+			dyndnshost=$(dig vpnc.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')
 			echo include \"/etc/iked.conf.$dyndnshost\" >> /etc/iked.conf
 			install -o root -g wheel -m 0640 src/etc/iked.conf.edgeos "/etc/iked.conf.$dyndnshost"
 			sed -i "s/\/POPIP\//$(dig $dyndnshost A +short | tail -n 1)/g" "/etc/iked.conf.$dyndnshost"
