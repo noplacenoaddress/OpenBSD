@@ -255,7 +255,7 @@ function configuration {
 					sed -i "s/\/POPIP\//$vpnc_ip/g" "/tmp/$vpnc_host/iked.conf.$publichost"
 					sed -i "s/\/POP\//$vpnc_host/g" "/tmp/$vpnc_host/iked.conf.$publichost"
 					srcid=$(print $vpnc_host | cut -d . -f1)
-					for a in $(dig conf20591.$domainname TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+					for a in $(dig ipsec20591.$domainname TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 						b=$(echo $a | cut -d : -f1)
 						if [ "$b" = "$srcid" ]; then
 							srcid=$(echo $a | cut -d : -f2)
@@ -318,6 +318,10 @@ function configuration {
 				if grep -q "ecp384" $file; then
 					cat src/mikrotik/gre.rsc >> "/tmp/$pophost/$pophost.rsc"
 					sed -i "s/\/GREPOPIP\//10.10.10.$grepopip\/32/g" "/tmp/$pophost/$pophost.rsc"
+				fi
+				if grep -q "ecp256" $file; then
+					cp src/edgeos/scripts/ES-SRCID-_netwatch.sh "/tmp/$pophost/ES-$publichostname_netwatch.sh"
+					cp src/edgeos/scripts/ES-SRCID--updown.sh "/tmp/$pophost/ES-$publichostname-updown.sh"
 				fi
 				i=$i+1
 			done
@@ -442,7 +446,7 @@ do
 	typeset -u publichostname=$srcid
 	domainname=$(print $publichost | sed "s/$srcid.//")
 	echo $publichost > conf/publichost
-	for a in $(dig conf20591.$domainname TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+	for a in $(dig ipsec20591.$domainname TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 		b=$(echo $a | cut -d : -f1)
 		if [ "$b" = "$srcid" ]; then
 			srcid=$(echo $a | cut -d : -f2)
