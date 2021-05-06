@@ -323,13 +323,16 @@ function configuration {
 				if grep -q "ecp256" $file; then
 					cp src/edgeos/scripts/ES-SRCID-_netwatch.sh "/tmp/$pophost/ES-${publichostname}_netwatch.sh" 
 					cp src/edgeos/scripts/ES-SRCID--updown.sh "/tmp/$pophost/ES-$publichostname-updown.sh"
+					cp src/edgeos/gre.sh "/tmp/$pophost/"
 					sed -i "s/\/GREPOPIP\//10.10.10.$grepopip/g" "/tmp/$pophost/ES-${publichostname}_netwatch.sh"
+					sed -i "s/\/GREPOPIP\//10.10.10.$grepopip/g" "/tmp/$pophost/gre.sh"
 					sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" "/tmp/$pophost/ES-${publichostname}_netwatch.sh"
 					typeset -i lasttun
 					lasttun=$(dig gre18994.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')
 					lasttun=$lasttun+1
 					sed -i "s/\/TUN\//tun$lasttun/g" "/tmp/$pophost/ES-${publichostname}_netwatch.sh"
 					sed -i "s/\/TUN\//tun$lasttun/g" "/tmp/$pophost/ES-$publichostname-updown.sh"
+					sed -i "s/\/TUN\//tun$lasttun/g" "/tmp/$pophost/gre.sh"
 				fi
 				i=$i+1
 			done
