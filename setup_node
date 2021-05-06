@@ -351,6 +351,12 @@ function configuration {
 				fi
 			done 
 			cleanold "/etc/"
+			for vpnc_ip in $(dig vpnc.$domainname A +short @8.8.8.8); do
+				echo "$vpnc_ip/32" >> /etc/pf.conf.table.ipsec
+			done
+			for file in $(find /tmp -name "*.rsc"); do
+				cat src/mikrotik/firewall.rsc >> "$file"
+			done
 			pfctl -nf /etc/pf.conf ||  error_exit "$LINENO: ERROR: PF failed."
 			pfctl -f /etc/pf.conf
 			;;
@@ -534,6 +540,20 @@ do
 	read ctrl
 	if [[ "$ctrl" -eq 1 ]]; then
 		configuration "gre" 
+	else
+		error_exit "$LINENO: EXIT FROM USER." 
+	fi
+done
+
+echo -n "configuring PF firewall and others environments \
+	\n"
+ctrl=
+while [ -z $ctrl ]
+do
+	echo -n 'Go ahead type 1 '
+	read ctrl
+	if [[ "$ctrl" -eq 1 ]]; then
+		configuration "pf" 
 	else
 		error_exit "$LINENO: EXIT FROM USER." 
 	fi
