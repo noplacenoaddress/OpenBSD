@@ -267,15 +267,13 @@ function configuration {
 				sed -i "s/\/POP\//$vpnc_host/g" "/etc/iked.conf.$vpnc_host"
 				((i=i+1))
 			done
-			echo include \"/etc/iked.conf.$(dig vpnc.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')\" >> /etc/iked.conf
-			install -o root -g wheel -m 0640 src/etc/iked.conf.edgeos "/etc/iked.conf.$(dig vpnc.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')"
-			sed -i "s/\/POPIP\//$(dig $(dig vpnc.$domainname TXT +short @8.8.8.8  | sed 's/\"//g') A +short | tail -n 1)/g" \
-				"/etc/iked.conf.$(dig vpnc.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')"
-			sed -i "s/\/POP\//$(dig vpnc.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')/g" \
-				"/etc/iked.conf.$(dig vpnc.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')"
-			cp src/edgeos/ipsec.conf /tmp 
-			cp "/etc/iked/certs/$publichost.crt" /tmp
-			echo "use /tmp/ipsec.conf in your EdgeOS endpoint  and /tmp/$publichost.crt \n"
+			dydnshost=$(dig vpnc.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')
+			echo include \"/etc/iked.conf.$dyndnshost\" >> /etc/iked.conf
+			install -o root -g wheel -m 0640 src/etc/iked.conf.edgeos "/etc/iked.conf.$dyndnshost"
+			sed -i "s/\/POPIP\//$(dig $dyndnshost A +short | tail -n 1)/g" "/etc/iked.conf.$dyndnshost"
+			sed -i "s/\/POP\//$dyndnshost)/g" "/etc/iked.conf.$dyndnshost"
+			cp src/edgeos/ipsec.conf "/tmp/$dyndnshost"
+			cp "/etc/iked/certs/$publichost.crt" "/tmp/$dyndnshost"
 			find /etc/ -type f -name "iked.*" | xargs -I {} 
 			cleanold "/etc/" 
 			rcctl start iked ||  error_exit "$LINENO: ERROR: IKED failed."
@@ -313,7 +311,7 @@ function configuration {
 				sed -i "s/\/GRELOCALIP\//10.10.10.$grelocalip/g" "/etc/hostname.gre$i"
 				if grep -q "ecp384" $file; then
 					cat src/mikrotik/gre.rsc >> "/tmp/$pophost/$pophost.rsc"
-					sed -i "s/\/GREPOPIP\//10.10.10.$grepopip/g" "/tmp/$pophost/$pophost.rsc"
+					sed -i "s/\/GREPOPIP\//10.10.10.$grepopip\/32/g" "/tmp/$pophost/$pophost.rsc"
 				fi
 				i=$i+1
 			done
