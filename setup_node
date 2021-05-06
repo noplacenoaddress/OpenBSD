@@ -439,6 +439,7 @@ do
 	echo -n 'Type the publichost '
 	read publichost
 	srcid=$(print $publichost | cut -d . -f1)
+	typeset -u publichostname=$srcid
 	domainname=$(print $publichost | sed "s/$srcid.//")
 	echo $publichost > conf/publichost
 	for a in $(dig conf20591.$domainname TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
@@ -450,6 +451,7 @@ do
 	find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/PUBLICHOST\//$publichost/g" {}
 	find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/DOMAINNAME\//$domainname/g" {}
 	find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/SRCID\//$srcid/g" {}
+	find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" {}
 done
 
 echo $publicip > conf/publicip
