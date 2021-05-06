@@ -2,7 +2,7 @@
 
 ROUTER_IP=/GREPOPIP/
 IPSEC="telecomlobby-/PUBLICHOSTNAME/"
-GRE="tun0"
+GRE="/TUN/"
 
 PING_RESULT=$(/usr/bin/fping -I$GRE $ROUTER_IP 2>&1)
 ALIVE="alive"

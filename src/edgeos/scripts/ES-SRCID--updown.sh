@@ -3,7 +3,7 @@
 set -o nounset
 set -o errexit
 
-TUN_IFACE="tun2"
+TUN_IFACE="/TUN/"
 
 case "${PLUTO_VERB}" in
 	up-host)
