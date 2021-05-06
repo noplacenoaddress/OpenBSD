@@ -219,7 +219,7 @@ function configuration {
 			rcctl set iked flags "-vv"
 			typeset -i i=0
 			install -o root -g wheel -m 0640  src/etc/iked.conf /etc/
-			for vpnc_ip in $(dig vpnc.telecomlobby.com A +short @8.8.8.8)
+			for vpnc_ip in $(dig vpnc.$domainname A +short @8.8.8.8)
 			do
 				vpnc_host=$(dig -x $vpnc_ip +short @8.8.8.8 | sed 's/.$//')
 				vpnc_ips[i]="$vpnc_ip"
@@ -232,52 +232,48 @@ function configuration {
 				fi
 				echo include \"/etc/iked.conf.$vpnc_host\" >> /etc/iked.conf
 				sshbanner=$(nc -w1 $vpnc_host 22)
-				echo $sshbanner
-				case $vpnc_host in
-					"fr.telecomlobby.com")
-						install -o root -g wheel -m 0640 src/etc/iked.conf.mikrotik "/etc/iked.conf.$vpnc_host"
-						cp src/mikrotik/ipsec.rsc "/tmp/$vpnc_host/$vpnc_host.rsc"
-						sed -i "s/\/POPIP\//$vpnc_ip/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
-						sed -i "s/\/POP\//$vpnc_ip/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
-						echo "use /tmp/$vpnc_host/$vpnc_host.rsc in your Mikrotik endpoint \n"
+				if [[ $(echo $sshbanner | grep -c "ROSSSH") -ne 0 ]]; then
+					install -o root -g wheel -m 0640 src/etc/iked.conf.mikrotik "/etc/iked.conf.$vpnc_host"
+					cp src/mikrotik/ipsec.rsc "/tmp/$vpnc_host/$vpnc_host.rsc"
+					sed -i "s/\/POPIP\//$vpnc_ip/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
+					sed -i "s/\/POP\//$vpnc_ip/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
+					echo "use /tmp/$vpnc_host/$vpnc_host.rsc in your Mikrotik endpoint \n"
+				else
+					install -o root -g wheel -m 0640 src/etc/iked.conf.openbsd "/etc/iked.conf.$vpnc_host"
+					cp src/openbsd/iked.conf.openbsd "/tmp/$vpnc_host/iked.conf.$publichost"
+					x=$((RANDOM%2+1))
+					case $x in
+						1)
+							sed -i "s/\/TYPE\//active/g" "/etc/iked.conf.$vpnc_host"
+							sed -i "s/\/TYPE\//passive/g" "/tmp/$vpnc_host/iked.conf.$publichost"
+							
 						;;
-					*)
-						install -o root -g wheel -m 0640 src/etc/iked.conf.openbsd "/etc/iked.conf.$vpnc_host"
-						cp src/openbsd/iked.conf.openbsd "/tmp/$vpnc_host/iked.conf.$publichost"
-						x=$((RANDOM%2+1))
-						case $x in
-							1)
-								sed -i "s/\/TYPE\//active/g" "/etc/iked.conf.$vpnc_host"
-								sed -i "s/\/TYPE\//passive/g" "/tmp/$vpnc_host/iked.conf.$publichost"
-								
-							;;
-							2)
-								sed -i "s/\/TYPE\//passive/g" "/etc/iked.conf.$vpnc_host"
-								sed -i "s/\/TYPE\//active/g" "/tmp/$vpnc_host/iked.conf.$publichost"
-							;;
-						esac 
-						sed -i "s/\/POPIP\//$vpnc_ip/g" "/tmp/$vpnc_host/iked.conf.$publichost"
-						sed -i "s/\/POP\//$vpnc_host/g" "/tmp/$vpnc_host/iked.conf.$publichost"
-						srcid=$(print $vpnc_host | cut -d . -f1)
-						for a in $(dig conf20591.telecomlobby.com TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
-							b=$(echo $a | cut -d : -f1)
-							if [ "$b" = "$srcid" ]; then
-								srcid=$(echo $a | cut -d : -f2)
-							fi
-						done
-						sed -i "s/\/POPID\//$srcid/g" "/tmp/$vpnc_host/iked.conf.$publichost"
+						2)
+							sed -i "s/\/TYPE\//passive/g" "/etc/iked.conf.$vpnc_host"
+							sed -i "s/\/TYPE\//active/g" "/tmp/$vpnc_host/iked.conf.$publichost"
 						;;
-				esac
+					esac 
+					sed -i "s/\/POPIP\//$vpnc_ip/g" "/tmp/$vpnc_host/iked.conf.$publichost"
+					sed -i "s/\/POP\//$vpnc_host/g" "/tmp/$vpnc_host/iked.conf.$publichost"
+					srcid=$(print $vpnc_host | cut -d . -f1)
+					for a in $(dig conf20591.$domainname TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+						b=$(echo $a | cut -d : -f1)
+						if [ "$b" = "$srcid" ]; then
+							srcid=$(echo $a | cut -d : -f2)
+						fi
+					done
+					sed -i "s/\/POPID\//$srcid/g" "/tmp/$vpnc_host/iked.conf.$publichost"
+				fi
 				sed -i "s/\/POPIP\//$vpnc_ip/g" "/etc/iked.conf.$vpnc_host"
 				sed -i "s/\/POP\//$vpnc_host/g" "/etc/iked.conf.$vpnc_host"
 				((i=i+1))
 			done
-			echo include \"/etc/iked.conf.$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')\" >> /etc/iked.conf
-			install -o root -g wheel -m 0640 src/etc/iked.conf.edgeos "/etc/iked.conf.$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')"
-			sed -i "s/\/POPIP\//$(dig $(dig vpnc.telecomlobby.com TXT +short @8.8.8.8  | sed 's/\"//g') A +short | tail -n 1)/g" \
-				"/etc/iked.conf.$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')"
-			sed -i "s/\/POP\//$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')/g" \
-				"/etc/iked.conf.$(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')"
+			echo include \"/etc/iked.conf.$(dig vpnc.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')\" >> /etc/iked.conf
+			install -o root -g wheel -m 0640 src/etc/iked.conf.edgeos "/etc/iked.conf.$(dig vpnc.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')"
+			sed -i "s/\/POPIP\//$(dig $(dig vpnc.$domainname TXT +short @8.8.8.8  | sed 's/\"//g') A +short | tail -n 1)/g" \
+				"/etc/iked.conf.$(dig vpnc.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')"
+			sed -i "s/\/POP\//$(dig vpnc.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')/g" \
+				"/etc/iked.conf.$(dig vpnc.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')"
 			cp src/edgeos/ipsec.conf /tmp 
 			cp "/etc/iked/certs/$publichost.crt" /tmp
 			echo "use /tmp/ipsec.conf in your EdgeOS endpoint  and /tmp/$publichost.crt \n"
@@ -306,7 +302,7 @@ function configuration {
 				sed -i "s/\/POPIP\//$popip/g" "/etc/hostname.gre$i"
 				if [ $i -eq 0 ]; then
 					typeset -i lastnet
-					lastnet=$(dig gre7058.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g')
+					lastnet=$(dig gre7058.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')
 				else
 					lastnet=$lastnet-4
 				fi
@@ -321,7 +317,7 @@ function configuration {
 				fi
 				i=$i+1
 			done
-			echo "update gre7058.telecomlobby.com TXT to $lastnet \n"
+			echo "update gre7058.$domainname TXT to $lastnet \n"
 			for file in /etc/hostname.gre? ; do
 				sh /etc/netstart $(echo $file | awk -F. '{print $2}')
 			done
@@ -441,7 +437,7 @@ do
 	srcid=$(print $publichost | cut -d . -f1)
 	domainname=$(print $publichost | sed "s/$srcid.//")
 	echo $publichost > conf/publichost
-	for a in $(dig conf20591.telecomlobby.com TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+	for a in $(dig conf20591.$domainname TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 		b=$(echo $a | cut -d : -f1)
 		if [ "$b" = "$srcid" ]; then
 			srcid=$(echo $a | cut -d : -f2)
