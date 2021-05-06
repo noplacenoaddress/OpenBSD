@@ -320,7 +320,7 @@ function configuration {
 					sed -i "s/\/GREPOPIP\//10.10.10.$grepopip\/32/g" "/tmp/$pophost/$pophost.rsc"
 				fi
 				if grep -q "ecp256" $file; then
-					cp src/edgeos/scripts/ES-SRCID-_netwatch.sh "/tmp/$pophost/ES-$publichostname_netwatch.sh"
+					cp src/edgeos/scripts/ES-SRCID-_netwatch.sh "/tmp/$pophost/ES-$publichostname\_netwatch.sh"
 					cp src/edgeos/scripts/ES-SRCID--updown.sh "/tmp/$pophost/ES-$publichostname-updown.sh"
 				fi
 				i=$i+1
