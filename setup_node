@@ -357,8 +357,8 @@ function configuration {
 			for file in $(find /tmp -name "*.rsc"); do
 				cat src/mikrotik/firewall.rsc >> "$file"
 			done
-			pfctl -nf /etc/pf.conf ||  error_exit "$LINENO: ERROR: PF failed."
-			pfctl -f /etc/pf.conf
+			pfctl -nf /etc/pf.conf 
+			#pfctl -f /etc/pf.conf
 			;;
 		"ospf")
 			rcctl enable ospfd
