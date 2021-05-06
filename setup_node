@@ -268,12 +268,18 @@ function configuration {
 				((i=i+1))
 			done
 			dyndnshost=$(dig vpnc.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')
+			if [[ ! -d $dyndnshost ]]; then
+				mkdir "/tmp/$dyndnshost"
+			else
+				rm -rf "/tmp/$dyndnshost"
+				mkdir "/tmp/$dyndnshost"
+			fi
 			echo include \"/etc/iked.conf.$dyndnshost\" >> /etc/iked.conf
 			install -o root -g wheel -m 0640 src/etc/iked.conf.edgeos "/etc/iked.conf.$dyndnshost"
 			sed -i "s/\/POPIP\//$(dig $dyndnshost A +short | tail -n 1)/g" "/etc/iked.conf.$dyndnshost"
 			sed -i "s/\/POP\//$dyndnshost/g" "/etc/iked.conf.$dyndnshost"
-			cp src/edgeos/ipsec.conf "/tmp/$dyndnshost"
-			cp "/etc/iked/certs/$publichost.crt" "/tmp/$dyndnshost"
+			cp src/edgeos/ipsec.conf "/tmp/$dyndnshost/"
+			cp "/etc/iked/certs/$publichost.crt" "/tmp/$dyndnshost/"
 			find /etc/ -type f -name "iked.*" | xargs -I {} 
 			cleanold "/etc/" 
 			rcctl start iked ||  error_exit "$LINENO: ERROR: IKED failed."
