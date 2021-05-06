@@ -2,4 +2,4 @@
 # /sbin/pfctl -t ipsec -T add -f /etc/pf.conf.table.ipsec
 # /sbin/pfctl -t ipsec -T show
 #
-/POP/
+
