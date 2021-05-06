@@ -25,7 +25,7 @@ function error_exit {
 app=$(basename $0)
 backups="/root/Backups"
 publicip=$(ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
-#publichost=$(dig $publicip PTR +short @8.8.8.8)
+publichost=$(dig $publicip PTR +short @8.8.8.8)
 dyndns=$(host -t a cat-01.hopto.org | cut -d ' ' -f4)
 basedir=$(pwd)
 tmpdir=$(mktemp -d)
@@ -326,7 +326,7 @@ function configuration {
 					sed -i "s/\/GRELOCALIP\//10.10.10.$grelocalip/g" "/tmp/$pophost/ES-${publichostname}_netwatch.sh"
 					sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" "/tmp/$pophost/ES-${publichostname}_netwatch.sh"
 					typeset -i lasttun
-					lasttun=$(dig gre18994..$domainname TXT +short @8.8.8.8 | sed 's/\"//g')
+					lasttun=$(dig gre18994.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')
 					lasttun=$lasttun+1
 					sed -i "s/\/TUN\//tun$lasttun/g" "/tmp/$pophost/ES-${publichostname}_netwatch.sh"
 					sed -i "s/\/TUN\//tun$lasttun/g" "/tmp/$pophost/ES-$publichostname-updown.sh"
@@ -334,7 +334,8 @@ function configuration {
 				i=$i+1
 			done
 			lastnet=$lastnet-4
-			echo "update gre7058.$domainname TXT to $lastnet \n"
+			echo "update gre7058.$domainname TXT to $lastnet \
+			      \n gre18994.$domainname TXT to $lasttun \n"
 			for file in /etc/hostname.gre? ; do
 				sh /etc/netstart $(echo $file | awk -F. '{print $2}')
 			done
@@ -446,27 +447,20 @@ do
 	echo $routerid > conf/routerid
 	find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/ROUTERID\//$routerid/g" {}
 done
-publichost=
-while [ -z $publichost ]
-do
-	echo -n 'Type the publichost '
-	read publichost
-	srcid=$(print $publichost | cut -d . -f1)
-	typeset -u publichostname=$srcid
-	domainname=$(print $publichost | sed "s/$srcid.//")
-	echo $publichost > conf/publichost
-	for a in $(dig ipsec20591.$domainname TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
-		b=$(echo $a | cut -d : -f1)
-		if [ "$b" = "$srcid" ]; then
-			srcid=$(echo $a | cut -d : -f2)
-		fi
-	done
-	find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/PUBLICHOST\//$publichost/g" {}
-	find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/DOMAINNAME\//$domainname/g" {}
-	find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/SRCID\//$srcid/g" {}
-	find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" {}
+srcid=$(print $publichost | cut -d . -f1)
+typeset -u publichostname=$srcid
+domainname=$(print $publichost | sed "s/$srcid.//")
+echo $publichost > conf/publichost
+for a in $(dig ipsec20591.$domainname TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+	b=$(echo $a | cut -d : -f1)
+	if [ "$b" = "$srcid" ]; then
+		srcid=$(echo $a | cut -d : -f2)
+	fi
 done
-
+find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/PUBLICHOST\//$publichost/g" {}
+find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/DOMAINNAME\//$domainname/g" {}
+find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/SRCID\//$srcid/g" {}
+find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" {}
 echo $publicip > conf/publicip
 echo $dyndns > conf/dyndns
 find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/PUBLICIP\//$publicip/g" {}
