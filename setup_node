@@ -400,7 +400,7 @@ else
 		read ctrl
 		if [[ "$ctrl" -eq 1 ]]; then
 			install -o root -g wheel -m 0644 src/etc/installurl /etc/
-			echo "installurl#$ctrl" >> /tmp/config.ini
+			echo "installurl#$ctrl" > /tmp/config.ini
 		else
 			error_exit "$LINENO: EXIT FROM USER." 
 		fi
@@ -629,7 +629,7 @@ ipv6prefix=
 ipv6defrouter=
 
 if [[ $configini -eq 1 ]]; then
-	ipv6ctrl=$(cat /tmp/config.ini  | grep ipv6ctrl |cut -d : -f2)
+	ipv6ctrl=$(cat /tmp/config.ini  | grep ipv6ctrl |cut -d \# -f2)
 	case $ipv6ctrl in
 		"static")
 			ipv6egress=$(cat /tmp/config.ini  | grep ipv6egress |cut -d \# -f2)
@@ -650,7 +650,7 @@ else
 	do
 		echo -n 'Is the IPv6 address on the egress interface static or dynamic?\n'
 		read ipv6ctrl
-		echo "ipv6ctrl:$ipv6ctrl" >> /tmp/config.ini
+		echo "ipv6ctrl#$ipv6ctrl" >> /tmp/config.ini
 		case $ipv6ctrl in
 			"static")
 				echo -n 'Type the IPv6 address without prefixlen '
