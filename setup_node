@@ -382,7 +382,7 @@ function configuration {
 }
 
 configini=
-if [[ ! -e "/tmp/config.ini" ]];
+if [[ ! -e "/tmp/config.ini" ]]; then
 	touch "/tmp/config.ini"
 else
 	echo -n "Type 1 to use /tmp/config.ini "
