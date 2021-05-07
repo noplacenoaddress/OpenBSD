@@ -475,31 +475,45 @@ else
 	    
 	done
 fi
-	
-hostname=
-while [ -z $hostname ]
-do
-	echo -n 'Type the hostname '
-	read hostname
-	echo "hostname:$hostname" >> /tmp/config.ini
+if [[ $configini -eq 1 ]]; then
+	hostname=$(cat /tmp/config.ini  | grep hostname |cut -d : -f2)
 	find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/HOSTNAME\//$hostname/g" {}
-done
-landomainname=
-while [ -z $landomainname ]
-do
-	echo -n 'Type the LAN domain name '
-	read landomainname
-	echo "landomainname:$landomainname" >> /tmp/config.ini
+else
+	hostname=
+	while [ -z $hostname ]
+	do
+		echo -n 'Type the hostname '
+		read hostname
+		echo "hostname:$hostname" >> /tmp/config.ini
+		find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/HOSTNAME\//$hostname/g" {}
+	done
+fi
+if [[ $configini -eq 1 ]]; then
+	landomainname=$(cat /tmp/config.ini  | grep landomainname |cut -d : -f2)
 	find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/LANDOMAINNAME\//$landomainname/g" {}
-done
-routerid=
-while [ -z $routerid ]
-do
-	echo -n 'Type the routerid '
-	read routerid
-	echo "routerid:$routerid" >> /tmp/config.ini
+else
+	landomainname=
+	while [ -z $landomainname ]
+	do
+		echo -n 'Type the LAN domain name '
+		read landomainname
+		echo "landomainname:$landomainname" >> /tmp/config.ini
+		find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/LANDOMAINNAME\//$landomainname/g" {}
+	done
+fi
+if [[ $configini -eq 1 ]]; then
+	routerid=$(cat /tmp/config.ini  | grep routerid |cut -d : -f2)
 	find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/ROUTERID\//$routerid/g" {}
-done
+else
+	routerid=
+	while [ -z $routerid ]
+	do
+		echo -n 'Type the routerid '
+		read routerid
+		echo "routerid:$routerid" >> /tmp/config.ini
+		find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/ROUTERID\//$routerid/g" {}
+	done
+fi
 srcid=$(print $publichost | cut -d . -f1)
 typeset -u publichostname=$srcid
 domainname=$(print $publichost | sed "s/$srcid.//")
@@ -516,85 +530,105 @@ find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {
 find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/PUBLICIP\//$publicip/g" {}
 find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/DYNDNS\//$dyndns/g" {}
 
-
 echo "configuring basic"
-ctrl=
-while [ -z $ctrl ]
-do
-	echo -n 'Go ahead type 1 '
-	read ctrl
-	if [[ "$ctrl" -eq 1 ]]; then
-		configuration "basic" 
-		echo "basic:$ctrl" >> /tmp/config.ini
-	else
-		error_exit "$LINENO: EXIT FROM USER." 
-	fi
-    
-done
+if [[ $configini -eq 1 ]]; then
+	configuration "basic" 
+else
+	ctrl=
+	while [ -z $ctrl ]
+	do
+		echo -n 'Go ahead type 1 '
+		read ctrl
+		if [[ "$ctrl" -eq 1 ]]; then
+			configuration "basic" 
+			echo "basic:$ctrl" >> /tmp/config.ini
+		else
+			error_exit "$LINENO: EXIT FROM USER." 
+		fi
+	    
+	done
+fi
 echo "configuring unbound"
-ctrl=
-while [ -z $ctrl ]
-do
-	echo -n 'Go ahead type 1 '
-	read ctrl
-	if [[ "$ctrl" -eq 1 ]]; then
-		configuration "unbound" "local"
-		echo "unbound:$ctrl" >> /tmp/config.ini
-	else
-		error_exit "$LINENO: EXIT FROM USER." 
-	fi
-    
-done
+if [[ $configini -eq 1 ]]; then
+	configuration "unbound" "local"
+else
+	ctrl=
+	while [ -z $ctrl ]
+	do
+		echo -n 'Go ahead type 1 '
+		read ctrl
+		if [[ "$ctrl" -eq 1 ]]; then
+			configuration "unbound" "local"
+			echo "unbound:$ctrl" >> /tmp/config.ini
+		else
+			error_exit "$LINENO: EXIT FROM USER." 
+		fi
+	    
+	done
+fi
 echo -n "configuring ssh \n"
-ctrl=
-while [ -z $ctrl ]
-do
-	echo -n 'Go ahead type 1 '
-	read ctrl
-	if [[ "$ctrl" -eq 1 ]]; then
-		configuration "ssh" "public"
-		echo "ssh:$ctrl" >> /tmp/config.ini
-	else
-		error_exit "$LINENO: EXIT FROM USER." 
-	fi
-done
+if [[ $configini -eq 1 ]]; then
+	configuration "ssh" "public"
+else
+	ctrl=
+	while [ -z $ctrl ]
+	do
+		echo -n 'Go ahead type 1 '
+		read ctrl
+		if [[ "$ctrl" -eq 1 ]]; then
+			configuration "ssh" "public"
+			echo "ssh:$ctrl" >> /tmp/config.ini
+		else
+			error_exit "$LINENO: EXIT FROM USER." 
+		fi
+	done
+fi
 echo -n "configuring ipsec \
 	\nplease add ${publicip}/32 to \
 	\n/etc/pf.conf/table.ipsec \
 	\nto the others nodes and reload them! \
 	\n"
-ctrl=
-while [ -z $ctrl ]
-do
-	echo -n 'Go ahead type 1 '
-	read ctrl
-	if [[ "$ctrl" -eq 1 ]]; then
-		configuration "ipsec" 
-		echo "ipsec:$ctrl" >> /tmp/config.ini
-	else
-		error_exit "$LINENO: EXIT FROM USER." 
-	fi
-done
-
-echo -n "configuring gre interfaces \
-	\n"
-ctrl=
-while [ -z $ctrl ]
-do
-	echo -n 'Go ahead type 1 '
-	read ctrl
-	if [[ "$ctrl" -eq 1 ]]; then
-		configuration "gre" 
-		echo "gre:$ctrl" >> /tmp/config.ini
-	else
-		error_exit "$LINENO: EXIT FROM USER." 
-	fi
-done
+if [[ $configini -eq 1 ]]; then
+	configuration "ipsec" 
+else
+	ctrl=
+	while [ -z $ctrl ]
+	do
+		echo -n 'Go ahead type 1 '
+		read ctrl
+		if [[ "$ctrl" -eq 1 ]]; then
+			configuration "ipsec" 
+			echo "ipsec:$ctrl" >> /tmp/config.ini
+		else
+			error_exit "$LINENO: EXIT FROM USER." 
+		fi
+	done
+fi
+if [[ $configini -eq 1 ]]; then
+	configuration "gre" 
+else
+	echo -n "configuring gre interfaces \
+		\n"
+	ctrl=
+	while [ -z $ctrl ]
+	do
+		echo -n 'Go ahead type 1 '
+		read ctrl
+		if [[ "$ctrl" -eq 1 ]]; then
+			configuration "gre" 
+			echo "gre:$ctrl" >> /tmp/config.ini
+		else
+			error_exit "$LINENO: EXIT FROM USER." 
+		fi
+	done
+fi
 
 ipv6ctrl=
 ipv6egress=
 ipv6prefix=
 ipv6defrouter=
+
+
 while [ -z $ipv6ctrl ]
 do
 	echo -n 'Is the IPv6 address on the egress interface static or dynamic?\n'
