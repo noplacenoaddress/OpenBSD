@@ -204,7 +204,7 @@ function configuration {
 				rm -rf "/tmp/ca.$landomainname"
 				mkdir "/tmp/ca.$landomainname"
 			fi
-			echo $sshfp > "/tmp/ca.$landomainname/$landomain.zone"
+			echo $sshfp > "/tmp/ca.$landomainname/$landomainname.zone"
 			;;
 		"ipsec")
 			if [[ -e "/etc/iked.conf" ]]; then
