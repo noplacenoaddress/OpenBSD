@@ -40,7 +40,8 @@ function pkg {
 
 	case $phase in
 		"shell")
-			pkg_add colorls nano wget fping iperf uptimed oidentd sqlite3
+			pkg_add colorls nano wget fping iperf uptimed oidentd sqlite3 \
+				nmap tor
 			;;
 	esac
 }
@@ -347,7 +348,7 @@ function configuration {
 		"pf")
 			for file in src/etc/pf.* ; do
 				if [[ -e "$file" ]]; then
-					install -o root -g wheel -m 0700  $file /etc/
+					install -o root -g wheel -m 0640  $file /etc/
 				fi
 			done 
 			cleanold "/etc/"
