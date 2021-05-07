@@ -361,9 +361,10 @@ function configuration {
 			find /etc -type f -maxdepth 1 | xargs -I {} sed -i "s/\/PUBV6\//${ipv6egress}/g" {}
 			find /etc -type f -maxdepth 1 | xargs -I {} sed -i "s/\/PREFIX\//${ipv6prefix}/g" {}
 			if [[ -e "/etc/mygate" ]]; then
-				sh /etc/netstart /etc/hostname.vio0
+				sh /etc/netstart vio0
+				route add -inet6 default $(echo "/etc/mygate")
 			fi
-			pfctl -nf /etc/pf.conf 
+			pfctl -nf /etc/pf.conf	 
 			#pfctl -f /etc/pf.conf
 			;;
 		"ospf")
@@ -380,6 +381,14 @@ function configuration {
 	esac
 }
 
+configini=
+if [[ ! -e "/tmp/config.ini" ]];
+	touch "/tmp/config.ini"
+else
+	echo -n "Type 1 to use /tmp/config.ini "
+	read configini 
+fi
+
 echo "changing installurl"
 ctrl=
 while [ -z $ctrl ]
@@ -388,6 +397,7 @@ do
 	read ctrl
 	if [[ "$ctrl" -eq 1 ]]; then
 		install -o root -g wheel -m 0644 src/etc/installurl /etc/
+		echo "installurl:$ctrl" >> /tmp/config.ini
 	else
 		error_exit "$LINENO: EXIT FROM USER." 
 	fi
@@ -401,6 +411,7 @@ do
 	read ctrl
 	if [[ "$ctrl" -eq 1 ]]; then
 		pkg "shell"
+		echo "shell:$ctrl" >> /tmp/config.ini
 	else
 		error_exit "$LINENO: EXIT FROM USER." 
 	fi
@@ -432,6 +443,7 @@ do
 		
 		configuration "users"
 		configuration "scripts"
+		echo "users:$ctrl" >> /tmp/config.ini
 	else
 		error_exit "$LINENO: EXIT FROM USER." 
 	fi
@@ -443,7 +455,7 @@ while [ -z $hostname ]
 do
 	echo -n 'Type the hostname '
 	read hostname
-	echo $hostname > conf/hostname
+	echo "hostname:$hostname" >> /tmp/config.ini
 	find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/HOSTNAME\//$hostname/g" {}
 done
 landomainname=
@@ -451,7 +463,7 @@ while [ -z $landomainname ]
 do
 	echo -n 'Type the LAN domain name '
 	read landomainname
-	echo $landomainname > conf/landomainname
+	echo "landomainname:$landomainname" >> /tmp/config.ini
 	find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/LANDOMAINNAME\//$landomainname/g" {}
 done
 routerid=
@@ -459,13 +471,12 @@ while [ -z $routerid ]
 do
 	echo -n 'Type the routerid '
 	read routerid
-	echo $routerid > conf/routerid
+	echo "routerid:$routerid" >> /tmp/config.ini
 	find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/ROUTERID\//$routerid/g" {}
 done
 srcid=$(print $publichost | cut -d . -f1)
 typeset -u publichostname=$srcid
 domainname=$(print $publichost | sed "s/$srcid.//")
-echo $publichost > conf/publichost
 for a in $(dig ipsec20591.$domainname TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 	b=$(echo $a | cut -d : -f1)
 	if [ "$b" = "$srcid" ]; then
@@ -476,8 +487,6 @@ find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {
 find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/DOMAINNAME\//$domainname/g" {}
 find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/SRCID\//$srcid/g" {}
 find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" {}
-echo $publicip > conf/publicip
-echo $dyndns > conf/dyndns
 find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/PUBLICIP\//$publicip/g" {}
 find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/DYNDNS\//$dyndns/g" {}
 
@@ -490,6 +499,7 @@ do
 	read ctrl
 	if [[ "$ctrl" -eq 1 ]]; then
 		configuration "basic" 
+		echo "basic:$ctrl" >> /tmp/config.ini
 	else
 		error_exit "$LINENO: EXIT FROM USER." 
 	fi
@@ -503,6 +513,7 @@ do
 	read ctrl
 	if [[ "$ctrl" -eq 1 ]]; then
 		configuration "unbound" "local"
+		echo "unbound:$ctrl" >> /tmp/config.ini
 	else
 		error_exit "$LINENO: EXIT FROM USER." 
 	fi
@@ -516,6 +527,7 @@ do
 	read ctrl
 	if [[ "$ctrl" -eq 1 ]]; then
 		configuration "ssh" "public"
+		echo "ssh:$ctrl" >> /tmp/config.ini
 	else
 		error_exit "$LINENO: EXIT FROM USER." 
 	fi
@@ -532,6 +544,7 @@ do
 	read ctrl
 	if [[ "$ctrl" -eq 1 ]]; then
 		configuration "ipsec" 
+		echo "ipsec:$ctrl" >> /tmp/config.ini
 	else
 		error_exit "$LINENO: EXIT FROM USER." 
 	fi
@@ -546,6 +559,7 @@ do
 	read ctrl
 	if [[ "$ctrl" -eq 1 ]]; then
 		configuration "gre" 
+		echo "gre:$ctrl" >> /tmp/config.ini
 	else
 		error_exit "$LINENO: EXIT FROM USER." 
 	fi
@@ -559,6 +573,7 @@ while [ -z $ipv6ctrl ]
 do
 	echo -n 'Is the IPv6 address on the egress interface static or dynamic?\n'
 	read ipv6ctrl
+	echo "ipv6ctrl:$ipv6ctrl" >> /tmp/config.ini
 	case $ipv6ctrl in
 		"static")
 			echo -n 'Type the IPv6 address without prefixlen '
@@ -567,9 +582,13 @@ do
 			read ipv6prefix
 			echo -n 'Type the IPv6 default route '
 			read ipv6defrouter
+			echo "ipv6egress:$ipv6egress" >> /tmp/config.ini
+			echo "ipv6prefix:$ipv6prefix" >> /tmp/config.ini
+			echo "ipv6defrouter:$ipv6defrouter" >> /tmp/config.ini
 			;;
 		"dynamic")
 			ipv6egress=$(ifconfig egress | grep inet6 | grep -v fe80 |cut -d ' ' -f2)
+			echo "ipv6egress:$ipv6egress" >> /tmp/config.ini
 			;;
 		*)
 			echo -n "Please type static or dynamic \n"
@@ -593,6 +612,7 @@ do
 	read ctrl
 	if [[ "$ctrl" -eq 1 ]]; then
 		configuration "pf" 
+		echo "pf:$pf" >> /tmp/config.ini
 	else
 		error_exit "$LINENO: EXIT FROM USER." 
 	fi
