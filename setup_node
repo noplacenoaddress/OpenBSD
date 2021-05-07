@@ -635,6 +635,7 @@ if [[ $configini -eq 1 ]]; then
 			ipv6egress=$(cat /tmp/config.ini  | grep ipv6egress |cut -d : -f2)
 			ipv6prefix=$(cat /tmp/config.ini  | grep ipv6prefix |cut -d : -f2)
 			ipv6defrouter=$(cat /tmp/config.ini  | grep ipv6defrouter |cut -d : -f2)
+			;;
 		"dynamic")
 			ipv6egress=$(ifconfig egress | grep inet6 | grep -v fe80 |cut -d ' ' -f2)
 			;;

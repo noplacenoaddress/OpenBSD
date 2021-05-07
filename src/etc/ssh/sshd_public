@@ -3,7 +3,7 @@ ListenAddress /PUBLICIP/
 HostKey /etc/ssh/ssh_host_ed25519_key
 PermitRootLogin no
 PubkeyAuthentication yes
-AuthorizedKeysFile	.ssh/authorized_keys
+AuthorizedKeysFile	/etc/ssh/authorized_keys
 PasswordAuthentication	no
 UseDNS yes
 Subsystem	sftp	/usr/libexec/sftp-server
