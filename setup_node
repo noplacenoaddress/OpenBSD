@@ -112,6 +112,8 @@ function configuration {
 			nohup sh /etc/netstart vio0 & 
 			nohup sh /etc/netstart vether0 &
 			cd $basedir
+			arp -s $(arp -an | grep $(route -n show | awk '/default/{print $2}' | head -n 1) | head -n1) \
+				$(arp -an | grep $(route -n show | awk '/default/{print $2}' | head -n 1) | head -n1 | awk '{print $2}')
 			sh /etc/rc.local
 			;;	
 		"users")
