@@ -390,65 +390,91 @@ else
 fi
 
 echo "changing installurl"
-ctrl=
-while [ -z $ctrl ]
-do
-	echo -n 'Go ahead type 1 '
-	read ctrl
-	if [[ "$ctrl" -eq 1 ]]; then
-		install -o root -g wheel -m 0644 src/etc/installurl /etc/
-		echo "installurl:$ctrl" >> /tmp/config.ini
-	else
-		error_exit "$LINENO: EXIT FROM USER." 
-	fi
-    
-done		
+if [[ $configini -eq 1 ]]; then
+	install -o root -g wheel -m 0644 src/etc/installurl /etc/
+else
+	ctrl=
+	while [ -z $ctrl ]
+	do
+		echo -n 'Go ahead type 1 '
+		read ctrl
+		if [[ "$ctrl" -eq 1 ]]; then
+			install -o root -g wheel -m 0644 src/etc/installurl /etc/
+			echo "installurl:$ctrl" >> /tmp/config.ini
+		else
+			error_exit "$LINENO: EXIT FROM USER." 
+		fi
+	    
+	done		
+fi
 echo "adding basic shell packages"
+if [[ $configini -eq 1 ]]; then
+	pkg "shell"
+else
 ctrl=
-while [ -z $ctrl ]
-do
-	echo -n 'Go ahead type 1 '
-	read ctrl
-	if [[ "$ctrl" -eq 1 ]]; then
-		pkg "shell"
-		echo "shell:$ctrl" >> /tmp/config.ini
-	else
-		error_exit "$LINENO: EXIT FROM USER." 
-	fi
-    
-done
+	while [ -z $ctrl ]
+	do
+		echo -n 'Go ahead type 1 '
+		read ctrl
+		if [[ "$ctrl" -eq 1 ]]; then
+			pkg "shell"
+			echo "shell:$ctrl" >> /tmp/config.ini
+		else
+			error_exit "$LINENO: EXIT FROM USER." 
+		fi
+	    
+	done
+fi
 
 rcctl disable {sndiod,slaacd,check_quotas}
 rcctl stop {sndiod,slaacd}
 
 echo "configuring users"
-ctrl=
-while [ -z $ctrl ]
-do
-	echo -n 'Go ahead type 1 '
-	read ctrl
-	if [[ "$ctrl" -eq 1 ]]; then
-		if [ ! -d /root/Bin ]; then 
-			mkdir /root/Bin
-			chmod 700 /root/Bin
-		fi
-		if [ ! -d /root/Backups ]; then 
-			mkdir /root/Backups
-			chmod 700 /root/Backups
-		fi
-		if [ ! -d /home/taglio/Bin ]; then 
-			mkdir /home/taglio/Bin 
-			chown taglio:wheel /home/taglio/Bin
-		fi
-		
-		configuration "users"
-		configuration "scripts"
-		echo "users:$ctrl" >> /tmp/config.ini
-	else
-		error_exit "$LINENO: EXIT FROM USER." 
+if [[ $configini -eq 1 ]]; then
+	if [ ! -d /root/Bin ]; then 
+		mkdir /root/Bin
+		chmod 700 /root/Bin
 	fi
-    
-done
+	if [ ! -d /root/Backups ]; then 
+		mkdir /root/Backups
+		chmod 700 /root/Backups
+	fi
+	if [ ! -d /home/taglio/Bin ]; then 
+		mkdir /home/taglio/Bin 
+		chown taglio:wheel /home/taglio/Bin
+	fi
+	
+	configuration "users"
+	configuration "scripts"
+else
+	ctrl=
+	while [ -z $ctrl ]
+	do
+		echo -n 'Go ahead type 1 '
+		read ctrl
+		if [[ "$ctrl" -eq 1 ]]; then
+			if [ ! -d /root/Bin ]; then 
+				mkdir /root/Bin
+				chmod 700 /root/Bin
+			fi
+			if [ ! -d /root/Backups ]; then 
+				mkdir /root/Backups
+				chmod 700 /root/Backups
+			fi
+			if [ ! -d /home/taglio/Bin ]; then 
+				mkdir /home/taglio/Bin 
+				chown taglio:wheel /home/taglio/Bin
+			fi
+			
+			configuration "users"
+			configuration "scripts"
+			echo "users:$ctrl" >> /tmp/config.ini
+		else
+			error_exit "$LINENO: EXIT FROM USER." 
+		fi
+	    
+	done
+fi
 	
 hostname=
 while [ -z $hostname ]
