@@ -548,8 +548,10 @@ else
 	    
 	done
 fi
+
 echo "configuring unbound"
 if [[ $configini -eq 1 ]]; then
+	sleep 3
 	configuration "unbound" "local"
 else
 	ctrl=
