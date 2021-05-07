@@ -546,6 +546,36 @@ do
 	fi
 done
 
+ipv6ctrl=
+ipv6egress=
+ipv6defrouter=
+while [ -z $ipv6ctrl ]
+do
+	echo -n 'Is the IPv6 address on the egress interface static or dynamic?\n'
+	read ipv6ctrl
+	case $ipv6ctrl in
+		"static")
+			echo -n 'Type the IPv6 address with prefixlen '
+			read ipv6egress
+			echo -n 'Type the IPv6 default route '
+			read ipv6defrouter
+			;;
+		"dynamic")
+			ipv6egress=$(ifconfig egress | grep inet6 | grep -v fe80 |cut -d ' ' -f2)
+			;;
+		*)
+			echo -n "Please type static or dynamic \n"
+			continue
+			;;
+	esac
+	if [[ ! -z ipv6defrouter ]]; then
+		install -o root -g wheel -m 0640 src/etc/hostname-ipv6s.vio0 /etc/hostname.vio0
+		install -o root -g wheel -m 0640 src/etc/mygate-ipv6s /etc/mygate
+		sed -i "s/\/ROUTEV6\//$ipv6defrouter/g" /etc/mygate
+	fi
+	find /etc -type f -maxdepth 1 | xargs -I {} sed -i "s/\/PUBV6\//$ipv6egress/g" {}
+done
+
 echo -n "configuring PF firewall and others environments \
 	\n"
 ctrl=
