@@ -628,54 +628,74 @@ ipv6egress=
 ipv6prefix=
 ipv6defrouter=
 
-
-while [ -z $ipv6ctrl ]
-do
-	echo -n 'Is the IPv6 address on the egress interface static or dynamic?\n'
-	read ipv6ctrl
-	echo "ipv6ctrl:$ipv6ctrl" >> /tmp/config.ini
+if [[ $configini -eq 1 ]]; then
+	ipv6ctrl=$(cat /tmp/config.ini  | grep ipv6ctrl |cut -d : -f2)
 	case $ipv6ctrl in
 		"static")
-			echo -n 'Type the IPv6 address without prefixlen '
-			read ipv6egress
-			echo -n 'Type the prefixlen '
-			read ipv6prefix
-			echo -n 'Type the IPv6 default route '
-			read ipv6defrouter
-			echo "ipv6egress:$ipv6egress" >> /tmp/config.ini
-			echo "ipv6prefix:$ipv6prefix" >> /tmp/config.ini
-			echo "ipv6defrouter:$ipv6defrouter" >> /tmp/config.ini
-			;;
+			ipv6egress=$(cat /tmp/config.ini  | grep ipv6egress |cut -d : -f2)
+			ipv6prefix=$(cat /tmp/config.ini  | grep ipv6prefix |cut -d : -f2)
+			ipv6defrouter=$(cat /tmp/config.ini  | grep ipv6defrouter |cut -d : -f2)
 		"dynamic")
 			ipv6egress=$(ifconfig egress | grep inet6 | grep -v fe80 |cut -d ' ' -f2)
-			echo "ipv6egress:$ipv6egress" >> /tmp/config.ini
 			;;
-		*)
-			echo -n "Please type static or dynamic \n"
-			continue
-			;;
-	esac	
+	esac
 	if [[ ! -z ipv6defrouter ]]; then
 		install -o root -g wheel -m 0640 src/etc/hostname-ipv6s.vio0 /etc/hostname.vio0
 		install -o root -g wheel -m 0640 src/etc/mygate-ipv6s /etc/mygate
 		sed -i "s/\/ROUTEV6\//$ipv6defrouter/g" /etc/mygate
 	fi
-	
-done
+else	
+	while [ -z $ipv6ctrl ]
+	do
+		echo -n 'Is the IPv6 address on the egress interface static or dynamic?\n'
+		read ipv6ctrl
+		echo "ipv6ctrl:$ipv6ctrl" >> /tmp/config.ini
+		case $ipv6ctrl in
+			"static")
+				echo -n 'Type the IPv6 address without prefixlen '
+				read ipv6egress
+				echo -n 'Type the prefixlen '
+				read ipv6prefix
+				echo -n 'Type the IPv6 default route '
+				read ipv6defrouter
+				echo "ipv6egress:$ipv6egress" >> /tmp/config.ini
+				echo "ipv6prefix:$ipv6prefix" >> /tmp/config.ini
+				echo "ipv6defrouter:$ipv6defrouter" >> /tmp/config.ini
+				;;
+			"dynamic")
+				ipv6egress=$(ifconfig egress | grep inet6 | grep -v fe80 |cut -d ' ' -f2)
+				echo "ipv6egress:$ipv6egress" >> /tmp/config.ini
+				;;
+			*)
+				echo -n "Please type static or dynamic \n"
+				continue
+				;;
+		esac	
+		if [[ ! -z ipv6defrouter ]]; then
+			install -o root -g wheel -m 0640 src/etc/hostname-ipv6s.vio0 /etc/hostname.vio0
+			install -o root -g wheel -m 0640 src/etc/mygate-ipv6s /etc/mygate
+			sed -i "s/\/ROUTEV6\//$ipv6defrouter/g" /etc/mygate
+		fi
+		
+	done
+fi
 
-echo -n "configuring PF firewall and others environments \
-	\n"
-ctrl=
-while [ -z $ctrl ]
-do
-	echo -n 'Go ahead type 1 '
-	read ctrl
-	if [[ "$ctrl" -eq 1 ]]; then
-		configuration "pf" 
-		echo "pf:$pf" >> /tmp/config.ini
-	else
-		error_exit "$LINENO: EXIT FROM USER." 
-	fi
-done
+echo -n "configuring PF firewall and others environments \n"
+if [[ $configini -eq 1 ]]; then
+	configuration "pf"
+else 
+	ctrl=
+	while [ -z $ctrl ]
+	do
+		echo -n 'Go ahead type 1 '
+		read ctrl
+		if [[ "$ctrl" -eq 1 ]]; then
+			configuration "pf" 
+			echo "pf:$pf" >> /tmp/config.ini
+		else
+			error_exit "$LINENO: EXIT FROM USER." 
+		fi
+	done
+fi
 
 
