@@ -358,7 +358,10 @@ function configuration {
 			for file in $(find /tmp -name "*.rsc"); do
 				cat src/mikrotik/firewall.rsc >> "$file"
 			done
-			find /etc -type f -maxdepth 1 | xargs -I {} sed -i "s/\/PUBV6\//$ipv6egress/g" {}
+			find /etc -type f -maxdepth 1 | xargs -I {} sed -i "s/\/PUBV6\//{$ipv6egress}/g" {}
+			if [[ -e "/etc/mygate" ]]; then
+				sh /etc/netstart /etc/hostname.vio0
+			fi
 			pfctl -nf /etc/pf.conf 
 			#pfctl -f /etc/pf.conf
 			;;
@@ -568,7 +571,7 @@ do
 			echo -n "Please type static or dynamic \n"
 			continue
 			;;
-	esac
+	esac	
 	if [[ ! -z ipv6defrouter ]]; then
 		install -o root -g wheel -m 0640 src/etc/hostname-ipv6s.vio0 /etc/hostname.vio0
 		install -o root -g wheel -m 0640 src/etc/mygate-ipv6s /etc/mygate
