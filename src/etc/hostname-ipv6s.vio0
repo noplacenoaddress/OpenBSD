@@ -3,4 +3,4 @@
 dhcp
 inet6 -temporary
 inet6 -soii
-inet6 /PUBV6/
+inet6 /PUBV6///PREFIX/
