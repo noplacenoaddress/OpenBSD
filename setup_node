@@ -359,6 +359,7 @@ function configuration {
 				cat src/mikrotik/firewall.rsc >> "$file"
 			done
 			find /etc -type f -maxdepth 1 | xargs -I {} sed -i "s/\/PUBV6\//${ipv6egress}/g" {}
+			find /etc -type f -maxdepth 1 | xargs -I {} sed -i "s/\/PREFIX\//${ipv6prefix}/g" {}
 			if [[ -e "/etc/mygate" ]]; then
 				sh /etc/netstart /etc/hostname.vio0
 			fi
@@ -552,6 +553,7 @@ done
 
 ipv6ctrl=
 ipv6egress=
+ipv6prefix=
 ipv6defrouter=
 while [ -z $ipv6ctrl ]
 do
@@ -559,8 +561,10 @@ do
 	read ipv6ctrl
 	case $ipv6ctrl in
 		"static")
-			echo -n 'Type the IPv6 address with prefixlen '
+			echo -n 'Type the IPv6 address without prefixlen '
 			read ipv6egress
+			echo -n 'Type the prefixlen '
+			read ipv6prefix
 			echo -n 'Type the IPv6 default route '
 			read ipv6defrouter
 			;;
