@@ -358,7 +358,7 @@ function configuration {
 			for file in $(find /tmp -name "*.rsc"); do
 				cat src/mikrotik/firewall.rsc >> "$file"
 			done
-			find /etc -type f -maxdepth 1 | xargs -I {} sed -i "s/\/PUBV6\//{$ipv6egress}/g" {}
+			find /etc -type f -maxdepth 1 | xargs -I {} sed -i "s/\/PUBV6\//${ipv6egress}/g" {}
 			if [[ -e "/etc/mygate" ]]; then
 				sh /etc/netstart /etc/hostname.vio0
 			fi
