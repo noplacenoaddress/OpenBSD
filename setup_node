@@ -184,8 +184,8 @@ function configuration {
 			fi
 			case $subphase in
 				"public")
-					install -o root -g wheel -m 0640 src/etc/sshd_public /etc/ssh/sshd_config
-					install -o root -g wheel -m 0640 src/etc/authorized_keys /etc/ssh/
+					install -o root -g wheel -m 0640 src/etc/ssh/sshd_public /etc/ssh/sshd_config
+					install -o root -g wheel -m 0640 src/etc/ssh/authorized_keys /etc/ssh/
 					workstahost=$(cat /etc/ssh/authorized_keys | cut -d @ -f2)
 					if [[ ! -d "/tmp/$workstahost.$landomainname" ]]; then
 						mkdir "/tmp/$workstahost.$landomainname"
@@ -198,27 +198,13 @@ function configuration {
 				"ipsec")
 					;;
 			esac
-			echo $sshfp > conf/sshfp
-			echo -n "please add \
-			\n${publickey} \
-			\nto ~/.ssh/known_hosts \
-			\nto the others nodes \
-			\nplease add \
-			\n${sshfp} \
-			\nto /var/nsd/zones/master/telecom.lobby.zone in cyberanarkhia \
-			\n"
-			ctrl=
-			while [ -z $ctrl ]
-			do
-				echo -n 'waiting.. press 1 when done '
-				read ctrl
-				if [[ "$ctrl" -eq 1 ]]; then
-					cd "$basedir/../"
-				else
-					error_exit "$LINENO: EXIT FROM USER." 
-				fi
-			    
-			done
+			if [[ ! -d "/tmp/ca.$landomainname" ]]; then
+				mkdir "/tmp/ca.$landomainname"
+			else
+				rm -rf "/tmp/ca.$landomainname"
+				mkdir "/tmp/ca.$landomainname"
+			fi
+			echo $sshfp > "/tmp/ca.$landomainname/$landomain.zone"
 			;;
 		"ipsec")
 			if [[ -e "/etc/iked.conf" ]]; then
