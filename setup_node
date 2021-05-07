@@ -178,10 +178,26 @@ function configuration {
 			;;		
 		"ssh") 
 			publickey=$(ssh-keyscan -t ed25519 ::1 | sed "s/::1/[$publicip,$routerid]/")
-			if grep -q "$publickey" src/etc/ssh/ssh_known_hosts; then
-				echo $publickey >> src/etc/ssh/ssh_known_hosts
-			fi
 			sshfp=$(ssh-keyscan -D -t ed25519 ::1 | sed "s/::1/$hostname/")
+			if [[ ! -d /etc/ssh/ca ]]; then
+				mkdir -p /etc/ssh/ca/principals
+			fi
+			case $subphase in
+				"public")
+					install -o root -g wheel -m 0640 src/etc/sshd_public /etc/ssh/sshd_config
+					install -o root -g wheel -m 0640 src/etc/authorized_keys /etc/ssh/
+					workstahost=$(cat /etc/ssh/authorized_keys | cut -d @ -f2)
+					if [[ ! -d "/tmp/$workstahost.$landomainname" ]]; then
+						mkdir "/tmp/$workstahost.$landomainname"
+					else
+						rm -rf "/tmp/$workstahost.$landomainname"
+						mkdir "/tmp/$workstahost.$landomainname"
+					fi
+					rcctl restart sshd || error_exit "$LINENO: ERROR: SSHD failed."
+					;;
+				"ipsec")
+					;;
+			esac
 			echo $sshfp > conf/sshfp
 			echo -n "please add \
 			\n${publickey} \
