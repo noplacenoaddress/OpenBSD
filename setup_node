@@ -384,7 +384,18 @@ function configuration {
 		"ospf")
 			rcctl enable ospfd
 			install -o root -g wheel -m 0600  src/etc/ospfd.conf /etc/
-			cleanold "/etc/"
+			sed -i "s/\/ROUTERID\//$routerid/g" /etc/ospfd.conf
+			for file in $(find /etc/ -name "hostname.gre?" -maxdepth 1); do
+				x=$(basename $file | cut -d . -f2 | sed "s/gre//g")
+				sed -i "s/\/X\//$x/g" /etc/ospfd.conf
+				ospfmd5=$(openssl rand -base64 15)
+				sed -i "s/\/OSPFMD5\//$ospfmd5/g" /etc/ospfd.conf
+				pophost=$(cat `basename $file` | head -n 1 | cut -d ' ' -f2 | sed "s/\"//g")
+				typeset -i latency=$(ping -c4 $pophost | tail -1| awk '{print $4}' | cut -d '/' -f 2 | cut -d . -f1)
+				typeset -i metric=$(expr latency / 2)
+				sed -i "s/\/METRIC\//$metric/g" /etc/ospfd.conf
+				cat src/openbsd/ospfd.conf.openbsd >> /etc/ospfd.conf			
+			done
 			rcctl start ospfd ||  error_exit "$LINENO: ERROR: OSPFD failed."
 			;;
 		"ntpd")
@@ -708,7 +719,25 @@ else
 		read ctrl
 		if [[ "$ctrl" -eq 1 ]]; then
 			configuration "pf" 
-			echo "pf#$pf" >> /tmp/config.ini
+			echo "pf#$ctrl" >> /tmp/config.ini
+		else
+			error_exit "$LINENO: EXIT FROM USER." 
+		fi
+	done
+fi
+
+echo -n "configuring OSPF routing protocol \n"
+if [[ $configini -eq 1 ]]; then
+	configuration "ospf"
+else 
+	ctrl=
+	while [ -z $ctrl ]
+	do
+		echo -n 'Go ahead type 1 '
+		read ctrl
+		if [[ "$ctrl" -eq 1 ]]; then
+			configuration "ospf" 
+			echo "ospf#$ospf" >> /tmp/config.ini
 		else
 			error_exit "$LINENO: EXIT FROM USER." 
 		fi
