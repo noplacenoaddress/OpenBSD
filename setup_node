@@ -375,7 +375,9 @@ function configuration {
 			find /etc -type f -maxdepth 1 | xargs -I {} sed -i "s/\/PREFIX\//${ipv6prefix}/g" {}
 			if [[ -e "/etc/mygate" ]]; then
 				sh /etc/netstart vio0
-				route add -inet6 default $(cat "/etc/mygate")
+				if [[ $(route -n show -inet6 | grep -c "default") -ne 1 ]]; then
+					route add -inet6 default $(cat "/etc/mygate")
+				fi
 			fi
 			arp -s $defaultv4router $macdefaultv4router	
 			pfctl -nf /etc/pf.conf	 
