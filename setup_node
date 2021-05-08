@@ -393,7 +393,7 @@ function configuration {
 				sed -i "s/\/X\//$x/g" /etc/ospfd.conf
 				ospfmd5=$(openssl rand -base64 15)
 				sed -i "s/\/OSPFMD5\//${ospfmd5}/g" /etc/ospfd.conf
-				pophost=$(cat `basename $file` | head -n 1 | cut -d ' ' -f2 | sed "s/\"//g")
+				pophost=$(cat /etc/`basename $file` | head -n 1 | cut -d ' ' -f2 | sed "s/\"//g")
 				latency=$(ping -c4 $pophost | tail -1| awk '{print $4}' | cut -d '/' -f 2 | cut -d . -f1)
 				metric=$(expr latency / 2)
 				sed -i "s/\/METRIC\//$metric/g" /etc/ospfd.conf
