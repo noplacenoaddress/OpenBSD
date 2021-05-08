@@ -418,7 +418,7 @@ function configuration {
 					lasttun=$lasttun+1
 					cp src/openbsd/ospfd.conf.openbsd "/tmp/$pophost/ospfd.conf"
 					sed -i "s/\/X\//$lasttun/g" "/tmp/$pophost/ospfd.conf"	
-					sed -i "s/\/METRIC\//${metric}/g" /etc/ospfd.conf	
+					sed -i "s/\/METRIC\//${metric}/g" "/tmp/$pophost/ospfd.conf"	
 					sed -i "s/\/OSPFMD5\//${ospfmd5}/g" "/tmp/$pophost/ospfd.conf"
 				fi
 			done
@@ -426,7 +426,12 @@ function configuration {
 			mv /tmp/ospfd.conf /etc/ospfd.conf
 			echo "}" >> /etc/ospfd.conf
 			chmod 600 /etc/ospfd.conf
-			rcctl start ospfd ||  error_exit "$LINENO: ERROR: OSPFD failed."
+			pidof_ospfd=$(pidof "ospfd")
+			if [[ -z $pidof_ospfd ]]; then
+				rcctl start ospfd ||  error_exit "$LINENO: ERROR: OSPFD failed."
+			else
+				rcctl restart ospfd ||  error_exit "$LINENO: ERROR: OSPFD failed."
+			fi
 			;;
 		"ntpd")
 			install -o root -g wheel -m 0644  src/etc/ntpd.conf /etc/
