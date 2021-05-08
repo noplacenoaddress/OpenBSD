@@ -391,7 +391,7 @@ function configuration {
 			for file in $(find /etc/ -name "hostname.gre?" -maxdepth 1); do
 				x=$(basename $file | cut -d . -f2 | sed "s/gre//g")
 				sed -i "s/\/X\//$x/g" /etc/ospfd.conf
-				ospfmd5=$(openssl rand -base64 15)
+				ospfmd5=$(tr -cd '[:alnum:],.' < /dev/urandom | fold -w 15 | head -n 1)
 				sed -i "s/\/OSPFMD5\//${ospfmd5}/g" /etc/ospfd.conf
 				pophost=$(cat /etc/`basename $file` | head -n 1 | cut -d ' ' -f2 | sed "s/\"//g")
 				typeset -i latency=$(ping -c4 $pophost | tail -1| awk '{print $4}' | cut -d '/' -f 2 | cut -d . -f1)
