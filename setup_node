@@ -411,7 +411,9 @@ function configuration {
 				typeset -i latency=$(ping -c4 $pophost | tail -1| awk '{print $4}' | cut -d '/' -f 2 | cut -d . -f1)
 				typeset -i metric=$(expr $latency / 2)
 				sed -i "s/\/METRIC\//${metric}/g" /etc/ospfd.conf
-				cat src/openbsd/ospfd.conf.openbsd >> /etc/ospfd.conf			
+				cat src/openbsd/ospfd.conf.openbsd >> /etc/ospfd.conf	
+				cp src/openbsd/ospfd.conf.openbsd "/tmp/$pophost/ospfd.conf"
+				sed -i "s/\/X\//$lasttun/g" "/tmp/$pophost/ospfd.conf"		
 			done
 			cat /etc/ospfd.conf | sed -n -e :a -e '1,12!{P;N;D;};N;ba' > /tmp/ospfd.conf
 			mv /tmp/ospfd.conf /etc/ospfd.conf
