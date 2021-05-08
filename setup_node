@@ -114,7 +114,7 @@ function configuration {
 			nohup sh /etc/netstart vio0 & 
 			nohup sh /etc/netstart vether0 &
 			cd $basedir
-			arp -s $defaultv4router $macdefaultv4router
+			
 			sh /etc/rc.local
 			;;	
 		"users")
@@ -377,6 +377,7 @@ function configuration {
 				sh /etc/netstart vio0
 				route add -inet6 default $(echo "/etc/mygate")
 			fi
+			arp -s $defaultv4router $macdefaultv4router
 			pfctl -nf /etc/pf.conf	 
 			#pfctl -f /etc/pf.conf
 			;;
