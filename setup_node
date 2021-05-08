@@ -379,6 +379,20 @@ function configuration {
 					route add -inet6 default $(cat "/etc/mygate")
 				fi
 			fi
+			for file in $(find /etc -maxdepth 1 -name "iked.conf.*") ; do
+				tagged=$(echo $file | sed "s/\/etc\/iked.conf.//")
+				count=$(dig $tagged A +short @8.8.8.8 | wc -l)
+				if [[ $count -gt 1 ]]; then
+					iptagged=$(dig $tagged A +short @8.8.8.8 | tail -n 1)
+				else
+					iptagged=$(dig $tagged A +short @8.8.8.8)
+				fi
+				sed -i "s/\/TAGGED\//${tagged}/g" /etc/pf.conf
+				sed -i "s/\/IPTAGGED\//${iptagged}/g" /etc/pf.conf
+				cat src/openbsd/pf.conf.openbsd >> /etc/pf.conf
+			done
+			sed -i '$d' /etc/pf.conf 
+			cat  src/openbsd/pf.conf.fintemp.openbsd >> /etc/pf.conf
 			arp -s $defaultv4router $macdefaultv4router
 			echo "arp -s $defaultv4router $macdefaultv4router" >> /etc/rc.local
 			pfctl -nf /etc/pf.conf	 
