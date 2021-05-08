@@ -43,7 +43,7 @@ function pkg {
 	case $phase in
 		"shell")
 			pkg_add colorls nano wget fping iperf uptimed oidentd sqlite3 \
-				nmap tor
+				nmap tor ipcalc
 			;;
 	esac
 }
