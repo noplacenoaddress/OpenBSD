@@ -429,6 +429,9 @@ function configuration {
 					sed -i "s/\/OSPFMD5\//${ospfmd5}/g" "/tmp/$pophost/ospfd.rsc"
 					sed -i "s/\/METRIC\//${metric}/g" "/tmp/$pophost/ospfd.rsc"
 					sed -i "s/\/POPHOSTNAME\//${pophostname}/g" "/tmp/$pophost/ospfd.rsc"
+					grepip=$(ifconfig $(basename $file | cut -d . -f2) | grep inet | cut -d ' ' -f2 | tail -n 1)
+					grenetwork=$(ipcalc -c $greip / 30 | grep network | awk '{ print $3 }')
+					sed -i "s/\/GRENETWORK\//${grenetwork}/g" "/tmp/$pophost/ospfd.rsc"
 				fi
 			done
 			cat /etc/ospfd.conf | sed -n -e :a -e '1,12!{P;N;D;};N;ba' > /tmp/ospfd.conf
