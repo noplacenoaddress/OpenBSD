@@ -423,8 +423,7 @@ function configuration {
 					sed -i "s/\/X\//$lasttun/g" "/tmp/$pophost/ospfd.conf"	
 					sed -i "s/\/METRIC\//${metric}/g" "/tmp/$pophost/ospfd.conf"	
 					sed -i "s/\/OSPFMD5\//${ospfmd5}/g" "/tmp/$pophost/ospfd.conf"
-				fi
-				if [[ $(ls "/tmp/$pophost/" | grep -c "rsc") -eq 1 ]]; then
+				elif [[ $(ls "/tmp/$pophost/" | grep -c "rsc") -eq 1 ]]; then
 					pophostname=$(echo $pophost | cut -d . -f1)
 					cp src/mikrotik/ospfd.rsc "/tmp/$pophost"
 					sed -i "s/\/HOSTNAME\//${hostname}/g" "/tmp/$pophost/ospfd.rsc"
@@ -436,6 +435,8 @@ function configuration {
 					grenetwork=$(ipcalc -c $greip / 30 | grep network | awk '{ print $3 }')
 					sed -i "s/\/GRENETWORK\//${grenetwork}/g" "/tmp/$pophost/ospfd.rsc"
 					cat "/tmp/$pophost/ospfd.rsc" >> "/tmp/$pophost/$pophost.rsc"
+				else
+					tunif=$(cat "/tmp/$pophost/gre.sh" | awk '{ print $4 }' | grep tun | head -n 1)
 				fi
 			done
 			cat /etc/ospfd.conf | sed -n -e :a -e '1,12!{P;N;D;};N;ba' > /tmp/ospfd.conf
