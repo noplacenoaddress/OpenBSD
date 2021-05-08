@@ -377,7 +377,7 @@ function configuration {
 				sh /etc/netstart vio0
 				route add -inet6 default $(echo "/etc/mygate")
 			fi
-			arp -s $defaultv4router $macdefaultv4router
+			arp -s $defaultv4router $macdefaultv4router	
 			pfctl -nf /etc/pf.conf	 
 			#pfctl -f /etc/pf.conf
 			;;
