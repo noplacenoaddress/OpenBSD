@@ -239,10 +239,12 @@ function configuration {
 				echo include \"/etc/iked.conf.$vpnc_host\" >> /etc/iked.conf
 				if [[ $(nc -w1  $vpnc_ip 22 | grep -c "ROSSSH") -eq 1 ]]; then
 					install -o root -g wheel -m 0640 src/etc/iked.conf.mikrotik "/etc/iked.conf.$vpnc_host"
+					if [[ -e "/tmp/$vpnc_host/$vpnc_host.rsc" ]]; then
+						rm -rf "/tmp/$vpnc_host/$vpnc_host.rsc"
+					fi
 					cp src/mikrotik/ipsec.rsc "/tmp/$vpnc_host/$vpnc_host.rsc"
 					sed -i "s/\/POPIP\//$vpnc_ip/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
 					sed -i "s/\/POP\//$vpnc_ip/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
-					echo "use /tmp/$vpnc_host/$vpnc_host.rsc in your Mikrotik endpoint \n"
 				elif [[ $(nc -w1  $vpnc_ip 22 | grep -c "ROSSSH") -eq 0 ]]; then
 					install -o root -g wheel -m 0640 src/etc/iked.conf.openbsd "/etc/iked.conf.$vpnc_host"
 					cp src/openbsd/iked.conf.openbsd "/tmp/$vpnc_host/iked.conf.$publichost"
