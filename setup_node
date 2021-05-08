@@ -26,6 +26,8 @@ app=$(basename $0)
 backups="/root/Backups"
 publicip=$(ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
 publichost=$(dig -x $publicip +short @8.8.8.8 | sed 's/.$//')
+defaultv4router=$(route -n show | awk '/default/{print $2}' | head -n 1)
+macdefaultv4router=$(arp -an | grep $defaultv4router |  awk '{print $2}')
 dyndns=$(host -t a cat-01.hopto.org | cut -d ' ' -f4)
 basedir=$(pwd)
 tmpdir=$(mktemp -d)
@@ -112,8 +114,7 @@ function configuration {
 			nohup sh /etc/netstart vio0 & 
 			nohup sh /etc/netstart vether0 &
 			cd $basedir
-			arp -s $(arp -an | grep $(route -n show | awk '/default/{print $2}' | head -n 1) | head -n1) \
-				$(arp -an | grep $(route -n show | awk '/default/{print $2}' | head -n 1) | head -n1 | awk '{print $2}')
+			arp -s $defaultv4router $macdefaultv4router
 			sh /etc/rc.local
 			;;	
 		"users")
