@@ -1,1 +1,1 @@
-pass out quick on on $ext_if proto gre from $pub to /IPTAGGED/ tagged /TAGGED/
+pass out quick on $ext_if proto gre from $pub to /IPTAGGED/ tagged /TAGGED/
