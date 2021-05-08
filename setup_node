@@ -439,8 +439,8 @@ function configuration {
 					tunif=$(cat "/tmp/$pophost/gre.sh" | awk '{ print $4 }' | grep tun | head -n 1)
 					cp src/edgeos/ospf.sh "/tmp/$pophost/"
 					sed -i "s/\/TUNIF\//${tunif}/g" "/tmp/$pophost/ospf.sh"
-					sed -i "s/\/OSPFMD5\//${ospfmd5}/g" "/tmp/$pophost/ospfd.sh"
-					sed -i "s/\/METRIC\//${metric}/g" "/tmp/$pophost/ospfd.sh"
+					sed -i "s/\/OSPFMD5\//${ospfmd5}/g" "/tmp/$pophost/ospf.sh"
+					sed -i "s/\/METRIC\//${metric}/g" "/tmp/$pophost/ospf.sh"
 				fi
 			done
 			cat /etc/ospfd.conf | sed -n -e :a -e '1,12!{P;N;D;};N;ba' > /tmp/ospfd.conf
