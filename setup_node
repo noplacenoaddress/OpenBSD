@@ -395,11 +395,12 @@ function configuration {
 				sed -i "s/\/OSPFMD5\//${ospfmd5}/g" /etc/ospfd.conf
 				pophost=$(cat /etc/`basename $file` | head -n 1 | cut -d ' ' -f2 | sed "s/\"//g")
 				typeset -i latency=$(ping -c4 $pophost | tail -1| awk '{print $4}' | cut -d '/' -f 2 | cut -d . -f1)
-				typeset -i metric=$(expr latency / 2)
+				typeset -i metric=$(expr $latency / 2)
 				sed -i "s/\/METRIC\//${metric}/g" /etc/ospfd.conf
 				cat src/openbsd/ospfd.conf.openbsd >> /etc/ospfd.conf			
 			done
-			cat /etc/ospfd.conf | sed -n -e :a -e '1,12!{P;N;D;};N;ba' > /etc/ospfd.conf
+			cat /etc/ospfd.conf | sed -n -e :a -e '1,12!{P;N;D;};N;ba' > /tmp/ospfd.conf
+			mv /tmp/ospfd.conf /etc/ospfd.conf
 			echo "}" >> /etc/ospfd.conf
 			rcctl start ospfd ||  error_exit "$LINENO: ERROR: OSPFD failed."
 			;;
