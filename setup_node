@@ -423,13 +423,10 @@ function configuration {
 					sed -i "s/\/OSPFMD5\//${ospfmd5}/g" "/tmp/$pophost/ospfd.conf"
 				fi
 				if [[ $(ls "/tmp/$pophost/" | grep -c "rsc") -eq 1 ]]; then
-					typeset -i lasttun
-					lasttun=$(dig gre18994.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')
-					lasttun=$lasttun+1
-					cp src/openbsd/ospfd.conf.openbsd "/tmp/$pophost/ospfd.conf"
-					sed -i "s/\/X\//$lasttun/g" "/tmp/$pophost/ospfd.conf"	
-					sed -i "s/\/METRIC\//${metric}/g" "/tmp/$pophost/ospfd.conf"	
-					sed -i "s/\/OSPFMD5\//${ospfmd5}/g" "/tmp/$pophost/ospfd.conf"
+					cp src/mikrotik/ospfd.rsc "/tmp/$pophost"
+					sed -i "s/\/HOSTNAME\//${hostname}/g" "/tmp/$pophost/ospfd.rsc"
+					sed -i "s/\/OSPFMD5\//${ospfmd5}/g" "/tmp/$pophost/ospfd.rsc"
+					sed -i "s/\/METRIC\//${metric}/g" "/tmp/$pophost/ospfd.rsc"
 				fi
 			done
 			cat /etc/ospfd.conf | sed -n -e :a -e '1,12!{P;N;D;};N;ba' > /tmp/ospfd.conf
