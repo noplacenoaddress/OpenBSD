@@ -392,7 +392,7 @@ function configuration {
 				x=$(basename $file | cut -d . -f2 | sed "s/gre//g")
 				sed -i "s/\/X\//$x/g" /etc/ospfd.conf
 				ospfmd5=$(openssl rand -base64 15)
-				sed -i "s/\/OSPFMD5\//$ospfmd5/g" /etc/ospfd.conf
+				sed -i "s/\/OSPFMD5\//${ospfmd5}/g" /etc/ospfd.conf
 				pophost=$(cat `basename $file` | head -n 1 | cut -d ' ' -f2 | sed "s/\"//g")
 				latency=$(ping -c4 $pophost | tail -1| awk '{print $4}' | cut -d '/' -f 2 | cut -d . -f1)
 				metric=$(expr latency / 2)
