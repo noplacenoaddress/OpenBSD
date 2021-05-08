@@ -114,7 +114,6 @@ function configuration {
 			nohup sh /etc/netstart vio0 & 
 			nohup sh /etc/netstart vether0 &
 			cd $basedir
-			
 			sh /etc/rc.local
 			;;	
 		"users")
@@ -303,7 +302,6 @@ function configuration {
 			for file in $(find /etc -maxdepth 1 -name "iked.conf.*") ; do
 				install -o root -g wheel -m 0640 src/etc/hostname.gre-X- "/etc/hostname.gre$i"
 				pophost=$(echo $file | sed "s/\/etc\/iked.conf.//")
-				
 				sed -i "s/\/POPHOST\//$pophost/g" "/etc/hostname.gre$i"
 				sed -i "s/\/PUBLICIP\//$publicip/g" "/etc/hostname.gre$i"
 				sed -i "s/\/X\//$i/g" "/etc/hostname.gre$i"
@@ -394,9 +392,12 @@ function configuration {
 			sed -i '$d' /etc/pf.conf 
 			cat  src/openbsd/pf.conf.fintemp.openbsd >> /etc/pf.conf
 			arp -s $defaultv4router $macdefaultv4router
-			echo "arp -s $defaultv4router $macdefaultv4router" >> /etc/rc.local
-			pfctl -nf /etc/pf.conf	 
-			#pfctl -f /etc/pf.conf
+			if [[ $(grep -c "arp" /etc/rc.local) -ne 1 ]]; then
+				echo "arp -s $defaultv4router $macdefaultv4router" >> /etc/rc.local
+			fi
+			if [[ -z $(pfctl -nf /etc/pf.conf) ]]; then
+				pfctl -f /etc/pf.conf
+			fi
 			;;
 		"ospf")
 			rcctl enable ospfd
