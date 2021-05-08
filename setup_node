@@ -416,6 +416,7 @@ function configuration {
 			cat /etc/ospfd.conf | sed -n -e :a -e '1,12!{P;N;D;};N;ba' > /tmp/ospfd.conf
 			mv /tmp/ospfd.conf /etc/ospfd.conf
 			echo "}" >> /etc/ospfd.conf
+			chmod 600 /etc/ospfd.conf
 			rcctl start ospfd ||  error_exit "$LINENO: ERROR: OSPFD failed."
 			;;
 		"ntpd")
