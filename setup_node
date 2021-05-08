@@ -379,7 +379,8 @@ function configuration {
 					route add -inet6 default $(cat "/etc/mygate")
 				fi
 			fi
-			arp -s $defaultv4router $macdefaultv4router	
+			arp -s $defaultv4router $macdefaultv4router
+			echo "arp -s $defaultv4router $macdefaultv4router" >> /etc/rc.local
 			pfctl -nf /etc/pf.conf	 
 			#pfctl -f /etc/pf.conf
 			;;
@@ -393,11 +394,13 @@ function configuration {
 				ospfmd5=$(openssl rand -base64 15)
 				sed -i "s/\/OSPFMD5\//$ospfmd5/g" /etc/ospfd.conf
 				pophost=$(cat `basename $file` | head -n 1 | cut -d ' ' -f2 | sed "s/\"//g")
-				typeset -i latency=$(ping -c4 $pophost | tail -1| awk '{print $4}' | cut -d '/' -f 2 | cut -d . -f1)
-				typeset -i metric=$(expr latency / 2)
+				latency=$(ping -c4 $pophost | tail -1| awk '{print $4}' | cut -d '/' -f 2 | cut -d . -f1)
+				metric=$(expr latency / 2)
 				sed -i "s/\/METRIC\//$metric/g" /etc/ospfd.conf
 				cat src/openbsd/ospfd.conf.openbsd >> /etc/ospfd.conf			
 			done
+			cat /etc/ospfd.conf | sed -n -e :a -e '1,12!{P;N;D;};N;ba' > /etc/ospfd.conf
+			echo "}" >> /etc/ospfd.conf
 			rcctl start ospfd ||  error_exit "$LINENO: ERROR: OSPFD failed."
 			;;
 		"ntpd")
@@ -739,7 +742,7 @@ else
 		read ctrl
 		if [[ "$ctrl" -eq 1 ]]; then
 			configuration "ospf" 
-			echo "ospf#$ospf" >> /tmp/config.ini
+			echo "ospf#$ctrl" >> /tmp/config.ini
 		else
 			error_exit "$LINENO: EXIT FROM USER." 
 		fi
