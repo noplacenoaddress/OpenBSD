@@ -412,8 +412,15 @@ function configuration {
 				typeset -i metric=$(expr $latency / 2)
 				sed -i "s/\/METRIC\//${metric}/g" /etc/ospfd.conf
 				cat src/openbsd/ospfd.conf.openbsd >> /etc/ospfd.conf	
-				cp src/openbsd/ospfd.conf.openbsd "/tmp/$pophost/ospfd.conf"
-				sed -i "s/\/X\//$lasttun/g" "/tmp/$pophost/ospfd.conf"		
+				if [[ $(ls "/tmp/$pophost/" | grep -c "hostname") -eq 1 ]]; then
+					typeset -i lasttun
+					lasttun=$(dig gre18994.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')
+					lasttun=$lasttun+1
+					cp src/openbsd/ospfd.conf.openbsd "/tmp/$pophost/ospfd.conf"
+					sed -i "s/\/X\//$lasttun/g" "/tmp/$pophost/ospfd.conf"	
+					sed -i "s/\/METRIC\//${metric}/g" /etc/ospfd.conf	
+					sed -i "s/\/OSPFMD5\//${ospfmd5}/g" "/tmp/$pophost/ospfd.conf"
+				fi
 			done
 			cat /etc/ospfd.conf | sed -n -e :a -e '1,12!{P;N;D;};N;ba' > /tmp/ospfd.conf
 			mv /tmp/ospfd.conf /etc/ospfd.conf
