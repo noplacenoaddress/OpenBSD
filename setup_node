@@ -11,9 +11,16 @@ set -o nounset
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin:/root/Bin
 UID=$(id -u)
+pfctrl=$(pfctl -si | head -n 1 | grep -c Enabled)
 
 if [[ $UID -ne 0 ]]; then
 	print $0 "you've got to run $0 as UID=0 \n"
+	exit 1
+fi
+
+if [[ $pfctrl -eq 1 && -z $1 ]];
+	print $0 "you've got to disable pf with pfctl -d 
+		 \n or you've got to run with option $0 phase2 \n"
 	exit 1
 fi
 
@@ -410,8 +417,7 @@ function configuration {
 			fi
 			pfctrl=$(pfctl -nf /etc/pf.conf)
 			if [[ -z $pfctrl ]]; then
-				echo "PF ruleset OK charging them: "
-				pfctl -f /etc/pf.conf
+				echo "PF ruleset OK"
 			fi
 			;;
 		"ospf")
@@ -493,8 +499,7 @@ else
 	read configini 
 fi
 
-#echo "flushing pf rules"
-#pfctl -Fr -Fn
+
 
 echo "changing installurl"
 if [[ $configini -eq 1 ]]; then
