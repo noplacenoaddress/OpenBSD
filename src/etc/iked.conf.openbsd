@@ -6,4 +6,4 @@ ikev2 "/POP/" /TYPE/ transport \
         childsa  enc chacha20-poly1305 group curve25519 \
 	srcid "/SRCID/@ca./DOMAINNAME/" \
         ikelifetime 86400 lifetime 3600 \
-        tag /POP/
+        tag /POP/ tap enc/X/
