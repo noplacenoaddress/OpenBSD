@@ -1,6 +1,6 @@
-# /sbin/pfctl -t reserved -T kill -f /etc/pf.conf.table.unbound
-# /sbin/pfctl -t reserved -T add -f /etc/pf.conf.table.unbound
-# /sbin/pfctl -t reserved -T show
+# /sbin/pfctl -t unbound -T kill -f /etc/pf.conf.table.unbound
+# /sbin/pfctl -t unbound -T add -f /etc/pf.conf.table.unbound
+# /sbin/pfctl -t unbound -T show
 #
 
 2606:4700:4700::1111	# CloudFlare primary

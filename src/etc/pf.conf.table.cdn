@@ -1,0 +1,14 @@
+# /sbin/pfctl -t cdn -T kill -f /etc/pf.conf.table.cdn
+# /sbin/pfctl -t cdn -T add -f /etc/pf.conf.table.cdn
+# /sbin/pfctl -t cdn -T show
+#
+
+151.101.130.217
+151.101.194.217
+151.101.2.217
+151.101.66.217
+2a04:4e42:600::729
+2a04:4e42::729
+2a04:4e42:200::729
+2a04:4e42:400::729
+
