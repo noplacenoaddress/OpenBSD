@@ -460,7 +460,7 @@ function configuration {
 			rcctl restart ntpd  ||  error_exit "$LINENO: ERROR: NTPD failed."
 			;;	
 		"remote")
-			for file in (find /tmp -type d -maxdepth 1); do
+			for file in $(find /tmp -type d -maxdepth 1); do
 				filename=$(basename $file)
 				typeset -i dots=$(echo $filename| tr -cd '.' | wc -c)
 				if [[ $dots -eq 2 ]]; then
