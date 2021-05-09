@@ -18,7 +18,7 @@ if [[ $UID -ne 0 ]]; then
 	exit 1
 fi
 
-if [[ $pfctrl -eq 1 && -z $1 ]];
+if [[ $pfctrl -eq 1 ]];
 	print $0 "you've got to disable pf with pfctl -d 
 		 \n or you've got to run with option $0 phase2 \n"
 	exit 1
