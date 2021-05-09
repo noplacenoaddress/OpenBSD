@@ -458,7 +458,16 @@ function configuration {
 			install -o root -g wheel -m 0644  src/etc/ntpd.conf /etc/
 			cleanold "/etc/"
 			rcctl restart ntpd  ||  error_exit "$LINENO: ERROR: NTPD failed."
-			;;		
+			;;	
+		"remote")
+			for file in (find /tmp -type d -maxdepth 1); do
+				filename=$(basename $file)
+				typeset -i dots=$(echo $filename| tr -cd '.' | wc -c)
+				if [[ $dots -eq 2 ]]; then
+					tar -cvf "/tmp/$filename.tar" -C /tmp -s /tmp// $file
+				fi
+			done
+			;;	
 	esac
 }
 
@@ -794,6 +803,24 @@ else
 		if [[ "$ctrl" -eq 1 ]]; then
 			configuration "ospf" 
 			echo "ospf#$ctrl" >> /tmp/config.ini
+		else
+			error_exit "$LINENO: EXIT FROM USER." 
+		fi
+	done
+fi
+
+echo -n "preparing archives, signing them and start the remote install procedure \n"
+if [[ $configini -eq 1 ]]; then
+	configuration "remote"
+else 
+	ctrl=
+	while [ -z $ctrl ]
+	do
+		echo -n 'Go ahead type 1 '
+		read ctrl
+		if [[ "$ctrl" -eq 1 ]]; then
+			configuration "remote" 
+			echo "remote#$ctrl" >> /tmp/config.ini
 		else
 			error_exit "$LINENO: EXIT FROM USER." 
 		fi
