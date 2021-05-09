@@ -236,6 +236,7 @@ function configuration {
 					rm -rf "/tmp/$vpnc_host"
 					mkdir "/tmp/$vpnc_host"
 				fi
+				
 				echo include \"/etc/iked.conf.$vpnc_host\" >> /etc/iked.conf
 				if [[ $(nc -w1  $vpnc_ip 22 | grep -c "ROSSSH") -eq 1 ]]; then
 					install -o root -g wheel -m 0640 src/etc/iked.conf.mikrotik "/etc/iked.conf.$vpnc_host"
@@ -273,6 +274,9 @@ function configuration {
 				fi
 				sed -i "s/\/POPIP\//$vpnc_ip/g" "/etc/iked.conf.$vpnc_host"
 				sed -i "s/\/POP\//$vpnc_host/g" "/etc/iked.conf.$vpnc_host"
+				sed -i "s/\/X\//$i/g" "/etc/iked.conf.$vpnc_host"
+				install -o root -g wheel -m 0640 src/etc/hostname.enc-X- "/etc/hostname.enc$i"
+				sed -i "s/\/POP\//$vpnc_host/g" "/etc/hostname.enc$i"
 				((i=i+1))
 			done
 			dyndnshost=$(dig vpnc.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')
@@ -286,6 +290,9 @@ function configuration {
 			install -o root -g wheel -m 0640 src/etc/iked.conf.edgeos "/etc/iked.conf.$dyndnshost"
 			sed -i "s/\/POPIP\//$(dig $dyndnshost A +short | tail -n 1)/g" "/etc/iked.conf.$dyndnshost"
 			sed -i "s/\/POP\//$dyndnshost/g" "/etc/iked.conf.$dyndnshost"
+			sed -i "s/\/X\//$i/g" "/etc/iked.conf.$dyndnshost"
+			install -o root -g wheel -m 0640 src/etc/hostname.enc-X- "/etc/hostname.enc$i"
+			sed -i "s/\/POP\//$vpnc_host/g" "/etc/hostname.enc$i"
 			cp src/edgeos/ipsec.conf "/tmp/$dyndnshost/"
 			cp "/etc/iked/certs/$publichost.crt" "/tmp/$dyndnshost/"
 			find /etc/ -type f -name "iked.*" | xargs -I {} 
