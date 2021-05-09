@@ -408,7 +408,9 @@ function configuration {
 			if [[ $(grep -c "arp" /etc/rc.local) -ne 1 ]]; then
 				echo "arp -s $defaultv4router $macdefaultv4router" >> /etc/rc.local
 			fi
-			if [[ -z $(pfctl -nf /etc/pf.conf) ]]; then
+			pfctrl=$(pfctl -nf /etc/pf.conf)
+			if [[ -z $pfctrl ]]; then
+				echo "PF ruleset OK charging them: "
 				pfctl -f /etc/pf.conf
 			fi
 			;;
@@ -490,6 +492,9 @@ else
 	echo -n "Type 1 to use /tmp/config.ini "
 	read configini 
 fi
+
+#echo "flushing pf rules"
+#pfctl -Fr -Fn
 
 echo "changing installurl"
 if [[ $configini -eq 1 ]]; then
