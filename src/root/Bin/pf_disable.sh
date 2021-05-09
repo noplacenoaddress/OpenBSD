@@ -1,3 +1,3 @@
 #!/bin/ksh
 
-pfctl -e
+pfctl -d

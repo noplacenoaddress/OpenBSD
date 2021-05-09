@@ -403,6 +403,7 @@ function configuration {
 			done
 			sed -i '$d' /etc/pf.conf 
 			cat  src/openbsd/pf.conf.fintemp.openbsd >> /etc/pf.conf
+			sed -i "s/\/LANDOMAINNAME\//${landomainname}/g" /etc/pf.conf
 			arp -s $defaultv4router $macdefaultv4router
 			if [[ $(grep -c "arp" /etc/rc.local) -ne 1 ]]; then
 				echo "arp -s $defaultv4router $macdefaultv4router" >> /etc/rc.local
