@@ -97,7 +97,7 @@ function configuration {
 			fi
 			echo "dhclient, resolv.conf.tail, doas.conf, myname and sysctl.conf \n"
 			install -o root -g wheel -m 0644  src/etc/{dhclient.conf,resolv.conf.tail,doas.conf,myname,sysctl.conf} /etc/
-			install -o root -g wheel -m 0640  src/etc/hostname.vio0 /etc/
+			install -o root -g wheel -m 0640  src/etc/{hostname.vio0,mygate} /etc/
 			echo "vether"
 			install -o root -g wheel -m 0644  src/etc/hostname.vether0 /etc/
 			echo "configuring iperf uptimed and oidentd \n"
@@ -111,10 +111,12 @@ function configuration {
 			install -o root -g wheel -m 0640  src/etc/rc.local /etc/
 			cleanold "/etc/"
 			cd /tmp
-			nohup sh /etc/netstart vio0 & 
-			nohup sh /etc/netstart vether0 &
 			cd $basedir
-			sed -i "s/dhcp/inet $publicip\/$bitmask/" /etc/hostname.vio0
+			sed -i "s/\/PUBLICIP\//$publicip/g" /etc/hostname.vio0
+			sed -i "s/\/BITMASK\//$bitmask/g" /etc/hostname.vio0
+			sed -i "s/\/ROUTEV4\//$defaultv4router/g" /etc/mygate
+			sh /etc/netstart vio0 
+			sh /etc/netstart vether0 
 			sh /etc/rc.local
 			;;	
 		"users")
