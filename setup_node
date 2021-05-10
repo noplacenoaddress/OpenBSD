@@ -24,6 +24,7 @@ function error_exit {
 app=$(basename $0)
 backups="/root/Backups"
 publicip=$(ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
+bitmask=$(ifconfig egress | grep inet | grep -v inet6 | awk '{ print $4 }' | sed 's/0x//g' | perl -pe '$_ = unpack("B32", pack("H*", $_)); s/0+$//g; $_ = length')
 publichost=$(dig -x $publicip +short | sed 's/.$//')
 defaultv4router=$(route -n show | awk '/default/{print $2}' | head -n 1)
 macdefaultv4router=$(arp -an | grep $defaultv4router |  awk '{print $2}')
@@ -113,6 +114,7 @@ function configuration {
 			nohup sh /etc/netstart vio0 & 
 			nohup sh /etc/netstart vether0 &
 			cd $basedir
+			sed -i "s/dhcp/inet $publicip\/$bitmask/" /etc/hostname.vio0
 			sh /etc/rc.local
 			;;	
 		"users")
@@ -782,6 +784,7 @@ else
 			install -o root -g wheel -m 0640 src/etc/hostname-ipv6s.vio0 /etc/hostname.vio0
 			install -o root -g wheel -m 0640 src/etc/mygate-ipv6s /etc/mygate
 			sed -i "s/\/ROUTEV6\//$ipv6defrouter/g" /etc/mygate
+			sed -i "s/\/ROUTEV4\//$defaultv4router/g" /etc/mygate
 		fi
 		
 	done
