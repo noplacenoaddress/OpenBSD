@@ -1,6 +1,6 @@
 -inet
 -inet6
-dhcp
+/PUBLICIP//BITMASK/
 inet6 -temporary
 inet6 -soii
 inet6 autoconf
