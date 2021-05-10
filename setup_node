@@ -783,10 +783,9 @@ else
 				;;
 		esac	
 		if [[ ! -z ipv6defrouter ]]; then
-			install -o root -g wheel -m 0640 src/etc/hostname-ipv6s.vio0 /etc/hostname.vio0
-			install -o root -g wheel -m 0640 src/etc/mygate-ipv6s /etc/mygate
+			cat src/etc/hostname-ipv6s.vio0 >> /etc/hostname.vio0
+			cat  src/etc/mygate-ipv6s >> /etc/mygate
 			sed -i "s/\/ROUTEV6\//$ipv6defrouter/g" /etc/mygate
-			sed -i "s/\/ROUTEV4\//$defaultv4router/g" /etc/mygate
 		fi
 		
 	done
