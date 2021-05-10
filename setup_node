@@ -42,7 +42,7 @@ function pkg {
 	case $phase in
 		"shell")
 			pkg_add colorls nano wget fping iperf uptimed oidentd sqlite3 \
-				nmap tor ipcalc
+				nmap tor ipcalc rspamd
 			;;
 	esac
 }
@@ -217,8 +217,8 @@ function configuration {
 			mkdir -p /etc/iked/pubkeys/{ipv4,ipv6,fqdn,ufqdn}
 			cd $basedir
 			install -o root -g wheel -m 0640  src/etc/iked/ca/ca.crt /etc/iked/ca/	
-			openssl pkcs12 -in "/tmp/$publichost.p12" -nocerts -passin pass:123456789 -passout pass:123456789 -out /etc/iked/private/local.key
-			openssl pkcs12 -in "/tmp/$publichost.p12" -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "/etc/iked/certs/$publichost.crt"
+			openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -nocerts -passin pass:123456789 -passout pass:123456789 -out /etc/iked/private/local.key
+			openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "/etc/iked/certs/$publichost.crt"
 			openssl x509 -pubkey -noout -passin pass:123456789 -in "/etc/iked/certs/$publichost.crt"  > /etc/iked/local.pub
 			rcctl enable iked
 			rcctl set iked flags "-vv"
