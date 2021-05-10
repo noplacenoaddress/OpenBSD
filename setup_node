@@ -42,7 +42,7 @@ function pkg {
 	case $phase in
 		"shell")
 			pkg_add colorls nano wget fping iperf uptimed oidentd sqlite3 \
-				nmap tor ipcalc rspamd
+				nmap tor ipcalc rspamd--
 			;;
 	esac
 }
@@ -220,6 +220,9 @@ function configuration {
 			openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -nocerts -passin pass:123456789 -passout pass:123456789 -out /etc/iked/private/local.key
 			openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "/etc/iked/certs/$publichost.crt"
 			openssl x509 -pubkey -noout -passin pass:123456789 -in "/etc/iked/certs/$publichost.crt"  > /etc/iked/local.pub
+			for file in $(find src/etc/iked/pubkeys/ufqdn/ -name "*@*"); do
+				install -o root -g wheel -m 0640 $file /etc/iked/pubkeys/ufqdn/
+			done
 			rcctl enable iked
 			rcctl set iked flags "-vv"
 			typeset -i i
