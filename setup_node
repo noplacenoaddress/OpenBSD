@@ -24,8 +24,7 @@ function error_exit {
 app=$(basename $0)
 backups="/root/Backups"
 publicip=$(ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
-bitmask=$(ifconfig egress | grep inet | grep -v inet6 | awk '{ print $4 }' | sed 's/0x//g' | perl -pe '$_ = unpack("B32", pack("H*", $_)); s/0+$//g; $_ = length')
-publichost=$(dig -x $publicip +short | sed 's/.$//')
+publichost=$(dig -x $publicip +short @8.8.8.8 | sed 's/.$//')
 defaultv4router=$(route -n show | awk '/default/{print $2}' | head -n 1)
 macdefaultv4router=$(arp -an | grep $defaultv4router |  awk '{print $2}')
 dyndns=$(host -t a cat-01.hopto.org | cut -d ' ' -f4)
@@ -43,7 +42,7 @@ function pkg {
 	case $phase in
 		"shell")
 			pkg_add colorls nano wget fping iperf uptimed oidentd sqlite3 \
-				nmap tor ipcalc rspamd
+				nmap tor ipcalc
 			;;
 	esac
 }
@@ -97,7 +96,7 @@ function configuration {
 			fi
 			echo "dhclient, resolv.conf.tail, doas.conf, myname and sysctl.conf \n"
 			install -o root -g wheel -m 0644  src/etc/{dhclient.conf,resolv.conf.tail,doas.conf,myname,sysctl.conf} /etc/
-			install -o root -g wheel -m 0640  src/etc/{hostname.vio0,mygate} /etc/
+			install -o root -g wheel -m 0640  src/etc/hostname.vio0 /etc/
 			echo "vether"
 			install -o root -g wheel -m 0644  src/etc/hostname.vether0 /etc/
 			echo "configuring iperf uptimed and oidentd \n"
@@ -111,12 +110,9 @@ function configuration {
 			install -o root -g wheel -m 0640  src/etc/rc.local /etc/
 			cleanold "/etc/"
 			cd /tmp
+			nohup sh /etc/netstart vio0 & 
+			nohup sh /etc/netstart vether0 &
 			cd $basedir
-			sed -i "s/\/PUBLICIP\//$publicip/g" /etc/hostname.vio0
-			sed -i "s/\/BITMASK\//$bitmask/g" /etc/hostname.vio0
-			sed -i "s/\/ROUTEV4\//$defaultv4router/g" /etc/mygate
-			sh /etc/netstart vio0 
-			sh /etc/netstart vether0 
 			sh /etc/rc.local
 			;;	
 		"users")
@@ -229,9 +225,9 @@ function configuration {
 			typeset -i i
 			i=0
 			install -o root -g wheel -m 0640  src/etc/iked.conf /etc/
-			for vpnc_ip in $(dig vpnc.$domainname A +short)
+			for vpnc_ip in $(dig vpnc.$domainname A +short @8.8.8.8)
 			do
-				vpnc_host=$(dig -x $vpnc_ip +short | sed 's/.$//')
+				vpnc_host=$(dig -x $vpnc_ip +short @8.8.8.8 | sed 's/.$//')
 				vpnc_ips[i]="$vpnc_ip"
 				vpnc_hosts[i]="$vpnc_host"
 				if [ ! -d "/tmp/$vpnc_host" ]; then
@@ -268,7 +264,7 @@ function configuration {
 					sed -i "s/\/POPIP\//$vpnc_ip/g" "/tmp/$vpnc_host/iked.conf.$publichost"
 					sed -i "s/\/POP\//$vpnc_host/g" "/tmp/$vpnc_host/iked.conf.$publichost"
 					srcid=$(print $vpnc_host | cut -d . -f1)
-					for a in $(dig ipsec20591.$domainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+					for a in $(dig ipsec20591.$domainname TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 						b=$(echo $a | cut -d : -f1)
 						if [ "$b" = "$srcid" ]; then
 							srcid=$(echo $a | cut -d : -f2)
@@ -284,7 +280,7 @@ function configuration {
 				sh /etc/netstart "enc$i"
 				i=$i+1
 			done
-			dyndnshost=$(dig vpnc.$domainname TXT +short | sed 's/\"//g')
+			dyndnshost=$(dig vpnc.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')
 			if [[ ! -d "/tmp/$dyndnshost" ]]; then
 				mkdir "/tmp/$dyndnshost"
 			else
@@ -311,7 +307,7 @@ function configuration {
 			fi
 			typeset -i i
 			typeset -i lasttun
-			lasttun=$(dig gre18994.$domainname TXT +short | sed 's/\"//g')
+			lasttun=$(dig gre18994.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')
 			lasttun=$lasttun+1
 			i=0
 			for file in $(find /etc -maxdepth 1 -name "iked.conf.*") ; do
@@ -320,16 +316,16 @@ function configuration {
 				sed -i "s/\/POPHOST\//$pophost/g" "/etc/hostname.gre$i"
 				sed -i "s/\/PUBLICIP\//$publicip/g" "/etc/hostname.gre$i"
 				sed -i "s/\/X\//$i/g" "/etc/hostname.gre$i"
-				count=$(dig $pophost A +short | wc -l)
+				count=$(dig $pophost A +short @8.8.8.8 | wc -l)
 				if [[ $count -gt 1 ]]; then
-					popip=$(dig $pophost A +short | tail -n 1)
+					popip=$(dig $pophost A +short @8.8.8.8 | tail -n 1)
 				else
-					popip=$(dig $pophost A +short)
+					popip=$(dig $pophost A +short @8.8.8.8)
 				fi
 				sed -i "s/\/POPIP\//$popip/g" "/etc/hostname.gre$i"
 				if [ $i -eq 0 ]; then
 					typeset -i lastnet
-					lastnet=$(dig gre7058.$domainname TXT +short | sed 's/\"//g')
+					lastnet=$(dig gre7058.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')
 				else
 					lastnet=$lastnet-4
 				fi
@@ -378,7 +374,7 @@ function configuration {
 				fi
 			done 
 			cleanold "/etc/"
-			for vpnc_ip in $(dig vpnc.$domainname A +short); do
+			for vpnc_ip in $(dig vpnc.$domainname A +short @8.8.8.8); do
 				echo "$vpnc_ip/32" >> /etc/pf.conf.table.ipsec
 			done
 			for file in $(find /tmp -name "*.rsc"); do
@@ -394,11 +390,11 @@ function configuration {
 			fi
 			for file in $(find /etc -maxdepth 1 -name "iked.conf.*") ; do
 				tagged=$(echo $file | sed "s/\/etc\/iked.conf.//")
-				count=$(dig $tagged A +short | wc -l)
+				count=$(dig $tagged A +short @8.8.8.8 | wc -l)
 				if [[ $count -gt 1 ]]; then
-					iptagged=$(dig $tagged A +short | tail -n 1)
+					iptagged=$(dig $tagged A +short @8.8.8.8 | tail -n 1)
 				else
-					iptagged=$(dig $tagged A +short)
+					iptagged=$(dig $tagged A +short @8.8.8.8)
 				fi
 				sed -i "s/\/TAGGED\//${tagged}/g" /etc/pf.conf
 				sed -i "s/\/IPTAGGED\//${iptagged}/g" /etc/pf.conf
@@ -432,7 +428,7 @@ function configuration {
 				cat src/openbsd/ospfd.conf.openbsd >> /etc/ospfd.conf	
 				if [[ $(ls "/tmp/$pophost/" | grep -c "hostname") -eq 1 ]]; then
 					typeset -i lasttun
-					lasttun=$(dig gre18994.$domainname TXT +short | sed 's/\"//g')
+					lasttun=$(dig gre18994.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')
 					lasttun=$lasttun+1
 					cp src/openbsd/ospfd.conf.openbsd "/tmp/$pophost/ospfd.conf"
 					sed -i "s/\/X\//$lasttun/g" "/tmp/$pophost/ospfd.conf"	
@@ -625,7 +621,7 @@ fi
 srcid=$(print $publichost | cut -d . -f1)
 typeset -u publichostname=$srcid
 domainname=$(print $publichost | sed "s/$srcid.//")
-for a in $(dig ipsec20591.$domainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+for a in $(dig ipsec20591.$domainname TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 	b=$(echo $a | cut -d : -f1)
 	if [ "$b" = "$srcid" ]; then
 		srcid=$(echo $a | cut -d : -f2)
@@ -783,8 +779,8 @@ else
 				;;
 		esac	
 		if [[ ! -z ipv6defrouter ]]; then
-			cat src/etc/hostname-ipv6s.vio0 >> /etc/hostname.vio0
-			cat  src/etc/mygate-ipv6s >> /etc/mygate
+			install -o root -g wheel -m 0640 src/etc/hostname-ipv6s.vio0 /etc/hostname.vio0
+			install -o root -g wheel -m 0640 src/etc/mygate-ipv6s /etc/mygate
 			sed -i "s/\/ROUTEV6\//$ipv6defrouter/g" /etc/mygate
 		fi
 		
