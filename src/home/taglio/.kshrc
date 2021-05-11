@@ -10,7 +10,6 @@ PATH=$HOME/Bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/X11R6/bin:/usr/local/bin:/usr/
 PROMPT='$USER@$HOST:$PWD'"$PS1S"
 PS1=$PROMPT
 EDITOR=nano
-TZ=Europe/Madrid
 CVSROOT=anoncvs@anoncvs.spacehopper.org:/cvs
 FTPMODE=passive
 GPG_TTY=$(tty)
