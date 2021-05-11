@@ -62,7 +62,29 @@ function cleanold {
 }
 
 function custom {
-	for file in $(find /etc /var/unbound /var/nsd /tmp -type f); do
+	for file in $(find /etc -type f -maxdepth 1); do
+		sed -i "s/\/HOSTNAME\//$hostname/g" $file
+		sed -i "s/\/LANDOMAINNAME\//$landomainname/g" $file
+		sed -i "s/\/ROUTERID\//$routerid/g" $file
+		sed -i "s/\/PUBLICHOST\//$publichost/g" $file
+		sed -i "s/\/DOMAINNAME\//$domainname/g" $file
+		sed -i "s/\/SRCID\//$srcid/g" $file
+		sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" $file
+		sed -i "s/\/PUBLICIP\//$publicip/g" $file
+		sed -i "s/\/DYNDNS\//$dyndns/g" $file
+	done
+	for file in $(find /etc/ssh -type f -maxdepth 2); do
+		sed -i "s/\/HOSTNAME\//$hostname/g" $file
+		sed -i "s/\/LANDOMAINNAME\//$landomainname/g" $file
+		sed -i "s/\/ROUTERID\//$routerid/g" $file
+		sed -i "s/\/PUBLICHOST\//$publichost/g" $file
+		sed -i "s/\/DOMAINNAME\//$domainname/g" $file
+		sed -i "s/\/SRCID\//$srcid/g" $file
+		sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" $file
+		sed -i "s/\/PUBLICIP\//$publicip/g" $file
+		sed -i "s/\/DYNDNS\//$dyndns/g" $file
+	done
+	for file in $(find /var/unbound /var/nsd /tmp -type f); do
 		sed -i "s/\/HOSTNAME\//$hostname/g" $file
 		sed -i "s/\/LANDOMAINNAME\//$landomainname/g" $file
 		sed -i "s/\/ROUTERID\//$routerid/g" $file
