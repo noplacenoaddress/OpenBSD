@@ -61,6 +61,19 @@ function cleanold {
 	done
 }
 
+function custom {
+	for file in $(find /etc /var/unbound /var/nsd /tmp -type f); do
+		sed -i "s/\/HOSTNAME\//$hostname/g" $file
+		sed -i "s/\/LANDOMAINNAME\//$landomainname/g" $file
+		sed -i "s/\/ROUTERID\//$routerid/g" $file
+		sed -i "s/\/PUBLICHOST\//$publichost/g" $file
+		sed -i "s/\/DOMAINNAME\//$domainname/g" $file
+		sed -i "s/\/SRCID\//$srcid/g" $file
+		sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" $file
+		sed -i "s/\/PUBLICIP\//$publicip/g" $file
+		sed -i "s/\/DYNDNS\//$dyndns/g" $file
+	done
+}
 
 function configuration {
 	phase=$1
@@ -161,6 +174,7 @@ function configuration {
 					install -o _unbound -g _unbound -m 0750  src/var/unbound/etc/unbound-local.conf /var/unbound/etc/unbound.conf
 					install -o _unbound -g _unbound -m 0750  src/var/unbound/etc/remote-control.conf /var/unbound/etc/
 					install -o _unbound -g _unbound -m 0750  src/var/unbound/etc/forward-zone.conf /var/unbound/etc/
+					custom
 					if [[ -z $pidof_unbound ]]; then
 						rcctl start unbound ||  error_exit "$LINENO: ERROR: UNBOUND failed."
 						
@@ -194,6 +208,7 @@ function configuration {
 						rm -rf "/tmp/$workstahost.$landomainname"
 						mkdir "/tmp/$workstahost.$landomainname"
 					fi
+					custom
 					rcctl restart sshd || error_exit "$LINENO: ERROR: SSHD failed."
 					;;
 				"ipsec")
@@ -228,6 +243,7 @@ function configuration {
 			typeset -i i
 			i=0
 			install -o root -g wheel -m 0640  src/etc/iked.conf /etc/
+			custom
 			for vpnc_ip in $(dig vpnc.$domainname A +short @8.8.8.8)
 			do
 				vpnc_host=$(dig -x $vpnc_ip +short @8.8.8.8 | sed 's/.$//')
@@ -301,7 +317,7 @@ function configuration {
 			cp src/edgeos/ipsec.conf "/tmp/$dyndnshost/"
 			cp "/etc/iked/certs/$publichost.crt" "/tmp/$dyndnshost/"
 			find /etc/ -type f -name "iked.*" | xargs -I {} 
-			cleanold "/etc/" 
+			custom
 			rcctl start iked ||  error_exit "$LINENO: ERROR: IKED failed."
 			;;
 		"gre")	
@@ -365,6 +381,7 @@ function configuration {
 			lastnet=$lastnet-4
 			echo "update gre7058.$domainname TXT to $lastnet \
 			      \n gre18994.$domainname TXT to $lasttun \n"
+		      	custom
 			for file in /etc/hostname.gre? ; do
 				sh /etc/netstart $(echo $file | awk -F. '{print $2}')
 			done
@@ -399,17 +416,17 @@ function configuration {
 				else
 					iptagged=$(dig $tagged A +short @8.8.8.8)
 				fi
-				sed -i "s/\/TAGGED\//${tagged}/g" /etc/pf.conf
-				sed -i "s/\/IPTAGGED\//${iptagged}/g" /etc/pf.conf
-				cat src/openbsd/pf.conf.openbsd >> /etc/pf.conf
+				sed -i "s/\/TAGGED\//${tagged}/g" /etc/pf.conf.macro.enc.in	
+				sed -i "s/\/IPTAGGED\//${iptagged}/g" /etc/pf.conf.macro.enc.out
+				cat src/openbsd/pf.conf.openbsd | head -n 1 >> /etc/pf.conf.macro.enc.in
+				cat src/openbsd/pf.conf.openbsd | tail -n 1 >> /etc/pf.conf.macro.enc.out
 			done
-			sed -i '$d' /etc/pf.conf 
-			cat  src/openbsd/pf.conf.fintemp.openbsd >> /etc/pf.conf
 			sed -i "s/\/LANDOMAINNAME\//${landomainname}/g" /etc/pf.conf
 			arp -s $defaultv4router $macdefaultv4router
 			if [[ $(grep -c "arp" /etc/rc.local) -ne 1 ]]; then
 				echo "arp -s $defaultv4router $macdefaultv4router" >> /etc/rc.local
 			fi
+			custom
 			pfctrl=$(pfctl -nf /etc/pf.conf)
 			if [[ -z $pfctrl ]]; then
 				echo "PF ruleset OK"
@@ -461,6 +478,7 @@ function configuration {
 			mv /tmp/ospfd.conf /etc/ospfd.conf
 			echo "}" >> /etc/ospfd.conf
 			chmod 600 /etc/ospfd.conf
+			custom
 			pidof_ospfd=$(pidof "ospfd")
 			if [[ -z $pidof_ospfd ]]; then
 				rcctl start ospfd ||  error_exit "$LINENO: ERROR: OSPFD failed."
@@ -584,7 +602,6 @@ else
 fi
 if [[ $configini -eq 1 ]]; then
 	hostname=$(cat /tmp/config.ini  | grep hostname |cut -d \# -f2)
-	find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/HOSTNAME\//$hostname/g" {}
 else
 	hostname=
 	while [ -z $hostname ]
@@ -592,12 +609,10 @@ else
 		echo -n 'Type the hostname '
 		read hostname
 		echo "hostname#$hostname" >> /tmp/config.ini
-		find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/HOSTNAME\//$hostname/g" {}
 	done
 fi
 if [[ $configini -eq 1 ]]; then
 	landomainname=$(cat /tmp/config.ini  | grep landomainname |cut -d \# -f2)
-	find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/LANDOMAINNAME\//$landomainname/g" {}
 else
 	landomainname=
 	while [ -z $landomainname ]
@@ -605,12 +620,10 @@ else
 		echo -n 'Type the LAN domain name '
 		read landomainname
 		echo "landomainname#$landomainname" >> /tmp/config.ini
-		find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/LANDOMAINNAME\//$landomainname/g" {}
 	done
 fi
 if [[ $configini -eq 1 ]]; then
 	routerid=$(cat /tmp/config.ini  | grep routerid |cut -d \# -f2)
-	find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/ROUTERID\//$routerid/g" {}
 else
 	routerid=
 	while [ -z $routerid ]
@@ -618,7 +631,6 @@ else
 		echo -n 'Type the routerid '
 		read routerid
 		echo "routerid#$routerid" >> /tmp/config.ini
-		find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/ROUTERID\//$routerid/g" {}
 	done
 fi
 srcid=$(print $publichost | cut -d . -f1)
@@ -630,12 +642,6 @@ for a in $(dig ipsec20591.$domainname TXT +short @8.8.8.8 | sed "s/\"//g" | tr \
 		srcid=$(echo $a | cut -d : -f2)
 	fi
 done
-find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/PUBLICHOST\//$publichost/g" {}
-find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/DOMAINNAME\//$domainname/g" {}
-find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/SRCID\//$srcid/g" {}
-find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" {}
-find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/PUBLICIP\//$publicip/g" {}
-find {src/mikrotik,src/openbsd,src/edgeos,src/etc,src/var/} -type f | xargs -I {} sed -i "s/\/DYNDNS\//$dyndns/g" {}
 
 echo "configuring basic"
 if [[ $configini -eq 1 ]]; then
