@@ -443,6 +443,7 @@ function configuration {
 				cat src/openbsd/pf.conf.openbsd | head -n 1 >> /etc/pf.conf.macro.enc.in
 				cat src/openbsd/pf.conf.openbsd | tail -n 1 >> /etc/pf.conf.macro.enc.out
 			done
+			sed -i '$d' /etc/pf.conf.macro.enc.{in,out}
 			sed -i "s/\/LANDOMAINNAME\//${landomainname}/g" /etc/pf.conf
 			arp -s $defaultv4router $macdefaultv4router
 			if [[ $(grep -c "arp" /etc/rc.local) -ne 1 ]]; then
