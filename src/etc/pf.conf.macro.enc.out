@@ -1,1 +1,1 @@
-pass out quick on /ENC/ proto gre from $pub to /IPTAGGED/ tagged /TAGGED/
+pass out quick on enc proto gre from $pub to /IPTAGGED/ tagged /TAGGED/
