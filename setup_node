@@ -438,8 +438,8 @@ function configuration {
 				else
 					iptagged=$(dig $tagged A +short @8.8.8.8)
 				fi
-				sed -i "s/\/TAGGED\//${tagged}/g" /etc/pf.conf.macro.enc.in	
-				sed -i "s/\/IPTAGGED\//${iptagged}/g" /etc/pf.conf.macro.enc.out
+				sed -i "s/\/TAGGED\//${tagged}/g" /etc/pf.conf.macro.enc.{in,out}	
+				sed -i "s/\/IPTAGGED\//${iptagged}/g" /etc/pf.conf.macro.enc.{in,out}
 				cat src/openbsd/pf.conf.openbsd | head -n 1 >> /etc/pf.conf.macro.enc.in
 				cat src/openbsd/pf.conf.openbsd | tail -n 1 >> /etc/pf.conf.macro.enc.out
 			done
