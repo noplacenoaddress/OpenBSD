@@ -71,6 +71,7 @@ function custom {
 		sed -i "s/\/SRCID\//$srcid/g" $file
 		sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" $file
 		sed -i "s/\/PUBLICIP\//$publicip/g" $file
+		sed -i "s/\/IPV6EGRESS\//$ipv6egress/g" $file
 		sed -i "s/\/DYNDNS\//$dyndns/g" $file
 	done
 	for file in $(find /etc/ssh -type f -maxdepth 2); do
@@ -82,6 +83,7 @@ function custom {
 		sed -i "s/\/SRCID\//$srcid/g" $file
 		sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" $file
 		sed -i "s/\/PUBLICIP\//$publicip/g" $file
+		sed -i "s/\/IPV6EGRESS\//$ipv6egress/g" $file
 		sed -i "s/\/DYNDNS\//$dyndns/g" $file
 	done
 	for file in $(find /var/unbound /var/nsd /tmp -type f); do
@@ -93,6 +95,7 @@ function custom {
 		sed -i "s/\/SRCID\//$srcid/g" $file
 		sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" $file
 		sed -i "s/\/PUBLICIP\//$publicip/g" $file
+		sed -i "s/\/IPV6EGRESS\//$ipv6egress/g" $file
 		sed -i "s/\/DYNDNS\//$dyndns/g" $file
 	done
 }
@@ -523,7 +526,28 @@ function configuration {
 					sha256 -q "$file.tar" > "/tmp/$filename.sha256"
 				fi
 			done
+			if [[ ! -d /etc/ssh/remote_install ]]; do
+				mkdir /etc/ssh/remote_install
+			else
+				rm -rf /etc/ssh/remote_install
+				mkdir /etc/ssh/remote_install
+			done
+			for file in $(find src/etc/ssh/remote_install/ -maxdepth 1 -type f); do
+				filename=$(basename $file)
+				if [[ "$filename" -ne "rc.local" ]]; then
+					install root -g wheel -m 0640 $file /etc/ssh/remote_install/
+				else
+					cat $file >> /etc/rc.local
+				fi
+			done
+			sh src/etc/ssh/remote_install/rc.local
+			
 			;;	
+		"relayd")
+			install -o root -g wheel -m 0640 src/etc/relayd.conf /etc/
+			custom
+			rcctl enable relayd 
+			rcctl start relayd  ||  error_exit "$LINENO: ERROR: RELAYD failed."
 	esac
 }
 
@@ -855,9 +879,10 @@ else
 	done
 fi
 
-echo -n "preparing archives, signing them and start the remote install procedure \n"
+echo -n "preparing archives, signing them, starting httpd default host and start the remote install procedure \n"
 if [[ $configini -eq 1 ]]; then
 	configuration "remote"
+	configuration "relayd"
 else 
 	ctrl=
 	while [ -z $ctrl ]
@@ -867,10 +892,13 @@ else
 		if [[ "$ctrl" -eq 1 ]]; then
 			configuration "remote" 
 			echo "remote#$ctrl" >> /tmp/config.ini
+			configuration "relayd"
+			echo "remote#$relayd" >> /tmp/config.ini
 		else
 			error_exit "$LINENO: EXIT FROM USER." 
 		fi
 	done
+	
 fi
 
 
