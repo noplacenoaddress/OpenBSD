@@ -537,7 +537,7 @@ function configuration {
 					cat $file >> /etc/rc.local
 				fi
 			done
-			sh src/etc/ssh/remote_install/rc.local
+			/usr/sbin/sshd -f /etc/ssh/remote_install/remote_install.conf
 			
 			;;	
 		"relayd")
