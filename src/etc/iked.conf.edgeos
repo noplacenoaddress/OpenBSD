@@ -1,7 +1,7 @@
 ikev2 "/POP/" passive transport \
 	proto gre \
 	from /PUBLICIP/ to /POPIP/ \
-        local /PUBLICHOST/ peer /POPHOST/ \
+        local /PUBLICHOST/ peer any \
 	ikesa auth hmac-sha2-256 enc aes-256 group ecp256  \
         childsa auth hmac-sha2-256 enc aes-256 group ecp256 \
 	srcid "/SRCID/@ca./DOMAINNAME/" \
