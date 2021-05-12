@@ -561,8 +561,14 @@ function configuration {
 				fi
 			done
 			custom "ssh"
-			/usr/sbin/sshd -f /etc/ssh/remote_install/remote_install.conf
-			echo "/usr/sbin/sshd -f /etc/ssh/remote_install/remote_install.conf" >> /etc/rc.local
+			install -o root -g wheel -m 0750 src/usr/local/sbin/remote-install /usr/local/sbin/
+			pidof_remote=$(pidof "remote")
+			if [[ -z $pidof_remote ]]; then
+				/usr/sbin/sshd -f /etc/ssh/remote_install/remote_install.conf
+			else
+				kill -9 $(cat /var/run/sshd-remote-install.pid)
+				/usr/sbin/sshd -f /etc/ssh/remote_install/remote_install.conf
+			fi
 			;;	
 		"relayd")
 			install -o root -g wheel -m 0640 src/etc/relayd.conf /etc/
