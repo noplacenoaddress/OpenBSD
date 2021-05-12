@@ -533,7 +533,7 @@ function configuration {
 				filename=$(basename $file)
 				if [[ "$filename" -ne "rc.local" ]]; then
 					install root -g wheel -m 0640 $file /etc/ssh/remote_install/
-				else
+				elif [[ "$filename" -eq "rc.local" ]]; then
 					cat $file >> /etc/rc.local
 				fi
 			done
