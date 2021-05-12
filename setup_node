@@ -537,8 +537,9 @@ function configuration {
 					cat $file >> /etc/rc.local
 				fi
 			done
+			custom
 			/usr/sbin/sshd -f /etc/ssh/remote_install/remote_install.conf
-			
+			echo "/usr/sbin/sshd -f /etc/ssh/remote_install/remote_install.conf" >> /etc/rc.local
 			;;	
 		"relayd")
 			install -o root -g wheel -m 0640 src/etc/relayd.conf /etc/
