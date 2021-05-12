@@ -115,9 +115,7 @@ function custom {
 				sed -i "s/\/DYNDNS\//$dyndns/g" $file
 			done
 			;;
-	
-	
-	
+	esac
 }
 
 function configuration {
