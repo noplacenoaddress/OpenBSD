@@ -892,7 +892,6 @@ else
 			configuration "remote" 
 			echo "remote#$ctrl" >> /tmp/config.ini
 			configuration "relayd"
-			echo "relayd#$relayd" >> /tmp/config.ini
 		else
 			error_exit "$LINENO: EXIT FROM USER." 
 		fi
