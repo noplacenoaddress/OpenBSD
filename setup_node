@@ -548,6 +548,7 @@ function configuration {
 			custom
 			rcctl enable relayd 
 			rcctl start relayd  ||  error_exit "$LINENO: ERROR: RELAYD failed."
+			;;
 	esac
 }
 
@@ -893,12 +894,13 @@ else
 			configuration "remote" 
 			echo "remote#$ctrl" >> /tmp/config.ini
 			configuration "relayd"
-			echo "remote#$relayd" >> /tmp/config.ini
+			echo "relayd#$relayd" >> /tmp/config.ini
 		else
 			error_exit "$LINENO: EXIT FROM USER." 
 		fi
 	done
-	
 fi
+
+
 
 
