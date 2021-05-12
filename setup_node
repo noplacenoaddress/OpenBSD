@@ -62,39 +62,62 @@ function cleanold {
 }
 
 function custom {
-	for file in $(find /etc -type f -maxdepth 1); do
-		sed -i "s/\/HOSTNAME\//$hostname/g" $file
-		sed -i "s/\/LANDOMAINNAME\//$landomainname/g" $file
-		sed -i "s/\/ROUTERID\//$routerid/g" $file
-		sed -i "s/\/PUBLICHOST\//$publichost/g" $file
-		sed -i "s/\/DOMAINNAME\//$domainname/g" $file
-		sed -i "s/\/SRCID\//$srcid/g" $file
-		sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" $file
-		sed -i "s/\/PUBLICIP\//$publicip/g" $file
-		sed -i "s/\/DYNDNS\//$dyndns/g" $file
-	done
-	for file in $(find /etc/ssh -type f -maxdepth 2); do
-		sed -i "s/\/HOSTNAME\//$hostname/g" $file
-		sed -i "s/\/LANDOMAINNAME\//$landomainname/g" $file
-		sed -i "s/\/ROUTERID\//$routerid/g" $file
-		sed -i "s/\/PUBLICHOST\//$publichost/g" $file
-		sed -i "s/\/DOMAINNAME\//$domainname/g" $file
-		sed -i "s/\/SRCID\//$srcid/g" $file
-		sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" $file
-		sed -i "s/\/PUBLICIP\//$publicip/g" $file
-		sed -i "s/\/DYNDNS\//$dyndns/g" $file
-	done
-	for file in $(find /var/unbound /var/nsd /tmp -type f); do
-		sed -i "s/\/HOSTNAME\//$hostname/g" $file
-		sed -i "s/\/LANDOMAINNAME\//$landomainname/g" $file
-		sed -i "s/\/ROUTERID\//$routerid/g" $file
-		sed -i "s/\/PUBLICHOST\//$publichost/g" $file
-		sed -i "s/\/DOMAINNAME\//$domainname/g" $file
-		sed -i "s/\/SRCID\//$srcid/g" $file
-		sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" $file
-		sed -i "s/\/PUBLICIP\//$publicip/g" $file
-		sed -i "s/\/DYNDNS\//$dyndns/g" $file
-	done
+	case $1 in
+		"etc")
+			for file in $(find /etc -type f -maxdepth 1); do
+				sed -i "s/\/HOSTNAME\//$hostname/g" $file
+				sed -i "s/\/LANDOMAINNAME\//$landomainname/g" $file
+				sed -i "s/\/ROUTERID\//$routerid/g" $file
+				sed -i "s/\/PUBLICHOST\//$publichost/g" $file
+				sed -i "s/\/DOMAINNAME\//$domainname/g" $file
+				sed -i "s/\/SRCID\//$srcid/g" $file
+				sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" $file
+				sed -i "s/\/PUBLICIP\//$publicip/g" $file
+				sed -i "s/\/DYNDNS\//$dyndns/g" $file
+			done
+			;;
+		"ssh")
+			for file in $(find /etc/ssh -type f -maxdepth 2); do
+				sed -i "s/\/HOSTNAME\//$hostname/g" $file
+				sed -i "s/\/LANDOMAINNAME\//$landomainname/g" $file
+				sed -i "s/\/ROUTERID\//$routerid/g" $file
+				sed -i "s/\/PUBLICHOST\//$publichost/g" $file
+				sed -i "s/\/DOMAINNAME\//$domainname/g" $file
+				sed -i "s/\/SRCID\//$srcid/g" $file
+				sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" $file
+				sed -i "s/\/PUBLICIP\//$publicip/g" $file
+				sed -i "s/\/DYNDNS\//$dyndns/g" $file
+			done
+			;;
+		"var")
+			for file in $(find /var/unbound /var/nsd -type f); do
+				sed -i "s/\/HOSTNAME\//$hostname/g" $file
+				sed -i "s/\/LANDOMAINNAME\//$landomainname/g" $file
+				sed -i "s/\/ROUTERID\//$routerid/g" $file
+				sed -i "s/\/PUBLICHOST\//$publichost/g" $file
+				sed -i "s/\/DOMAINNAME\//$domainname/g" $file
+				sed -i "s/\/SRCID\//$srcid/g" $file
+				sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" $file
+				sed -i "s/\/PUBLICIP\//$publicip/g" $file
+				sed -i "s/\/DYNDNS\//$dyndns/g" $file
+			done
+			;;
+		"tmp")
+			for file in $(find /tmp -type f); do
+				sed -i "s/\/HOSTNAME\//$hostname/g" $file
+				sed -i "s/\/LANDOMAINNAME\//$landomainname/g" $file
+				sed -i "s/\/ROUTERID\//$routerid/g" $file
+				sed -i "s/\/PUBLICHOST\//$publichost/g" $file
+				sed -i "s/\/DOMAINNAME\//$domainname/g" $file
+				sed -i "s/\/SRCID\//$srcid/g" $file
+				sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" $file
+				sed -i "s/\/PUBLICIP\//$publicip/g" $file
+				sed -i "s/\/DYNDNS\//$dyndns/g" $file
+			done
+			;;
+	
+	
+	
 }
 
 function configuration {
@@ -143,7 +166,7 @@ function configuration {
 				rcctl restart uptimed || error_exit "$LINENO: ERROR: UPTIMED failed."
 			fi
 			install -o root -g wheel -m 0640  src/etc/rc.local /etc/
-			custom
+			custom "etc"
 			cd /tmp
 			nohup sh /etc/netstart vio0 & 
 			nohup sh /etc/netstart vether0 &
@@ -196,7 +219,7 @@ function configuration {
 					install -o _unbound -g _unbound -m 0750  src/var/unbound/etc/unbound-local.conf /var/unbound/etc/unbound.conf
 					install -o _unbound -g _unbound -m 0750  src/var/unbound/etc/remote-control.conf /var/unbound/etc/
 					install -o _unbound -g _unbound -m 0750  src/var/unbound/etc/forward-zone.conf /var/unbound/etc/
-					custom
+					custom "var"
 					if [[ -z $pidof_unbound ]]; then
 						rcctl start unbound ||  error_exit "$LINENO: ERROR: UNBOUND failed."
 						
@@ -230,7 +253,8 @@ function configuration {
 						rm -rf "/tmp/$workstahost.$landomainname"
 						mkdir "/tmp/$workstahost.$landomainname"
 					fi
-					custom
+					custom "ssh"
+					custom "etc"
 					rcctl restart sshd || error_exit "$LINENO: ERROR: SSHD failed."
 					;;
 				"ipsec")
@@ -265,7 +289,7 @@ function configuration {
 			typeset -i i
 			i=0
 			install -o root -g wheel -m 0640  src/etc/iked.conf /etc/
-			custom
+			custom "etc"
 			for vpnc_ip in $(dig vpnc.$domainname A +short @8.8.8.8)
 			do
 				vpnc_host=$(dig -x $vpnc_ip +short @8.8.8.8 | sed 's/.$//')
@@ -339,7 +363,8 @@ function configuration {
 			cp src/edgeos/ipsec.conf "/tmp/$dyndnshost/"
 			cp "/etc/iked/certs/$publichost.crt" "/tmp/$dyndnshost/"
 			find /etc/ -type f -name "iked.*" | xargs -I {} 
-			custom
+			custom "tmp"
+			custom "etc"
 			rcctl start iked ||  error_exit "$LINENO: ERROR: IKED failed."
 			;;
 		"gre")	
@@ -403,7 +428,7 @@ function configuration {
 			lastnet=$lastnet-4
 			echo "update gre7058.$domainname TXT to $lastnet \
 			      \n gre18994.$domainname TXT to $lasttun \n"
-		      	custom
+		      	custom "etc"
 			for file in /etc/hostname.gre? ; do
 				sh /etc/netstart $(echo $file | awk -F. '{print $2}')
 			done
@@ -449,7 +474,7 @@ function configuration {
 			if [[ $(grep -c "arp" /etc/rc.local) -ne 1 ]]; then
 				echo "arp -s $defaultv4router $macdefaultv4router" >> /etc/rc.local
 			fi
-			custom
+			custom "etc"
 			pfctrl=$(pfctl -nf /etc/pf.conf)
 			if [[ -z $pfctrl ]]; then
 				echo "PF ruleset OK"
@@ -501,7 +526,7 @@ function configuration {
 			mv /tmp/ospfd.conf /etc/ospfd.conf
 			echo "}" >> /etc/ospfd.conf
 			chmod 600 /etc/ospfd.conf
-			custom
+			custom "etc"
 			pidof_ospfd=$(pidof "ospfd")
 			if [[ -z $pidof_ospfd ]]; then
 				rcctl start ospfd ||  error_exit "$LINENO: ERROR: OSPFD failed."
@@ -537,16 +562,15 @@ function configuration {
 					cat $file >> /etc/rc.local
 				fi
 			done
-			custom
+			custom "ssh"
 			/usr/sbin/sshd -f /etc/ssh/remote_install/remote_install.conf
 			echo "/usr/sbin/sshd -f /etc/ssh/remote_install/remote_install.conf" >> /etc/rc.local
 			;;	
 		"relayd")
 			install -o root -g wheel -m 0640 src/etc/relayd.conf /etc/
-			custom
+			custom "etc"
 			sed -i "s/\/PUBV6\//${ipv6egress}/g" /etc/relayd.conf
 			rcctl enable relayd 
-			rcctl start relayd  ||  error_exit "$LINENO: ERROR: RELAYD failed."
 			;;
 	esac
 }
