@@ -526,12 +526,12 @@ function configuration {
 					sha256 -q "$file.tar" > "/tmp/$filename.sha256"
 				fi
 			done
-			if [[ ! -d /etc/ssh/remote_install ]]; do
+			if [[ ! -d /etc/ssh/remote_install ]]; then
 				mkdir /etc/ssh/remote_install
 			else
 				rm -rf /etc/ssh/remote_install
 				mkdir /etc/ssh/remote_install
-			done
+			fi
 			for file in $(find src/etc/ssh/remote_install/ -maxdepth 1 -type f); do
 				filename=$(basename $file)
 				if [[ "$filename" -ne "rc.local" ]]; then
