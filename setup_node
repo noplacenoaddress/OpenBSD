@@ -71,7 +71,6 @@ function custom {
 		sed -i "s/\/SRCID\//$srcid/g" $file
 		sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" $file
 		sed -i "s/\/PUBLICIP\//$publicip/g" $file
-		sed -i "s/\/IPV6EGRESS\//$ipv6egress/g" $file
 		sed -i "s/\/DYNDNS\//$dyndns/g" $file
 	done
 	for file in $(find /etc/ssh -type f -maxdepth 2); do
@@ -83,7 +82,6 @@ function custom {
 		sed -i "s/\/SRCID\//$srcid/g" $file
 		sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" $file
 		sed -i "s/\/PUBLICIP\//$publicip/g" $file
-		sed -i "s/\/IPV6EGRESS\//$ipv6egress/g" $file
 		sed -i "s/\/DYNDNS\//$dyndns/g" $file
 	done
 	for file in $(find /var/unbound /var/nsd /tmp -type f); do
@@ -95,7 +93,6 @@ function custom {
 		sed -i "s/\/SRCID\//$srcid/g" $file
 		sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" $file
 		sed -i "s/\/PUBLICIP\//$publicip/g" $file
-		sed -i "s/\/IPV6EGRESS\//$ipv6egress/g" $file
 		sed -i "s/\/DYNDNS\//$dyndns/g" $file
 	done
 }
@@ -546,6 +543,7 @@ function configuration {
 		"relayd")
 			install -o root -g wheel -m 0640 src/etc/relayd.conf /etc/
 			custom
+			sed -i "s/\/PUBV6\//${ipv6egress}/g" /etc/relayd.conf
 			rcctl enable relayd 
 			rcctl start relayd  ||  error_exit "$LINENO: ERROR: RELAYD failed."
 			;;
