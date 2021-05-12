@@ -531,9 +531,9 @@ function configuration {
 			fi
 			for file in $(find src/etc/ssh/remote_install/ -maxdepth 1 -type f); do
 				filename=$(basename $file)
-				if [[ "$filename" -ne "rc.local" ]]; then
+				if [[ "$filename" != "rc.local" ]]; then
 					install root -g wheel -m 0640 $file /etc/ssh/remote_install/
-				elif [[ "$filename" -eq "rc.local" ]]; then
+				elif [[ "$filename" == "rc.local" ]]; then
 					cat $file >> /etc/rc.local
 				fi
 			done
