@@ -15,6 +15,8 @@ uid=$(id -u)
 app=$(basename $0)
 egressinterface=$(ifconfig egress | cut -d  : -f1 | head -n1)
 publicip=$(ifconfig $egressinterface | grep inet |grep -v inet6 | cut -d ' ' -f2)
+publicnetmask=$(ifconfig $egressinterface | grep inet | grep -v inet6 | awk '{print $4}')
+publicbcast=$(ifconfig $egressinterface | grep inet | grep -v inet6 | awk '{print $6}')
 publichost=$(dig -x $publicip +short @8.8.8.8 | sed 's/.$//')
 defaultv4router=$(route -n show | awk '/default/{print $2}' | head -n 1)
 macdefaultv4router=$(arp -an | grep $defaultv4router |  awk '{print $2}')
@@ -23,6 +25,9 @@ basedir=$(pwd)
 tmpdir=$(mktemp -d)
 datarelease=$(date +"%d%m%Y%H%m%S")
 userna=$(id -nu $uid)
+ipv6egress=
+ipv6prefix=
+ipv6defrouter=
 
 if [[ $uid -ne 0 ]]; then
 	print $0 "you've got to run $0 as UID=0 \n"
@@ -85,6 +90,13 @@ function custom {
 				sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" $file
 				sed -i "s/\/PUBLICIP\//$publicip/g" $file
 				sed -i "s/\/DYNDNS\//$dyndns/g" $file
+				sed -i "s/\/PUBLICNETMASK\//$publicnetmask/g" $file
+				sed -i "s/\/PUBLICBCAST\//$publicbcast/g" $file
+				sed -i "s/\/PUBV6\//${ipv6egress}/g" $file
+				sed -i "s/\/PREFIX\//${ipv6prefix}/g" $file
+				sed -i "s/\/ROUTEV4\//${defaultv4router}/g" $file
+				sed -i "s/\/ROUTEV6\//${ipv6defrouter}/g" $file
+				
 			done
 		;;
 		"ssh")
@@ -140,7 +152,7 @@ function backup {
 			for file in $(find "/root" -type f -maxdepth 1 -name ".*"); do
 				cp -p $file "$CURRENTBACKUP/$1/root"
 			done
-			cp -p /etc/{dhclient.conf,resolv.conf.tail,doas.conf,myname,sysctl.conf,hostname.$egressinterface,hostname.vether0,daily.local,rc.local} "$CURRENTBACKUP/$1/etc"
+			cp -p /etc/{dhclient.conf,resolv.conf.tail,doas.conf,myname,sysctl.conf,hostname.vether0,daily.local,rc.local} "$CURRENTBACKUP/$1/etc"
 		;;
 		"users")
 			mkdir "$CURRENTBACKUP/$1"
@@ -194,7 +206,25 @@ function configuration {
 	fi
 	case $phase in
 		"static")
-			
+			install -o root -g wheel -m 0640  src/etc/{hostname.egress,mygate} "/etc/{hostname.$egressinterface,mygate}"
+			arp -s $defaultv4router $macdefaultv4router
+			if [[ -z $ipv6egress ]]; then
+				for slaacdipv6line in $(slaacctl show interface | grep "::" | grep \/ | grep -v prefix | cut -d , -f1); do
+					ipv6egress=$slaacdipv6line
+					ipv6prefix=$(slaacctl show interface | grep $ipv6egress | cut -d \/ -f2)
+					echo "inet6 alias $ipv6egress/$ipv6prefix" >> "/etc/hostname.$egressinterface"
+				done
+				ipv6defrouter=$(slaacctl show interface | grep Router | head -n 1 | awk '{print $4}' | cut -d % -f1)
+			fi
+			if [[ $(grep -c "arp" /etc/rc.local) -ne 1 ]]; then
+				echo "arp -s $defaultv4router $macdefaultv4router" > /etc/rc.local
+			fi
+			rcctl stop slaacd
+			rcctl disabled slaacd
+			custom "etc"
+			cd /tmp
+			nohup sh /etc/netstart $egressinterface &
+			cd $basedir
 		;;
 		"basic")
 			echo "dot files"
@@ -224,7 +254,7 @@ function configuration {
 			fi
 			echo "dhclient, resolv.conf.tail, doas.conf, myname and sysctl.conf \n"
 			install -o root -g wheel -m 0644  src/etc/{dhclient.conf,resolv.conf.tail,doas.conf,myname,sysctl.conf} /etc/
-			install -o root -g wheel -m 0640  src/etc/hostname.$egressinterface /etc/
+			
 			echo "vether"
 			install -o root -g wheel -m 0644  src/etc/hostname.vether0 /etc/
 			echo "configuring iperf uptimed and oidentd \n"
@@ -235,10 +265,9 @@ function configuration {
 			else
 				rcctl restart uptimed || error_exit "$LINENO: ERROR: UPTIMED failed."
 			fi
-			install -o root -g wheel -m 0640  src/etc/rc.local /etc/
+			cat  src/etc/rc.local >> /etc/rc.local
 			custom "etc"
 			cd /tmp
-			nohup sh /etc/netstart $egressinterface & 
 			nohup sh /etc/netstart vether0 &
 			cd $basedir
 			sh /etc/rc.local
@@ -502,7 +531,6 @@ function configuration {
 			for file in /etc/hostname.gre? ; do
 				sh /etc/netstart $(echo $file | awk -F. '{print $2}')
 			done
-			cleanold "/etc/"
 		;;
 		"pf")
 			for file in src/etc/pf.* ; do
@@ -510,15 +538,13 @@ function configuration {
 					install -o root -g wheel -m 0640  $file /etc/
 				fi
 			done 
-			cleanold "/etc/"
 			for vpnc_ip in $(dig vpnc.$domainname A +short @8.8.8.8); do
 				echo "$vpnc_ip/32" >> /etc/pf.conf.table.ipsec
 			done
 			for file in $(find /tmp -name "*.rsc"); do
 				cat src/mikrotik/firewall.rsc >> "$file"
 			done
-			find /etc -type f -maxdepth 1 | xargs -I {} sed -i "s/\/PUBV6\//${ipv6egress}/g" {}
-			find /etc -type f -maxdepth 1 | xargs -I {} sed -i "s/\/PREFIX\//${ipv6prefix}/g" {}
+			custom "etc"
 			if [[ -e "/etc/mygate" ]]; then
 				sh /etc/netstart $egressinterface
 				if [[ $(route -n show -inet6 | grep -c "default") -ne 1 ]]; then
@@ -540,10 +566,7 @@ function configuration {
 			done
 			sed -i '$d' /etc/pf.conf.macro.enc.{in,out}
 			sed -i "s/\/LANDOMAINNAME\//${landomainname}/g" /etc/pf.conf
-			arp -s $defaultv4router $macdefaultv4router
-			if [[ $(grep -c "arp" /etc/rc.local) -ne 1 ]]; then
-				echo "arp -s $defaultv4router $macdefaultv4router" >> /etc/rc.local
-			fi
+			
 			custom "etc"
 			pfctrl=$(pfctl -nf /etc/pf.conf)
 			if [[ -z $pfctrl ]]; then
@@ -682,7 +705,7 @@ case $1 in
 						read ipv6egress
 						echo 'Type the prefixlen '
 						read ipv6prefix
-						echo 'Type the IPv6 default route [ | auto ] '
+						echo 'Type the IPv6 default route '
 						read ipv6defrouter
 						echo "ipv6egress#$ipv6egress" >> /tmp/config.ini
 						echo "ipv6prefix#$ipv6prefix" >> /tmp/config.ini
