@@ -207,6 +207,7 @@ function configuration {
 	fi
 	case $phase in
 		"static")
+			ifconfig $egressinterface -inet6
 			install -o root -g wheel -m 0640  src/etc/hostname.egress "/etc/hostname.$egressinterface"
 			install -o root -g wheel -m 0640 src/etc/mygate /etc/
 			if [[ ! -z $ipv6egress ]]; then
