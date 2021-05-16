@@ -772,7 +772,8 @@ case $1 in
 			done
 		fi
 
-		rcctl disable {sndiod, check_quotas}
+		rcctl disable sndiod
+		rcctl disable check_quotas
 		rcctl stop sndiod
 
 		echo "configuring users"
