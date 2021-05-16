@@ -208,22 +208,26 @@ function configuration {
 		"static")
 			install -o root -g wheel -m 0640  src/etc/{hostname.egress,mygate} "/etc/{hostname.$egressinterface,mygate}"
 			arp -s $defaultv4router $macdefaultv4router
-			if [[ -z $ipv6egress ]]; then
-				for slaacdipv6line in $(slaacctl show interface | grep "::" | grep \/ | grep -v prefix | cut -d , -f1); do
-					ipv6egress=$slaacdipv6line
-					ipv6prefix=$(slaacctl show interface | grep $ipv6egress | cut -d \/ -f2)
-					echo "inet6 alias $ipv6egress/$ipv6prefix" >> "/etc/hostname.$egressinterface"
-				done
-				ipv6defrouter=$(slaacctl show interface | grep Router | head -n 1 | awk '{print $4}' | cut -d % -f1)
+			ifconfig $egressinterface -inet6
+			ifconfig $egressinterface inet6 autoconf -soii -temporary
+			if [[ ! -z $ipv6egress ]]; then
+				rcctl stop slaacd
+				rcctl disabled slaacd
+				tmphostname=$(mktemp)
+				cat "/etc/hostname.$egressinterface" | sed '$d' > $tmphostname
+				echo "inet6 $ipv6egress/$ipv6prefix" >> $tmphostname
+				cat $tmphostname > "/etc/hostname.$egressinterface"
+				echo $ipv6defrouter >> /etc/mygate
 			fi
 			if [[ $(grep -c "arp" /etc/rc.local) -ne 1 ]]; then
 				echo "arp -s $defaultv4router $macdefaultv4router" > /etc/rc.local
 			fi
-			rcctl stop slaacd
-			rcctl disabled slaacd
 			custom "etc"
 			cd /tmp
 			nohup sh /etc/netstart $egressinterface &
+			if [[ ! -z $ipv6egress ]]; then
+				route add -inet6 default $(cat "/etc/mygate" | tail -n 1)
+			fi
 			cd $basedir
 		;;
 		"basic")
@@ -545,12 +549,6 @@ function configuration {
 				cat src/mikrotik/firewall.rsc >> "$file"
 			done
 			custom "etc"
-			if [[ -e "/etc/mygate" ]]; then
-				sh /etc/netstart $egressinterface
-				if [[ $(route -n show -inet6 | grep -c "default") -ne 1 ]]; then
-					route add -inet6 default $(cat "/etc/mygate")
-				fi
-			fi
 			for file in $(find /etc -maxdepth 1 -name "iked.conf.*") ; do
 				tagged=$(echo $file | sed "s/\/etc\/iked.conf.//")
 				count=$(dig $tagged A +short @8.8.8.8 | wc -l)
@@ -684,11 +682,9 @@ case $1 in
 			read configini 
 		fi
 
-		echo "changing IP from dynamic to static on $egressinterface"
+		echo "changing IPv4 from dynamic to static on $egressinterface \
+		      \n and do a perfect IPv6"
 		if [[ $configini -eq 1 ]]; then
-			ipv6egress=$(cat /tmp/config.ini  | grep ipv6egress |cut -d \# -f2)
-			ipv6prefix=$(cat /tmp/config.ini  | grep ipv6prefix |cut -d \# -f2)
-			ipv6defrouter=$(cat /tmp/config.ini  | grep ipv6defrouter |cut -d \# -f2)
 			configuration "static"
 		else
 			ctrl=
