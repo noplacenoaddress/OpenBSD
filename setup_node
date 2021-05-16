@@ -130,6 +130,7 @@ function custom {
 function backup {
 	CURRENTBACKUP="$BACKUPS/$datarelease"
 	mkdir $CURRENTBACKUP
+	echo "$1"
 	case $1 in
 		"basic")
 			mkdir -p "$CURRENTBACKUP/$1/{$uidna,root,etc}"
