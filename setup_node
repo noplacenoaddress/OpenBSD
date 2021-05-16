@@ -227,6 +227,7 @@ function configuration {
 			cd /tmp
 			nohup sh /etc/netstart $egressinterface &
 			if [[ ! -z $ipv6egress ]]; then
+				sleep 5
 				route add -inet6 default $(cat "/etc/mygate" | tail -n 1)
 			fi
 			cd $basedir
