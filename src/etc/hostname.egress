@@ -1,0 +1,7 @@
+-inet
+-inet6
+inet /PUBLICIP/ /PUBLICNETMASK/ /PUBLICBCAST/
+inet6 -temporary
+inet6 -soii
+inet6 /LOCALV6///LOCALPREFIX/
+ 
