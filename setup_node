@@ -10,9 +10,20 @@ set -o errexit
 set -o nounset
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin:/root/Bin
-UID=$(id -u)
+BACKUPS="/root/Backups"
+uid=$(id -u)
+app=$(basename $0)
+publicip=$(ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
+publichost=$(dig -x $publicip +short @8.8.8.8 | sed 's/.$//')
+defaultv4router=$(route -n show | awk '/default/{print $2}' | head -n 1)
+macdefaultv4router=$(arp -an | grep $defaultv4router |  awk '{print $2}')
+dyndns=$(host -t a cat-01.hopto.org | cut -d ' ' -f4)
+basedir=$(pwd)
+tmpdir=$(mktemp -d)
+daterelease=$(date +"%d%m%Y-%H%m%S")
+userna=$(id -nu $uid)
 
-if [[ $UID -ne 0 ]]; then
+if [[ $uid -ne 0 ]]; then
 	print $0 "you've got to run $0 as UID=0 \n"
 	exit 1
 fi
@@ -29,16 +40,6 @@ function error_exit {
     echo "${app}: ${1:-"Unknown Error"}" 1>&2
     exit 1
 }
-
-app=$(basename $0)
-backups="/root/Backups"
-publicip=$(ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
-publichost=$(dig -x $publicip +short @8.8.8.8 | sed 's/.$//')
-defaultv4router=$(route -n show | awk '/default/{print $2}' | head -n 1)
-macdefaultv4router=$(arp -an | grep $defaultv4router |  awk '{print $2}')
-dyndns=$(host -t a cat-01.hopto.org | cut -d ' ' -f4)
-basedir=$(pwd)
-tmpdir=$(mktemp -d)
 
 
 function pidof {
@@ -126,7 +127,58 @@ function custom {
 			;;
 	esac
 }
-
+function backup {
+	CURRENTBACKUP="$BACKUPS/$datarelease"
+	mkdir $CURRENTBACKUP
+	case $1 in
+		"basic")
+			mkdir -p "$CURRENTBACKUP/basic/{$uidna,root,etc}"
+			for file in $(find "/home/$uidna" -type f -maxdepth 1 -name ".*"); do
+				cp -p $file "$CURRENTBACKUP/basic/$uidna"
+			done
+			for file in $(find "/root" -type f -maxdepth 1 -name ".*"); do
+				cp -p $file "$CURRENTBACKUP/basic/root"
+			done
+			cp -p /etc/{dhclient.conf,resolv.conf.tail,doas.conf,myname,sysctl.conf,hostname.vio0,hostname.vether0,daily.local,rc.local} "$CURRENTBACKUP/basic/etc"
+		;;
+		"users")
+			configuration "users"
+		;;
+		"scripts")
+			configuration "scripts"
+		;;
+		"unbound")
+			configuration "unbound"
+		;;
+		"ssh")
+			configuration "ssh"
+		;;
+		"ipsec")
+			configuration "ipsec"
+		;;
+		"gre")
+			configuration "gre"
+		;;
+		"pf")
+			configuration "pf"
+		;;
+		"ospf")
+			configuration "ospf"
+		;;
+		"ntpd")
+			configuration "ntpd"
+		;;
+		"remote")
+			configuration "remote"
+		;;
+		"relayd")
+			configuration "relayd"
+		;;
+		"all")
+			sh setup_node -I	
+		;;
+	esac
+}
 function configuration {
 	phase=$1
 	if [[ $# -eq 2 ]]; then
@@ -961,6 +1013,7 @@ case $1 in
 		case $2 in
 			"basic")
 				pkg "shell"
+				backup "basic"	
 				configuration "basic"
 			;;
 			"users")
