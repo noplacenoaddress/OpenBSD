@@ -939,7 +939,7 @@ case $1 in
 		fi
 	;;
 	"-U")
-		if [[ -z $2 ]]; then
+		if [[ $# -ne 2 ]]; then
 			print $0 "UPGRADE option must be followed by: \
 				\n \
 				\nall    -> performe an upgrade of all the system \
