@@ -997,7 +997,7 @@ case $1 in
 				configuration "relayd"
 			;;
 			"all")
-				exit && sh setup_node -I
+				sh setup_node -I
 				
 			;;
 		esac
