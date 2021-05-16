@@ -1029,7 +1029,6 @@ case $1 in
 				\ngre   \
 				\npf   \
 				\nospf   \
-				\nntpd   \
 				\nremote   \
 				\nrelayd   \
 				\n"
@@ -1066,9 +1065,6 @@ case $1 in
 			;;
 			"ospf")
 				configuration "ospf"
-			;;
-			"ntpd")
-				configuration "ntpd"
 			;;
 			"remote")
 				configuration "remote"
