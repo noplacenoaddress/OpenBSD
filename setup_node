@@ -212,7 +212,7 @@ function configuration {
 			arp -s $defaultv4router $macdefaultv4router
 			if [[ ! -z $ipv6egress ]]; then
 				rcctl stop slaacd
-				rcctl disabled slaacd
+				rcctl disable slaacd
 				tmphostname=$(mktemp)
 				cat "/etc/hostname.$egressinterface" | sed '$d' > $tmphostname
 				echo "inet6 $ipv6egress/$ipv6prefix" >> $tmphostname
