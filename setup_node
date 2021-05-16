@@ -206,7 +206,8 @@ function configuration {
 	fi
 	case $phase in
 		"static")
-			install -o root -g wheel -m 0640  src/etc/{hostname.egress,mygate} "/etc/{hostname.$egressinterface,mygate}"
+			install -o root -g wheel -m 0640  src/etc/hostname.egress "/etc/hostname.$egressinterface"
+			install -o root -g wheel -m 0640 src/etc/mygate /etc/
 			arp -s $defaultv4router $macdefaultv4router
 			ifconfig $egressinterface -inet6
 			ifconfig $egressinterface inet6 autoconf -soii -temporary
