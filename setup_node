@@ -132,19 +132,26 @@ function backup {
 	mkdir $CURRENTBACKUP
 	case $1 in
 		"basic")
-			mkdir -p "$CURRENTBACKUP/basic/{$uidna,root,etc}"
+			mkdir -p "$CURRENTBACKUP/$1/{$uidna,root,etc}"
 			for file in $(find "/home/$uidna" -type f -maxdepth 1 -name ".*"); do
-				cp -p $file "$CURRENTBACKUP/basic/$uidna"
+				cp -p $file "$CURRENTBACKUP/$1/$uidna"
 			done
 			for file in $(find "/root" -type f -maxdepth 1 -name ".*"); do
-				cp -p $file "$CURRENTBACKUP/basic/root"
+				cp -p $file "$CURRENTBACKUP/$1/root"
 			done
-			cp -p /etc/{dhclient.conf,resolv.conf.tail,doas.conf,myname,sysctl.conf,hostname.vio0,hostname.vether0,daily.local,rc.local} "$CURRENTBACKUP/basic/etc"
+			cp -p /etc/{dhclient.conf,resolv.conf.tail,doas.conf,myname,sysctl.conf,hostname.vio0,hostname.vether0,daily.local,rc.local} "$CURRENTBACKUP/$1/etc"
 		;;
 		"users")
-			configuration "users"
+			mkdir "$CURRENTBACKUP/$1"
+			for file in $(find "/home/$uidna/Bin" -type f -maxdepth 1 ); do
+				cp -p $file "$CURRENTBACKUP/$1"
+			done
 		;;
 		"scripts")
+			mkdir "$CURRENTBACKUP/$1"
+			for file in $(find "/root/Bin" -type f -maxdepth 1 ); do
+				cp -p $file "$CURRENTBACKUP/$1"
+			done
 			configuration "scripts"
 		;;
 		"unbound")
@@ -1017,9 +1024,11 @@ case $1 in
 				configuration "basic"
 			;;
 			"users")
+				backup "users"
 				configuration "users"
 			;;
 			"scripts")
+				backup "script"
 				configuration "scripts"
 			;;
 			"unbound")
