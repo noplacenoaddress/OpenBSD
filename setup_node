@@ -682,8 +682,7 @@ case $1 in
 			read configini 
 		fi
 
-		echo "changing IPv4 from dynamic to static on $egressinterface \
-		      \n and do a perfect IPv6"
+		echo "changing IPv4 from dynamic to static on $egressinterface and do a perfect IPv6"
 		if [[ $configini -eq 1 ]]; then
 			ipv6ctrl=$(cat /tmp/config.ini  | grep ipv6ctrl |cut -d \# -f2)
 			case $ipv6ctrl in
