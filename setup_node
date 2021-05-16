@@ -16,6 +16,15 @@ if [[ $UID -ne 0 ]]; then
 	print $0 "you've got to run $0 as UID=0 \n"
 	exit 1
 fi
+if [[ $# -eq 0 ]]; then
+	print $0 "have to be used with the following options \
+			\n \
+			\n-I  -> install \
+			\n-U  -> upgrade \
+			\n"
+	
+	exit 1
+fi
 function error_exit {
     echo "${app}: ${1:-"Unknown Error"}" 1>&2
     exit 1
@@ -579,80 +588,60 @@ function configuration {
 	esac
 }
 
-configini=
-if [[ ! -e "/tmp/config.ini" ]]; then
-	touch "/tmp/config.ini"
-else
-	echo -n "Type 1 to use /tmp/config.ini "
-	read configini 
-fi
+case $1 in
+	"-I")
+		configini=
+		if [[ ! -e "/tmp/config.ini" ]]; then
+			touch "/tmp/config.ini"
+		else
+			echo -n "Type 1 to use /tmp/config.ini "
+			read configini 
+		fi
 
 
 
-echo "changing installurl"
-if [[ $configini -eq 1 ]]; then
-	install -o root -g wheel -m 0644 src/etc/installurl /etc/
-else
-	ctrl=
-	while [ -z $ctrl ]
-	do
-		echo -n 'Go ahead type 1 '
-		read ctrl
-		if [[ "$ctrl" -eq 1 ]]; then
+		echo "changing installurl"
+		if [[ $configini -eq 1 ]]; then
 			install -o root -g wheel -m 0644 src/etc/installurl /etc/
-			echo "installurl#$ctrl" > /tmp/config.ini
 		else
-			error_exit "$LINENO: EXIT FROM USER." 
+			ctrl=
+			while [ -z $ctrl ]
+			do
+				echo -n 'Go ahead type 1 '
+				read ctrl
+				if [[ "$ctrl" -eq 1 ]]; then
+					install -o root -g wheel -m 0644 src/etc/installurl /etc/
+					echo "installurl#$ctrl" > /tmp/config.ini
+				else
+					error_exit "$LINENO: EXIT FROM USER." 
+				fi
+			    
+			done		
 		fi
-	    
-	done		
-fi
-echo "adding basic shell packages"
-if [[ $configini -eq 1 ]]; then
-	pkg "shell"
-else
-ctrl=
-	while [ -z $ctrl ]
-	do
-		echo -n 'Go ahead type 1 '
-		read ctrl
-		if [[ "$ctrl" -eq 1 ]]; then
+		echo "adding basic shell packages"
+		if [[ $configini -eq 1 ]]; then
 			pkg "shell"
-			echo "shell#$ctrl" >> /tmp/config.ini
 		else
-			error_exit "$LINENO: EXIT FROM USER." 
+		ctrl=
+			while [ -z $ctrl ]
+			do
+				echo -n 'Go ahead type 1 '
+				read ctrl
+				if [[ "$ctrl" -eq 1 ]]; then
+					pkg "shell"
+					echo "shell#$ctrl" >> /tmp/config.ini
+				else
+					error_exit "$LINENO: EXIT FROM USER." 
+				fi
+			    
+			done
 		fi
-	    
-	done
-fi
 
-rcctl disable {sndiod,slaacd,check_quotas}
-rcctl stop {sndiod,slaacd}
+		rcctl disable {sndiod,slaacd,check_quotas}
+		rcctl stop {sndiod,slaacd}
 
-echo "configuring users"
-if [[ $configini -eq 1 ]]; then
-	if [ ! -d /root/Bin ]; then 
-		mkdir /root/Bin
-		chmod 700 /root/Bin
-	fi
-	if [ ! -d /root/Backups ]; then 
-		mkdir /root/Backups
-		chmod 700 /root/Backups
-	fi
-	if [ ! -d /home/taglio/Bin ]; then 
-		mkdir /home/taglio/Bin 
-		chown taglio:wheel /home/taglio/Bin
-	fi
-	
-	configuration "users"
-	configuration "scripts"
-else
-	ctrl=
-	while [ -z $ctrl ]
-	do
-		echo -n 'Go ahead type 1 '
-		read ctrl
-		if [[ "$ctrl" -eq 1 ]]; then
+		echo "configuring users"
+		if [[ $configini -eq 1 ]]; then
 			if [ ! -d /root/Bin ]; then 
 				mkdir /root/Bin
 				chmod 700 /root/Bin
@@ -668,264 +657,295 @@ else
 			
 			configuration "users"
 			configuration "scripts"
-			echo "users#$ctrl" >> /tmp/config.ini
 		else
-			error_exit "$LINENO: EXIT FROM USER." 
+			ctrl=
+			while [ -z $ctrl ]
+			do
+				echo -n 'Go ahead type 1 '
+				read ctrl
+				if [[ "$ctrl" -eq 1 ]]; then
+					if [ ! -d /root/Bin ]; then 
+						mkdir /root/Bin
+						chmod 700 /root/Bin
+					fi
+					if [ ! -d /root/Backups ]; then 
+						mkdir /root/Backups
+						chmod 700 /root/Backups
+					fi
+					if [ ! -d /home/taglio/Bin ]; then 
+						mkdir /home/taglio/Bin 
+						chown taglio:wheel /home/taglio/Bin
+					fi
+					
+					configuration "users"
+					configuration "scripts"
+					echo "users#$ctrl" >> /tmp/config.ini
+				else
+					error_exit "$LINENO: EXIT FROM USER." 
+				fi
+			    
+			done
 		fi
-	    
-	done
-fi
-if [[ $configini -eq 1 ]]; then
-	hostname=$(cat /tmp/config.ini  | grep hostname |cut -d \# -f2)
-else
-	hostname=
-	while [ -z $hostname ]
-	do
-		echo -n 'Type the hostname '
-		read hostname
-		echo "hostname#$hostname" >> /tmp/config.ini
-	done
-fi
-if [[ $configini -eq 1 ]]; then
-	landomainname=$(cat /tmp/config.ini  | grep landomainname |cut -d \# -f2)
-else
-	landomainname=
-	while [ -z $landomainname ]
-	do
-		echo -n 'Type the LAN domain name '
-		read landomainname
-		echo "landomainname#$landomainname" >> /tmp/config.ini
-	done
-fi
-if [[ $configini -eq 1 ]]; then
-	routerid=$(cat /tmp/config.ini  | grep routerid |cut -d \# -f2)
-else
-	routerid=
-	while [ -z $routerid ]
-	do
-		echo -n 'Type the routerid '
-		read routerid
-		echo "routerid#$routerid" >> /tmp/config.ini
-	done
-fi
-srcid=$(print $publichost | cut -d . -f1)
-typeset -u publichostname=$srcid
-domainname=$(print $publichost | sed "s/$srcid.//")
-for a in $(dig ipsec20591.$domainname TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
-	b=$(echo $a | cut -d : -f1)
-	if [ "$b" = "$srcid" ]; then
-		srcid=$(echo $a | cut -d : -f2)
-	fi
-done
+		if [[ $configini -eq 1 ]]; then
+			hostname=$(cat /tmp/config.ini  | grep hostname |cut -d \# -f2)
+		else
+			hostname=
+			while [ -z $hostname ]
+			do
+				echo -n 'Type the hostname '
+				read hostname
+				echo "hostname#$hostname" >> /tmp/config.ini
+			done
+		fi
+		if [[ $configini -eq 1 ]]; then
+			landomainname=$(cat /tmp/config.ini  | grep landomainname |cut -d \# -f2)
+		else
+			landomainname=
+			while [ -z $landomainname ]
+			do
+				echo -n 'Type the LAN domain name '
+				read landomainname
+				echo "landomainname#$landomainname" >> /tmp/config.ini
+			done
+		fi
+		if [[ $configini -eq 1 ]]; then
+			routerid=$(cat /tmp/config.ini  | grep routerid |cut -d \# -f2)
+		else
+			routerid=
+			while [ -z $routerid ]
+			do
+				echo -n 'Type the routerid '
+				read routerid
+				echo "routerid#$routerid" >> /tmp/config.ini
+			done
+		fi
+		srcid=$(print $publichost | cut -d . -f1)
+		typeset -u publichostname=$srcid
+		domainname=$(print $publichost | sed "s/$srcid.//")
+		for a in $(dig ipsec20591.$domainname TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+			b=$(echo $a | cut -d : -f1)
+			if [ "$b" = "$srcid" ]; then
+				srcid=$(echo $a | cut -d : -f2)
+			fi
+		done
 
-echo "configuring basic"
-if [[ $configini -eq 1 ]]; then
-	configuration "basic" 
-else
-	ctrl=
-	while [ -z $ctrl ]
-	do
-		echo -n 'Go ahead type 1 '
-		read ctrl
-		if [[ "$ctrl" -eq 1 ]]; then
+		echo "configuring basic"
+		if [[ $configini -eq 1 ]]; then
 			configuration "basic" 
-			echo "basic#$ctrl" >> /tmp/config.ini
 		else
-			error_exit "$LINENO: EXIT FROM USER." 
+			ctrl=
+			while [ -z $ctrl ]
+			do
+				echo -n 'Go ahead type 1 '
+				read ctrl
+				if [[ "$ctrl" -eq 1 ]]; then
+					configuration "basic" 
+					echo "basic#$ctrl" >> /tmp/config.ini
+				else
+					error_exit "$LINENO: EXIT FROM USER." 
+				fi
+			    
+			done
 		fi
-	    
-	done
-fi
 
-echo "configuring unbound"
-if [[ $configini -eq 1 ]]; then
-	sleep 3
-	configuration "unbound" "local"
-else
-	ctrl=
-	while [ -z $ctrl ]
-	do
-		echo -n 'Go ahead type 1 '
-		read ctrl
-		if [[ "$ctrl" -eq 1 ]]; then
+		echo "configuring unbound"
+		if [[ $configini -eq 1 ]]; then
+			sleep 3
 			configuration "unbound" "local"
-			echo "unbound#$ctrl" >> /tmp/config.ini
 		else
-			error_exit "$LINENO: EXIT FROM USER." 
+			ctrl=
+			while [ -z $ctrl ]
+			do
+				echo -n 'Go ahead type 1 '
+				read ctrl
+				if [[ "$ctrl" -eq 1 ]]; then
+					configuration "unbound" "local"
+					echo "unbound#$ctrl" >> /tmp/config.ini
+				else
+					error_exit "$LINENO: EXIT FROM USER." 
+				fi
+			    
+			done
 		fi
-	    
-	done
-fi
-echo -n "configuring ssh \n"
-if [[ $configini -eq 1 ]]; then
-	configuration "ssh" "public"
-else
-	ctrl=
-	while [ -z $ctrl ]
-	do
-		echo -n 'Go ahead type 1 '
-		read ctrl
-		if [[ "$ctrl" -eq 1 ]]; then
+		echo -n "configuring ssh \n"
+		if [[ $configini -eq 1 ]]; then
 			configuration "ssh" "public"
-			echo "ssh#$ctrl" >> /tmp/config.ini
 		else
-			error_exit "$LINENO: EXIT FROM USER." 
+			ctrl=
+			while [ -z $ctrl ]
+			do
+				echo -n 'Go ahead type 1 '
+				read ctrl
+				if [[ "$ctrl" -eq 1 ]]; then
+					configuration "ssh" "public"
+					echo "ssh#$ctrl" >> /tmp/config.ini
+				else
+					error_exit "$LINENO: EXIT FROM USER." 
+				fi
+			done
 		fi
-	done
-fi
-echo -n "configuring ipsec \
-	\nplease add ${publicip}/32 to \
-	\n/etc/pf.conf/table.ipsec \
-	\nto the others nodes and reload them! \
-	\n"
-if [[ $configini -eq 1 ]]; then
-	configuration "ipsec" 
-else
-	ctrl=
-	while [ -z $ctrl ]
-	do
-		echo -n 'Go ahead type 1 '
-		read ctrl
-		if [[ "$ctrl" -eq 1 ]]; then
+		echo -n "configuring ipsec \
+			\nplease add ${publicip}/32 to \
+			\n/etc/pf.conf/table.ipsec \
+			\nto the others nodes and reload them! \
+			\n"
+		if [[ $configini -eq 1 ]]; then
 			configuration "ipsec" 
-			echo "ipsec#$ctrl" >> /tmp/config.ini
 		else
-			error_exit "$LINENO: EXIT FROM USER." 
+			ctrl=
+			while [ -z $ctrl ]
+			do
+				echo -n 'Go ahead type 1 '
+				read ctrl
+				if [[ "$ctrl" -eq 1 ]]; then
+					configuration "ipsec" 
+					echo "ipsec#$ctrl" >> /tmp/config.ini
+				else
+					error_exit "$LINENO: EXIT FROM USER." 
+				fi
+			done
 		fi
-	done
-fi
-if [[ $configini -eq 1 ]]; then
-	configuration "gre" 
-else
-	echo -n "configuring gre interfaces \
-		\n"
-	ctrl=
-	while [ -z $ctrl ]
-	do
-		echo -n 'Go ahead type 1 '
-		read ctrl
-		if [[ "$ctrl" -eq 1 ]]; then
+		if [[ $configini -eq 1 ]]; then
 			configuration "gre" 
-			echo "gre#$ctrl" >> /tmp/config.ini
 		else
-			error_exit "$LINENO: EXIT FROM USER." 
+			echo -n "configuring gre interfaces \
+				\n"
+			ctrl=
+			while [ -z $ctrl ]
+			do
+				echo -n 'Go ahead type 1 '
+				read ctrl
+				if [[ "$ctrl" -eq 1 ]]; then
+					configuration "gre" 
+					echo "gre#$ctrl" >> /tmp/config.ini
+				else
+					error_exit "$LINENO: EXIT FROM USER." 
+				fi
+			done
 		fi
-	done
-fi
 
-ipv6ctrl=
-ipv6egress=
-ipv6prefix=
-ipv6defrouter=
+		ipv6ctrl=
+		ipv6egress=
+		ipv6prefix=
+		ipv6defrouter=
 
-if [[ $configini -eq 1 ]]; then
-	ipv6ctrl=$(cat /tmp/config.ini  | grep ipv6ctrl |cut -d \# -f2)
-	case $ipv6ctrl in
-		"static")
-			ipv6egress=$(cat /tmp/config.ini  | grep ipv6egress |cut -d \# -f2)
-			ipv6prefix=$(cat /tmp/config.ini  | grep ipv6prefix |cut -d \# -f2)
-			ipv6defrouter=$(cat /tmp/config.ini  | grep ipv6defrouter |cut -d \# -f2)
-			;;
-		"dynamic")
-			ipv6egress=$(ifconfig egress | grep inet6 | grep -v fe80 |cut -d ' ' -f2)
-			;;
-	esac
-	if [[ ! -z ipv6defrouter ]]; then
-		install -o root -g wheel -m 0640 src/etc/hostname-ipv6s.vio0 /etc/hostname.vio0
-		install -o root -g wheel -m 0640 src/etc/mygate-ipv6s /etc/mygate
-		sed -i "s/\/ROUTEV6\//$ipv6defrouter/g" /etc/mygate
-	fi
-else	
-	while [ -z $ipv6ctrl ]
-	do
-		echo -n 'Is the IPv6 address on the egress interface static or dynamic?\n'
-		read ipv6ctrl
-		echo "ipv6ctrl#$ipv6ctrl" >> /tmp/config.ini
-		case $ipv6ctrl in
-			"static")
-				echo -n 'Type the IPv6 address without prefixlen '
-				read ipv6egress
-				echo -n 'Type the prefixlen '
-				read ipv6prefix
-				echo -n 'Type the IPv6 default route '
-				read ipv6defrouter
-				echo "ipv6egress#$ipv6egress" >> /tmp/config.ini
-				echo "ipv6prefix#$ipv6prefix" >> /tmp/config.ini
-				echo "ipv6defrouter#$ipv6defrouter" >> /tmp/config.ini
-				;;
-			"dynamic")
-				ipv6egress=$(ifconfig egress | grep inet6 | grep -v fe80 |cut -d ' ' -f2)
-				echo "ipv6egress#$ipv6egress" >> /tmp/config.ini
-				;;
-			*)
-				echo -n "Please type static or dynamic \n"
-				continue
-				;;
-		esac	
-		if [[ ! -z ipv6defrouter ]]; then
-			install -o root -g wheel -m 0640 src/etc/hostname-ipv6s.vio0 /etc/hostname.vio0
-			install -o root -g wheel -m 0640 src/etc/mygate-ipv6s /etc/mygate
-			sed -i "s/\/ROUTEV6\//$ipv6defrouter/g" /etc/mygate
+		if [[ $configini -eq 1 ]]; then
+			ipv6ctrl=$(cat /tmp/config.ini  | grep ipv6ctrl |cut -d \# -f2)
+			case $ipv6ctrl in
+				"static")
+					ipv6egress=$(cat /tmp/config.ini  | grep ipv6egress |cut -d \# -f2)
+					ipv6prefix=$(cat /tmp/config.ini  | grep ipv6prefix |cut -d \# -f2)
+					ipv6defrouter=$(cat /tmp/config.ini  | grep ipv6defrouter |cut -d \# -f2)
+					;;
+				"dynamic")
+					ipv6egress=$(ifconfig egress | grep inet6 | grep -v fe80 |cut -d ' ' -f2)
+					;;
+			esac
+			if [[ ! -z ipv6defrouter ]]; then
+				install -o root -g wheel -m 0640 src/etc/hostname-ipv6s.vio0 /etc/hostname.vio0
+				install -o root -g wheel -m 0640 src/etc/mygate-ipv6s /etc/mygate
+				sed -i "s/\/ROUTEV6\//$ipv6defrouter/g" /etc/mygate
+			fi
+		else	
+			while [ -z $ipv6ctrl ]
+			do
+				echo -n 'Is the IPv6 address on the egress interface static or dynamic?\n'
+				read ipv6ctrl
+				echo "ipv6ctrl#$ipv6ctrl" >> /tmp/config.ini
+				case $ipv6ctrl in
+					"static")
+						echo -n 'Type the IPv6 address without prefixlen '
+						read ipv6egress
+						echo -n 'Type the prefixlen '
+						read ipv6prefix
+						echo -n 'Type the IPv6 default route '
+						read ipv6defrouter
+						echo "ipv6egress#$ipv6egress" >> /tmp/config.ini
+						echo "ipv6prefix#$ipv6prefix" >> /tmp/config.ini
+						echo "ipv6defrouter#$ipv6defrouter" >> /tmp/config.ini
+						;;
+					"dynamic")
+						ipv6egress=$(ifconfig egress | grep inet6 | grep -v fe80 |cut -d ' ' -f2)
+						echo "ipv6egress#$ipv6egress" >> /tmp/config.ini
+						;;
+					*)
+						echo -n "Please type static or dynamic \n"
+						continue
+						;;
+				esac	
+				if [[ ! -z ipv6defrouter ]]; then
+					install -o root -g wheel -m 0640 src/etc/hostname-ipv6s.vio0 /etc/hostname.vio0
+					install -o root -g wheel -m 0640 src/etc/mygate-ipv6s /etc/mygate
+					sed -i "s/\/ROUTEV6\//$ipv6defrouter/g" /etc/mygate
+				fi
+				
+			done
 		fi
-		
-	done
-fi
 
-echo -n "configuring PF firewall and others environments \n"
-if [[ $configini -eq 1 ]]; then
-	configuration "pf"
-else 
-	ctrl=
-	while [ -z $ctrl ]
-	do
-		echo -n 'Go ahead type 1 '
-		read ctrl
-		if [[ "$ctrl" -eq 1 ]]; then
-			configuration "pf" 
-			echo "pf#$ctrl" >> /tmp/config.ini
-		else
-			error_exit "$LINENO: EXIT FROM USER." 
+		echo -n "configuring PF firewall and others environments \n"
+		if [[ $configini -eq 1 ]]; then
+			configuration "pf"
+		else 
+			ctrl=
+			while [ -z $ctrl ]
+			do
+				echo -n 'Go ahead type 1 '
+				read ctrl
+				if [[ "$ctrl" -eq 1 ]]; then
+					configuration "pf" 
+					echo "pf#$ctrl" >> /tmp/config.ini
+				else
+					error_exit "$LINENO: EXIT FROM USER." 
+				fi
+			done
 		fi
-	done
-fi
 
-echo -n "configuring OSPF routing protocol \n"
-if [[ $configini -eq 1 ]]; then
-	configuration "ospf"
-else 
-	ctrl=
-	while [ -z $ctrl ]
-	do
-		echo -n 'Go ahead type 1 '
-		read ctrl
-		if [[ "$ctrl" -eq 1 ]]; then
-			configuration "ospf" 
-			echo "ospf#$ctrl" >> /tmp/config.ini
-		else
-			error_exit "$LINENO: EXIT FROM USER." 
+		echo -n "configuring OSPF routing protocol \n"
+		if [[ $configini -eq 1 ]]; then
+			configuration "ospf"
+		else 
+			ctrl=
+			while [ -z $ctrl ]
+			do
+				echo -n 'Go ahead type 1 '
+				read ctrl
+				if [[ "$ctrl" -eq 1 ]]; then
+					configuration "ospf" 
+					echo "ospf#$ctrl" >> /tmp/config.ini
+				else
+					error_exit "$LINENO: EXIT FROM USER." 
+				fi
+			done
 		fi
-	done
-fi
 
-echo -n "preparing archives, signing them, starting httpd default host and start the remote install procedure \n"
-if [[ $configini -eq 1 ]]; then
-	configuration "remote"
-	configuration "relayd"
-else 
-	ctrl=
-	while [ -z $ctrl ]
-	do
-		echo -n 'Go ahead type 1 '
-		read ctrl
-		if [[ "$ctrl" -eq 1 ]]; then
-			configuration "remote" 
-			echo "remote#$ctrl" >> /tmp/config.ini
+		echo -n "preparing archives, signing them, starting httpd default host and start the remote install procedure \n"
+		if [[ $configini -eq 1 ]]; then
+			configuration "remote"
 			configuration "relayd"
-		else
-			error_exit "$LINENO: EXIT FROM USER." 
+		else 
+			ctrl=
+			while [ -z $ctrl ]
+			do
+				echo -n 'Go ahead type 1 '
+				read ctrl
+				if [[ "$ctrl" -eq 1 ]]; then
+					configuration "remote" 
+					echo "remote#$ctrl" >> /tmp/config.ini
+					configuration "relayd"
+				else
+					error_exit "$LINENO: EXIT FROM USER." 
+				fi
+			done
 		fi
-	done
-fi
+	;;
+	"-U")
+	;;
+	*)
+		exit 1
+	;;
+esac
+
+
 
 
 
