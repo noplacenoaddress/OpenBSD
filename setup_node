@@ -20,7 +20,7 @@ macdefaultv4router=$(arp -an | grep $defaultv4router |  awk '{print $2}')
 dyndns=$(host -t a cat-01.hopto.org | cut -d ' ' -f4)
 basedir=$(pwd)
 tmpdir=$(mktemp -d)
-datarelease=$(date +"%d%m%Y-%H%m%S")
+datarelease=$(date +"%d%m%Y%H%m%S")
 userna=$(id -nu $uid)
 
 if [[ $uid -ne 0 ]]; then
