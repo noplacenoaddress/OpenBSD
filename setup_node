@@ -209,7 +209,6 @@ function configuration {
 		"static")
 			install -o root -g wheel -m 0640  src/etc/hostname.egress "/etc/hostname.$egressinterface"
 			install -o root -g wheel -m 0640 src/etc/mygate /etc/
-			arp -s $defaultv4router $macdefaultv4router
 			if [[ ! -z $ipv6egress ]]; then
 				rcctl stop slaacd
 				rcctl disable slaacd
@@ -220,9 +219,9 @@ function configuration {
 				cat $tmphostname > "/etc/hostname.$egressinterface"
 				echo $ipv6defrouter >> /etc/mygate
 			fi
-			if [[ $(grep -c "arp" /etc/rc.local) -ne 1 ]]; then
-				echo "arp -s $defaultv4router $macdefaultv4router" > /etc/rc.local
-			fi
+			echo "arp -s $defaultv4router $macdefaultv4router" > /etc/rc.local
+			cat  src/etc/rc.local >>  /etc/rc.local
+			arp -s $defaultv4router $macdefaultv4router
 			custom "etc"
 			cd /tmp
 			nohup sh /etc/netstart $egressinterface &
