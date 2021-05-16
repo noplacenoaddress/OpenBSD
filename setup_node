@@ -86,7 +86,7 @@ function custom {
 				sed -i "s/\/PUBLICIP\//$publicip/g" $file
 				sed -i "s/\/DYNDNS\//$dyndns/g" $file
 			done
-			;;
+		;;
 		"ssh")
 			for file in $(find /etc/ssh -type f -maxdepth 2); do
 				sed -i "s/\/HOSTNAME\//$hostname/g" $file
@@ -99,7 +99,7 @@ function custom {
 				sed -i "s/\/PUBLICIP\//$publicip/g" $file
 				sed -i "s/\/DYNDNS\//$dyndns/g" $file
 			done
-			;;
+		;;
 		"var")
 			for file in $(find /var/unbound /var/nsd -type f); do
 				sed -i "s/\/HOSTNAME\//$hostname/g" $file
@@ -112,7 +112,7 @@ function custom {
 				sed -i "s/\/PUBLICIP\//$publicip/g" $file
 				sed -i "s/\/DYNDNS\//$dyndns/g" $file
 			done
-			;;
+		;;
 		"tmp")
 			for file in $(find /tmp -type f); do
 				sed -i "s/\/HOSTNAME\//$hostname/g" $file
@@ -125,7 +125,7 @@ function custom {
 				sed -i "s/\/PUBLICIP\//$publicip/g" $file
 				sed -i "s/\/DYNDNS\//$dyndns/g" $file
 			done
-			;;
+		;;
 	esac
 }
 function backup {
@@ -193,6 +193,9 @@ function configuration {
 		subphase=$2
 	fi
 	case $phase in
+		"static")
+			
+		;;
 		"basic")
 			echo "dot files"
 			for file in src/home/taglio/.*; do
@@ -239,7 +242,7 @@ function configuration {
 			nohup sh /etc/netstart vether0 &
 			cd $basedir
 			sh /etc/rc.local
-			;;	
+		;;	
 		"users")
 			echo "vmail, dsync, _iperfd, wwwuser"
 			if ! getent passwd vmail 1>&-; then 
@@ -263,7 +266,7 @@ function configuration {
 				doas -u taglio ssh-keygen -t ed25519 -N "" -f /home/taglio/.ssh/id_ed25519
 			fi
 		
-			;;
+		;;
 		"scripts")
 			for file in src/root/Bin/*.sh; do
 				if [[ -e "$file" ]]; then
@@ -271,7 +274,7 @@ function configuration {
 				fi
 			done
 			cleanold "/root/Bin/"
-			;;
+		;;
 		"unbound")
 			pidof_unbound=$(pidof "unbound")
 			if [[ -z $pidof_unbound ]]; then
@@ -302,7 +305,7 @@ function configuration {
 					cleanold "/var/unbound/etc/"
 					;;
 			esac
-			;;		
+		;;		
 		"ssh") 
 			publickey=$(ssh-keyscan -t ed25519 ::1 | sed "s/::1/[$publicip,$routerid]/")
 			sshfp=$(ssh-keyscan -D -t ed25519 ::1 | sed "s/::1/$hostname/")
@@ -334,7 +337,7 @@ function configuration {
 				mkdir "/tmp/ca.$landomainname"
 			fi
 			echo $sshfp > "/tmp/ca.$landomainname/$landomainname.zone"
-			;;
+		;;
 		"ipsec")
 			if [[ -e "/etc/iked.conf" ]]; then
 				rm -rf /etc/{iked,iked.conf,iked.conf.*}
@@ -433,7 +436,7 @@ function configuration {
 			custom "tmp"
 			custom "etc"
 			rcctl start iked ||  error_exit "$LINENO: ERROR: IKED failed."
-			;;
+		;;
 		"gre")	
 			if [[ -e "/etc/hostname.gre0" ]]; then
 				rm -rf /etc/hostname.gre?
@@ -500,7 +503,7 @@ function configuration {
 				sh /etc/netstart $(echo $file | awk -F. '{print $2}')
 			done
 			cleanold "/etc/"
-			;;
+		;;
 		"pf")
 			for file in src/etc/pf.* ; do
 				if [[ -e "$file" ]]; then
@@ -546,7 +549,7 @@ function configuration {
 			if [[ -z $pfctrl ]]; then
 				echo "PF ruleset OK"
 			fi
-			;;
+		;;
 		"ospf")
 			rcctl enable ospfd
 			install -o root -g wheel -m 0600  src/etc/ospfd.conf /etc/
@@ -600,12 +603,12 @@ function configuration {
 			else
 				rcctl restart ospfd ||  error_exit "$LINENO: ERROR: OSPFD failed."
 			fi
-			;;
+		;;
 		"ntpd")
 			install -o root -g wheel -m 0644  src/etc/ntpd.conf /etc/
 			cleanold "/etc/"
 			rcctl restart ntpd  ||  error_exit "$LINENO: ERROR: NTPD failed."
-			;;	
+		;;	
 		"remote")
 			for file in $(find /tmp -type d -maxdepth 1); do
 				filename=$(basename $file)
@@ -638,13 +641,13 @@ function configuration {
 				kill -9 $(cat /var/run/sshd-remote-install.pid)
 				/usr/sbin/sshd -f /etc/ssh/remote_install/remote_install.conf
 			fi
-			;;	
+		;;	
 		"relayd")
 			install -o root -g wheel -m 0640 src/etc/relayd.conf /etc/
 			custom "etc"
 			sed -i "s/\/PUBV6\//${ipv6egress}/g" /etc/relayd.conf
 			rcctl enable relayd 
-			;;
+		;;
 	esac
 }
 
@@ -654,11 +657,44 @@ case $1 in
 		if [[ ! -e "/tmp/config.ini" ]]; then
 			touch "/tmp/config.ini"
 		else
-			echo -n "Type 1 to use /tmp/config.ini "
+			echo "Type 1 to use /tmp/config.ini "
 			read configini 
 		fi
 
-		
+		echo "changing IP from dynamic to static on $egressinterface"
+		if [[ $configini -eq 1 ]]; then
+			ipv6egress=$(cat /tmp/config.ini  | grep ipv6egress |cut -d \# -f2)
+			ipv6prefix=$(cat /tmp/config.ini  | grep ipv6prefix |cut -d \# -f2)
+			ipv6defrouter=$(cat /tmp/config.ini  | grep ipv6defrouter |cut -d \# -f2)
+			configuration "static"
+		else
+			ctrl=
+			while [ -z $ctrl ]
+			do
+				echo 'Go ahead type 1 '
+				read ctrl
+				if [[ "$ctrl" -eq 1 ]]; then
+					echo "static#$ctrl" > /tmp/config.ini
+					ctrlipv6=$(ifconfig $egressinterface | grep inet6 | grep -v fe80)
+					if [[ -z $ctrlipv6 ]]; then
+						echo "no IPv6 configuration found"
+						echo 'Type the IPv6 address without prefixlen '
+						read ipv6egress
+						echo 'Type the prefixlen '
+						read ipv6prefix
+						echo 'Type the IPv6 default route [ | auto ] '
+						read ipv6defrouter
+						echo "ipv6egress#$ipv6egress" >> /tmp/config.ini
+						echo "ipv6prefix#$ipv6prefix" >> /tmp/config.ini
+						echo "ipv6defrouter#$ipv6defrouter" >> /tmp/config.ini
+					fi
+					configuration "static"
+				else
+					error_exit "$LINENO: EXIT FROM USER." 
+				fi
+			    
+			done		
+		fi
 		echo "changing installurl"
 		if [[ $configini -eq 1 ]]; then
 			install -o root -g wheel -m 0644 src/etc/installurl /etc/
@@ -666,11 +702,11 @@ case $1 in
 			ctrl=
 			while [ -z $ctrl ]
 			do
-				echo -n 'Go ahead type 1 '
+				echo 'Go ahead type 1 '
 				read ctrl
 				if [[ "$ctrl" -eq 1 ]]; then
 					install -o root -g wheel -m 0644 src/etc/installurl /etc/
-					echo "installurl#$ctrl" > /tmp/config.ini
+					echo "installurl#$ctrl" >> /tmp/config.ini
 				else
 					error_exit "$LINENO: EXIT FROM USER." 
 				fi
@@ -684,7 +720,7 @@ case $1 in
 		ctrl=
 			while [ -z $ctrl ]
 			do
-				echo -n 'Go ahead type 1 '
+				echo 'Go ahead type 1 '
 				read ctrl
 				if [[ "$ctrl" -eq 1 ]]; then
 					pkg "shell"
@@ -696,8 +732,8 @@ case $1 in
 			done
 		fi
 
-		rcctl disable {sndiod,slaacd,check_quotas}
-		rcctl stop {sndiod,slaacd}
+		rcctl disable {sndiod, check_quotas}
+		rcctl stop sndiod
 
 		echo "configuring users"
 		if [[ $configini -eq 1 ]]; then
@@ -720,7 +756,7 @@ case $1 in
 			ctrl=
 			while [ -z $ctrl ]
 			do
-				echo -n 'Go ahead type 1 '
+				echo 'Go ahead type 1 '
 				read ctrl
 				if [[ "$ctrl" -eq 1 ]]; then
 					if [ ! -d /root/Bin ]; then 
@@ -751,7 +787,7 @@ case $1 in
 			hostname=
 			while [ -z $hostname ]
 			do
-				echo -n 'Type the hostname '
+				echo 'Type the hostname '
 				read hostname
 				echo "hostname#$hostname" >> /tmp/config.ini
 			done
@@ -762,7 +798,7 @@ case $1 in
 			landomainname=
 			while [ -z $landomainname ]
 			do
-				echo -n 'Type the LAN domain name '
+				echo 'Type the LAN domain name '
 				read landomainname
 				echo "landomainname#$landomainname" >> /tmp/config.ini
 			done
@@ -773,7 +809,7 @@ case $1 in
 			routerid=
 			while [ -z $routerid ]
 			do
-				echo -n 'Type the routerid '
+				echo 'Type the routerid '
 				read routerid
 				echo "routerid#$routerid" >> /tmp/config.ini
 			done
@@ -795,7 +831,7 @@ case $1 in
 			ctrl=
 			while [ -z $ctrl ]
 			do
-				echo -n 'Go ahead type 1 '
+				echo 'Go ahead type 1 '
 				read ctrl
 				if [[ "$ctrl" -eq 1 ]]; then
 					configuration "basic" 
@@ -815,7 +851,7 @@ case $1 in
 			ctrl=
 			while [ -z $ctrl ]
 			do
-				echo -n 'Go ahead type 1 '
+				echo 'Go ahead type 1 '
 				read ctrl
 				if [[ "$ctrl" -eq 1 ]]; then
 					configuration "unbound" "local"
@@ -826,14 +862,14 @@ case $1 in
 			    
 			done
 		fi
-		echo -n "configuring ssh \n"
+		echo "configuring ssh \n"
 		if [[ $configini -eq 1 ]]; then
 			configuration "ssh" "public"
 		else
 			ctrl=
 			while [ -z $ctrl ]
 			do
-				echo -n 'Go ahead type 1 '
+				echo 'Go ahead type 1 '
 				read ctrl
 				if [[ "$ctrl" -eq 1 ]]; then
 					configuration "ssh" "public"
@@ -843,7 +879,7 @@ case $1 in
 				fi
 			done
 		fi
-		echo -n "configuring ipsec \
+		echo "configuring ipsec \
 			\nplease add ${publicip}/32 to \
 			\n/etc/pf.conf/table.ipsec \
 			\nto the others nodes and reload them! \
@@ -854,7 +890,7 @@ case $1 in
 			ctrl=
 			while [ -z $ctrl ]
 			do
-				echo -n 'Go ahead type 1 '
+				echo 'Go ahead type 1 '
 				read ctrl
 				if [[ "$ctrl" -eq 1 ]]; then
 					configuration "ipsec" 
@@ -867,12 +903,12 @@ case $1 in
 		if [[ $configini -eq 1 ]]; then
 			configuration "gre" 
 		else
-			echo -n "configuring gre interfaces \
+			echo "configuring gre interfaces \
 				\n"
 			ctrl=
 			while [ -z $ctrl ]
 			do
-				echo -n 'Go ahead type 1 '
+				echo 'Go ahead type 1 '
 				read ctrl
 				if [[ "$ctrl" -eq 1 ]]; then
 					configuration "gre" 
@@ -883,72 +919,14 @@ case $1 in
 			done
 		fi
 
-		ipv6ctrl=
-		ipv6egress=
-		ipv6prefix=
-		ipv6defrouter=
-
-		if [[ $configini -eq 1 ]]; then
-			ipv6ctrl=$(cat /tmp/config.ini  | grep ipv6ctrl |cut -d \# -f2)
-			case $ipv6ctrl in
-				"static")
-					ipv6egress=$(cat /tmp/config.ini  | grep ipv6egress |cut -d \# -f2)
-					ipv6prefix=$(cat /tmp/config.ini  | grep ipv6prefix |cut -d \# -f2)
-					ipv6defrouter=$(cat /tmp/config.ini  | grep ipv6defrouter |cut -d \# -f2)
-					;;
-				"dynamic")
-					ipv6egress=$(ifconfig egress | grep inet6 | grep -v fe80 |cut -d ' ' -f2)
-					;;
-			esac
-			if [[ ! -z ipv6defrouter ]]; then
-				install -o root -g wheel -m 0640 src/etc/hostname-ipv6s.$egressinterface /etc/hostname.$egressinterface
-				install -o root -g wheel -m 0640 src/etc/mygate-ipv6s /etc/mygate
-				sed -i "s/\/ROUTEV6\//$ipv6defrouter/g" /etc/mygate
-			fi
-		else	
-			while [ -z $ipv6ctrl ]
-			do
-				echo -n 'Is the IPv6 address on the egress interface static or dynamic?\n'
-				read ipv6ctrl
-				echo "ipv6ctrl#$ipv6ctrl" >> /tmp/config.ini
-				case $ipv6ctrl in
-					"static")
-						echo -n 'Type the IPv6 address without prefixlen '
-						read ipv6egress
-						echo -n 'Type the prefixlen '
-						read ipv6prefix
-						echo -n 'Type the IPv6 default route '
-						read ipv6defrouter
-						echo "ipv6egress#$ipv6egress" >> /tmp/config.ini
-						echo "ipv6prefix#$ipv6prefix" >> /tmp/config.ini
-						echo "ipv6defrouter#$ipv6defrouter" >> /tmp/config.ini
-						;;
-					"dynamic")
-						ipv6egress=$(ifconfig egress | grep inet6 | grep -v fe80 |cut -d ' ' -f2)
-						echo "ipv6egress#$ipv6egress" >> /tmp/config.ini
-						;;
-					*)
-						echo -n "Please type static or dynamic \n"
-						continue
-						;;
-				esac	
-				if [[ ! -z ipv6defrouter ]]; then
-					install -o root -g wheel -m 0640 src/etc/hostname-ipv6s.$egressinterface /etc/hostname.$egressinterface
-					install -o root -g wheel -m 0640 src/etc/mygate-ipv6s /etc/mygate
-					sed -i "s/\/ROUTEV6\//$ipv6defrouter/g" /etc/mygate
-				fi
-				
-			done
-		fi
-
-		echo -n "configuring PF firewall and others environments \n"
+		echo "configuring PF firewall and others environments \n"
 		if [[ $configini -eq 1 ]]; then
 			configuration "pf"
 		else 
 			ctrl=
 			while [ -z $ctrl ]
 			do
-				echo -n 'Go ahead type 1 '
+				echo 'Go ahead type 1 '
 				read ctrl
 				if [[ "$ctrl" -eq 1 ]]; then
 					configuration "pf" 
@@ -959,14 +937,14 @@ case $1 in
 			done
 		fi
 
-		echo -n "configuring OSPF routing protocol \n"
+		echo "configuring OSPF routing protocol \n"
 		if [[ $configini -eq 1 ]]; then
 			configuration "ospf"
 		else 
 			ctrl=
 			while [ -z $ctrl ]
 			do
-				echo -n 'Go ahead type 1 '
+				echo 'Go ahead type 1 '
 				read ctrl
 				if [[ "$ctrl" -eq 1 ]]; then
 					configuration "ospf" 
@@ -977,7 +955,7 @@ case $1 in
 			done
 		fi
 
-		echo -n "preparing archives, signing them, starting httpd default host and start the remote install procedure \n"
+		echo "preparing archives, signing them, starting httpd default host and start the remote install procedure \n"
 		if [[ $configini -eq 1 ]]; then
 			configuration "remote"
 			configuration "relayd"
@@ -985,7 +963,7 @@ case $1 in
 			ctrl=
 			while [ -z $ctrl ]
 			do
-				echo -n 'Go ahead type 1 '
+				echo 'Go ahead type 1 '
 				read ctrl
 				if [[ "$ctrl" -eq 1 ]]; then
 					configuration "remote" 
