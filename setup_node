@@ -82,21 +82,21 @@ function custom {
 	case $1 in
 		"etc")
 			for file in $(find /etc -type f -maxdepth 1); do
-				sed -i "s/\/HOSTNAME\//$hostname/g" $file
-				sed -i "s/\/LANDOMAINNAME\//$landomainname/g" $file
-				sed -i "s/\/ROUTERID\//$routerid/g" $file
-				sed -i "s/\/PUBLICHOST\//$publichost/g" $file
-				sed -i "s/\/DOMAINNAME\//$domainname/g" $file
-				sed -i "s/\/SRCID\//$srcid/g" $file
-				sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" $file
-				sed -i "s/\/PUBLICIP\//$publicip/g" $file
-				sed -i "s/\/DYNDNS\//$dyndns/g" $file
-				sed -i "s/\/PUBLICNETMASK\//$publicnetmask/g" $file
-				sed -i "s/\/PUBLICBCAST\//$publicbcast/g" $file
-				sed -i "s/\/PUBV6\//${ipv6egress}/g" $file
-				sed -i "s/\/PREFIX\//${ipv6prefix}/g" $file
-				sed -i "s/\/ROUTEV4\//${defaultv4router}/g" $file
-				sed -i "s/\/ROUTEV6\//${ipv6defrouter}/g" $file
+				(: "${hostname?}") 2>/dev/null && sed -i "s/\/HOSTNAME\//$hostname/g" $file
+				(: "${landomainname?}") 2>/dev/null && sed -i "s/\/LANDOMAINNAME\//$landomainname/g" $file
+				(: "${routerid?}") 2>/dev/null && sed -i "s/\/ROUTERID\//$routerid/g" $file
+				(: "${publichost?}") 2>/dev/null && sed -i "s/\/PUBLICHOST\//$publichost/g" $file
+				(: "${domainname?}") 2>/dev/null && sed -i "s/\/DOMAINNAME\//$domainname/g" $file
+				(: "${srcid?}") 2>/dev/null && sed -i "s/\/SRCID\//$srcid/g" $file
+				(: "${publichostname?}") 2>/dev/null && sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" $file
+				(: "${publicip?}") 2>/dev/null && sed -i "s/\/PUBLICIP\//$publicip/g" $file
+				(: "${dyndns?}") 2>/dev/null && sed -i "s/\/DYNDNS\//$dyndns/g" $file
+				(: "${publicnetmask?}") 2>/dev/null && sed -i "s/\/PUBLICNETMASK\//$publicnetmask/g" $file
+				(: "${publicbcast?}") 2>/dev/null && sed -i "s/\/PUBLICBCAST\//$publicbcast/g" $file
+				(: "${ipv6egress?}") 2>/dev/null && sed -i "s/\/PUBV6\//${ipv6egress}/g" $file
+				(: "${ipv6prefix?}") 2>/dev/null && sed -i "s/\/PREFIX\//${ipv6prefix}/g" $file
+				(: "${defaultv4router?}") 2>/dev/null && sed -i "s/\/ROUTEV4\//${defaultv4router}/g" $file
+				(: "${ipv6defrouter?}") 2>/dev/null && sed -i "s/\/ROUTEV6\//${ipv6defrouter}/g" $file
 				
 			done
 		;;
