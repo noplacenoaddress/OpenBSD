@@ -995,6 +995,7 @@ case $1 in
 			;;
 			"relayd")
 				configuration "relayd"
+			;;
 			"all")
 				exit && sh setup_node -I
 				
