@@ -961,28 +961,43 @@ case $1 in
 		case $2 in
 			"basic")
 				pkg "shell"
+				configuration "basic"
 			;;
 			"users")
+				configuration "users"
 			;;
 			"scripts")
+				configuration "scripts"
 			;;
 			"unbound")
+				configuration "unbound"
 			;;
 			"ssh")
+				configuration "ssh"
 			;;
 			"ipsec")
+				configuration "ipsec"
 			;;
 			"gre")
+				configuration "gre"
 			;;
 			"pf")
+				configuration "pf"
 			;;
 			"ospf")
+				configuration "ospf"
 			;;
 			"ntpd")
+				configuration "ntpd"
 			;;
 			"remote")
+				configuration "remote"
 			;;
 			"relayd")
+				configuration "relayd"
+			"all")
+				exit && sh setup_node -I
+				
 			;;
 		esac
 	;;
