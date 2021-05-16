@@ -958,6 +958,33 @@ case $1 in
 				\n"
 			exit 1 
 		fi
+		case $2 in
+			"basic")
+				pkg "shell"
+			;;
+			"users")
+			;;
+			"scripts")
+			;;
+			"unbound")
+			;;
+			"ssh")
+			;;
+			"ipsec")
+			;;
+			"gre")
+			;;
+			"pf")
+			;;
+			"ospf")
+			;;
+			"ntpd")
+			;;
+			"remote")
+			;;
+			"relayd")
+			;;
+		esac
 	;;
 	*)
 		exit 1
