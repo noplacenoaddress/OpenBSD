@@ -13,7 +13,8 @@ PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin:/root/Bin
 BACKUPS="/root/Backups"
 uid=$(id -u)
 app=$(basename $0)
-publicip=$(ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
+egressinterface=$(ifconfig egress | cut -d  : -f1 | head -n1)
+publicip=$(ifconfig $egressinterface | grep inet |grep -v inet6 | cut -d ' ' -f2)
 publichost=$(dig -x $publicip +short @8.8.8.8 | sed 's/.$//')
 defaultv4router=$(route -n show | awk '/default/{print $2}' | head -n 1)
 macdefaultv4router=$(arp -an | grep $defaultv4router |  awk '{print $2}')
@@ -139,7 +140,7 @@ function backup {
 			for file in $(find "/root" -type f -maxdepth 1 -name ".*"); do
 				cp -p $file "$CURRENTBACKUP/$1/root"
 			done
-			cp -p /etc/{dhclient.conf,resolv.conf.tail,doas.conf,myname,sysctl.conf,hostname.vio0,hostname.vether0,daily.local,rc.local} "$CURRENTBACKUP/$1/etc"
+			cp -p /etc/{dhclient.conf,resolv.conf.tail,doas.conf,myname,sysctl.conf,hostname.$egressinterface,hostname.vether0,daily.local,rc.local} "$CURRENTBACKUP/$1/etc"
 		;;
 		"users")
 			mkdir "$CURRENTBACKUP/$1"
@@ -220,7 +221,7 @@ function configuration {
 			fi
 			echo "dhclient, resolv.conf.tail, doas.conf, myname and sysctl.conf \n"
 			install -o root -g wheel -m 0644  src/etc/{dhclient.conf,resolv.conf.tail,doas.conf,myname,sysctl.conf} /etc/
-			install -o root -g wheel -m 0640  src/etc/hostname.vio0 /etc/
+			install -o root -g wheel -m 0640  src/etc/hostname.$egressinterface /etc/
 			echo "vether"
 			install -o root -g wheel -m 0644  src/etc/hostname.vether0 /etc/
 			echo "configuring iperf uptimed and oidentd \n"
@@ -234,7 +235,7 @@ function configuration {
 			install -o root -g wheel -m 0640  src/etc/rc.local /etc/
 			custom "etc"
 			cd /tmp
-			nohup sh /etc/netstart vio0 & 
+			nohup sh /etc/netstart $egressinterface & 
 			nohup sh /etc/netstart vether0 &
 			cd $basedir
 			sh /etc/rc.local
@@ -516,7 +517,7 @@ function configuration {
 			find /etc -type f -maxdepth 1 | xargs -I {} sed -i "s/\/PUBV6\//${ipv6egress}/g" {}
 			find /etc -type f -maxdepth 1 | xargs -I {} sed -i "s/\/PREFIX\//${ipv6prefix}/g" {}
 			if [[ -e "/etc/mygate" ]]; then
-				sh /etc/netstart vio0
+				sh /etc/netstart $egressinterface
 				if [[ $(route -n show -inet6 | grep -c "default") -ne 1 ]]; then
 					route add -inet6 default $(cat "/etc/mygate")
 				fi
@@ -657,8 +658,7 @@ case $1 in
 			read configini 
 		fi
 
-
-
+		
 		echo "changing installurl"
 		if [[ $configini -eq 1 ]]; then
 			install -o root -g wheel -m 0644 src/etc/installurl /etc/
@@ -901,7 +901,7 @@ case $1 in
 					;;
 			esac
 			if [[ ! -z ipv6defrouter ]]; then
-				install -o root -g wheel -m 0640 src/etc/hostname-ipv6s.vio0 /etc/hostname.vio0
+				install -o root -g wheel -m 0640 src/etc/hostname-ipv6s.$egressinterface /etc/hostname.$egressinterface
 				install -o root -g wheel -m 0640 src/etc/mygate-ipv6s /etc/mygate
 				sed -i "s/\/ROUTEV6\//$ipv6defrouter/g" /etc/mygate
 			fi
@@ -933,7 +933,7 @@ case $1 in
 						;;
 				esac	
 				if [[ ! -z ipv6defrouter ]]; then
-					install -o root -g wheel -m 0640 src/etc/hostname-ipv6s.vio0 /etc/hostname.vio0
+					install -o root -g wheel -m 0640 src/etc/hostname-ipv6s.$egressinterface /etc/hostname.$egressinterface
 					install -o root -g wheel -m 0640 src/etc/mygate-ipv6s /etc/mygate
 					sed -i "s/\/ROUTEV6\//$ipv6defrouter/g" /etc/mygate
 				fi
