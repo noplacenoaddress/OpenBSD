@@ -269,7 +269,6 @@ function configuration {
 			else
 				rcctl restart uptimed || error_exit "$LINENO: ERROR: UPTIMED failed."
 			fi
-			cat  src/etc/rc.local >> /etc/rc.local
 			custom "etc"
 			cd /tmp
 			nohup sh /etc/netstart vether0 &
