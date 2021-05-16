@@ -215,7 +215,9 @@ function configuration {
 				rcctl disable slaacd
 				tmphostname=$(mktemp)
 				cat "/etc/hostname.$egressinterface" | sed '/^inet6/d' > $tmphostname
-				echo "inet6 -autoconf -soii -temporary" >> $tmphostname
+				echo "inet6 -autoconf" >> $tmphostname
+				echo "inet6 -soii" >> $tmphostname
+				echo "inet6 -temporary" >> $tmphostname
 				echo "inet6 $ipv6egress/$ipv6prefix" >> $tmphostname
 				cat $tmphostname > "/etc/hostname.$egressinterface"
 				echo $ipv6defrouter >> /etc/mygate
