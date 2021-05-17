@@ -145,6 +145,10 @@ function backup {
 	CURRENTBACKUP="$BACKUPS/$datarelease"
 	mkdir $CURRENTBACKUP
 	case $1 in
+		"static")
+			mkdir -p "$CURRENTBACKUP/$1/"
+			cp -p "/etc/{hostname.$egressinterface,rc.local,mygate" "$CURRENTBACKUP/$1/"
+		;;
 		"basic")
 			mkdir -p "$CURRENTBACKUP/$1/{$uidna,root,etc}"
 			for file in $(find "/home/$uidna" -type f -maxdepth 1 -name ".*"); do
@@ -166,7 +170,6 @@ function backup {
 			for file in $(find "/root/Bin" -type f -maxdepth 1 ); do
 				cp -p $file "$CURRENTBACKUP/$1"
 			done
-			configuration "scripts"
 		;;
 		"unbound")
 			configuration "unbound"
@@ -1020,6 +1023,7 @@ case $1 in
 			print $0 "UPGRADE option must be followed by: \
 				\n \
 				\nall    -> performe an upgrade of all the system \
+				\nstatic \
 				\nbasic   \
 				\nusers   \
 				\nscripts \
@@ -1035,10 +1039,18 @@ case $1 in
 			exit 1 
 		fi
 		case $2 in
+			"static")
+				backup "static"
+				configuration "static"
+			;;
 			"basic")
 				pkg "shell"
 				backup "basic"	
 				configuration "basic"
+			;;
+			"static")
+				backup "static"
+				configuration "static"
 			;;
 			"users")
 				backup "users"
