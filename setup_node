@@ -1107,7 +1107,7 @@ case $1 in
 				upgrade "ssh"
 			;;
 			"ipsec")
-				backcup "ipsec"
+				backup "ipsec"
 				upgrade "ipsec"
 			;;
 			"gre")
