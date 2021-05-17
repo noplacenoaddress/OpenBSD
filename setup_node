@@ -252,13 +252,76 @@ function upgrade {
 				vpnc_host=$(dig -x $vpnc_ip +short @8.8.8.8 | sed 's/.$//')
 				if [[ -e "/etc/iked.conf.$vpnc_host" ]]; then
 					echo include \"/etc/iked.conf.$vpnc_host\" >> "$tmpdir/iked.conf"
+					if grep -q "ecp384" "/etc/iked.conf.$vpnc_host"; then
+						cp src/etc/iked.conf.mikrotik "$tmpdir/iked.conf.$vpnc_host"
+					elif grep -q "ecp256" "/etc/iked.conf.$vpnc_host"; then
+						cp src/etc/iked.conf.edgeos "$tmpdir/iked.conf.$vpnc_host"
+					else
+						cp src/etc/iked.conf.openbsd "$tmpdir/iked.conf.$vpnc_host"
+					fi
+					sed -i "s/\/POP\//$vpnc_host/g" "$tmpdir/iked.conf.$vpnc_host"
+					sed -i "s/\/POPIP\//$vpnc_ip/g" "$tmpdir/iked.conf.$vpnc_host"
+					type=$(cat "/etc/iked.conf.$vpnc_host" | head -n 1 | awk '{print $3}')
+					sed -i "s/\/TYPE\//$type/g" "$tmpdir/iked.conf.$vpnc_host"
+					sed -i "s/\/PUBLICIP\//$publicip/g" "$tmpdir/iked.conf.$vpnc_host"
+					if [[ -e /tmp/config.ini ]]; then
+						srcid=$(cat /tmp/config.ini  | grep hostname |cut -d \# -f2)
+						if [[ "$srcid" == "varuna" ]]; then
+							srcid="neo"
+						fi
+					else
+						srcid=
+						while [ -z $srcid ]
+						do
+							echo 'Type the hostname '
+							read srcid
+						done
+					fi
+					sed -i "s/\/SRCID\//$srcid/g" "$tmpdir/iked.conf.$vpnc_host"
+					sed -i "s/\/DOMAINNAME\//$domainname/g" "$tmpdir/iked.conf.$vpnc_host"
+					encx=$(cat "/etc/iked.conf.$vpnc_host" | awk -F'enc' '{print substr($2,0,1)}' | tail -n 1)
+					sed -i "s/\/X\//$encx/g" "$tmpdir/iked.conf.$vpnc_host"
+					ikedconfhostoldsha256=$(sha256 "/etc/iked.conf.$vpnc_host" | awk '{print $4}')
+					ikedconfhostnewsha256=$(sha256 "$tmpdir/iked.conf.$vpnc_host" | awk '{print $4}')
+					if [[ "$ikedconfhostoldsha256" != "$ikedconfhostnewsha256" ]]; then
+						echo "$vpnc_host upgrade"
+						install -o root -g wheel -m 0640   "$tmpdir/iked.conf.$vpnc_host" /etc/
+					fi
 				fi
-				
-				
 			done
 			for vpnc_host in $(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g'); do
 				if [[ -e "/etc/iked.conf.$vpnc_host" ]]; then
 					echo include \"/etc/iked.conf.$vpnc_host\" >> "$tmpdir/iked.conf"
+				fi
+				vpnc_ip=$(dig $vpnc_host A +short @8.8.8.8)
+				cp src/etc/iked.conf.edgeos "$tmpdir/iked.conf.$vpnc_host"
+				sed -i "s/\/POP\//$vpnc_host/g" "$tmpdir/iked.conf.$vpnc_host"
+				sed -i "s/\/POPIP\//$vpnc_ip/g" "$tmpdir/iked.conf.$vpnc_host"
+				type=$(cat "/etc/iked.conf.$vpnc_host" | head -n 1 | awk '{print $3}')
+				sed -i "s/\/TYPE\//$type/g" "$tmpdir/iked.conf.$vpnc_host"
+				sed -i "s/\/PUBLICIP\//$publicip/g" "$tmpdir/iked.conf.$vpnc_host"
+				if [[ -e /tmp/config.ini ]]; then
+					srcid=$(cat /tmp/config.ini  | grep hostname |cut -d \# -f2)
+					if [[ "$srcid" == "varuna" ]]; then
+						srcid="neo"
+					fi
+				else
+					srcid=
+					while [ -z $srcid ]
+					do
+						echo 'Type the hostname '
+						read srcid
+					done
+				fi
+				sed -i "s/\/SRCID\//$srcid/g" "$tmpdir/iked.conf.$vpnc_host"
+				sed -i "s/\/DOMAINNAME\//$domainname/g" "$tmpdir/iked.conf.$vpnc_host"
+				encx=$(cat "/etc/iked.conf.$vpnc_host" | awk -F'enc' '{print substr($2,0,1)}' | tail -n 1)
+				sed -i "s/\/X\//$encx/g" "$tmpdir/iked.conf.$vpnc_host"
+				ikedconfhostoldsha256=$(sha256 "/etc/iked.conf.$vpnc_host" | awk '{print $4}')
+				ikedconfhostnewsha256=$(sha256 "$tmpdir/iked.conf.$vpnc_host" | awk '{print $4}')
+				if [[ "$ikedconfhostoldsha256" != "$ikedconfhostnewsha256" ]]; then
+					echo "$vpnc_host upgrade"
+					install -o root -g wheel -m 0640   "$tmpdir/iked.conf.$vpnc_host" /etc/
 				fi
 			done
 			ikedconfoldsha256=$(sha256 /etc/iked.conf | awk '{print $4}')
@@ -266,7 +329,9 @@ function upgrade {
 			if [[ "$ikedconfoldsha256" != "$ikedconfnewsha256" ]]; then
 					echo "iked.conf upgrade"
 					install -o root -g wheel -m 0600  "$tmpdir/iked.conf" /etc/iked.conf
+					
 			fi
+			
 			
 		;;
 		"gre")
@@ -499,7 +564,7 @@ function configuration {
 					fi
 					cp src/mikrotik/ipsec.rsc "/tmp/$vpnc_host/$vpnc_host.rsc"
 					sed -i "s/\/POPIP\//$vpnc_ip/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
-					sed -i "s/\/POP\//$vpnc_ip/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
+					sed -i "s/\/POP\//$vpnc_host/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
 				elif [[ $(nc -w1  $vpnc_ip 22 | grep -c "ROSSSH") -eq 0 ]]; then
 					install -o root -g wheel -m 0640 src/etc/iked.conf.openbsd "/etc/iked.conf.$vpnc_host"
 					cp src/openbsd/iked.conf.openbsd "/tmp/$vpnc_host/iked.conf.$publichost"
