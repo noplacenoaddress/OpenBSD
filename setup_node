@@ -256,12 +256,18 @@ function upgrade {
 				
 				
 			done
+			for vpnc_host in $(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g'); do
+				if [[ -e "/etc/iked.conf.$vpnc_host" ]]; then
+					echo include \"/etc/iked.conf.$vpnc_host\" >> "$tmpdir/iked.conf"
+				fi
+			done
 			ikedconfoldsha256=$(sha256 /etc/iked.conf | awk '{print $4}')
 			ikedconfnewsha256=$(sha256 "$tmpdir/iked.conf" | awk '{print $4}')
 			if [[ "$ikedconfoldsha256" != "$ikedconfnewsha256" ]]; then
 					echo "iked.conf upgrade"
 					install -o root -g wheel -m 0600  "$tmpdir/iked.conf" /etc/iked.conf
 			fi
+			
 		;;
 		"gre")
 			configuration "gre"
