@@ -147,7 +147,7 @@ function backup {
 	case $1 in
 		"static")
 			mkdir -p "$CURRENTBACKUP/$1/"
-			cp -p "/etc/{hostname.$egressinterface,rc.local,mygate" "$CURRENTBACKUP/$1/"
+			cp -p "/etc/{hostname.$egressinterface,rc.local,mygate}" "$CURRENTBACKUP/$1/"
 		;;
 		"basic")
 			mkdir -p "$CURRENTBACKUP/$1/{$uidna,root,etc}"
