@@ -143,10 +143,9 @@ function custom {
 }
 function backup {
 	CURRENTBACKUP="$BACKUPS/$datarelease"
-	mkdir $CURRENTBACKUP
+	mkdir -p "$CURRENTBACKUP/$1/"
 	case $1 in
 		"static")
-			mkdir -p "$CURRENTBACKUP/$1/"
 			cp -p /etc/{hostname.$egressinterface,mygate} "$CURRENTBACKUP/$1/"
 		;;
 		"basic")
@@ -160,19 +159,23 @@ function backup {
 			cp -p /etc/{dhclient.conf,resolv.conf.tail,doas.conf,myname,sysctl.conf,hostname.vether0,daily.local,rc.local} "$CURRENTBACKUP/$1/etc"
 		;;
 		"users")
-			mkdir "$CURRENTBACKUP/$1"
 			for file in $(find "/home/$uidna/Bin" -type f -maxdepth 1 ); do
 				cp -p $file "$CURRENTBACKUP/$1"
 			done
 		;;
 		"scripts")
-			mkdir "$CURRENTBACKUP/$1"
 			for file in $(find "/root/Bin" -type f -maxdepth 1 ); do
 				cp -p $file "$CURRENTBACKUP/$1"
 			done
 		;;
 		"unbound")
-			configuration "unbound"
+			mkdir -p "$CURRENTBACKUP/$1/{etc,db}"
+			for file in $(find "/var/unbound/etc" -type f -maxdepth 1); do
+				cp -p $file "$CURRENTBACKUP/$1/etc"
+			done
+			for file in $(find "/var/unbound/db" -type f -maxdepth 1); do
+				cp -p $file "$CURRENTBACKUP/$1/db"
+			done
 		;;
 		"ssh")
 			configuration "ssh"
@@ -200,6 +203,38 @@ function backup {
 		;;
 		"all")
 			sh setup_node -I	
+		;;
+	esac
+}
+
+function upgrade {
+	case $1 in
+		"unbound")
+			configuration "unbound"
+		;;
+		"ssh")
+			configuration "ssh"
+		;;
+		"ipsec")
+			configuration "ipsec"
+		;;
+		"gre")
+			configuration "gre"
+		;;
+		"pf")
+			configuration "pf"
+		;;
+		"ospf")
+			configuration "ospf"
+		;;
+		"ntpd")
+			configuration "ntpd"
+		;;
+		"remote")
+			configuration "remote"
+		;;
+		"relayd")
+			configuration "relayd"
 		;;
 	esac
 }
@@ -330,9 +365,8 @@ function configuration {
 					else
 						rcctl restart unbound ||  error_exit "$LINENO: ERROR: UNBOUND failed."
 					fi
-					cleanold "/var/unbound/etc/"
 					;;
-				"network")
+				"ipsec")
 					install -o _unbound -g _unbound -m 0750  src/var/unbound/etc/unbound.conf /var/unbound/etc/unbound.conf
 					install -o _unbound -g _unbound -m 0750  src/var/unbound/etc/stub-zone.conf /var/unbound/etc/stub-zone.conf
 					rcctl restart unbound ||  error_exit "$LINENO: ERROR: UNBOUND failed."
@@ -1021,13 +1055,13 @@ case $1 in
 		if [[ $# -ne 2 ]]; then
 			print $0 "UPGRADE option must be followed by: \
 				\n \
-				\nall    -> performe an upgrade of all the system \
+				\nall    -> redo the installation and reset all the system \
 				\nstatic \
 				\nbasic   \
 				\nusers   \
 				\nscripts \
-				\nunbound \
-				\nssh   \
+				\nunbound_ipsec\
+				\nssh_ipsec\
 				\nipsec  \
 				\ngre   \
 				\npf   \
@@ -1059,29 +1093,30 @@ case $1 in
 				backup "scripts"
 				configuration "scripts"
 			;;
-			"unbound")
-				configuration "unbound"
+			"unbound_ipsec")
+				backup "unbound"
+				upgrade "unbound"
 			;;
-			"ssh")
-				configuration "ssh"
+			"ssh_ipsec")
+				upgrade "ssh"
 			;;
 			"ipsec")
-				configuration "ipsec"
+				upgrade "ipsec"
 			;;
 			"gre")
-				configuration "gre"
+				upgrade "gre"
 			;;
 			"pf")
-				configuration "pf"
+				upgrade "pf"
 			;;
 			"ospf")
-				configuration "ospf"
+				upgrade "ospf"
 			;;
 			"remote")
-				configuration "remote"
+				upgrade "remote"
 			;;
 			"relayd")
-				configuration "relayd"
+				upgrade "relayd"
 			;;
 			"all")
 				sh setup_node -I
