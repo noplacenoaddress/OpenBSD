@@ -181,7 +181,8 @@ function backup {
 			configuration "ssh"
 		;;
 		"ipsec")
-			configuration "ipsec"
+			cp -Rp /etc/iked/  "$CURRENTBACKUP/$1/"
+			cp -p /etc/{iked.conf,iked.conf.*} "$CURRENTBACKUP/$1/"
 		;;
 		"gre")
 			configuration "gre"
@@ -216,7 +217,12 @@ function upgrade {
 			configuration "ssh"
 		;;
 		"ipsec")
-			configuration "ipsec"
+			cacrtoldsha256=$(sha256 /etc/iked/ca/ca.crt | awk '{print $4}')
+			cacrtnewsha256=$(sha256 src/etc/iked/ca/ca.crt | awk '{print $4}')
+			if [[ "$cacrtoldsha256" != "$cacrtnewsha256" ]]; then
+				echo "ca.crt upgrade"
+				install -o root -g wheel -m 0640  src/etc/ca/ca.crt /etc/iked/ca/
+			fi
 		;;
 		"gre")
 			configuration "gre"
@@ -1101,6 +1107,7 @@ case $1 in
 				upgrade "ssh"
 			;;
 			"ipsec")
+				backcup "ipsec"
 				upgrade "ipsec"
 			;;
 			"gre")
