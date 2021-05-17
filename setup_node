@@ -236,7 +236,6 @@ function upgrade {
 				openssl x509 -pubkey -noout -passin pass:123456789 -in "/etc/iked/certs/$publichost.crt"  > /etc/iked/local.pub
 				rm -rf $tmpdir
 			fi
-			tmpdir=$(mktemp -d)
 			for file in $(find src/etc/iked/pubkeys/ufqdn/ -name "*@*"); do
 				filename=$(basename $file)
 				ufqdnoldsha256=$(sha256 $file | awk '{print $4}')
@@ -245,6 +244,14 @@ function upgrade {
 					echo "$filename upgrade"
 					install -o root -g wheel -m 0640  $file /etc/iked/pubkeys/ufqdn/
 				fi
+			done
+			tmpdir=$(mktemp -d)
+			for vpnc_ip in $(dig vpnc.$domainname A +short @8.8.8.8); do
+				vpnc_host=$(dig -x $vpnc_ip +short @8.8.8.8 | sed 's/.$//')
+				if [[ -e "/etc/iked.con.$vpnc_host" ]]; then
+					echo "ok"
+				fi
+				
 			done
 		;;
 		"gre")
