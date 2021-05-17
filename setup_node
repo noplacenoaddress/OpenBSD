@@ -247,13 +247,21 @@ function upgrade {
 				fi
 			done
 			tmpdir=$(mktemp -d)
+			cp  src/etc/iked.conf $tmpdir
 			for vpnc_ip in $(dig vpnc.$domainname A +short @8.8.8.8); do
 				vpnc_host=$(dig -x $vpnc_ip +short @8.8.8.8 | sed 's/.$//')
 				if [[ -e "/etc/iked.conf.$vpnc_host" ]]; then
-					echo "ok"
+					echo include \"/etc/iked.conf.$vpnc_host\" >> "$tmpdir/iked.conf"
 				fi
 				
+				
 			done
+			ikedconfoldsha256=$(sha256 /etc/iked.conf | awk '{print $4}')
+			ikedconfnewsha256=$(sha256 "$tmpdir/iked.conf" | awk '{print $4}')
+			if [[ "$ikedconfoldsha256" != "$ikedconfnewsha256" ]]; then
+					echo "iked.conf upgrade"
+					install -o root -g wheel -m 0600  "$tmpdir/iked.conf" /etc/iked.conf
+			fi
 		;;
 		"gre")
 			configuration "gre"
