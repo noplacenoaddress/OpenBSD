@@ -249,7 +249,7 @@ function upgrade {
 			tmpdir=$(mktemp -d)
 			for vpnc_ip in $(dig vpnc.$domainname A +short @8.8.8.8); do
 				vpnc_host=$(dig -x $vpnc_ip +short @8.8.8.8 | sed 's/.$//')
-				if [[ -e "/etc/iked.con.$vpnc_host" ]]; then
+				if [[ -e "/etc/iked.conf.$vpnc_host" ]]; then
 					echo "ok"
 				fi
 				
