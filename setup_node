@@ -147,7 +147,7 @@ function backup {
 	case $1 in
 		"static")
 			mkdir -p "$CURRENTBACKUP/$1/"
-			cp -p /etc/{hostname.$egressinterface,rc.local,mygate} "$CURRENTBACKUP/$1/"
+			cp -p /etc/{hostname.$egressinterface,mygate} "$CURRENTBACKUP/$1/"
 		;;
 		"basic")
 			mkdir -p "$CURRENTBACKUP/$1/{$uidna,root,etc}"
@@ -226,7 +226,6 @@ function configuration {
 				echo $ipv6defrouter >> /etc/mygate
 			fi
 			echo "arp -s $defaultv4router $macdefaultv4router" > /etc/rc.local
-			cat  src/etc/rc.local >>  /etc/rc.local
 			arp -s $defaultv4router $macdefaultv4router
 			custom "etc"
 			cd /tmp
@@ -261,7 +260,7 @@ function configuration {
 			fi
 			echo "dhclient, resolv.conf.tail, doas.conf, myname and sysctl.conf \n"
 			install -o root -g wheel -m 0644  src/etc/{dhclient.conf,resolv.conf.tail,doas.conf,myname,sysctl.conf} /etc/
-			
+			cat src/etc/rc.local >> /etc/rc.local
 			echo "vether"
 			install -o root -g wheel -m 0644  src/etc/hostname.vether0 /etc/
 			echo "configuring iperf uptimed and oidentd \n"
