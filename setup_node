@@ -223,6 +223,20 @@ function upgrade {
 				echo "ca.crt upgrade"
 				install -o root -g wheel -m 0640  src/etc/ca/ca.crt /etc/iked/ca/
 			fi
+			tmpdir=$(mktemp -d)
+			openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -nocerts -passin pass:123456789 -passout pass:123456789 -out "$tmpdir/local.key"
+			openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "$tmpdir/$publichost.crt"
+			openssl x509 -pubkey -noout -passin pass:123456789 -in "/etc/iked/certs/$publichost.crt"  > "$tmpdir/local.pub"
+			localkeyoldsha256=$(sha256 /etc/iked/private/local.key | awk '{print $4}')
+			localkeynewsha256=$(sha256 "$tmpdir/local.key" | awk '{print $4}')
+			if [[ "$localkeyoldsha256" != "$localkeynewsha256" ]]; then
+				echo "local.key upgrade"
+				openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -nocerts -passin pass:123456789 -passout pass:123456789 -out /etc/iked/private/local.key
+				openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "/etc/iked/certs/$publichost.crt"
+				openssl x509 -pubkey -noout -passin pass:123456789 -in "/etc/iked/certs/$publichost.crt"  > /etc/iked/local.pub
+				rm -rf $tmpdir
+			fi
+			
 		;;
 		"gre")
 			configuration "gre"
