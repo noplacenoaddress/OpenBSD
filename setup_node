@@ -236,7 +236,16 @@ function upgrade {
 				openssl x509 -pubkey -noout -passin pass:123456789 -in "/etc/iked/certs/$publichost.crt"  > /etc/iked/local.pub
 				rm -rf $tmpdir
 			fi
-			
+			tmpdir=$(mktemp -d)
+			for file in $(find src/etc/iked/pubkeys/ufqdn/ -name "*@*"); do
+				filename=$(basename $file)
+				ufqdnoldsha256=$(sha256 $file | awk '{print $4}')
+				ufqdnnewsha256=$(sha256 "/etc/iked/pubkeys/ufqdn/$filename" | awk '{print $4}')
+				if [[ "$ufqdnoldsha256" != "$ufqdnnewsha256" ]]; then
+					echo "$filename upgrade"
+					install -o root -g wheel -m 0640  $file /etc/iked/pubkeys/ufqdn/
+				fi
+			done
 		;;
 		"gre")
 			configuration "gre"
