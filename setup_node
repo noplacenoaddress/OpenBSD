@@ -192,15 +192,7 @@ function backup {
 			for file in $(find "/etc" -type f -maxdepth 1 -name "pf.*"); do
 				cp -p $file "$CURRENTBACKUP/$1/"
 			done
-			for vpnc_ip in $(dig vpnc.$domainname A +short @8.8.8.8); do
-				echo "$vpnc_ip/32" >> "$CURRENTBACKUP/$1/pf.conf.table.ipsec"
-			done
-			for vpnc_host in $(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g'); do
-				vpnc_ip=$(dig $vpnc_host A +short @8.8.8.8 | tail -n 1)
-				if [[ ! -z $vpnc_ip ]]; then
-					echo "$vpnc_ip/32" >> "$CURRENTBACKUP/$1/pf.conf.table.ipsec"
-				fi
-			done
+		
 		;;
 		"ospf")
 			configuration "ospf"
@@ -383,7 +375,20 @@ function upgrade {
 				install -o root -g wheel -m 0640  "$tmpdir/pf.conf.table.ipsec" /etc/
 				
 			fi
-			
+			for file in $(find /etc -maxdepth 1 -name "iked.conf.*") ; do
+				tagged=$(echo $file | sed "s/\/etc\/iked.conf.//")
+				count=$(dig $tagged A +short @8.8.8.8 | wc -l)
+				if [[ $count -gt 1 ]]; then
+					iptagged=$(dig $tagged A +short @8.8.8.8 | tail -n 1)
+				else
+					iptagged=$(dig $tagged A +short @8.8.8.8)
+				fi
+				sed -i "s/\/TAGGED\//${tagged}/g" $tmpdir/pf.conf.macro.enc.{in,out}	
+				sed -i "s/\/IPTAGGED\//${iptagged}/g" $tmpdir/pf.conf.macro.enc.{in,out}
+				cat src/openbsd/pf.conf.openbsd | head -n 1 >> $tmpdir/pf.conf.macro.enc.in
+				cat src/openbsd/pf.conf.openbsd | tail -n 1 >> $tmpdir/pf.conf.macro.enc.out
+			done
+			sed -i '$d' $tmpdir/pf.conf.macro.enc.{in,out}
 		;;
 		"ospf")
 			configuration "ospf"
@@ -750,7 +755,6 @@ function configuration {
  			for file in $(find /tmp -name "*.rsc"); do
 				cat src/mikrotik/firewall.rsc >> "$file"
 			done
-			custom "etc"
 			for file in $(find /etc -maxdepth 1 -name "iked.conf.*") ; do
 				tagged=$(echo $file | sed "s/\/etc\/iked.conf.//")
 				count=$(dig $tagged A +short @8.8.8.8 | wc -l)
@@ -765,7 +769,6 @@ function configuration {
 				cat src/openbsd/pf.conf.openbsd | tail -n 1 >> /etc/pf.conf.macro.enc.out
 			done
 			sed -i '$d' /etc/pf.conf.macro.enc.{in,out}
-			sed -i "s/\/LANDOMAINNAME\//${landomainname}/g" /etc/pf.conf
 			
 			custom "etc"
 			pfctrl=$(pfctl -nf /etc/pf.conf)
