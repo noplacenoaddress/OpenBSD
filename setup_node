@@ -360,7 +360,7 @@ function upgrade {
 				ctrl_upgrade=1
 				install -o root -g wheel -m 0640  "$tmpdir/pf.conf.macro.enc.out" /etc/
 			fi
-			landdomainname=$(cat /etc/myname | sed 's/^[^.]*.//')
+			landomainname=$(cat /etc/myname | sed 's/^[^.]*.//')
 			custom "$tmpdir" "1"
 			pfconfoldsha256=$(sha256 /etc/pf.conf | awk '{print $4}')
 			pfconfnewsha256=$(sha256 "$tmpdir/pf.conf" | awk '{print $4}')
