@@ -360,7 +360,40 @@ function upgrade {
 				ctrl_upgrade=1
 				install -o root -g wheel -m 0640  "$tmpdir/pf.conf.macro.enc.out" /etc/
 			fi
-			
+			custom "$tmpdir" "1"
+			pfconfoldsha256=$(sha256 /etc/pf.conf | awk '{print $4}')
+			pfconfnewsha256=$(sha256 "$tmpdir/pf.conf" | awk '{print $4}')
+			if [[ "$pfconfoldsha256" != "$pfconfnewsha256" ]]; then
+				echo "pf.conf upgrade"
+				ctrl_upgrade=1
+				install -o root -g wheel -m 0640  "$tmpdir/pf.conf" /etc/
+			fi
+			if [[ $ctrl_upgrade -eq 1 ]]; then
+				pfctrl=$(pfctl -nf /etc/pf.conf)
+				if [[ -z $pfctrl ]]; then
+					echo "PF ruleset OK"
+				fi
+				ctrl=
+				while [ -z $ctrl ]
+				do
+					echo 'The load PF rules and enable it type 1 '
+					read ctrl
+					if [[ "$ctrl" -eq 1 ]]; then
+						if [[ $(pfctl -si | head -n 1 | grep -c "Disabled") -eq 1 ]]; then
+							pfctl -f /etc/pf.conf
+							ctrl=
+							while [ -z $ctrl ]
+							do
+								echo 'Your connection will be close type 1 to continue '
+								read ctrl
+								pfctl -e && exit 1
+							done
+						elif [[ $(pfctl -si | head -n 1 | grep -c "Disabled") -eq 0 ]]; then
+							pfctl -f /etc/pf.conf
+						fi
+					fi
+				done
+			fi
 		;;
 		"ospf")
 			configuration "ospf"
