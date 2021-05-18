@@ -346,14 +346,24 @@ function upgrade {
 				cat src/openbsd/pf.conf.openbsd | tail -n 1 >> $tmpdir/pf.conf.macro.enc.out
 			done
 			sed -i '$d' $tmpdir/pf.conf.macro.enc.{in,out}
-			macroencinoldsha256=$(sha256 /etc/pf.conf.macro.enc.in | awk '{print $4}')
+			if [[ -e /etc/pf.conf.macro.enc.in ]]; then
+				macroencinoldsha256=$(sha256 /etc/pf.conf.macro.enc.in | awk '{print $4}')
+			fi
+			else
+				macroencinoldsha256=""
+			fi
 			macroencinnewsha256=$(sha256 $tmpdir/pf.conf.macro.enc.in | awk '{print $4}')
 			if [[ "$macroencinoldsha256" != "$macroencinnewsha256" ]]; then
 				echo "pf.conf.macro.enc.in upgrade"
 				ctrl_upgrade=1
 				install -o root -g wheel -m 0640  "$tmpdir/pf.conf.macro.enc.in" /etc/
 			fi
-			macroencoutoldsha256=$(sha256 /etc/pf.conf.macro.enc.out | awk '{print $4}')
+			if [[ -e /etc/pf.conf.macro.enc.out ]]; then
+				macroencoutoldsha256=$(sha256 /etc/pf.conf.macro.enc.out | awk '{print $4}')
+			fi
+			else
+				macroencoutoldsha256=""
+			fi
 			macroencoutnewsha256=$(sha256 $tmpdir/pf.conf.macro.enc.out | awk '{print $4}')
 			if [[ "$macroencoutoldsha256" != "$macroencoutnewsha256" ]]; then
 				echo "pf.conf.macro.enc.out upgrade"
