@@ -218,10 +218,12 @@ function upgrade {
 			configuration "ssh"
 		;;
 		"ipsec")
+			ctrl_upgrade=0
 			cacrtoldsha256=$(sha256 /etc/iked/ca/ca.crt | awk '{print $4}')
 			cacrtnewsha256=$(sha256 src/etc/iked/ca/ca.crt | awk '{print $4}')
 			if [[ "$cacrtoldsha256" != "$cacrtnewsha256" ]]; then
 				echo "ca.crt upgrade"
+				ctrl_upgrade=1
 				install -o root -g wheel -m 0640  src/etc/ca/ca.crt /etc/iked/ca/
 			fi
 			tmpdir=$(mktemp -d)
@@ -232,6 +234,7 @@ function upgrade {
 			localkeynewsha256=$(sha256 "$tmpdir/local.key" | awk '{print $4}')
 			if [[ "$localkeyoldsha256" != "$localkeynewsha256" ]]; then
 				echo "local.key upgrade"
+				ctrl_upgrade=1
 				openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -nocerts -passin pass:123456789 -passout pass:123456789 -out /etc/iked/private/local.key
 				openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "/etc/iked/certs/$publichost.crt"
 				openssl x509 -pubkey -noout -passin pass:123456789 -in "/etc/iked/certs/$publichost.crt"  > /etc/iked/local.pub
@@ -243,6 +246,7 @@ function upgrade {
 				ufqdnnewsha256=$(sha256 "/etc/iked/pubkeys/ufqdn/$filename" | awk '{print $4}')
 				if [[ "$ufqdnoldsha256" != "$ufqdnnewsha256" ]]; then
 					echo "$filename upgrade"
+					ctrl_upgrade=1
 					install -o root -g wheel -m 0640  $file /etc/iked/pubkeys/ufqdn/
 				fi
 			done
@@ -286,6 +290,7 @@ function upgrade {
 					ikedconfhostnewsha256=$(sha256 "$tmpdir/iked.conf.$vpnc_host" | awk '{print $4}')
 					if [[ "$ikedconfhostoldsha256" != "$ikedconfhostnewsha256" ]]; then
 						echo "$vpnc_host upgrade"
+						ctrl_upgrade=1
 						install -o root -g wheel -m 0640   "$tmpdir/iked.conf.$vpnc_host" /etc/
 					fi
 				fi
@@ -323,6 +328,7 @@ function upgrade {
 				ikedconfhostnewsha256=$(sha256 "$tmpdir/iked.conf.$vpnc_host" | awk '{print $4}')
 				if [[ "$ikedconfhostoldsha256" != "$ikedconfhostnewsha256" ]]; then
 					echo "$vpnc_host upgrade"
+					ctrl_upgrade=1
 					install -o root -g wheel -m 0640   "$tmpdir/iked.conf.$vpnc_host" /etc/
 				fi
 			done
@@ -330,10 +336,14 @@ function upgrade {
 			ikedconfnewsha256=$(sha256 "$tmpdir/iked.conf" | awk '{print $4}')
 			if [[ "$ikedconfoldsha256" != "$ikedconfnewsha256" ]]; then
 				echo "iked.conf upgrade"
+				ctrl_upgrade=1
 				install -o root -g wheel -m 0600  "$tmpdir/iked.conf" /etc/iked.conf
 				
 			fi
-			
+			iked -n
+			if [[ $ctrl_upgrade -eq 1 ]]; then
+				rcctl restart iked ||  error_exit "$LINENO: ERROR: IKED failed."
+			fi
 			
 		;;
 		"gre")
