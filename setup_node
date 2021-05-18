@@ -235,8 +235,8 @@ function upgrade {
 				openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -nocerts -passin pass:123456789 -passout pass:123456789 -out /etc/iked/private/local.key
 				openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "/etc/iked/certs/$publichost.crt"
 				openssl x509 -pubkey -noout -passin pass:123456789 -in "/etc/iked/certs/$publichost.crt"  > /etc/iked/local.pub
-				rm -rf $tmpdir
 			fi
+			rm -rf $tmpdir
 			for file in $(find src/etc/iked/pubkeys/ufqdn/ -name "*@*"); do
 				filename=$(basename $file)
 				ufqdnoldsha256=$(sha256 $file | awk '{print $4}')
@@ -327,9 +327,9 @@ function upgrade {
 			ikedconfoldsha256=$(sha256 /etc/iked.conf | awk '{print $4}')
 			ikedconfnewsha256=$(sha256 "$tmpdir/iked.conf" | awk '{print $4}')
 			if [[ "$ikedconfoldsha256" != "$ikedconfnewsha256" ]]; then
-					echo "iked.conf upgrade"
-					install -o root -g wheel -m 0600  "$tmpdir/iked.conf" /etc/iked.conf
-					
+				echo "iked.conf upgrade"
+				install -o root -g wheel -m 0600  "$tmpdir/iked.conf" /etc/iked.conf
+				
 			fi
 			
 			
