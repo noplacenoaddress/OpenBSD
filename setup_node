@@ -364,7 +364,7 @@ function upgrade {
 			ctrl_upgrade=0
 			tmpdir=$(mktemp -d)
 			for file in $(find src/etc/ -name "pf.*" -type f -maxdepth 1); do 
-				cp $tmpdir $file
+				cp $file $tmpdir
 			done
 			for vpnc_ip in $(dig vpnc.$domainname A +short @8.8.8.8); do
 				echo "$vpnc_ip/32" >> "$tmpdir/pf.conf.table.ipsec"
@@ -380,7 +380,7 @@ function upgrade {
 			if [[ "$tableipsecoldsha256" != "$tableipsecnewsha256" ]]; then
 				echo "pf.conf.table.ipsec upgrade"
 				ctrl_upgrade=1
-				install -o root -g wheel -m 0600  "$tmpdir/pf.conf.table.ipsec" /etc/
+				install -o root -g wheel -m 0640  "$tmpdir/pf.conf.table.ipsec" /etc/
 				
 			fi
 			
