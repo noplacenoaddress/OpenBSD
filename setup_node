@@ -348,7 +348,6 @@ function upgrade {
 			sed -i '$d' $tmpdir/pf.conf.macro.enc.{in,out}
 			if [[ -e /etc/pf.conf.macro.enc.in ]]; then
 				macroencinoldsha256=$(sha256 /etc/pf.conf.macro.enc.in | awk '{print $4}')
-			fi
 			else
 				macroencinoldsha256=""
 			fi
@@ -360,7 +359,6 @@ function upgrade {
 			fi
 			if [[ -e /etc/pf.conf.macro.enc.out ]]; then
 				macroencoutoldsha256=$(sha256 /etc/pf.conf.macro.enc.out | awk '{print $4}')
-			fi
 			else
 				macroencoutoldsha256=""
 			fi
