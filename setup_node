@@ -114,7 +114,7 @@ function sha256compare {
 		oldsha256=""
 	fi
 	newsha256=$(sha256 "${2}" | awk '{print $4}')
-	if [[ "$oldsha256" != "$newsha256" ]]; then
+	if [[ "$oldsha256" -ne "$newsha256" ]]; then
 		return 1
 	else
 		return 0
@@ -316,7 +316,7 @@ function upgrade {
 					ctrl_upgrade=1
 				fi
 			done
-			sha256compare "/etc/iked.conf" "$tmpdir/iked.conf"
+			sha256compare "/etc/iked.conf" 	"$tmpdir/iked.conf"
 			if [[ $? -eq 1 ]]; then
 				echo "iked.conf upgrade"
 				install -o root -g wheel -m 0600  "$tmpdir/iked.conf" /etc/iked.conf
