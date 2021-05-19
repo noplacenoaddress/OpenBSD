@@ -449,7 +449,7 @@ function upgrade {
 				fi
 			fi
 			if [[ $(grep -c remote_install.conf /etc/rc.local) -eq 0 ]]; then
-				cat "$tmpdir/rc.local" >> /etc/rc.local
+				cat src/etc/ssh/remote_install/rc.local >> /etc/rc.local
 			fi
 			pidof_remote=$(pidof "remote")
 			if [[ -z $pidof_remote ]]; then
