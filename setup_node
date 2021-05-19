@@ -448,12 +448,11 @@ function upgrade {
 					install -o root -g wheel -m 0640  "$tmpdir/authorized_keys" /etc/ssh/remote_install
 				fi
 			else 
+				mkdir /etc/ssh/remote_install
 				for file in $(find src/etc/ssh/remote_install/ -type f); do
 					filename=$(basename $file)
 					if [[ "$filename" != "rc.local" ]]; then
 						install -o root -g wheel -m 0640 $file /etc/ssh/remote_install/
-					elif [[ "$filename" == "rc.local" ]]; then
-						cat $file >> /etc/rc.local
 					fi
 				done
 				custom "/etc/ssh/remote_install" "1"
