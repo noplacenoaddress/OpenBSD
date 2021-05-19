@@ -425,7 +425,7 @@ function upgrade {
 			ctrl_upgrade=0
 			tmpdir=$(mktemp -d)
 			if [[ -d /etc/ssh/remote_install ]]; then
-				cp src/etc/remote_install/* $tmpdir
+				cp src/etc/ssh/remote_install/* $tmpdir
 				custom "$tmpdir" "1"
 				if [[ -e  /etc/ssh/remote_install/remote_install.conf ]]; then
 					remoteinstalloldsha256=$(sha256 /etc/ssh/remote_install/remote_install.conf | awk '{print $4}')
