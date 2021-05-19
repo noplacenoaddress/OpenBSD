@@ -381,7 +381,7 @@ function upgrade {
 			landomainname=$(cat /etc/myname | sed 's/^[^.]*.//')
 			custom "$tmpdir" "1"
 			sha256compare "/etc/pf.conf" "$tmpdir/pf.conf"
-			returnvale=$?
+			returnvalue=$?
 			if [[ $returnvalue -eq 1 ]]; then
 				echo "pf.conf upgrade"
 				install -o root -g wheel -m 0640  "$tmpdir/pf.conf" /etc/
