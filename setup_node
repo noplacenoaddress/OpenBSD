@@ -108,13 +108,12 @@ function custom {
 }
 
 function sha256compare {
-	value=
 	if [[ -e $1 ]]; then
-		oldsha256=$(sha256 $1 | awk '{print $4}')
+		oldsha256=$(sha256 "${1}" | awk '{print $4}')
 	else
 		oldsha256=""
 	fi
-	newsha256=$(sha256 $2 | awk '{print $4}')
+	newsha256=$(sha256 "${2}" | awk '{print $4}')
 	if [[ "$oldsha256" != "$newsha256" ]]; then
 		return 1
 	else
@@ -208,7 +207,8 @@ function upgrade {
 		;;
 		"ipsec")
 			ctrl_upgrade=0
-			if [[ $(sha256compare "/etc/iked/ca/ca.crt" "src/etc/iked/ca/ca.crt") -eq 1 ]]; then
+			sha256compare "/etc/iked/ca/ca.crt" "src/etc/iked/ca/ca.crt"
+			if [[ $? -eq 1 ]]; then
 				echo "ca.crt upgrade"
 				install -o root -g wheel -m 0640  src/etc/ca/ca.crt /etc/iked/ca/
 				ctrl_upgrade=1
@@ -217,7 +217,8 @@ function upgrade {
 			openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -nocerts -passin pass:123456789 -passout pass:123456789 -out "$tmpdir/local.key"
 			openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "$tmpdir/$publichost.crt"
 			openssl x509 -pubkey -noout -passin pass:123456789 -in "/etc/iked/certs/$publichost.crt"  > "$tmpdir/local.pub"
-			if [[ $(sha256compare "/etc/iked/private/local.key" "$tmpdir/local.key") -eq 1 ]]; then
+			sha256compare "/etc/iked/private/local.key" "$tmpdir/local.key"
+			if [[ $? -eq 1 ]]; then
 				echo "local.key upgrade"
 				openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -nocerts -passin pass:123456789 -passout pass:123456789 -out /etc/iked/private/local.key
 				openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "/etc/iked/certs/$publichost.crt"
@@ -226,7 +227,8 @@ function upgrade {
 			rm -rf $tmpdir
 			for file in $(find src/etc/iked/pubkeys/ufqdn/ -name "*@*"); do
 				filename=$(basename $file)
-				if [[ $(sha256compare "$file" "/etc/iked/pubkeys/ufqdn/$filename") -eq 1 ]]; then
+				sha256compare "$file" "/etc/iked/pubkeys/ufqdn/$filename"
+				if [[ $? -eq 1 ]]; then
 					echo "$filename upgrade"
 					install -o root -g wheel -m 0640  $file /etc/iked/pubkeys/ufqdn/
 					ctrl_upgrade=1
@@ -264,7 +266,8 @@ function upgrade {
 					sed -i "s/\/DOMAINNAME\//$domainname/g" "$tmpdir/iked.conf.$vpnc_host"
 					encx=$(cat "/etc/iked.conf.$vpnc_host" | awk -F'enc' '{print substr($2,0,1)}' | tail -n 1)
 					sed -i "s/\/X\//$encx/g" "$tmpdir/iked.conf.$vpnc_host"
-					if [[ $(sha256compare "/etc/iked.conf.$vpnc_host" "$tmpdir/iked.conf.$vpnc_host") -eq 1 ]]; then
+					sha256compare "/etc/iked.conf.$vpnc_host" "$tmpdir/iked.conf.$vpnc_host"
+					if [[ $? -eq 1 ]]; then
 						echo "$vpnc_host upgrade"
 						install -o root -g wheel -m 0640   "$tmpdir/iked.conf.$vpnc_host" /etc/
 						ctrl_upgrade=1
@@ -300,18 +303,21 @@ function upgrade {
 				sed -i "s/\/DOMAINNAME\//$domainname/g" "$tmpdir/iked.conf.$vpnc_host"
 				encx=$(cat "/etc/iked.conf.$vpnc_host" | awk -F'enc' '{print substr($2,0,1)}' | tail -n 1)
 				sed -i "s/\/X\//$encx/g" "$tmpdir/iked.conf.$vpnc_host"
-				if [[ $(sha256compare "/etc/iked.conf.$vpnc_host" "$tmpdir/iked.conf.$vpnc_host") -eq 1 ]]; then
+				sha256compare "/etc/iked.conf.$vpnc_host" "$tmpdir/iked.conf.$vpnc_host"
+				if [[ $? -eq 1 ]]; then
 					echo "$vpnc_host upgrade"
 					install -o root -g wheel -m 0640   "$tmpdir/iked.conf.$vpnc_host" /etc/
 					ctrl_upgrade=1
 				fi
-				if [[ $(sha256compare "/etc/iked.conf.$vpnc_host" "$tmpdir/iked.conf.$vpnc_host") -eq 1 ]]; then
+				sha256compare "/etc/iked.conf.$vpnc_host" "$tmpdir/iked.conf.$vpnc_host"
+				if [[ $? -eq 1 ]]; then
 					echo "$vpnc_host upgrade"
 					install -o root -g wheel -m 0640   "$tmpdir/iked.conf.$vpnc_host" /etc/
 					ctrl_upgrade=1
 				fi
 			done
-			if [[ $(sha256compare "/etc/iked.conf" "$tmpdir/iked.conf") -eq 1 ]]; then
+			sha256compare "/etc/iked.conf" "$tmpdir/iked.conf"
+			if [[ $? -eq 1 ]]; then
 				echo "iked.conf upgrade"
 				install -o root -g wheel -m 0600  "$tmpdir/iked.conf" /etc/iked.conf
 				ctrl_upgrade=1
@@ -340,7 +346,8 @@ function upgrade {
 					echo "$vpnc_ip/32" >> "$tmpdir/pf.conf.table.ipsec"
 				fi
 			done
-			if [[ $(sha256compare "/etc/pf.conf.table.ipsec" "$tmpdir/pf.conf.table.ipsec") -eq 1 ]]; then
+			sha256compare "/etc/pf.conf.table.ipsec" "$tmpdir/pf.conf.table.ipsec"
+			if [[ $? -eq 1 ]]; then
 				echo "pf.conf.table.ipsec upgrade"
 				install -o root -g wheel -m 0640  "$tmpdir/pf.conf.table.ipsec" /etc/
 				ctrl_upgrade=1
@@ -359,19 +366,22 @@ function upgrade {
 				cat src/openbsd/pf.conf.openbsd | tail -n 1 >> $tmpdir/pf.conf.macro.enc.out
 			done
 			sed -i '$d' $tmpdir/pf.conf.macro.enc.{in,out}
-			if [[ $(sha256compare "/etc/pf.conf.macro.enc.in" "$tmpdir/pf.conf.macro.enc.in") -eq 1 ]]; then
+			sha256compare "/etc/pf.conf.macro.enc.in" "$tmpdir/pf.conf.macro.enc.in"
+			if [[ $? -eq 1 ]]; then
 				echo "pf.conf.macro.enc.in upgrade"
 				install -o root -g wheel -m 0640  "$tmpdir/pf.conf.macro.enc.in" /etc/
 				ctrl_upgrade=1
 			fi
-			if [[ $(sha256compare "/etc/pf.conf.macro.enc.out" "$tmpdir/pf.conf.macro.enc.out") -eq 1 ]]; then
+			sha256compare "/etc/pf.conf.macro.enc.out" "$tmpdir/pf.conf.macro.enc.out"
+			if [[ $? -eq 1 ]]; then
 				echo "pf.conf.macro.enc.out upgrade"
 				install -o root -g wheel -m 0640  "$tmpdir/pf.conf.macro.enc.out" /etc/
 				ctrl_upgrade=1
 			fi
 			landomainname=$(cat /etc/myname | sed 's/^[^.]*.//')
 			custom "$tmpdir" "1"
-			if [[ $(sha256compare "/etc/pf.conf" "$tmpdir/pf.conf") -eq 1 ]]; then
+			sha256compare "/etc/pf.conf" "$tmpdir/pf.conf"
+			if [[ $? -eq 1 ]]; then
 				echo "pf.conf upgrade"
 				install -o root -g wheel -m 0640  "$tmpdir/pf.conf" /etc/
 				ctrl_upgrade=1
@@ -415,15 +425,18 @@ function upgrade {
 			if [[ -d "/etc/ssh/remote_install" ]]; then
 				cp src/etc/ssh/remote_install/* $tmpdir
 				custom "$tmpdir" "1"
-				if [[ $(sha256compare "/etc/ssh/remote_install/remote_install.conf" "$tmpdir/remote_install.conf") -eq 1 ]]; then
+				sha256compare "/etc/ssh/remote_install/remote_install.conf" "$tmpdir/remote_install.conf"
+				if [[ $? -eq 1 ]]; then
 					echo "remote_install.conf upgrade"
 					install -o root -g wheel -m 0640  "$tmpdir/remote_install.conf" /etc/ssh/remote_install
 				fi
-				if [[ $(sha256compare "/etc/ssh/remote_install/authorized_keys" "$tmpdir/remote_install.conf") -eq 1 ]]; then
+				sha256compare "/etc/ssh/remote_install/authorized_keys" "$tmpdir/remote_install.conf"
+				if [[ $? -eq 1 ]]; then
 					echo "remote_install.conf upgrade"
 					install -o root -g wheel -m 0640  "$tmpdir/remote_install.conf" /etc/ssh/remote_install
 				fi
-				if [[ $(sha256compare "/etc/ssh/remote_install/authorized_keys" "$tmpdir/remote_install.conf") -eq 1 ]]; then
+				sha256compare "/etc/ssh/remote_install/authorized_keys" "$tmpdir/remote_install.conf"
+				if [[ $? -eq 1 ]]; then
 					echo "authorized_keys upgrade"
 					install -o root -g wheel -m 0640  "$tmpdir/authorized_keys" /etc/ssh/remote_install
 				fi
