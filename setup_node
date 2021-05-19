@@ -273,7 +273,6 @@ function upgrade {
 			for vpnc_host in $(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g'); do
 				if [[ -e "/etc/iked.conf.$vpnc_host" ]]; then
 					echo include \"/etc/iked.conf.${vpnc_host}\" >> "$tmpdir/iked.conf"
-					ctrl_upgrade=1
 				fi
 				vpnc_ip=$(dig $vpnc_host A +short @8.8.8.8 | tail -n 1)
 				cp src/etc/iked.conf.edgeos "$tmpdir/iked.conf.$vpnc_host"
