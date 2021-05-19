@@ -5,6 +5,13 @@
 #unbound: https://blog.c6h12o6.org/post/unbound-dnssec-dns-over-tls/
 #sshd: https:/github.com/vedetta-com/vedetta/blob/master/src/usr/local/share/doc/vedetta/OpenSSH_Principals.md	
 
+#####
+#
+#TODO 1) function sha256compare ()
+#
+#
+#
+#####
 
 set -o errexit
 set -o nounset
@@ -158,7 +165,11 @@ function backup {
 			configuration "ntpd"
 		;;
 		"remote")
-			configuration "remote"
+			if [[ -d /etc/ssh/remote_install ]]; then
+				for file in $(find "/etc/ssh/remote_install" -type f -maxdepth 1); do
+					cp -p $file "$CURRENTBACKUP/$1/"
+				done
+			fi
 		;;
 		"relayd")
 			configuration "relayd"
@@ -411,7 +422,41 @@ function upgrade {
 			configuration "ntpd"
 		;;
 		"remote")
-			configuration "remote"
+			ctrl_upgrade=0
+			tmpdir=$(mktemp -d)
+			if [[ -d /etc/ssh/remote_install ]];
+				cp src/etc/remote_install/* $tmpdir
+				custom "$tmpdir" "1"
+				if [[ -e  /etc/ssh/remote_install/remote_install.conf ]]; then
+					remoteinstalloldsha256=$(sha256 /etc/ssh/remote_install/remote_install.conf | awk '{print $4}')
+				else
+					remoteinstalloldsha256=""
+				fi
+				remoteinstallnewsha256=$(sha256 $tmpdir/remote_install.conf | awk '{print $4}')
+				if [[ "$remoteinstalloldsha256" != "$remoteinstalloldsha256" ]]; then
+					echo "remote_install.conf upgrade"
+					install -o root -g wheel -m 0640  "$tmpdir/remote_install.conf" /etc/ssh/remote_install
+				fi
+				if [[ -e  /etc/ssh/remote_install/authorized_keys ]]; then
+					authorizedkeysoldsha256=$(sha256 /etc/ssh/remote_install/authorized_keys | awk '{print $4}')
+				else
+					remoteinstalloldsha256=""
+				fi
+				authorizedkeysoldsha256=$(sha256 $tmpdir/authorized_keys | awk '{print $4}')
+				if [[ "$authorizedkeysoldsha256" != "$authorizedkeysoldsha256" ]]; then
+					echo "authorized_keys upgrade"
+					install -o root -g wheel -m 0640  "$tmpdir/authorized_keys" /etc/ssh/remote_install
+				fi
+			fi
+			if [[ $(grep -c remote_install.conf /etc/rc.local) -eq 0 ]];
+				cat "$tmpdir/rc.local" >> /etc/rc.local
+			fi
+			pidof_remote=$(pidof "remote")
+			if [[ -z $pidof_remote ]]; then
+				/usr/sbin/sshd -f /etc/ssh/remote_install/remote_install.conf
+			else
+				kill -HUP $(cat /var/run/sshd-remote-install.pid)
+			fi
 		;;
 		"relayd")
 			configuration "relayd"
@@ -1298,6 +1343,7 @@ case $1 in
 				upgrade "ospf"
 			;;
 			"remote")
+				backup "remote"
 				upgrade "remote"
 			;;
 			"relayd")
