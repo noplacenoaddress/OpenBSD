@@ -260,6 +260,7 @@ function upgrade {
 						do
 							echo 'Type the hostname '
 							read srcid
+							continue
 						done
 					fi
 					sed -i "s/\/SRCID\//$srcid/g" "$tmpdir/iked.conf.$vpnc_host"
