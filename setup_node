@@ -210,6 +210,7 @@ function upgrade {
 			if [[ $(sha256compare "/etc/iked/ca/ca.crt" "src/etc/iked/ca/ca.crt") -eq 1 ]]; then
 				echo "ca.crt upgrade"
 				install -o root -g wheel -m 0640  src/etc/ca/ca.crt /etc/iked/ca/
+				ctrl_upgrade=1
 			fi
 			tmpdir=$(mktemp -d)
 			openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -nocerts -passin pass:123456789 -passout pass:123456789 -out "$tmpdir/local.key"
@@ -227,6 +228,7 @@ function upgrade {
 				if [[ $(sha256compare "$file" "/etc/iked/pubkeys/ufqdn/$filename") -eq 1 ]]; then
 					echo "$filename upgrade"
 					install -o root -g wheel -m 0640  $file /etc/iked/pubkeys/ufqdn/
+					ctrl_upgrade=1
 				fi
 			done
 			rm -rf $tmpdir
@@ -264,12 +266,14 @@ function upgrade {
 					if [[ $(sha256compare "/etc/iked.conf.$vpnc_host" "$tmpdir/iked.conf.$vpnc_host") -eq 1 ]]; then
 						echo "$vpnc_host upgrade"
 						install -o root -g wheel -m 0640   "$tmpdir/iked.conf.$vpnc_host" /etc/
+						ctrl_upgrade=1
 					fi
 				fi
 			done
 			for vpnc_host in $(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g'); do
 				if [[ -e "/etc/iked.conf.$vpnc_host" ]]; then
 					echo include \"/etc/iked.conf.${vpnc_host}\" >> "$tmpdir/iked.conf"
+					ctrl_upgrade=1
 				fi
 				vpnc_ip=$(dig $vpnc_host A +short @8.8.8.8 | tail -n 1)
 				cp src/etc/iked.conf.edgeos "$tmpdir/iked.conf.$vpnc_host"
@@ -299,15 +303,18 @@ function upgrade {
 				if [[ $(sha256compare "/etc/iked.conf.$vpnc_host" "$tmpdir/iked.conf.$vpnc_host") -eq 1 ]]; then
 					echo "$vpnc_host upgrade"
 					install -o root -g wheel -m 0640   "$tmpdir/iked.conf.$vpnc_host" /etc/
+					ctrl_upgrade=1
 				fi
 				if [[ $(sha256compare "/etc/iked.conf.$vpnc_host" "$tmpdir/iked.conf.$vpnc_host") -eq 1 ]]; then
 					echo "$vpnc_host upgrade"
 					install -o root -g wheel -m 0640   "$tmpdir/iked.conf.$vpnc_host" /etc/
+					ctrl_upgrade=1
 				fi
 			done
 			if [[ $(sha256compare "/etc/iked.conf" "$tmpdir/iked.conf") -eq 1 ]]; then
 				echo "iked.conf upgrade"
 				install -o root -g wheel -m 0600  "$tmpdir/iked.conf" /etc/iked.conf
+				ctrl_upgrade=1
 			fi
 			iked -n
 			if [[ $ctrl_upgrade -eq 1 ]]; then
@@ -333,13 +340,9 @@ function upgrade {
 					echo "$vpnc_ip/32" >> "$tmpdir/pf.conf.table.ipsec"
 				fi
 			done
-			tableipsecoldsha256=$(sha256 /etc/pf.conf.table.ipsec | awk '{print $4}')
-			tableipsecnewsha256=$(sha256 "$tmpdir/pf.conf.table.ipsec" | awk '{print $4}')
-			if [[ "$tableipsecoldsha256" != "$tableipsecnewsha256" ]]; then
+			if [[ $(sha256compare "/etc/pf.conf.table.ipsec" "$tmpdir/pf.conf.table.ipsec") -eq 1 ]]; then
 				echo "pf.conf.table.ipsec upgrade"
-				ctrl_upgrade=1
 				install -o root -g wheel -m 0640  "$tmpdir/pf.conf.table.ipsec" /etc/
-				
 			fi
 			for file in $(find /etc -maxdepth 1 -name "iked.conf.*") ; do
 				tagged=$(echo $file | sed "s/\/etc\/iked.conf.//")
@@ -355,35 +358,18 @@ function upgrade {
 				cat src/openbsd/pf.conf.openbsd | tail -n 1 >> $tmpdir/pf.conf.macro.enc.out
 			done
 			sed -i '$d' $tmpdir/pf.conf.macro.enc.{in,out}
-			if [[ -e /etc/pf.conf.macro.enc.in ]]; then
-				macroencinoldsha256=$(sha256 /etc/pf.conf.macro.enc.in | awk '{print $4}')
-			else
-				macroencinoldsha256=""
-			fi
-			macroencinnewsha256=$(sha256 $tmpdir/pf.conf.macro.enc.in | awk '{print $4}')
-			if [[ "$macroencinoldsha256" != "$macroencinnewsha256" ]]; then
+			if [[ $(sha256compare "/etc/pf.conf.macro.enc.in" "$tmpdir/pf.conf.macro.enc.in") -eq 1 ]]; then
 				echo "pf.conf.macro.enc.in upgrade"
-				ctrl_upgrade=1
 				install -o root -g wheel -m 0640  "$tmpdir/pf.conf.macro.enc.in" /etc/
 			fi
-			if [[ -e /etc/pf.conf.macro.enc.out ]]; then
-				macroencoutoldsha256=$(sha256 /etc/pf.conf.macro.enc.out | awk '{print $4}')
-			else
-				macroencoutoldsha256=""
-			fi
-			macroencoutnewsha256=$(sha256 $tmpdir/pf.conf.macro.enc.out | awk '{print $4}')
-			if [[ "$macroencoutoldsha256" != "$macroencoutnewsha256" ]]; then
+			if [[ $(sha256compare "/etc/pf.conf.macro.enc.out" "$tmpdir/pf.conf.macro.enc.out") -eq 1 ]]; then
 				echo "pf.conf.macro.enc.out upgrade"
-				ctrl_upgrade=1
 				install -o root -g wheel -m 0640  "$tmpdir/pf.conf.macro.enc.out" /etc/
 			fi
 			landomainname=$(cat /etc/myname | sed 's/^[^.]*.//')
 			custom "$tmpdir" "1"
-			pfconfoldsha256=$(sha256 /etc/pf.conf | awk '{print $4}')
-			pfconfnewsha256=$(sha256 "$tmpdir/pf.conf" | awk '{print $4}')
-			if [[ "$pfconfoldsha256" != "$pfconfnewsha256" ]]; then
+			if [[ $(sha256compare "/etc/pf.conf" "$tmpdir/pf.conf") -eq 1 ]]; then
 				echo "pf.conf upgrade"
-				ctrl_upgrade=1
 				install -o root -g wheel -m 0640  "$tmpdir/pf.conf" /etc/
 			fi
 			if [[ $ctrl_upgrade -eq 1 ]]; then
