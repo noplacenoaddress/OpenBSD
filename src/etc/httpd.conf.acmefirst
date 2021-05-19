@@ -1,0 +1,9 @@
+server "/PUBLICHOST/" {
+        listen on vio0 port 80
+        root "htdocs//PUBLICHOST/
+        location "/.well-known/acme-challenge/*" {
+                root "/acme"
+                request strip 2
+        }
+}
+
