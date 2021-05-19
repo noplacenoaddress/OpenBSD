@@ -249,18 +249,18 @@ function upgrade {
 					sed -i "s/\/TYPE\//$type/g" "$tmpdir/iked.conf.$vpnc_host"
 					sed -i "s/\/PUBLICIP\//$publicip/g" "$tmpdir/iked.conf.$vpnc_host"
 					sed -i "s/\/PUBLICHOST\//$publichost/g" "$tmpdir/iked.conf.$vpnc_host"
+					srcid=
 					if [[ $(grep -c hostname /tmp/config.ini) -eq 1 ]]; then
 						srcid=$(cat /tmp/config.ini  | grep hostname |cut -d \# -f2)
 						if [[ "$srcid" == "varuna" ]]; then
 							srcid="neo"
 						fi
-					else
-						srcid=
+					fi
+					if [[ -z $srcid ]]; then
 						while [ -z $srcid ]
 						do
 							echo 'Type the hostname '
 							read srcid
-							continue
 						done
 					fi
 					sed -i "s/\/SRCID\//$srcid/g" "$tmpdir/iked.conf.$vpnc_host"
