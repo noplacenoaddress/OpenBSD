@@ -342,6 +342,7 @@ function upgrade {
 			if [[ $(sha256compare "/etc/pf.conf.table.ipsec" "$tmpdir/pf.conf.table.ipsec") -eq 1 ]]; then
 				echo "pf.conf.table.ipsec upgrade"
 				install -o root -g wheel -m 0640  "$tmpdir/pf.conf.table.ipsec" /etc/
+				ctrl_upgrade=1
 			fi
 			for file in $(find /etc -maxdepth 1 -name "iked.conf.*") ; do
 				tagged=$(echo $file | sed "s/\/etc\/iked.conf.//")
@@ -360,16 +361,19 @@ function upgrade {
 			if [[ $(sha256compare "/etc/pf.conf.macro.enc.in" "$tmpdir/pf.conf.macro.enc.in") -eq 1 ]]; then
 				echo "pf.conf.macro.enc.in upgrade"
 				install -o root -g wheel -m 0640  "$tmpdir/pf.conf.macro.enc.in" /etc/
+				ctrl_upgrade=1
 			fi
 			if [[ $(sha256compare "/etc/pf.conf.macro.enc.out" "$tmpdir/pf.conf.macro.enc.out") -eq 1 ]]; then
 				echo "pf.conf.macro.enc.out upgrade"
 				install -o root -g wheel -m 0640  "$tmpdir/pf.conf.macro.enc.out" /etc/
+				ctrl_upgrade=1
 			fi
 			landomainname=$(cat /etc/myname | sed 's/^[^.]*.//')
 			custom "$tmpdir" "1"
 			if [[ $(sha256compare "/etc/pf.conf" "$tmpdir/pf.conf") -eq 1 ]]; then
 				echo "pf.conf upgrade"
 				install -o root -g wheel -m 0640  "$tmpdir/pf.conf" /etc/
+				ctrl_upgrade=1
 			fi
 			if [[ $ctrl_upgrade -eq 1 ]]; then
 				pfctrl=$(pfctl -nf /etc/pf.conf)
