@@ -232,6 +232,14 @@ function upgrade {
 			rm -rf $tmpdir
 			tmpdir=$(mktemp -d)
 			cp  src/etc/iked.conf $tmpdir
+			if [[ $(grep -c hostname /tmp/config.ini) -eq 1 ]]; then
+				srcid=$(cat /tmp/config.ini  | grep hostname |cut -d \# -f2)
+			else 
+				srcid=$(hostname -s)
+			fi
+			if [[ "$srcid" == "varuna" ]]; then
+				srcid="neo"
+			fi
 			for vpnc_ip in $(dig vpnc.$domainname A +short @8.8.8.8); do
 				vpnc_host=$(dig -x $vpnc_ip +short @8.8.8.8 | sed 's/.$//')
 				if [[ -e "/etc/iked.conf.$vpnc_host" ]]; then
@@ -249,20 +257,6 @@ function upgrade {
 					sed -i "s/\/TYPE\//$type/g" "$tmpdir/iked.conf.$vpnc_host"
 					sed -i "s/\/PUBLICIP\//$publicip/g" "$tmpdir/iked.conf.$vpnc_host"
 					sed -i "s/\/PUBLICHOST\//$publichost/g" "$tmpdir/iked.conf.$vpnc_host"
-					srcid=
-					if [[ $(grep -c hostname /tmp/config.ini) -eq 1 ]]; then
-						srcid=$(cat /tmp/config.ini  | grep hostname |cut -d \# -f2)
-						if [[ "$srcid" == "varuna" ]]; then
-							srcid="neo"
-						fi
-					fi
-					if [[ -z $srcid ]]; then
-						while [ -z $srcid ]
-						do
-							echo 'Type the hostname '
-							read srcid
-						done
-					fi
 					sed -i "s/\/SRCID\//$srcid/g" "$tmpdir/iked.conf.$vpnc_host"
 					sed -i "s/\/DOMAINNAME\//$domainname/g" "$tmpdir/iked.conf.$vpnc_host"
 					encx=$(cat "/etc/iked.conf.$vpnc_host" | awk -F'enc' '{print substr($2,0,1)}' | tail -n 1)
