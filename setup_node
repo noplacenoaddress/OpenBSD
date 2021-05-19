@@ -448,7 +448,7 @@ function upgrade {
 					install -o root -g wheel -m 0640  "$tmpdir/authorized_keys" /etc/ssh/remote_install
 				fi
 			fi
-			if [[ $(grep -c remote_install.conf /etc/rc.local) -eq 0 ]];
+			if [[ $(grep -c remote_install.conf /etc/rc.local) -eq 0 ]]; then
 				cat "$tmpdir/rc.local" >> /etc/rc.local
 			fi
 			pidof_remote=$(pidof "remote")
