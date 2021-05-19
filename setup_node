@@ -109,11 +109,11 @@ function custom {
 
 function sha256compare {
 	if [[ -e $1 ]]; then
-		oldsha256=$(sha256 "${1}" | awk '{print $4}')
+		oldsha256=$(sha256 $1 | awk '{print $4}')
 	else
 		oldsha256=""
 	fi
-	newsha256=$(sha256 "${2}" | awk '{print $4}')
+	newsha256=$(sha256 $2 | awk '{print $4}')
 	if [[ "$oldsha256" -ne "$newsha256" ]]; then
 		return 1
 	else
