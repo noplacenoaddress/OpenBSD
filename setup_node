@@ -223,6 +223,7 @@ function upgrade {
 			fi
 			rm -rf $tmpdir
 			for file in $(find src/etc/iked/pubkeys/ufqdn/ -name "*@*"); do
+				filename=$(basename $file)
 				if [[ $(sha256compare "$file" "/etc/iked/pubkeys/ufqdn/$filename") -eq 1 ]]; then
 					echo "$filename upgrade"
 					install -o root -g wheel -m 0640  $file /etc/iked/pubkeys/ufqdn/
