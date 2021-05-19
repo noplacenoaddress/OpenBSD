@@ -1,3 +1,17 @@
 #!/bin/ksh
 
-logger `echo $1`
+hostconnected=$(who -H | grep taglio | awk '{print $6}' | sed -e 's/^(\(.*\))$/\1/')
+ipconnected=$(dig -x $hostconnected +short @8.8.8.8)
+egressinterface=$(ifconfig egress | cut -d  : -f1 | head -n1)
+publicip=$(ifconfig $egressinterface | grep inet |grep -v inet6 | cut -d ' ' -f2)
+publicnetmask=$(ifconfig $egressinterface | grep inet | grep -v inet6 | awk '{print $4}')
+publicbcast=$(ifconfig $egressinterface | grep inet | grep -v inet6 | awk '{print $6}')
+publichost=$(dig -x $publicip +short @8.8.8.8 | sed 's/.$//')
+domainname=$(print $publichost | sed 's/^[^.]*.//')
+defaultv4router=$(route -n show | awk '/default/{print $2}' | head -n 1)
+macdefaultv4router=$(arp -an | grep $defaultv4router |  awk '{print $2}')
+tmpdir=$(mktemp -d)
+
+scp $hostconnected:/tmp/$publichost.{tar,sha256} $tmpdir
+logger "$0: update downloaded from $hostconnected"
+
