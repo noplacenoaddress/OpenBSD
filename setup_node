@@ -886,6 +886,9 @@ function configuration {
 				if [[ $dots -eq 2 ]]; then
 					tar -cvf "/tmp/$filename.tar" -C /tmp -s /tmp// $file
 					sha256 -q "$file.tar" > "/tmp/$filename.sha256"
+					mkdir "/var/www/htdocs/$publichost"
+					mv "/tmp/$filename.tar" "/var/www/htdocs/$publichost"
+					mv "/tmp/$filename.sha256" "/var/www/htdocs/$publichost"
 				fi
 			done
 			if [[ ! -d /etc/ssh/remote_install ]]; then
@@ -911,8 +914,14 @@ function configuration {
 				kill -9 $(cat /var/run/sshd-remote-install.pid)
 				/usr/sbin/sshd -f /etc/ssh/remote_install/remote_install.conf
 			fi
+			install -o root -g wheel -m 0640 src/etc/httpd.conf.acmefirst /etc/httpd.conf
+			custom "/etc/" "1"
+			httpd -n
+			rcctl enable httpd
+			rcctl start httpd ||  error_exit "$LINENO: ERROR: HTTPD failed."
 		;;	
 		"relayd")
+			
 			install -o root -g wheel -m 0640 src/etc/relayd.conf /etc/
 			custom "/etc" "1"
 			sed -i "s/\/PUBV6\//${ipv6egress}/g" /etc/relayd.conf
@@ -1248,7 +1257,6 @@ case $1 in
 		echo "preparing archives, signing them, starting httpd default host and start the remote install procedure \n"
 		if [[ $configini -eq 1 ]]; then
 			configuration "remote"
-			configuration "relayd"
 		else 
 			ctrl=
 			while [ -z $ctrl ]
@@ -1258,12 +1266,12 @@ case $1 in
 				if [[ "$ctrl" -eq 1 ]]; then
 					configuration "remote" 
 					echo "remote#$ctrl" >> /tmp/config.ini
-					configuration "relayd"
 				else
 					error_exit "$LINENO: EXIT FROM USER." 
 				fi
 			done
 		fi
+		
 	;;
 	"-U")
 		if [[ $# -ne 2 ]]; then
