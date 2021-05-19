@@ -1,4 +1,4 @@
-ikev2 "/POP/" passive transport \
+ikev2 "/POP/" active transport \
 	proto gre \
 	from /PUBLICIP/ to /POPIP/ \
         local /PUBLICHOST/ peer /POP/ \
@@ -6,4 +6,4 @@ ikev2 "/POP/" passive transport \
         childsa auth hmac-sha2-256 enc aes-256  \
 	srcid "/SRCID/@ca./DOMAINNAME/" \
         ikelifetime 86400 lifetime 3600 \
-        tag /POP/ tap enc/X/
+        tag /POP/ tap enc/X/	
