@@ -106,6 +106,22 @@ function custom {
 		
 	done
 }
+
+function sha256compare {
+	if [[ -e $1 ]]; then
+		oldsha256=$(sha256 $1 | awk '{print $4}')
+	else
+		oldsha256=""
+	fi
+	newsha256=$(sha256 $2 | awk '{print $4}')
+	if [[ "$1" != "$2" ]]; then
+		return 1
+	else
+		return 0
+	fi
+}
+
+
 function backup {
 	CURRENTBACKUP="$BACKUPS/$datarelease"
 	mkdir -p "$CURRENTBACKUP/$1/"
@@ -180,6 +196,7 @@ function backup {
 	esac
 }
 
+
 function upgrade {
 	case $1 in
 		"unbound")
@@ -190,11 +207,8 @@ function upgrade {
 		;;
 		"ipsec")
 			ctrl_upgrade=0
-			cacrtoldsha256=$(sha256 /etc/iked/ca/ca.crt | awk '{print $4}')
-			cacrtnewsha256=$(sha256 src/etc/iked/ca/ca.crt | awk '{print $4}')
-			if [[ "$cacrtoldsha256" != "$cacrtnewsha256" ]]; then
+			if [[ $(sha256compare "/etc/iked/ca/ca.crt" "src/etc/iked/ca/ca.crt") -eq 1 ]]; then
 				echo "ca.crt upgrade"
-				ctrl_upgrade=1
 				install -o root -g wheel -m 0640  src/etc/ca/ca.crt /etc/iked/ca/
 			fi
 			tmpdir=$(mktemp -d)
