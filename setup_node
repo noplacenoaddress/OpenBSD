@@ -588,6 +588,7 @@ function configuration {
 			case $subphase in
 				"public")
 					install -o root -g wheel -m 0640 src/etc/ssh/sshd_public /etc/ssh/sshd_config
+					install -o root -g wheel -m 0640 src/etc/ssh/ssh_config /etc/ssh/
 					install -o root -g wheel -m 0640 src/etc/ssh/authorized_keys /etc/ssh/
 					workstahost=$(cat /etc/ssh/authorized_keys | cut -d @ -f2)
 					if [[ ! -d "/tmp/$workstahost.$landomainname" ]]; then
