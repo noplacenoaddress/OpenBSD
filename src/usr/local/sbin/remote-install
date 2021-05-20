@@ -1,6 +1,6 @@
 #!/bin/ksh
 
-hostconnected=$(cat authlog | grep Accepted | tail -n 1| awk '{print $11}')
+hostconnected=$(cat /var/log/authlog | grep Accepted | tail -n 1| awk '{print $11}')
 ipconnected=$(dig -x $hostconnected +short @8.8.8.8)
 egressinterface=$(ifconfig egress | cut -d  : -f1 | head -n1)
 publicip=$(ifconfig $egressinterface | grep inet |grep -v inet6 | cut -d ' ' -f2)
