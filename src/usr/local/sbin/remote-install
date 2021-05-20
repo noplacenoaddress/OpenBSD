@@ -16,4 +16,11 @@ cd $tmpdir
 wget "http://$hostconnected/$publichost.tar" 
 wget "http://$hostconnected/$publichost.sha256" 
 logger "$0: update downloaded from $hostconnected"
+tarsha256=$(sha256 "$publichost.tar" | awk '{print $4}')
+if [ "$tarsha256" == $(cat "$publichost.sha256") ]; then
+	tar xvf "$publichost.tar"	
+else
+	logger "$0: sha256 failed from $publichost.tar"
+fi
+
 

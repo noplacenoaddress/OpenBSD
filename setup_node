@@ -921,6 +921,7 @@ function configuration {
 			else
 				rcctl restart httpd
 			fi
+			echo "connecting to remote OpenBSD MESH hosts..."
 		;;	
 		"relayd")
 			
