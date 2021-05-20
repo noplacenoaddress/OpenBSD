@@ -18,6 +18,9 @@ set -o nounset
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin:/root/Bin
 BACKUPS="/root/Backups"
+
+#GLOBAL VAR
+
 uid=$(id -u)
 app=$(basename $0)
 egressinterface=$(ifconfig egress | cut -d  : -f1 | head -n1)
@@ -37,6 +40,7 @@ ipv6ctrl=
 ipv6egress=
 ipv6prefix=
 ipv6defrouter=
+sha256ctrl=0
 
 if [[ $uid -ne 0 ]]; then
 	print $0 "you've got to run $0 as UID=0 \n"
@@ -62,7 +66,7 @@ function pidof {
 }
 
 function pkg {
-	phase=$1
+	typeset var phase=$1
 
 	case $phase in
 		"shell")
@@ -73,7 +77,7 @@ function pkg {
 }
 
 function cleanold {
-	directory=$1
+	typeset var directory=$1
 	for file in $directory*.old; do
 		if [[ -e "$file" ]]; then
 			mv $file $backups
@@ -115,11 +119,10 @@ function sha256compare {
 	fi
 	newsha256=$(sha256 $2 | awk '{print $4}')
 	if [ "$oldsha256" != "$newsha256" ]; then
-		A=1
+		sha256ctrl=1
 	else
-		A=0
+		sha256ctrl=0
 	fi
-	return "$A"
 }
 
 
@@ -207,19 +210,17 @@ function upgrade {
 			configuration "ssh"
 		;;
 		"ipsec")
-			ctrl_upgrade=0
 			sha256compare "/etc/iked/ca/ca.crt" "src/etc/iked/ca/ca.crt"
-			if [[ $? -eq 1 ]]; then
+			if [[ $sha256ctrl -eq 1 ]]; then
 				echo "ca.crt upgrade"
 				install -o root -g wheel -m 0640  src/etc/ca/ca.crt /etc/iked/ca/
-				ctrl_upgrade=1
 			fi
 			tmpdir=$(mktemp -d)
 			openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -nocerts -passin pass:123456789 -passout pass:123456789 -out "$tmpdir/local.key"
 			openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "$tmpdir/$publichost.crt"
 			openssl x509 -pubkey -noout -passin pass:123456789 -in "/etc/iked/certs/$publichost.crt"  > "$tmpdir/local.pub"
 			sha256compare "/etc/iked/private/local.key" "$tmpdir/local.key"
-			if [[ $? -eq 1 ]]; then
+			if [[ $sha256ctrl -eq 1 ]]; then
 				echo "local.key upgrade"
 				openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -nocerts -passin pass:123456789 -passout pass:123456789 -out /etc/iked/private/local.key
 				openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "/etc/iked/certs/$publichost.crt"
@@ -229,10 +230,9 @@ function upgrade {
 			for file in $(find src/etc/iked/pubkeys/ufqdn/ -name "*@*"); do
 				filename=$(basename $file)
 				sha256compare "$file" "/etc/iked/pubkeys/ufqdn/$filename"
-				if [[ $? -eq 1 ]]; then
+				if [[ $sha256ctrl -eq 1 ]]; then
 					echo "$filename upgrade"
 					install -o root -g wheel -m 0640  $file /etc/iked/pubkeys/ufqdn/
-					ctrl_upgrade=1
 				fi
 			done
 			rm -rf $tmpdir
@@ -268,10 +268,9 @@ function upgrade {
 					encx=$(cat "/etc/iked.conf.$vpnc_host" | awk -F'enc' '{print substr($2,0,1)}' | tail -n 1)
 					sed -i "s/\/X\//$encx/g" "$tmpdir/iked.conf.$vpnc_host"
 					sha256compare "/etc/iked.conf.$vpnc_host" "$tmpdir/iked.conf.$vpnc_host"
-					if [[ $? -eq 1 ]]; then
+					if [[ $sha256ctrl -eq 1 ]]; then
 						echo "$vpnc_host upgrade"
 						install -o root -g wheel -m 0640   "$tmpdir/iked.conf.$vpnc_host" /etc/
-						ctrl_upgrade=1
 					fi
 				fi
 			done
@@ -305,26 +304,23 @@ function upgrade {
 				encx=$(cat "/etc/iked.conf.$vpnc_host" | awk -F'enc' '{print substr($2,0,1)}' | tail -n 1)
 				sed -i "s/\/X\//$encx/g" "$tmpdir/iked.conf.$vpnc_host"
 				sha256compare "/etc/iked.conf.$vpnc_host" "$tmpdir/iked.conf.$vpnc_host"
-				if [[ $? -eq 1 ]]; then
+				if [[ $sha256ctrl -eq 1 ]]; then
 					echo "$vpnc_host upgrade"
 					install -o root -g wheel -m 0640   "$tmpdir/iked.conf.$vpnc_host" /etc/
-					ctrl_upgrade=1
 				fi
 				sha256compare "/etc/iked.conf.$vpnc_host" "$tmpdir/iked.conf.$vpnc_host"
-				if [[ $? -eq 1 ]]; then
+				if [[ $sha256ctrl -eq 1 ]]; then
 					echo "$vpnc_host upgrade"
 					install -o root -g wheel -m 0640   "$tmpdir/iked.conf.$vpnc_host" /etc/
-					ctrl_upgrade=1
 				fi
 			done
 			sha256compare "/etc/iked.conf" 	"$tmpdir/iked.conf"
-			if [[ $? -eq 1 ]]; then
+			if [[ $sha256ctrl -eq 1 ]]; then
 				echo "iked.conf upgrade"
 				install -o root -g wheel -m 0600  "$tmpdir/iked.conf" /etc/iked.conf
-				ctrl_upgrade=1
 			fi
 			iked -n
-			if [[ $ctrl_upgrade -eq 1 ]]; then
+			if [[ $sha256ctrl -eq 1 ]]; then
 				rcctl restart iked ||  error_exit "$LINENO: ERROR: IKED failed."
 			fi
 			
