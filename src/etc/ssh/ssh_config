@@ -1,7 +1,6 @@
-Host *
-	IdentityFile ~/.ssh/id_ed25519
-	SendEnv LANG LC_*
-	HashKnownHosts no
+Host uk.telecomlobby.com
+	IdentityFile /home/taglio/.ssh/id_ed25519
+	User taglio
 
 
 
