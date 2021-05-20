@@ -410,11 +410,6 @@ function upgrade {
 				fi
 				sha256compare "/etc/ssh/remote_install/authorized_keys" "$tmpdir/remote_install.conf"
 				if [[ $sha256ctrl -eq 1 ]]; then
-					echo "remote_install.conf upgrade"
-					install -o root -g wheel -m 0640  "$tmpdir/remote_install.conf" /etc/ssh/remote_install
-				fi
-				sha256compare "/etc/ssh/remote_install/authorized_keys" "$tmpdir/remote_install.conf"
-				if [[ $sha256ctrl -eq 1 ]]; then
 					echo "authorized_keys upgrade"
 					install -o root -g wheel -m 0640  "$tmpdir/authorized_keys" /etc/ssh/remote_install
 				fi
@@ -429,7 +424,11 @@ function upgrade {
 				custom "/etc/ssh/remote_install" "1"
 					
 			fi
-			install -o root -g wheel -m 0750 src/usr/local/sbin/remote-install /usr/local/sbin/
+			sha256compare " src/usr/local/sbin/remote-install" "/usr/local/sbin/remote-install"
+			if [[ $sha256ctrl -eq 1 ]]; then
+				echo "remote-install upgrade"
+				install -o root -g wheel -m 0750 src/usr/local/sbin/remote-install /usr/local/sbin/
+			fi
 			if [[ $(grep -c remote_install.conf /etc/rc.local) -eq 0 ]]; then
 				cat src/etc/ssh/remote_install/rc.local >> /etc/rc.local
 			fi
