@@ -674,14 +674,11 @@ function configuration {
 					esac 
 					sed -i "s/\/POPIP\//$vpnc_ip/g" "/tmp/$vpnc_host/iked.conf.$publichost"
 					sed -i "s/\/POP\//$vpnc_host/g" "/tmp/$vpnc_host/iked.conf.$publichost"
-					srcid=$(print $vpnc_host | cut -d . -f1)
-					for a in $(dig ipsec20591.$domainname TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
-						b=$(echo $a | cut -d : -f1)
-						if [ "$b" = "$srcid" ]; then
-							srcid=$(echo $a | cut -d : -f2)
-						fi
-					done
-					sed -i "s/\/POPID\//$hostname/g" "/tmp/$vpnc_host/iked.conf.$publichost"
+					srcid=$(hostname -s)
+					if [[ "$srcid" == "varuna" ]]; then
+						srcid="neo"
+					fi
+					sed -i "s/\/POPID\//$srcid/g" "/tmp/$vpnc_host/iked.conf.$publichost"
 				fi
 				sed -i "s/\/POPIP\//$vpnc_ip/g" "/etc/iked.conf.$vpnc_host"
 				sed -i "s/\/POP\//$vpnc_host/g" "/etc/iked.conf.$vpnc_host"
