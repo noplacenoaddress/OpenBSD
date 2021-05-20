@@ -12,7 +12,8 @@ defaultv4router=$(route -n show | awk '/default/{print $2}' | head -n 1)
 macdefaultv4router=$(arp -an | grep $defaultv4router |  awk '{print $2}')
 tmpdir=$(mktemp -d)
 
-
-wget http://$hostconnected/$publichost.{tar,sha256} $tmpdir
+cd $tmpdir
+wget "http://$hostconnected/$publichost.tar" 
+wget "http://$hostconnected/$publichost.sha256" 
 logger "$0: update downloaded from $hostconnected"
 
