@@ -438,6 +438,23 @@ function upgrade {
 			else
 				kill -HUP $(cat /var/run/sshd-remote-install.pid)
 			fi
+			install -o root -g wheel -m 0640 src/etc/httpd.conf.acmefirst /etc/httpd.conf
+			custom "/etc/" "1"
+			httpd -n
+			pidof_httpd=$(pidof "httpd")
+			if [[ -z $pidof_remote ]]; then
+				rcctl enable httpd
+				rcctl start httpd ||  error_exit "$LINENO: ERROR: HTTPD failed."
+			else
+				rcctl restart httpd
+			fi
+			echo "connecting to remote OpenBSD MESH hosts..."
+			for file in $(find /etc -maxdepth 1 -name "iked.conf.*" -type f); do
+				if [[ $(grep -c "brainpool512" $file) -eq 1 ]]; then
+					remotehost=$(echo $file | sed "s/\/etc\/iked.conf.//")
+					ssh -p 31137 $remotehost -v
+				fi
+			done
 			
 		;;
 		"relayd")
