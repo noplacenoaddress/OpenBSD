@@ -424,7 +424,7 @@ function upgrade {
 				custom "/etc/ssh/remote_install" "1"
 					
 			fi
-			sha256compare " src/usr/local/sbin/remote-install" "/usr/local/sbin/remote-install"
+			sha256compare "src/usr/local/sbin/remote-install" "/usr/local/sbin/remote-install"
 			if [[ $sha256ctrl -eq 1 ]]; then
 				echo "remote-install upgrade"
 				install -o root -g wheel -m 0750 src/usr/local/sbin/remote-install /usr/local/sbin/
