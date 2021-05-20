@@ -1,6 +1,6 @@
 #!/bin/ksh
 
-hostconnected=$(who -H | grep taglio | awk '{print $6}' | sed -e 's/^(\(.*\))$/\1/')
+hostconnected=$(cat authlog | grep Accepted | tail -n 1| awk '{print $11}')
 ipconnected=$(dig -x $hostconnected +short @8.8.8.8)
 egressinterface=$(ifconfig egress | cut -d  : -f1 | head -n1)
 publicip=$(ifconfig $egressinterface | grep inet |grep -v inet6 | cut -d ' ' -f2)
@@ -12,9 +12,7 @@ defaultv4router=$(route -n show | awk '/default/{print $2}' | head -n 1)
 macdefaultv4router=$(arp -an | grep $defaultv4router |  awk '{print $2}')
 tmpdir=$(mktemp -d)
 
-logger $1
 
-cd $tmpdir
 wget http://$hostconnected:/tmp/$publichost.{tar,sha256} $tmpdir
 logger "$0: update downloaded from $hostconnected"
 
