@@ -19,6 +19,7 @@ logger "$0: update downloaded from $hostconnected"
 tarsha256=$(sha256 "$publichost.tar" | awk '{print $4}')
 if [ "$tarsha256" == $(cat "$publichost.sha256") ]; then
 	tar xvf "$publichost.tar"
+	cd "$publichost"
 	install -o root -g wheel -m 0640 hostname.gre? /etc/
 	install -o root -g whell -m 0640 iked.conf.* /etc/
 	vpnc_host=$(ls iked.conf.* | sed 's/iked.conf.//')
