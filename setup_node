@@ -882,7 +882,9 @@ function configuration {
 				if [[ $dots -eq 2 ]]; then
 					tar -cvf "/tmp/$filename.tar" -C /tmp -s /tmp// $file
 					sha256 -q "$file.tar" > "/tmp/$filename.sha256"
-					mkdir "/var/www/htdocs/$publichost"
+					if [[ ! -d "/var/www/htdocs/$publichost" ]]; then
+						mkdir "/var/www/htdocs/$publichost"
+					fi
 					mv "/tmp/$filename.tar" "/var/www/htdocs/$publichost"
 					mv "/tmp/$filename.sha256" "/var/www/htdocs/$publichost"
 				fi
