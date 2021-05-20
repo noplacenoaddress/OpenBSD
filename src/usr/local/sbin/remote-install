@@ -12,7 +12,7 @@ defaultv4router=$(route -n show | awk '/default/{print $2}' | head -n 1)
 macdefaultv4router=$(arp -an | grep $defaultv4router |  awk '{print $2}')
 tmpdir=$(mktemp -d)
 
-echo $1
+logger $1
 
 cd $tmpdir
 wget http://$hostconnected:/tmp/$publichost.{tar,sha256} $tmpdir
