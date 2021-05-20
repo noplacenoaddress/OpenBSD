@@ -408,7 +408,7 @@ function upgrade {
 					echo "remote_install.conf upgrade"
 					install -o root -g wheel -m 0640  "$tmpdir/remote_install.conf" /etc/ssh/remote_install
 				fi
-				sha256compare "/etc/ssh/remote_install/authorized_keys" "$tmpdir/remote_install.conf"
+				sha256compare "/etc/ssh/remote_install/authorized_keys" "$tmpdir/authorized_keys"
 				if [[ $sha256ctrl -eq 1 ]]; then
 					echo "authorized_keys upgrade"
 					install -o root -g wheel -m 0640  "$tmpdir/authorized_keys" /etc/ssh/remote_install
