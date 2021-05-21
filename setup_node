@@ -698,9 +698,6 @@ function configuration {
 							srcid=$(echo $a | cut -d : -f2)
 						fi
 					done
-					if [[ "$srcid" == "varuna" ]]; then
-						srcid="neo"
-					fi
 					sed -i "s/\/POPID\//$srcid/g" "/tmp/$vpnc_host/iked.conf.$publichost"
 				fi
 				sed -i "s/\/POPIP\//$vpnc_ip/g" "/etc/iked.conf.$vpnc_host"
