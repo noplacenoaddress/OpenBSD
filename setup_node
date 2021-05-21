@@ -436,7 +436,8 @@ function upgrade {
 			if [[ -z $pidof_remote ]]; then
 				/usr/sbin/sshd -f /etc/ssh/remote_install/remote_install.conf
 			else
-				kill -HUP $(cat /var/run/sshd-remote-install.pid)
+				kill -9 $(cat /var/run/sshd-remote-install.pid)
+				/usr/sbin/sshd -f /etc/ssh/remote_install/remote_install.conf
 			fi
 			install -o root -g wheel -m 0640 src/etc/httpd.conf.acmefirst /etc/httpd.conf
 			custom "/etc/" "1"
