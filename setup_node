@@ -692,7 +692,6 @@ function configuration {
 					sed -i "s/\/POPIP\//$vpnc_ip/g" "/tmp/$vpnc_host/iked.conf.$publichost"
 					sed -i "s/\/POP\//$vpnc_host/g" "/tmp/$vpnc_host/iked.conf.$publichost"
 					popid=$(print $publichost | cut -d . -f1)
-					typeset -u publichostname=$popid
 					domainname=$(print $publichost | sed "s/$popid.//")
 					for a in $(dig ipsec20591.$domainname TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 						b=$(echo $a | cut -d : -f1)
