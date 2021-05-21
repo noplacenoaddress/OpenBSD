@@ -938,6 +938,10 @@ function configuration {
 			else
 				rcctl restart httpd
 			fi
+			
+			
+		;;	
+		"remoteinstall")
 			echo "connecting to remote OpenBSD MESH hosts..."
 			for file in $(find /etc -maxdepth 1 -name "iked.conf.*" -type f); do
 				if [[ $(grep -c "brainpool512" $file) -eq 1 ]]; then
@@ -945,7 +949,7 @@ function configuration {
 					ssh -p 31137 $remotehost -v
 				fi
 			done
-		;;	
+		;;
 		"relayd")
 			
 			install -o root -g wheel -m 0640 src/etc/relayd.conf /etc/
@@ -1315,6 +1319,7 @@ case $1 in
 				\npf   \
 				\nospf   \
 				\nremote   \
+				\nremoteinstall \
 				\nrelayd   \
 				\n"
 			exit 1 
@@ -1365,6 +1370,9 @@ case $1 in
 			"remote")
 				backup "remote"
 				upgrade "remote"
+			;;
+			"remoteinstall")
+				upgrade "remoteinstall"
 			;;
 			"relayd")
 				upgrade "relayd"
