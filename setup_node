@@ -764,6 +764,11 @@ function configuration {
 				install -o root -g wheel -m 0640 src/etc/hostname.gre-X- "/etc/hostname.gre$i"
 				pophost=$(echo $file | sed "s/\/etc\/iked.conf.//")
 				sed -i "s/\/POPHOST\//$pophost/g" "/etc/hostname.gre$i"
+				if [ "$pophost" == "uk.telecomlobby.com" ]; then
+					sed -i "s/\/GROUP\//nsd/g" "/etc/hostname.gre$i"
+				else
+					sed -i "s/\/GROUP\//gre/g" "/etc/hostname.gre$i"
+				fi
 				sed -i "s/\/PUBLICIP\//$publicip/g" "/etc/hostname.gre$i"
 				sed -i "s/\/X\//$i/g" "/etc/hostname.gre$i"
 				count=$(dig $pophost A +short @8.8.8.8 | wc -l)
