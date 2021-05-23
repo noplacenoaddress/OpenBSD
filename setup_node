@@ -232,7 +232,7 @@ function upgrade {
 				sha256compare "$file" "/etc/iked/pubkeys/ufqdn/$filename"
 				if [[ $sha256ctrl -eq 1 ]]; then
 					echo "$filename upgrade"
-					install -o root -g wheel -m 0640  $file /etc/iked/pubkeys/ufqdn/
+					install -o root -g wheel -m 0644  $file /etc/iked/pubkeys/ufqdn/
 				fi
 			done
 			rm -rf $tmpdir
@@ -648,7 +648,7 @@ function configuration {
 			openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "/etc/iked/certs/$publichost.crt"
 			openssl x509 -pubkey -noout -passin pass:123456789 -in "/etc/iked/certs/$publichost.crt"  > /etc/iked/local.pub
 			for file in $(find src/etc/iked/pubkeys/ufqdn/ -name "*@*"); do
-				install -o root -g wheel -m 0640 $file /etc/iked/pubkeys/ufqdn/
+				install -o root -g wheel -m 0644 $file /etc/iked/pubkeys/ufqdn/
 			done
 			rcctl enable iked
 			rcctl set iked flags "-vv"
