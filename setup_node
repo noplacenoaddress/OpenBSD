@@ -333,6 +333,8 @@ function upgrade {
 			if [[ $sha256ctrl -eq 1 ]]; then
 				echo "pf.conf.table.ipsec upgrade"
 				install -o root -g wheel -m 0640  "$tmpdir/pf.conf.table.ipsec" /etc/
+				pfctl -nf /etc/pf.conf
+				pfctl -f /etc/pf.conf
 			fi
 			for file in $(find /etc -maxdepth 1 -name "iked.conf.*") ; do
 				tagged=$(echo $file | sed "s/\/etc\/iked.conf.//")
