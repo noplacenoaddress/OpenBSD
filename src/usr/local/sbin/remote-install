@@ -1,7 +1,7 @@
 #!/bin/ksh
 
 ipconnected=$(cat /var/log/authlog | grep Accepted | tail -n 1| awk '{print $11}')
-hostconnected=$(dig -x $ipconnected +short @8.8.8.8)
+hostconnected=$(dig -x $ipconnected +short @8.8.8.8 | sed 's/.$//')
 egressinterface=$(ifconfig egress | cut -d  : -f1 | head -n1)
 publicip=$(ifconfig $egressinterface | grep inet |grep -v inet6 | cut -d ' ' -f2)
 publicnetmask=$(ifconfig $egressinterface | grep inet | grep -v inet6 | awk '{print $4}')
@@ -22,7 +22,7 @@ if [ "$tarsha256" == $(cat "$publichost.sha256") ]; then
 	cd "$publichost"
 	install -o root -g wheel -m 0640 hostname.gre? /etc/
 	install -o root -g wheel -m 0640 hostname.enc? /etc/
-	srcid=$(cat ./iked.conf.$hostconnected | grep srcid | awk '{print $2}' | sed 's/"//g' | cut -d @ -f1)
+	srcid=$(cat iked.conf.$hostconnected | grep srcid | awk '{print $2}' | sed 's/"//g' | cut -d @ -f1)
 	sed -i "s/$srcid/$(hostname -s)/" iked.conf.*	
 	vpnc_host=$(ls iked.conf.* | sed 's/iked.conf.//')
 	echo include \"/etc/iked.conf.$vpnc_host\" >> /etc/iked.conf
