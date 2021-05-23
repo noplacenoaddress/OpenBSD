@@ -213,7 +213,7 @@ function upgrade {
 			sha256compare "/etc/iked/ca/ca.crt" "src/etc/iked/ca/ca.crt"
 			if [[ $sha256ctrl -eq 1 ]]; then
 				echo "ca.crt upgrade"
-				install -o root -g wheel -m 0640  src/etc/ca/ca.crt /etc/iked/ca/
+				install -o root -g wheel -m 0644  src/etc/ca/ca.crt /etc/iked/ca/
 			fi
 			tmpdir=$(mktemp -d)
 			openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -nocerts -passin pass:123456789 -passout pass:123456789 -out "$tmpdir/local.key"
@@ -643,7 +643,7 @@ function configuration {
 			mkdir -p /etc/iked/{ca,certs,crls,export,private,pubkeys}
 			mkdir -p /etc/iked/pubkeys/{ipv4,ipv6,fqdn,ufqdn}
 			cd $basedir
-			install -o root -g wheel -m 0640  src/etc/iked/ca/ca.crt /etc/iked/ca/	
+			install -o root -g wheel -m 0644  src/etc/iked/ca/ca.crt /etc/iked/ca/	
 			openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -nocerts -passin pass:123456789 -passout pass:123456789 -out /etc/iked/private/local.key
 			openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "/etc/iked/certs/$publichost.crt"
 			openssl x509 -pubkey -noout -passin pass:123456789 -in "/etc/iked/certs/$publichost.crt"  > /etc/iked/local.pub
@@ -703,6 +703,7 @@ function configuration {
 				sed -i "s/\/POPIP\//$vpnc_ip/g" "/etc/iked.conf.$vpnc_host"
 				sed -i "s/\/POP\//$vpnc_host/g" "/etc/iked.conf.$vpnc_host"
 				sed -i "s/\/X\//$i/g" "/etc/iked.conf.$vpnc_host"
+				
 				install -o root -g wheel -m 0640 src/etc/hostname.enc-X- "/etc/hostname.enc$i"
 				sed -i "s/\/POP\//$vpnc_host/g" "/etc/hostname.enc$i"
 				sh /etc/netstart "enc$i"
