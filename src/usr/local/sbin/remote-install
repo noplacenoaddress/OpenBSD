@@ -27,9 +27,11 @@ if [ "$tarsha256" == $(cat "$publichost.sha256") ]; then
 	echo include \"/etc/iked.conf.$vpnc_host\" >> /etc/iked.conf
 	greinterface=$(ls hostname.gre? | sed 's/hostname.//')
 	sh /etc/netstart $greinterface
-	sed -i '$d' /etc/ospfd.conf
-	cat ospfd.conf >> /etc/ospfd.conf
-	echo "}" >> /etc/ospfd.conf
+	if [[ $(grep -c $greinterface /etc/ospfd.conf) -ne 1 ]]; then
+		sed -i '$d' /etc/ospfd.conf
+		cat ospfd.conf >> /etc/ospfd.conf
+		echo "}" >> /etc/ospfd.conf
+	fi
 	mv iked.conf.* /etc
 	chown root:wheel /etc/iked.conf.*
 	chmod go-rwx /etc/iked.conf.*
