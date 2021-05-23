@@ -465,12 +465,12 @@ function upgrade {
 			ctrl=
 			while [ -z $ctrl ]
 			do
-				echo 'Have you add the root ssh key to mikrotik and edgeos ?'
-				cat /root/.ssh/id_ed25519.pub
+				echo 'Have you add the root ssh key to admin user onto mikrotik ?'
+				cat /root/.ssh/id_rsa.pub
 				echo 'Type 1 to continue '
 				read ctrl
 				if [[ "$ctrl" -eq 1 ]]; then
-					
+					echo "ok"
 				else
 					error_exit "$LINENO: EXIT FROM USER." 
 				fi
@@ -577,6 +577,7 @@ function configuration {
 			done
 			if [[ ! -e /root/.ssh/id_ed25519 ]]; then
 				ssh-keygen -t ed25519 -N "" -f /root/.ssh/id_ed25519
+				ssh-keygen -N "" -f /root/.ssh/id_rsa
 			fi
 		
 		;;
@@ -974,12 +975,12 @@ function configuration {
 			ctrl=
 			while [ -z $ctrl ]
 			do
-				echo 'Have you add the root ssh key to mikrotik and edgeos ?'
-				cat /root/.ssh/id_ed25519.pub
+				echo 'Have you add the root ssh key to admin user onto mikrotik ?'
+				cat /root/.ssh/id_rsa.pub
 				echo 'Type 1 to continue? '
 				read ctrl
 				if [[ "$ctrl" -eq 1 ]]; then
-					
+					echo "ok"
 				else
 					error_exit "$LINENO: EXIT FROM USER." 
 				fi
