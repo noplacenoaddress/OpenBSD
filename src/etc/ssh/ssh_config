@@ -1,6 +1,6 @@
 Host *.telecomlobby.com
-	IdentityFile /home/taglio/.ssh/id_ed25519
-	User taglio
+	IdentityFile /root/.ssh/id_ed25519
+	User root
 
 
 

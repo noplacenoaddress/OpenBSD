@@ -852,7 +852,7 @@ function configuration {
 				typeset -i metric=$(expr $latency / 2)
 				sed -i "s/\/METRIC\//${metric}/g" /etc/ospfd.conf
 				cat src/openbsd/ospfd.conf.openbsd >> /etc/ospfd.conf	
-				if [[ $(ls "/tmp/$pophost/" | grep -c "hostname") -eq 1 ]]; then
+				if [[ $(ls "/tmp/$pophost/" | grep -c "hostname") -eq 2 ]]; then
 					typeset -i lasttun
 					lasttun=$(dig gre18994.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')
 					lasttun=$lasttun+1
@@ -860,7 +860,7 @@ function configuration {
 					sed -i "s/\/X\//$lasttun/g" "/tmp/$pophost/ospfd.conf"	
 					sed -i "s/\/METRIC\//${metric}/g" "/tmp/$pophost/ospfd.conf"	
 					sed -i "s/\/OSPFMD5\//${ospfmd5}/g" "/tmp/$pophost/ospfd.conf"
-				elif [[ $(ls "/tmp/$pophost/" | grep -c "rsc") -eq 1 ]]; then
+				elif [[ $(ls "/tmp/$pophost/" | grep -c "rsc") -eq 2 ]]; then
 					pophostname=$(echo $pophost | cut -d . -f1)
 					cp src/mikrotik/ospfd.rsc "/tmp/$pophost"
 					sed -i "s/\/HOSTNAME\//${hostname}/g" "/tmp/$pophost/ospfd.rsc"
