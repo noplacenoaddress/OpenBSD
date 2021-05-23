@@ -908,6 +908,7 @@ function configuration {
 					fi
 					mv "/tmp/$filename.tar" "/var/www/htdocs/$publichost"
 					mv "/tmp/$filename.sha256" "/var/www/htdocs/$publichost"
+					rm -rf $file
 				fi
 			done
 			if [[ ! -d /etc/ssh/remote_install ]]; then
