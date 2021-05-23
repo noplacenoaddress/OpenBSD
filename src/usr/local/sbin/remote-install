@@ -33,6 +33,7 @@ if [ "$tarsha256" == $(cat "$publichost.sha256") ]; then
 	mv iked.conf.* /etc
 	chown root:wheel /etc/iked.conf.*
 	chmod go-rwx /etc/iked.conf.*
+	iked -n
 	rcctl restart iked
 	rcctl restart ospfd
 	
