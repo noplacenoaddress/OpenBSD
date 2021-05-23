@@ -467,7 +467,7 @@ function upgrade {
 			do
 				echo 'Have you add the root ssh key to mikrotik and edgeos ?'
 				cat /root/.ssh/id_ed25519.pub
-				echo 'Type 1 to continue? '
+				echo 'Type 1 to continue '
 				read ctrl
 				if [[ "$ctrl" -eq 1 ]]; then
 					
