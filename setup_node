@@ -872,7 +872,7 @@ function configuration {
 					grenetwork=$(ipcalc -c $greip / 30 | grep network | awk '{ print $3 }')
 					sed -i "s/\/GRENETWORK\//${grenetwork}/g" "/tmp/$pophost/ospfd.rsc"
 					cat "/tmp/$pophost/ospfd.rsc" >> "/tmp/$pophost/$pophost.rsc"
-				else
+				elif [[ $(ls "/tmp/$pophost/" | grep -c "netwatch") -eq 1 ]]; then
 					tunif=$(cat "/tmp/$pophost/gre.sh" | awk '{ print $4 }' | grep tun | head -n 1)
 					cp src/edgeos/ospf.sh "/tmp/$pophost/"
 					sed -i "s/\/TUNIF\//${tunif}/g" "/tmp/$pophost/ospf.sh"
