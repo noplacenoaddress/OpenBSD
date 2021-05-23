@@ -793,6 +793,8 @@ function configuration {
 				if grep -q "ecp384" $file; then
 					cat src/mikrotik/gre.rsc >> "/tmp/$pophost/$pophost.rsc"
 					sed -i "s/\/GREPOPIP\//10.10.10.$grepopip\/32/g" "/tmp/$pophost/$pophost.rsc"
+					sed -i "s/\/HOSTNAME\//$hostname/g" "/tmp/$pophost/$pophost.rsc"
+					sed -i "s/\/PUBLICIP\//$publicip/g" "/tmp/$pophost/$pophost.rsc"
 				elif grep -q "ecp256" $file; then
 					cp src/edgeos/scripts/ES-SRCID-_netwatch.sh "/tmp/$pophost/ES-${publichostname}_netwatch.sh" 
 					cp src/edgeos/scripts/ES-SRCID--updown.sh "/tmp/$pophost/ES-$publichostname-updown.sh"
@@ -845,6 +847,7 @@ function configuration {
 			done
  			for file in $(find /tmp -name "*.rsc"); do
 				cat src/mikrotik/firewall.rsc >> "$file"
+				sed -i "s/\/HOSTNAME\//${hostname}/g" $file
 			done
 			for file in $(find /etc -maxdepth 1 -name "iked.conf.*") ; do
 				tagged=$(echo $file | sed "s/\/etc\/iked.conf.//")
