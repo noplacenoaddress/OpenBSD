@@ -461,6 +461,21 @@ function upgrade {
 					ssh -p 31137 $remotehost -v
 				fi
 			done
+			sleep 31
+			ctrl=
+			while [ -z $ctrl ]
+			do
+				echo 'Have you add the root ssh key to mikrotik and edgeos ?'
+				cat /root/.ssh/id_ed25519.pub
+				echo 'Type 1 to continue? '
+				read ctrl
+				if [[ "$ctrl" -eq 1 ]]; then
+					
+				else
+					error_exit "$LINENO: EXIT FROM USER." 
+				fi
+			    
+			done
 		;;
 		"relayd")
 			configuration "relayd"
@@ -900,6 +915,7 @@ function configuration {
 			rcctl restart ntpd  ||  error_exit "$LINENO: ERROR: NTPD failed."
 		;;	
 		"remote")
+			
 			for file in $(find /tmp -type d -maxdepth 1); do
 				filename=$(basename $file)
 				typeset -i dots=$(echo $filename| tr -cd '.' | wc -c)
@@ -955,6 +971,20 @@ function configuration {
 				fi
 			done
 			sleep 31
+			ctrl=
+			while [ -z $ctrl ]
+			do
+				echo 'Have you add the root ssh key to mikrotik and edgeos ?'
+				cat /root/.ssh/id_ed25519.pub
+				echo 'Type 1 to continue? '
+				read ctrl
+				if [[ "$ctrl" -eq 1 ]]; then
+					
+				else
+					error_exit "$LINENO: EXIT FROM USER." 
+				fi
+			    
+			done
 			
 		;;	
 		
