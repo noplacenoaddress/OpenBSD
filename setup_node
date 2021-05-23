@@ -783,7 +783,7 @@ function configuration {
 					sed -i "s/\/PUBLICHOST\//$publichost/g" "/tmp/$pophost/hostname.gre$lasttun"
 					sed -i "s/\/PUBLICHOST\//$publichost/g" "/tmp/$pophost/hostname.enc$lasttun"
 					sed -i "s/\/X\//$lasttun/g" "/tmp/$pophost/hostname.gre$lasttun"
-					sed -i "s/\/X\//$lasttun/g" "/tmp/$pophost/iked.conf.*"
+					sed -i "s/\/X\//$lasttun/g" "/tmp/$pophost/iked.conf.${publichostname}"
 					sed -i "s/\/POPIP\//$popip/g" "/tmp/$pophost/hostname.gre$lasttun"
 					sed -i "s/\/PUBLICIP\//$publicip/g" "/tmp/$pophost/hostname.gre$lasttun"
 					sed -i "s/\/GREPOPIP\//10.10.10.$grepopip/g" "/tmp/$pophost/hostname.gre$lasttun"
