@@ -28,14 +28,14 @@ if [ "$tarsha256" == $(cat "$publichost.sha256") ]; then
 	if [[ $(grep -c $vpnc_host /etc/iked.conf) -eq 0 ]]; then
 		echo include \"/etc/iked.conf.$vpnc_host\" >> /etc/iked.conf
 	fi
-	if [[ $(grep -c $vpnc_host /etc/pf.conf.macro.enc.in) -eq 0 ]]; then
-		echo "pass in quick on enc proto gre from $ipconnected to \$pub tagged $vpnc_host" >> /etc/pf.conf.macro.enc.in
-		pfctl -f /etc/pf.conf
-	fi
-	if [[ $(grep -c $vpnc_host /etc/pf.conf.macro.enc.out) -eq 0 ]]; then
-		echo "pass out quick on enc proto gre from \$pub to $ipconnected tagged $vpnc_host" >> /etc/pf.conf.macro.enc.out 
-		pfctl -f /etc/pf.conf
-	fi
+	#if [[ $(grep -c $vpnc_host /etc/pf.conf.macro.enc.in) -eq 0 ]]; then
+	#	echo "pass in quick on enc proto gre from $ipconnected to \$pub tagged $vpnc_host" >> /etc/pf.conf.macro.enc.in
+	#	pfctl -f /etc/pf.conf
+	#fi
+	#if [[ $(grep -c $vpnc_host /etc/pf.conf.macro.enc.out) -eq 0 ]]; then
+	#	echo "pass out quick on enc proto gre from \$pub to $ipconnected tagged $vpnc_host" >> /etc/pf.conf.macro.enc.out 
+	#	pfctl -f /etc/pf.conf
+	#fi
 	greinterface=$(ls hostname.gre? | sed 's/hostname.//')
 	encinterface=$(ls hostname.enc? | sed 's/hostname.//')
 	sh /etc/netstart $greinterface
