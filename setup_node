@@ -703,7 +703,6 @@ function configuration {
 				sed -i "s/\/POPIP\//$vpnc_ip/g" "/etc/iked.conf.$vpnc_host"
 				sed -i "s/\/POP\//$vpnc_host/g" "/etc/iked.conf.$vpnc_host"
 				sed -i "s/\/X\//$i/g" "/etc/iked.conf.$vpnc_host"
-				
 				install -o root -g wheel -m 0640 src/etc/hostname.enc-X- "/etc/hostname.enc$i"
 				sed -i "s/\/POP\//$vpnc_host/g" "/etc/hostname.enc$i"
 				sh /etc/netstart "enc$i"
@@ -780,7 +779,9 @@ function configuration {
 					sed -i "s/\/TUN\//tun$lasttun/g" "/tmp/$pophost/gre.sh"
 				else
 					cp src/openbsd/hostname.gre.openbsd "/tmp/$pophost/hostname.gre$lasttun"
+					cp src/openbsd/hostname.enc.openbsd "/tmp/$pophost/hostname.enc$lasttun"
 					sed -i "s/\/PUBLICHOST\//$publichost/g" "/tmp/$pophost/hostname.gre$lasttun"
+					sed -i "s/\/PUBLICHOST\//$publichost/g" "/tmp/$pophost/hostname.enc$lasttun"
 					sed -i "s/\/X\//$lasttun/g" "/tmp/$pophost/hostname.gre$lasttun"
 					sed -i "s/\/POPIP\//$popip/g" "/tmp/$pophost/hostname.gre$lasttun"
 					sed -i "s/\/PUBLICIP\//$publicip/g" "/tmp/$pophost/hostname.gre$lasttun"
