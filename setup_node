@@ -560,8 +560,8 @@ function configuration {
 					install -o taglio -g wheel -m 0750  $file /home/taglio/Bin/
 				fi
 			done
-			if [[ ! -e /home/taglio/.ssh/id_ed25519 ]]; then
-				doas -u taglio ssh-keygen -t ed25519 -N "" -f /home/taglio/.ssh/id_ed25519
+			if [[ ! -e /root/.ssh/id_ed25519 ]]; then
+				ssh-keygen -t ed25519 -N "" -f /root/.ssh/id_ed25519
 			fi
 		
 		;;
@@ -954,7 +954,7 @@ function configuration {
 					ssh -p 31137 $remotehost -v
 				fi
 			done
-			
+			sleep 31
 			
 		;;	
 		
