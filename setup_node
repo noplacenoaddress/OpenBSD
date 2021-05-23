@@ -323,6 +323,9 @@ function upgrade {
 			for vpnc_ip in $(dig vpnc.$domainname A +short @8.8.8.8); do
 				echo "$vpnc_ip/32" >> "$tmpdir/pf.conf.table.ipsec"
 			done
+			for vpnc_ip in $(dig vpncN.$domainname A +short @8.8.8.8); do
+				echo "$vpnc_ip/32" >> "$tmpdir/pf.conf.table.ipsec"
+			done
 			for vpnc_host in $(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g'); do
 				vpnc_ip=$(dig $vpnc_host A +short @8.8.8.8 | tail -n 1)
 				if [[ ! -z $vpnc_ip ]]; then
@@ -825,6 +828,9 @@ function configuration {
 			done 
 			for vpnc_ip in $(dig vpnc.$domainname A +short @8.8.8.8); do
 				echo "$vpnc_ip/32" >> /etc/pf.conf.table.ipsec
+			done
+			for vpnc_ip in $(dig vpncN.$domainname A +short @8.8.8.8); do
+				echo "$vpnc_ip/32" >> "$tmpdir/pf.conf.table.ipsec"
 			done
 			for vpnc_host in $(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g'); do
 				vpnc_ip=$(dig $vpnc_host A +short @8.8.8.8 | tail -n 1)
