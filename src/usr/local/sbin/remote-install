@@ -21,12 +21,15 @@ if [ "$tarsha256" == $(cat "$publichost.sha256") ]; then
 	tar xvf "$publichost.tar"
 	cd "$publichost"
 	install -o root -g wheel -m 0640 hostname.gre? /etc/
-	srcid=$(cat iked.conf.bg.telecomlobby.com | grep srcid | awk '{print $2}' | sed 's/"//g' | cut -d @ -f1)
+	install -o root -g wheel -m 0640 hostname.enc? /etc/
+	srcid=$(cat "iked.conf.$hostconnected" | grep srcid | awk '{print $2}' | sed 's/"//g' | cut -d @ -f1)
 	sed -i "s/$srcid/$(hostname -s)/" iked.conf.*	
 	vpnc_host=$(ls iked.conf.* | sed 's/iked.conf.//')
 	echo include \"/etc/iked.conf.$vpnc_host\" >> /etc/iked.conf
 	greinterface=$(ls hostname.gre? | sed 's/hostname.//')
+	encinterface=$(ls hostname.enc? | sed 's/hostname.//')
 	sh /etc/netstart $greinterface
+	sh /etc/netstart $encinterface
 	if [[ $(grep -c $greinterface /etc/ospfd.conf) -ne 1 ]]; then
 		sed -i '$d' /etc/ospfd.conf
 		cat ospfd.conf >> /etc/ospfd.conf
