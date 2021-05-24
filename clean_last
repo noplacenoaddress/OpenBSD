@@ -13,5 +13,5 @@ for file in $(grep $last * | grep hostname | cut -d : -f1); do
 	ifconfig $interface destroy
 	rm -rf $file
 done
-sed -i "/interface $greinterface/,/}/d" /etc/ospfd.conf
+sed -i "/interface $ospfinterface/,/}/d" /etc/ospfd.conf
 rcctl restart ospfd
