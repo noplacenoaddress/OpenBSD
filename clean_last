@@ -1,6 +1,6 @@
 #!/bin/ksh
 
-last=$(basename $(cat iked.conf | tail -n 1 | awk '{print $2}' | sed 's/"//g') | sed 's/iked.conf.//')
+last=$(basename $(cat /etc/iked.conf | tail -n 1 | awk '{print $2}' | sed 's/"//g') | sed 's/iked.conf.//')
 filename=$(ls *"$last")
 sed -i "/$last/d" /etc/iked.conf
 rm -rf "/etc/$filename"
