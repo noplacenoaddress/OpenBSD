@@ -1,11 +1,11 @@
 #!/bin/ksh
 
 last=$(basename $(cat iked.conf | tail -n 1 | awk '{print $2}' | sed 's/"//g') | sed 's/iked.conf.//')
-filename=$(ls *"$a")
+filename=$(ls *"$last")
 sed -i "/$last/d" /etc/iked.conf
 rm -rf "/etc/$filename"
 rcctl restart iked
-for file in $(grep $a * | grep hostname | cut -d : -f1); do
+for file in $(grep $last * | grep hostname | cut -d : -f1); do
 	interface=$(echo $file | cut -d . -f2)
 	if [ "$interface" == "gre?" ]; then
 		ospfinterface=$interface
