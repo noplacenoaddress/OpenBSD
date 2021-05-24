@@ -6,6 +6,7 @@ sed -i "/$last/d" /etc/iked.conf
 rm -rf "/etc/$filename"
 rcctl restart iked
 for file in $(grep $last * | grep hostname | cut -d : -f1); do
+	echo $file
 	interface=$(echo $file | cut -d . -f2)
 	if [ "$interface" == "gre?" ]; then
 		ospfinterface=$interface
