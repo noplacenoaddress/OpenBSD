@@ -209,16 +209,15 @@ function upgrade {
 			configuration "unbound"
 		;;
 		"ssh")
-			echo $app
-			if [[ ! -d "$app/../OpenBSD-private-CA" ]]; then
+			if [[ ! -d "$basedir/../OpenBSD-private-CA" ]]; then
 				echo "OpenBSD-private-CA not found cloning it..."
 				cd  ..
-				git clone https://github.com/redeltaglio/OpenBSD-private-CA.git
+				doas -u taglio git clone https://github.com/redeltaglio/OpenBSD-private-CA.git
 				cd OpenBSD-private-CA
 				sh setup_host
 			else
-				cd "$app/../OpenBSD-private-CA"
-				git pull
+				cd "$basedir/../OpenBSD-private-CA"
+				doas -u taglio git pull
 				sh setup_host
 			fi	
 		;;
