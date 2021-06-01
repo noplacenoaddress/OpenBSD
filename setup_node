@@ -217,6 +217,7 @@ function upgrade {
 				sh setup_host
 			else
 				cd "$app/../OpenBSD-private-CA"
+				git pull
 				sh setup_host
 			fi	
 		;;
