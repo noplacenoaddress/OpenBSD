@@ -209,6 +209,7 @@ function upgrade {
 			configuration "unbound"
 		;;
 		"ssh")
+			echo $app
 			if [[ ! -d "$app/../OpenBSD-private-CA" ]]; then
 				echo "OpenBSD-private-CA not found cloning it..."
 				cd  ..
