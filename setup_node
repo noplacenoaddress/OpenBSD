@@ -163,7 +163,9 @@ function backup {
 			done
 		;;
 		"ssh")
-			configuration "ssh"
+			for file in $(find "/etc/ssh" -type f -maxdepth 2); do
+				cp -p $file "$CURRENTBACKUP/$1/"
+			done
 		;;
 		"ipsec")
 			cp -Rp /etc/iked/  "$CURRENTBACKUP/$1/"
@@ -207,7 +209,16 @@ function upgrade {
 			configuration "unbound"
 		;;
 		"ssh")
-			configuration "ssh"
+			if [[ ! -d "${HOME}/Sources/Git/OpenBSD-private-CA" ]]; then
+				echo "OpenBSD-private-CA not found cloning it..."
+				cd  "${HOME}/Sources/Git/"
+				git clone https://github.com/redeltaglio/OpenBSD-private-CA.git
+				cd OpenBSD-private-CA
+				sh setup_host
+			else
+				cd "${HOME}/Sources/Git/OpenBSD-private-CA"
+				sh setup_host
+			fi
 		;;
 		"ipsec")
 			sha256compare "/etc/iked/ca/ca.crt" "src/etc/iked/ca/ca.crt"
@@ -1415,6 +1426,7 @@ case $1 in
 				upgrade "unbound"
 			;;
 			"ssh_ipsec")
+				backup "ssh"
 				upgrade "ssh"
 			;;
 			"ipsec")
