@@ -69,6 +69,8 @@ The default `root` password in our `install.conf` file is `123456789`.
 
 After the reboot login in the new node and change the password and upgrade the system with `syspatch`.
 
+#### [![OpenBSD MESH IPSec guerrila host](https://img.youtube.com/vi/6-M4IxeSctI/0.jpg)](https://www.youtube.com/watch?v=6-M4IxeSctI "OpenBSD MESH IPSec guerrila host")
+
 #### First steps
 
 First of all I want to underline that we use some values in the `DNS` master zone of the domain where we want to attach our new `VPS` host. *It's not exactly all automatic*.
