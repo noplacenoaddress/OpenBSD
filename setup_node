@@ -362,6 +362,13 @@ function upgrade {
 				pfctl -nf /etc/pf.conf
 				pfctl -f /etc/pf.conf
 			fi
+			sha256compare "/etc/pf.conf.table.nsd" "$tmpdir/pf.conf.table.nsd"
+			if [[ $sha256ctrl -eq 1 ]]; then
+				echo "pf.conf.table.nsd upgrade"
+				install -o root -g wheel -m 0640  "$tmpdir/pf.conf.table.nsd" /etc/
+				pfctl -nf /etc/pf.conf
+				pfctl -f /etc/pf.conf
+			fi
 			for file in $(find /etc -maxdepth 1 -name "iked.conf.*") ; do
 				tagged=$(echo $file | sed "s/\/etc\/iked.conf.//")
 				count=$(dig $tagged A +short @8.8.8.8 | wc -l)
