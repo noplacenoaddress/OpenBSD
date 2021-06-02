@@ -1005,29 +1005,8 @@ function configuration {
 				fi
 			done
 			sleep 31
-			ctrl=
-			while [ -z $ctrl ]
-			do
-				echo 'Have you add the root ssh key to admin user onto mikrotik ?'
-				cat /root/.ssh/id_rsa.pub
-				echo 'Type 1 to continue? '
-				read ctrl
-				if [[ "$ctrl" -eq 1 ]]; then
-					for file in $(find /tmp -type d -maxdepth 1); do
-						filename=$(basename $file)
-						typeset -i dots=$(echo $filename| tr -cd '.' | wc -c)
-						if [[ $dots -eq 2 ]]; then
-							if [[ $(ls $file/ | grep -c "rsc") -eq 2 ]]; then
-								cd $file
-								ls 
-							fi
-						fi
-					done
-				else
-					error_exit "$LINENO: EXIT FROM USER." 
-				fi
-			    
-			done
+			
+			
 			
 		;;	
 		
@@ -1382,7 +1361,9 @@ case $1 in
 				fi
 			done
 		fi
-		
+		sh setup_node -U unbound_ipsec
+		sh setup_node -U ssh_ipsec
+		echo "You successfully installed and connected a new OpenBSD MESH guerrilla host"	
 	;;
 	"-U")
 		if [[ $# -ne 2 ]]; then
