@@ -81,6 +81,10 @@ function pkg {
 			pkg_add colorls nano wget fping iperf uptimed oidentd sqlite3 \
 				nmap tor ipcalc rspamd-- gnupg--
 			;;
+		"smtpd")
+			pkg_add redis rspamd-- opensmtpd-filter-rspamd \
+				dovecot dovecot-pigeonhole
+			;;
 	esac
 }
 
@@ -1032,6 +1036,9 @@ function configuration {
 			sed -i "s/\/PUBV6\//${ipv6egress}/g" /etc/relayd.conf
 			rcctl enable relayd 
 		;;
+		"smtpd")
+			pkg "smtpd"
+		;;
 	esac
 }
 
@@ -1472,6 +1479,13 @@ case $1 in
 				\n"
 			exit 1 
 		fi
+		case $2 in
+			"smtpd")
+				echo "configuring smtpd"
+				configuration "smtpd"
+			;;
+		esac
+			
 	;;
 	*)
 		exit 1
