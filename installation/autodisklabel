@@ -1,8 +1,2 @@
-/               250M
-swap            80M-256M 10%
-/tmp            120M-4G 8%
-/var            80M-4G  13%
-/usr            1.5G-3G 5%
-/usr/local      2G-10G  10%
-/home           1G-*    45%
-
+/               250M-95%
+swap            250M-5%
