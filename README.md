@@ -101,6 +101,10 @@ The string specified by `TXT` values of the two `gre` are integer, the first bet
 
 Remember to update those `TXT` to archive the connection process.
 
+It's important also to configure DNS resolution and also [RDNS](https://en.wikipedia.org/wiki/Reverse_DNS_lookup) of the assigned IPv4 address in our master zone. Depending on the provider adding the reverse dns resolution host it could be writing to the support office or simply use a web mask.
+
+[![OpenBSD MESH IPSec guerrila host](https://asciinema.org/a/417897.png)](https://asciinema.org/a/417897)
+
 #### Login and start the connection process
 
 Install the git package:
