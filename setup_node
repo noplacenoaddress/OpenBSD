@@ -131,6 +131,7 @@ function backup {
 	mkdir -p "$CURRENTBACKUP/$1/"
 	case $1 in
 		"static")
+			
 			cp -p /etc/{hostname.$egressinterface,mygate} "$CURRENTBACKUP/$1/"
 		;;
 		"basic")
@@ -470,9 +471,11 @@ function upgrade {
 		;;
 		"remoteinstall")
 			echo "connecting to remote OpenBSD MESH hosts..."
+			cat /dev/null > /etc/ssh/ssh_known_hosts
 			for file in $(find /etc -maxdepth 1 -name "iked.conf.*" -type f); do
 				if [[ $(grep -c "brainpool512" $file) -eq 1 ]]; then
 					remotehost=$(echo $file | sed "s/\/etc\/iked.conf.//")
+					ssh-keyscan -t ed25519 -p 31137 $remotehost >> /etc/ssh/ssh_known_hosts
 					ssh -p 31137 $remotehost -v
 				fi
 			done

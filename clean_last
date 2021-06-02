@@ -27,10 +27,11 @@ if [[ $uid -ne 0 ]]; then
 	print $0 "you've got to run $0 as UID=0 \n"
 	exit 1
 fi
+backup "etc"
 last=$(basename $(cat /etc/iked.conf | grep "iked.conf." | tail -n 1 | awk '{print $2}' | sed 's/"//g' | sed 's/iked.conf.//'))
 filename=$(find /etc -name "*$last" -maxdepth 1 -type f)
 sed -i "/$last/d" /etc/iked.conf
-rm -rf "$filename"
+/bin/rm -r "$filename"
 rcctl restart iked
 for file in $(grep "$last" /etc/* | grep hostname | cut -d : -f1); do
 	interface=$(echo $file | cut -d . -f2)
@@ -38,7 +39,7 @@ for file in $(grep "$last" /etc/* | grep hostname | cut -d : -f1); do
 		ospfinterface=$interface
 	fi
 	ifconfig $interface destroy
-	rm -rf $file
+	/bin/rm -r $file
 done
 sed -i "/interface $ospfinterface/,/}/d" /etc/ospfd.conf
 rcctl restart ospfd
