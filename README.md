@@ -26,6 +26,7 @@ Some that I use or I've used:
 - [AlphaVPS - Cheap and Reliable Hosting and Servers](https://alphavps.com/)
 - [VPS Hosting in Europe and USA. Join VPS2DAY now!](https://www.vps2day.com/)
 - [Liveinhost Web Services &#8211; The Best Web Hosting | Fast Professional Website Hosting Services](https://www.liveinhost.com/)
+- [Scaleway Dedibox | The Reference for Dedicated Servers  | Scaleway](https://www.scaleway.com/en/dedibox/)
 
 Try to understand that we've got to build a network of VPS interconnected site to site between everyone with IPsec and every host is plug and play, I mean that we can add or remove VPS just running the software in this repository. First of all it is important to understand that we can use this design in two different application, one will use registered domains the other will use free dns services. Goal for everyone is security trough simplicity, open source design and the correct use and implementation of robust compliance protocols and daemons. The system operative is [OpenBSD](https://www.openbsd.org/) but later we will use also [Alpine Linux](https://alpinelinux.org/). At that point the goal will be interoperability and the search of near perfect TCP/IP throughput. Another goal will be the use of ARM64 mobile devices also based up Alpine, my favorite one is:
 
@@ -42,8 +43,8 @@ Many times we've got to resolve problems like the one where OpenBSD isn't listed
 First of all install a classic Linux, like Debian for example. Next ssh to the new machine with the credentials provided. Next download the latest stable `miniroot` image into the root and write it to the start of our virtual disk, in linux normally  it will be `vda`.
 
 ```sh
-# wget https://cdn.openbsd.org/pub/OpenBSD/6.8/amd64/miniroot68.img
-# dd if=miniroot68.img of=/dev/vda bs=4M
+# wget https://cdn.openbsd.org/pub/OpenBSD/6.9/amd64/miniroot69.img
+# dd if=miniroot69.img of=/dev/vda bs=4M
 ```
 
  After the successful write to the virtual disk we've got to reboot the machine but we will do it in a particular way using the `proc` filesystem:
@@ -66,7 +67,35 @@ After the reboot login in the new node and change the password and upgrade the s
 
 #### First steps
 
-#### Next that we will have a running fresh and patched OpenBSD system let's start to configure our guerrilla MESH node. Install the git package:
+First of all I want to underline that we use some values in the `DNS` master zone of the domain where we want to attach our new `VPS` host. *It's not exactly all automatic*.
+
+``` shell
+root@ganesha:/var/nsd/zones/master# cat telecomlobby.com.zone | grep ipsec && cat telecomlobby.com.zone | grep gre
+ipsec20591		IN TXT "uk:ganesha;us:saraswati;jp:shiva;es:indra;fr:uma;bg:neo;"
+gre7058			IN TXT "216"
+gre18994		IN TXT "3"
+root@ganesha:/var/nsd/zones/master#
+```
+
+We use the [TXT record](https://en.wikipedia.org/wiki/TXT_record) to add some more information to the process of automatically add the new host to our MESH network. Hostname are:
+
+```shell
+root@ganesha:/var/nsd/zones/master# echo ipsec${RANDOM} && echo gre${RANDOM} && echo gre${RANDOM}
+ipsec6150
+gre9262
+gre1331
+root@ganesha:/var/nsd/zones/master# 
+```
+
+```$RANDOM``` is a special variable in `ksh` used to generate random numbers between 0 and 32767.
+
+The string specified by `TXT` value of `ipsec` is `;` separated values and contain [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) [country codes](https://en.wikipedia.org/wiki/Country_code) followed by `:` and the name of the host machine.
+
+The string specified by `TXT` values of the two `gre` are integer, the first between  0 and 255 indicating last /30 network allocated by a `gre` point to point and the second is a counter indicating the number of MESH guerrilla OpenBSD hosts.
+
+Remember to update those TXT to archive the connection process.
+
+Next that we will have a running fresh and patched OpenBSD system let's start to configure our guerrilla MESH node. Install the git package:
 
 ```shell
 neo# pkg_add git
