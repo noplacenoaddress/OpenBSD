@@ -1,7 +1,7 @@
 # /sbin/pfctl -t nsd -T kill -f /etc/pf.conf.table.nsd
 # /sbin/pfctl -t nsd -T add -f /etc/pf.conf.table.nsd
 # /sbin/pfctl -t nsd -T show
-#
+
 194.69.254.2
 108.61.224.67 
 116.203.6.3 
