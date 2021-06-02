@@ -8,11 +8,11 @@ It will replicate all the services on the network, and it can be deleted without
 
 Especially focused above security in every ISO/OSI pile level. 
 
-Applications are multiples, from bypass the European ECHELON, an enormous sniffer from some ISP, or the great firewall in China, to create very secure not logged chat, to dynamic traditional services that will move from an host to another in a total transparent mode to the final user.
+Applications are multiples, from bypass the European [ECHELON](https://en.wikipedia.org/wiki/ECHELON), an enormous sniffer from some ISP, or the great firewall in China, to create very secure not logged chat, to dynamic traditional services that will move from an host to another in a total transparent mode to the final user.
 
 I'm an addicted of privacy and security and I'm very tired about the modern slavery network transmitted by weapons from the European elite. 
 
-**Vatican and Aristocracy are totally guilty about the recent destroy of democracy.**
+*Vatican and Aristocracy are totally guilty about the recent destroy of democracy.*
 
 #### VPS election
 
@@ -97,7 +97,7 @@ The string specified by `TXT` value of `ipsec` is `;` separated values and conta
 
 The string specified by `TXT` values of the two `gre` are integer, the first between  0 and 255 indicating last /30 network allocated by a `gre` point to point and the second is a counter indicating the number of MESH guerrilla OpenBSD hosts.
 
-Remember to update those TXT to archive the connection process.
+Remember to update those `TXT` to archive the connection process.
 
 #### Login and start the connection process
 
