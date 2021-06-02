@@ -51,6 +51,7 @@ if [[ $# -eq 0 ]]; then
 			\n \
 			\n-I  -> install \
 			\n-U  -> upgrade \
+			\n-D  -> daemons \
 			\n"
 	
 	exit 1
@@ -1445,6 +1446,18 @@ case $1 in
 				
 			;;
 		esac
+	;;
+	"-D")
+		if [[ $# -ne 2 ]]; then
+			print $0 "DAEMONS option must be followed by: \
+				\n \
+				\nnsd \
+				\nhttpd \
+				\nsmtpd  \
+				\nimapd   \
+				\n"
+			exit 1 
+		fi
 	;;
 	*)
 		exit 1
