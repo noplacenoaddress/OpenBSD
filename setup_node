@@ -4,10 +4,17 @@
 #
 #unbound: https://blog.c6h12o6.org/post/unbound-dnssec-dns-over-tls/
 #sshd: https:/github.com/vedetta-com/vedetta/blob/master/src/usr/local/share/doc/vedetta/OpenSSH_Principals.md	
+#smptd: https://github.com/vedetta-com/caesonia
+#smtpd: https://www.vultr.com/docs/an-openbsd-e-mail-server-using-opensmtpd-dovecot-rspamd-and-rainloop
+#smtpd: https://prefetch.eu/blog/2020/email-server/
+#smtpd: https://poolp.org/posts/2019-09-14/setting-up-a-mail-server-with-opensmtpd-dovecot-and-rspamd/
+#smtpd: https://unixsheikh.com/tutorials/arch-linux-mail-server-tutorial-part-2-opensmtpd-dovecot-dkimproxy-and-lets-encrypt.html
+#smtpd: https://wiki.archlinux.org/title/OpenSMTPD
+#smtpd: https://git.sr.ht/~guidocella/personal-email-server-guide
 
 #####
 #
-#TODO 1) function sha256compare () GLOBAL VARIABLE x RETURN
+#TODO 
 #
 #
 #
