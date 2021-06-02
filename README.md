@@ -14,7 +14,7 @@ I'm an addicted of privacy and security and I'm very tired about the modern slav
 
 **Vatican and Aristocracy are totally guilty about the recent destroy of democracy.**
 
-### Install procedure
+#### VPS election
 
 First of all you've got to rent a VPS in one service provider, there are a lot on Internet a great resource to find the correct one is this website:
 
@@ -54,7 +54,9 @@ First of all install a classic Linux, like Debian for example. Next ssh to the n
 # echo b > /proc/sysrq-trigger 
 ```
 
-Next reopen the KVM web console and the installation process of OpenBSD will start. Interrupt it choosing for the (S)hell option and:
+#### Automatic system installation
+
+Open the `KVM` web console and the installation process of OpenBSD will start. Interrupt it choosing for the (S)hell option and:
 
 ```shell
 # dhclient vio0
@@ -62,6 +64,8 @@ Next reopen the KVM web console and the installation process of OpenBSD will sta
 # install -af /tmp/install.conf
 # reboot
 ```
+
+The default `root` password in our `install.conf` file is `123456789`.
 
 After the reboot login in the new node and change the password and upgrade the system with `syspatch`.
 
@@ -95,7 +99,9 @@ The string specified by `TXT` values of the two `gre` are integer, the first bet
 
 Remember to update those TXT to archive the connection process.
 
-Next that we will have a running fresh and patched OpenBSD system let's start to configure our guerrilla MESH node. Install the git package:
+#### Login and start the connection process
+
+Install the git package:
 
 ```shell
 neo# pkg_add git
