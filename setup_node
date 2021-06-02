@@ -207,7 +207,9 @@ function backup {
 function upgrade {
 	case $1 in
 		"unbound")
-			configuration "unbound"
+			install -o _unbound -g _unbound -m 0750  src/var/unbound/etc/unbound.conf /var/unbound/etc/unbound.conf
+			install -o _unbound -g _unbound -m 0750  src/var/unbound/etc/stub-zone.conf /var/unbound/etc/stub-zone.conf
+			rcctl restart unbound ||  error_exit "$LINENO: ERROR: UNBOUND failed."
 		;;
 		"ssh")
 			if [[ ! -d "$basedir/../OpenBSD-private-CA" ]]; then
