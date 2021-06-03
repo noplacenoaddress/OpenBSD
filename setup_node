@@ -520,7 +520,7 @@ function upgrade {
 			configuration "relayd"
 		;;
 		"newhost")
-			sh setup_host -U pf
+			sh "$basedir/$app" -U pf
 			install -o root -g wheel -m 0640 src/etc/ssh/remote_install/authorized_keys /etc/ssh/remote_install/
 		;;
 	esac
