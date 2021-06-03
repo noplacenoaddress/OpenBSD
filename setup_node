@@ -519,6 +519,10 @@ function upgrade {
 		"relayd")
 			configuration "relayd"
 		;;
+		"newhost")
+			sh setup_host -U pf
+			install -o root -g wheel -m 0640 src/etc/ssh/remote_install/authorized_keys /etc/ssh/remote_install/
+		;;
 	esac
 }
 function configuration {
@@ -1407,6 +1411,7 @@ case $1 in
 				\nremote   \
 				\nremoteinstall \
 				\nrelayd   \
+				\nnewhost \
 				\n"
 			exit 1 
 		fi
@@ -1463,6 +1468,9 @@ case $1 in
 			;;
 			"relayd")
 				upgrade "relayd"
+			;;
+			"newhost")
+				upgrade "newhost"
 			;;
 			"all")
 				sh setup_node -I
