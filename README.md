@@ -153,9 +153,24 @@ In my network layout I've got a [Mikrotik](https://mikrotik.com/) `VPS` that adm
 
 To administrate the OpenBSD I've done another repository that you can find here:
 
-- [OpenBSD ssh and ssl CA server](https://github.com/redeltaglio/OpenBSD) 
+- [OpenBSD ssh and ssl CA server](https://github.com/redeltaglio/OpenBSD-private-CA)
 
 [![Mikrotik CA certificate](https://img.youtube.com/vi/A7O_Pe91a6Y/0.jpg)](https://youtu.be/A7O_Pe91a6Y "Mikrotik CA certificate")
+
+Download the [p12](https://en.wikipedia.org/wiki/PKCS_12) combined certificate and private key and upload into the new host `/tmp` directory.
+
+``` shell
+sftp> get cert_export_de.telecomlobby.com.p12
+Fetching /cert_export_de.telecomlobby.com.p12 to cert_export_de.telecomlobby.com.p12
+/cert_export_de.telecomlobby.c 100% 3880    74.6KB/s   00:00    
+sftp> ^D
+riccardo@trimurti:~/Work/redama$ mv cert_export_de.telecomlobby.com.p12 de.telecomlobby.com.p12
+riccardo@trimurti:~/Work/redama/durpa$ scp de.telecomlobby.com.p12 taglio@de.telecomlobby.com:/tmp
+de.telecomlobby.com.p12        100% 3880   106.4KB/s   00:00    
+riccardo@trimurti:~/Work/redama/durpa$ 
+```
+
+The p12 file have to be protected by the password `123456789`.
 
 #### Login and start the connection process
 
