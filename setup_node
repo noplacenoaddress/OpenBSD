@@ -1389,8 +1389,8 @@ case $1 in
 				fi
 			done
 		fi
-		sh setup_node -U unbound_ipsec
-		sh setup_node -U ssh_ipsec
+		sh "$basedir/$app" -U unbound_ipsec
+		sh "$basedir/$app" -U ssh_ipsec
 		echo "You successfully installed and connected a new OpenBSD MESH guerrilla host"	
 	;;
 	"-U")
