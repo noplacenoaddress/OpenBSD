@@ -145,15 +145,11 @@ Next update the repository and then every host.
  root@ganesha:/home/taglio/Sources/Git/OpenBSD# 
  ```
 
-#### Update the CA server 
+#### Update the IPSec CA server 
 
-Now start to configure the `CA server` about the `IPsec` public and private key, the `SSL` private [MAN](https://en.wikipedia.org/wiki/Metropolitan_area_network) host certificate and the ssh CA. 
+Now start to configure the `CA server` about the `IPsec` public and private key.
 
-In my network layout I've got a [Mikrotik](https://mikrotik.com/) `VPS` that administrate the `IPsec` certificate repositories and an `OpenBSD` physic machine.
-
-To administrate the OpenBSD I've done another repository that you can find here:
-
-- [OpenBSD ssh and ssl CA server](https://github.com/redeltaglio/OpenBSD-private-CA)
+In my network layout I've got a [Mikrotik](https://mikrotik.com/) `VPS` that administrate the `IPsec` certificate repositories.
 
 [![Mikrotik CA certificate](https://img.youtube.com/vi/A7O_Pe91a6Y/0.jpg)](https://youtu.be/A7O_Pe91a6Y "Mikrotik CA certificate")
 
