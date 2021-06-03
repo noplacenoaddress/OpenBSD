@@ -65,7 +65,11 @@ Open the `KVM` web console and the installation process of OpenBSD will start. I
 # reboot
 ```
 
-The default `root` password in our `install.conf` file is `123456789`.
+The default `root` password in our `install.conf` file is `123456789`. But it is encrypted as `$2b$10$4tPKeRmxVyffVkrQMve70.CiPmE28khH9UXiuSYpzAKbZrOfQq0Pm`.
+
+The default uid 1000 user is `taglio`, my nickname and unix user. You can update `installation/install-vps` file with your. I also specify my `ed25519` ssh key that I've got generated with s`sh-keygen -t ed25519 -C "taglio@telecom.lobby"`as you can appreciate in the configuration file:
+
+`Public ssh key for user = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKG4yMhKX37SXV8LGDuVe4r1PBSS5HOWb6jFpNiG3cvW taglio@telecom.lobby`
 
 After the reboot login in the new node and change the password and upgrade the system with `syspatch`.
 
