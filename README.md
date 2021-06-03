@@ -139,6 +139,12 @@ riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$
 
 Next update the repository and then every host.
 
+ ``` shell
+ root@ganesha:/home/taglio/Sources/Git/OpenBSD# sh setup_node -U newhost     
+ pf.conf.table.ipsec upgrade
+ root@ganesha:/home/taglio/Sources/Git/OpenBSD# 
+ ```
+
 #### Login and start the connection process
 
 Install the git package:
