@@ -67,9 +67,11 @@ Open the `KVM` web console and the installation process of OpenBSD will start. I
 
 The default `root` password in our `install.conf` file is `123456789`. But it is encrypted as `$2b$10$4tPKeRmxVyffVkrQMve70.CiPmE28khH9UXiuSYpzAKbZrOfQq0Pm`.
 
-The default uid 1000 user is `taglio`, my nickname and unix user. You can update `installation/install-vps` file with your. I also specify my `ed25519` ssh key that I've got generated with s`sh-keygen -t ed25519 -C "taglio@telecom.lobby"`as you can appreciate in the configuration file:
+The default `uid 1000` user is `taglio`, my nickname and unix user. You can update `installation/install-vps` file with your. I also specify my `ed25519` ssh key that I've got generated with `ssh-keygen -t ed25519 -C "taglio@telecom.lobby"`as you can appreciate in the configuration file:
 
 `Public ssh key for user = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKG4yMhKX37SXV8LGDuVe4r1PBSS5HOWb6jFpNiG3cvW taglio@telecom.lobby`
+
+*Please update this file with your specifications forking my repository*.
 
 After the reboot login in the new node and change the password and upgrade the system with `syspatch`.
 
@@ -108,6 +110,34 @@ Remember to update those `TXT` to archive the connection process.
 It's important also to configure DNS resolution and also [RDNS](https://en.wikipedia.org/wiki/Reverse_DNS_lookup) of the assigned IPv4 address in our master zone. Depending on the provider adding the reverse dns resolution host it could be writing to the support office or simply use a web mask.
 
 [![OpenBSD MESH IPSec guerrila host](https://asciinema.org/a/417997.png)](https://asciinema.org/a/417997)
+
+Next we've got to update a couple of files in the repository and upgrade the configuration in the others OpenBSD hosts.
+
+The first value to update is the IPv4 of the new machine:
+
+```shell
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ dig de.telecomlobby.com A +short
+45.63.116.141
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ echo 45.63.116.141/32 >> src/etc/pf.conf.table.ipsec 
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ 
+
+```
+
+Next the ssh `ed25519` key. That is [EdDSA](https://en.wikipedia.org/wiki/EdDSA) in [public key cryptography](https://en.wikipedia.org/wiki/Public-key_cryptography). 
+
+``` shell
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ssh-keyscan -t ed25519 de.telecomlobby.com
+# de.telecomlobby.com:22 SSH-2.0-OpenSSH_8.6
+de.telecomlobby.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHVSSfUYyyorE9tTlaP/7drTmxe1NznS7EDHDzd09wCf
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ed25519=$(ssh-keyscan -t ed25519 de.telecomlobby.com | sed 's/de.telecomlobby.com//g')
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ed25519="${ed25519} root@durpa.telecom.lobby"
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ echo $ed25519
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHVSSfUYyyorE9tTlaP/7drTmxe1NznS7EDHDzd09wCf root@durpa.telecom.lobby
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ echo $ed25519 >> src/etc/ssh/remote_install/authorized_keys 
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$
+```
+
+Next update the repository and then every host.
 
 #### Login and start the connection process
 
