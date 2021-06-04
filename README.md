@@ -54,7 +54,7 @@ First of all install a classic Linux, like Debian for example. Next ssh to the n
 # echo b > /proc/sysrq-trigger 
 ```
 
-#### Automatic system installation
+#### Semi automatic system installation
 
 Open the `KVM` web console and the installation process of OpenBSD will start. Interrupt it choosing for the (S)hell option and:
 
@@ -111,17 +111,73 @@ It's important also to configure DNS resolution and also [RDNS](https://en.wikip
 
 [![OpenBSD MESH IPSec guerrila host](https://asciinema.org/a/417997.png)](https://asciinema.org/a/417997)
 
-Next we've got to update a couple of files in the repository and upgrade the configuration in the others OpenBSD hosts.
+Next we've got to update the master zone of the principle public domain, in my case `telecomlobby.com`.
 
 The first value to update is the IPv4 of the new machine:
 
 ```shell
 riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ dig de.telecomlobby.com A +short
 45.63.116.141
-riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ echo 45.63.116.141/32 >> src/etc/pf.conf.table.ipsec 
-riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ 
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ssh ganesha.telecom.lobby
+Host key fingerprint is SHA256:mZiIJWncSs+jJUjAho8NNQeO1wSHKVpFORP5wZdDaNo
++--[ED25519 256]--+
+|+.=BB= o..       |
+|=*+O= = +        |
+|+OO +B o .       |
+|+=oB..Eo o       |
+|. + * o S        |
+|   + .           |
+|  .              |
+|                 |
+|                 |
++----[SHA256]-----+
+OpenBSD 6.9 (GENERIC) #2: Sat May 22 12:49:54 MDT 2021
+    root@syspatch-69-amd64.openbsd.org:/usr/src/sys/arch/amd64/compile/GENERIC
+real mem = 1056813056 (1007MB)
+avail mem = 1009553408 (962MB)
+10:49AM  up 2 days, 23:46, 2 users, load averages: 0.01, 0.02, 0.00
+ID              Pri State        DeadTime Address         Iface     Uptime
+192.168.13.59   1   FULL/P2P     00:00:34 10.10.10.201    gre4      02:55:38
+192.168.13.81   1   FULL/P2P     00:00:30 10.10.10.217    gre3      06:51:01
+192.168.13.1    1   FULL/P2P     00:00:36 10.10.10.225    gre2      06:45:49
+192.168.13.34   1   FULL/P2P     00:00:33 10.10.10.230    gre1      06:51:03
+192.168.13.33   1   FULL/P2P     00:00:36 10.10.10.250    gre0      1d06h55m
+Go 'way!  You're bothering me!
+ 
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ doas su
+doas (taglio@ganesha.telecom.lobby) password: 
+root@ganesha:/home/taglio# cd /var/nsd/zones/master
+root@ganesha:/var/nsd/zones/master# cat telecomlobby.com.zone | grep vpnc 
+vpnc			IN A 45.32.144.15
+vpnc			IN A 78.141.201.0
+vpnc			IN A 155.138.247.27
+vpnc			IN A 139.180.206.19
+vpncN			IN A 94.72.143.163
+vpnc			IN TXT "RT-01.cat.telecomlobby.com"
+root@ganesha:/var/nsd/zones/master# 
 
 ```
+
+As you can see theres some values about the `vpnc` and `vpncN` host:
+
+- `vpnc IN A` in the list of public IPv4 that are connected through IPsec in our MESH network.
+- `vpncN IN A` in the new host to add to.
+
+Upgrade the configuration to reflect to new one and test it:
+
+``` shell
+riccardo@trimurti:~$ dig @8.8.8.8 vpnc.telecomlobby.com A +short
+45.32.144.15
+78.141.201.0
+155.138.247.27
+139.180.206.19
+94.72.143.163
+riccardo@trimurti:~$ dig @8.8.8.8 vpncN.telecomlobby.com A +short
+45.63.116.141
+riccardo@trimurti:~$ 
+```
+
+
 
 #### Update the IPSec CA server 
 
