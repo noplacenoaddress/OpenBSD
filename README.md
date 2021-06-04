@@ -123,28 +123,6 @@ riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$
 
 ```
 
-Next the ssh `ed25519` key. That is [EdDSA](https://en.wikipedia.org/wiki/EdDSA) in [public key cryptography](https://en.wikipedia.org/wiki/Public-key_cryptography). 
-
-``` shell
-riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ssh-keyscan -t ed25519 de.telecomlobby.com
-# de.telecomlobby.com:22 SSH-2.0-OpenSSH_8.6
-de.telecomlobby.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHVSSfUYyyorE9tTlaP/7drTmxe1NznS7EDHDzd09wCf
-riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ed25519=$(ssh-keyscan -t ed25519 de.telecomlobby.com | sed 's/de.telecomlobby.com//g')
-riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ed25519="${ed25519} root@durpa.telecom.lobby"
-riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ echo $ed25519
-ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHVSSfUYyyorE9tTlaP/7drTmxe1NznS7EDHDzd09wCf root@durpa.telecom.lobby
-riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ echo $ed25519 >> src/etc/ssh/remote_install/authorized_keys 
-riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$
-```
-
-Next update the repository and then every host.
-
- ``` shell
- root@ganesha:/home/taglio/Sources/Git/OpenBSD# sh setup_node -U newhost     
- pf.conf.table.ipsec upgrade
- root@ganesha:/home/taglio/Sources/Git/OpenBSD# 
- ```
-
 #### Update the IPSec CA server 
 
 Now start to configure the `CA server` about the `IPsec` public and private key.
@@ -180,15 +158,42 @@ neo$ git clone https://github.com/noplacenoaddress/OpenBSD.git
 
 Next let's start to configure the system with our script `setup_node`, you've got to go ahead to every point pressing `1` or to type different variables:
 
+- the type of IPv6 address:
+  - `static`: 
+    - [IPv6 address](https://en.wikipedia.org/wiki/IPv6) without prefixlen.
+    - The [prefixlen](https://www.ciscopress.com/articles/article.asp?p=2803866&seqNum=2).
+    - The [IPv6 default route](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/iproute_pi/configuration/xe-16-10/iri-xe-16-10-book/ip6-route-static-xe.pdf).
+  - `dynamic`, using [slaacd (8)](https://www.openbsd.org/papers/florian_slaacd_bsdcan2018.pdf)
 - `hostname`, the name of the machine.
+- `landomainname`, the interior domain name that in my case is `telecom.lobby`
 - `routerid`, the OSPFD router id and the IP of the `vether0` interface.
-- `publichost`, the DNS of the public ip of the `vio0` interface.
 
 ```shell
 root@neo:/home/taglio/Sources/Git/OpenBSD# sh setup_node                                                                                                                                                                                                  
 changing installurl
 Go ahead type 1 
 ```
+
+[![OpenBSD MESH IPSec guerrila host](https://asciinema.org/a/418291.png)](https://asciinema.org/a/418291)
+
+After some points the program give us the root ssh `ed25519` key of the new host. That is [EdDSA](https://en.wikipedia.org/wiki/EdDSA) in [public key cryptography](https://en.wikipedia.org/wiki/Public-key_cryptography).  Update the repository:
+
+``` shell
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHfCxPKwUqEG9JaEaK6uqFDfDMFYFTblLEWPekGh8CAn root@durpa.telecom.lobby" >> src/etc/ssh/remote_install/authorized_keys 
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$
+```
+
+Use the script `git_openbsd.sh` using values depending in your forked repository to update the git.
+
+Next update every host using `git pull` and:
+
+ ``` shell
+root@ganesha:/home/taglio/Sources/Git/OpenBSD# sh setup_node -U newhost     
+pf.conf.table.ipsec upgrade
+root@ganesha:/home/taglio/Sources/Git/OpenBSD# 
+ ```
+
+#### 
 
 #### Remote upgrade
 

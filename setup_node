@@ -636,6 +636,7 @@ function configuration {
 			cleanold "/root/Bin/"
 		;;
 		"unbound")
+			echo "ok"
 			pidof_unbound=$(pidof "unbound")
 			if [[ -z $pidof_unbound ]]; then
 				rcctl enable unbound
