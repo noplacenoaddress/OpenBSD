@@ -1,6 +1,6 @@
 if [ -x /usr/local/sbin/oidentd ]; then
         echo -n ' oidentd';	/usr/local/sbin/oidentd -m 
 fi
-doas -u _iperfd /usr/local/bin/iperf \
-	-s -B /ROUTERID/ \
-	-D -N
+#doas -u _iperfd /usr/local/bin/iperf \
+#	-s -B /ROUTERID/ \
+#	-D -N
