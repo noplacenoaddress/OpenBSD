@@ -32,6 +32,9 @@ case $3 in
 			ssh $vpnc_host.$localdomainname git -C "$proghome" pull
 		done	
 	;;
+	"-N")
+		
+	;;
 	*)
 	;;
 esac
