@@ -235,13 +235,14 @@ Go ahead type 1
 After some points the program give us the root ssh `ed25519` key of the new host. That is [EdDSA](https://en.wikipedia.org/wiki/EdDSA) in [public key cryptography](https://en.wikipedia.org/wiki/Public-key_cryptography).  Update the repository:
 
 ``` shell
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ sed -i '/durpa.telecom.lobby/d' src/etc/ssh/remote_install/authorized_keys 
 riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHfCxPKwUqEG9JaEaK6uqFDfDMFYFTblLEWPekGh8CAn root@durpa.telecom.lobby" >> src/etc/ssh/remote_install/authorized_keys 
 riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$
 ```
 
 Use the script `git_openbsd.sh` using values depending in your forked repository to update the git.
 
-Next update every host using `git pull` and:
+Next update every host using `git pull` using the `console` script and launch the `newhost` option using the same script:
 
  ``` shell
 root@ganesha:/home/taglio/Sources/Git/OpenBSD# sh setup_node -U newhost     
