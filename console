@@ -1,0 +1,32 @@
+#!/usr/bin/bash
+
+#GLOBAL VAR
+
+uid=$(id -u)
+
+if [[ $uid -ne 1000 ]]; then
+	echo -e $0 "you've got to run $0 as UID=1000 \n"
+	exit 1
+fi
+
+if [[ $# -eq 0 ]]; then
+	echo -e $0 "have to be used with the following options \
+			\n-I  -> local domain name [x]\
+			\n-N  -> newhost [o]\
+			\n"
+	
+	exit 1
+fi
+
+localdomainname=$2
+
+
+case $3 in
+	"-N")
+		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+			
+		done	
+	;;
+	*)
+	;;
+esac
