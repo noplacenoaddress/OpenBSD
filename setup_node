@@ -3,7 +3,7 @@
 #	$Telecomlobby: setup_node,v 0.1 11/3/2021 21:01:04 taglio$
 #
 #unbound: https://blog.c6h12o6.org/post/unbound-dnssec-dns-over-tls/
-#sshd: https:/github.com/vedetta-com/vedetta/blob/master/src/usr/local/share/doc/vedetta/OpenSSH_Principals.md	
+#sshd: https:/github.com/vedetta-com/vedetta/blob/master/$basedir/src/usr/local/share/doc/vedetta/OpenSSH_Principals.md	
 #smptd: https://github.com/vedetta-com/caesonia
 #smtpd: https://www.vultr.com/docs/an-openbsd-e-mail-server-using-opensmtpd-dovecot-rspamd-and-rainloop
 #smtpd: https://prefetch.eu/blog/2020/email-server/
@@ -219,8 +219,8 @@ function backup {
 function upgrade {
 	case $1 in
 		"unbound")
-			install -o _unbound -g _unbound -m 0750  src/var/unbound/etc/unbound.conf /var/unbound/etc/unbound.conf
-			install -o _unbound -g _unbound -m 0750  src/var/unbound/etc/stub-zone.conf /var/unbound/etc/stub-zone.conf
+			install -o _unbound -g _unbound -m 0750  $basedir/src/var/unbound/etc/unbound.conf /var/unbound/etc/unbound.conf
+			install -o _unbound -g _unbound -m 0750  $basedir/src/var/unbound/etc/stub-zone.conf /var/unbound/etc/stub-zone.conf
 			rcctl restart unbound ||  error_exit "$LINENO: ERROR: UNBOUND failed."
 		;;
 		"ssh")
@@ -237,10 +237,10 @@ function upgrade {
 			fi	
 		;;
 		"ipsec")
-			sha256compare "/etc/iked/ca/ca.crt" "src/etc/iked/ca/ca.crt"
+			sha256compare "/etc/iked/ca/ca.crt" "$basedir/src/etc/iked/ca/ca.crt"
 			if [[ $sha256ctrl -eq 1 ]]; then
 				echo "ca.crt upgrade"
-				install -o root -g wheel -m 0644  src/etc/ca/ca.crt /etc/iked/ca/
+				install -o root -g wheel -m 0644  $basedir/src/etc/ca/ca.crt /etc/iked/ca/
 			fi
 			tmpdir=$(mktemp -d)
 			openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -nocerts -passin pass:123456789 -passout pass:123456789 -out "$tmpdir/local.key"
@@ -254,7 +254,7 @@ function upgrade {
 				openssl x509 -pubkey -noout -passin pass:123456789 -in "/etc/iked/certs/$publichost.crt"  > /etc/iked/local.pub
 			fi
 			rm -rf $tmpdir
-			for file in $(find src/etc/iked/pubkeys/ufqdn/ -name "*@*"); do
+			for file in $(find $basedir/src/etc/iked/pubkeys/ufqdn/ -name "*@*"); do
 				filename=$(basename $file)
 				sha256compare "$file" "/etc/iked/pubkeys/ufqdn/$filename"
 				if [[ $sha256ctrl -eq 1 ]]; then
@@ -264,7 +264,7 @@ function upgrade {
 			done
 			rm -rf $tmpdir
 			tmpdir=$(mktemp -d)
-			cp  src/etc/iked.conf $tmpdir
+			cp  $basedir/src/etc/iked.conf $tmpdir
 			if [[ $(grep -c hostname /tmp/config.ini) -eq 1 ]]; then
 				srcid=$(cat /tmp/config.ini  | grep hostname |cut -d \# -f2)
 			else 
@@ -278,11 +278,11 @@ function upgrade {
 				if [[ -e "/etc/iked.conf.$vpnc_host" ]]; then
 					echo include \"/etc/iked.conf.$vpnc_host\" >> "$tmpdir/iked.conf"
 					if grep -q "ecp384" "/etc/iked.conf.$vpnc_host"; then
-						cp src/etc/iked.conf.mikrotik "$tmpdir/iked.conf.$vpnc_host"
+						cp $basedir/src/etc/iked.conf.mikrotik "$tmpdir/iked.conf.$vpnc_host"
 					elif grep -q "ecp256" "/etc/iked.conf.$vpnc_host"; then
-						cp src/etc/iked.conf.edgeos "$tmpdir/iked.conf.$vpnc_host"
+						cp $basedir/src/etc/iked.conf.edgeos "$tmpdir/iked.conf.$vpnc_host"
 					else
-						cp src/etc/iked.conf.openbsd "$tmpdir/iked.conf.$vpnc_host"
+						cp $basedir/src/etc/iked.conf.openbsd "$tmpdir/iked.conf.$vpnc_host"
 					fi
 					sed -i "s/\/POP\//$vpnc_host/g" "$tmpdir/iked.conf.$vpnc_host"
 					sed -i "s/\/POPIP\//$vpnc_ip/g" "$tmpdir/iked.conf.$vpnc_host"
@@ -306,7 +306,7 @@ function upgrade {
 					echo include \"/etc/iked.conf.${vpnc_host}\" >> "$tmpdir/iked.conf"
 				fi
 				vpnc_ip=$(dig $vpnc_host A +short @8.8.8.8 | tail -n 1)
-				cp src/etc/iked.conf.edgeos "$tmpdir/iked.conf.$vpnc_host"
+				cp $basedir/src/etc/iked.conf.edgeos "$tmpdir/iked.conf.$vpnc_host"
 				sed -i "s/\/POP\//$vpnc_host/g" "$tmpdir/iked.conf.$vpnc_host"
 				sed -i "s/\/POPIP\//$vpnc_ip/g" "$tmpdir/iked.conf.$vpnc_host"
 				type=$(cat "/etc/iked.conf.$vpnc_host" | head -n 1 | awk '{print $3}')
@@ -344,7 +344,7 @@ function upgrade {
 		;;
 		"pf")
 			tmpdir=$(mktemp -d)
-			for file in $(find src/etc/ -name "pf.*" -type f -maxdepth 1); do 
+			for file in $(find $basedir/src/etc/ -name "pf.*" -type f -maxdepth 1); do 
 				cp $file $tmpdir
 			done
 			for vpnc_ip in $(dig vpnc.$domainname A +short @8.8.8.8); do
@@ -383,8 +383,8 @@ function upgrade {
 				fi
 				sed -i "s/\/TAGGED\//${tagged}/g" $tmpdir/pf.conf.macro.enc.{in,out}	
 				sed -i "s/\/IPTAGGED\//${iptagged}/g" $tmpdir/pf.conf.macro.enc.{in,out}
-				cat src/openbsd/pf.conf.openbsd | head -n 1 >> $tmpdir/pf.conf.macro.enc.in
-				cat src/openbsd/pf.conf.openbsd | tail -n 1 >> $tmpdir/pf.conf.macro.enc.out
+				cat $basedir/src/openbsd/pf.conf.openbsd | head -n 1 >> $tmpdir/pf.conf.macro.enc.in
+				cat $basedir/src/openbsd/pf.conf.openbsd | tail -n 1 >> $tmpdir/pf.conf.macro.enc.out
 			done
 			sed -i '$d' $tmpdir/pf.conf.macro.enc.{in,out}
 			sha256compare "/etc/pf.conf.macro.enc.in" "$tmpdir/pf.conf.macro.enc.in"
@@ -440,7 +440,7 @@ function upgrade {
 		"remote")
 			tmpdir=$(mktemp -d)
 			if [[ -d "/etc/ssh/remote_install" ]]; then
-				cp src/etc/ssh/remote_install/* $tmpdir
+				cp $basedir/src/etc/ssh/remote_install/* $tmpdir
 				custom "$tmpdir" "1"
 				sha256compare "/etc/ssh/remote_install/remote_install.conf" "$tmpdir/remote_install.conf"
 				if [[ $sha256ctrl -eq 1 ]]; then
@@ -454,7 +454,7 @@ function upgrade {
 				fi
 			else 
 				mkdir /etc/ssh/remote_install
-				for file in $(find src/etc/ssh/remote_install/ -type f); do
+				for file in $(find $basedir/src/etc/ssh/remote_install/ -type f); do
 					filename=$(basename $file)
 					if [[ "$filename" != "rc.local" ]]; then
 						install -o root -g wheel -m 0640 $file /etc/ssh/remote_install/
@@ -463,13 +463,13 @@ function upgrade {
 				custom "/etc/ssh/remote_install" "1"
 					
 			fi
-			sha256compare "src/usr/local/sbin/remote-install" "/usr/local/sbin/remote-install"
+			sha256compare "$basedir/src/usr/local/sbin/remote-install" "/usr/local/sbin/remote-install"
 			if [[ $sha256ctrl -eq 1 ]]; then
 				echo "remote-install upgrade"
-				install -o root -g wheel -m 0750 src/usr/local/sbin/remote-install /usr/local/sbin/
+				install -o root -g wheel -m 0750 $basedir/src/usr/local/sbin/remote-install /usr/local/sbin/
 			fi
 			if [[ $(grep -c remote_install.conf /etc/rc.local) -eq 0 ]]; then
-				cat src/etc/ssh/remote_install/rc.local >> /etc/rc.local
+				cat $basedir/src/etc/ssh/remote_install/rc.local >> /etc/rc.local
 			fi
 			pidof_remote=$(pidof "remote")
 			if [[ -z $pidof_remote ]]; then
@@ -478,7 +478,7 @@ function upgrade {
 				kill -9 $(cat /var/run/sshd-remote-install.pid)
 				/usr/sbin/sshd -f /etc/ssh/remote_install/remote_install.conf
 			fi
-			install -o root -g wheel -m 0640 src/etc/httpd.conf.acmefirst /etc/httpd.conf
+			install -o root -g wheel -m 0640 $basedir/src/etc/httpd.conf.acmefirst /etc/httpd.conf
 			custom "/etc/" "1"
 			httpd -n
 			pidof_httpd=$(pidof "httpd")
@@ -521,7 +521,7 @@ function upgrade {
 		;;
 		"newhost")
 			sh "$basedir/$app" -U pf
-			install -o root -g wheel -m 0640 src/etc/ssh/remote_install/authorized_keys /etc/ssh/remote_install/
+			install -o root -g wheel -m 0640 $basedir/src/etc/ssh/remote_install/authorized_keys /etc/ssh/remote_install/
 		;;
 	esac
 }
@@ -533,8 +533,8 @@ function configuration {
 	case $phase in
 		"static")
 			ifconfig $egressinterface -inet6
-			install -o root -g wheel -m 0640  src/etc/hostname.egress "/etc/hostname.$egressinterface"
-			install -o root -g wheel -m 0640 src/etc/mygate /etc/
+			install -o root -g wheel -m 0640  $basedir/src/etc/hostname.egress "/etc/hostname.$egressinterface"
+			install -o root -g wheel -m 0640 $basedir/src/etc/mygate /etc/
 			if [[ ! -z $ipv6egress ]]; then
 				rcctl stop slaacd
 				rcctl disable slaacd
@@ -556,13 +556,13 @@ function configuration {
 		;;
 		"basic")
 			echo "dot files"
-			for file in src/home/taglio/.*; do
+			for file in $basedir/src/home/taglio/.*; do
 				if [[ -e "$file" ]]; then
 					install -o taglio -g wheel -m 0640  $file /home/taglio/ 
 				fi
 			done
 			cleanold "/home/taglio/"
-			for file in src/root/.*; do
+			for file in $basedir/src/root/.*; do
 				if [[ -e "$file" ]]; then
 					install -o root -g wheel -m 0640  $file /root/
 				fi
@@ -576,15 +576,15 @@ function configuration {
 			ln -fs "/usr/share/zoneinfo/$iptmz" /etc/localtime
 			echo "installing automatic update \n"
 			if [[ ! -e "/etc/daily.local" ]]; then
-				install -o root -g wheel -m 0640  src/etc/daily.local /etc/
+				install -o root -g wheel -m 0640  $basedir/src/etc/daily.local /etc/
 			elif ! grep -q "pkg_add" "/etc/daily.local"; then
-				cat src/etc/daily.local >> "/etc/daily.local"
+				cat $basedir/src/etc/daily.local >> "/etc/daily.local"
 			fi
 			echo "dhclient, resolv.conf.tail, doas.conf, myname and sysctl.conf \n"
-			install -o root -g wheel -m 0644  src/etc/{dhclient.conf,resolv.conf.tail,doas.conf,myname,sysctl.conf} /etc/
-			cat src/etc/rc.local >> /etc/rc.local
+			install -o root -g wheel -m 0644  $basedir/src/etc/{dhclient.conf,resolv.conf.tail,doas.conf,myname,sysctl.conf} /etc/
+			cat $basedir/src/etc/rc.local >> /etc/rc.local
 			echo "vether"
-			install -o root -g wheel -m 0644  src/etc/hostname.vether0 /etc/
+			install -o root -g wheel -m 0644  $basedir/src/etc/hostname.vether0 /etc/
 			echo "configuring iperf uptimed and oidentd \n"
 			pidof_uptimed=$(pidof "uptimed")
 			if [[ -z $pidof_uptimed ]]; then
@@ -619,7 +619,7 @@ function configuration {
 			if ! getent passwd wwwftp  1>&-; then 
 				useradd -u 2003 -g =uid -c "WWW Ftpd user" -d /var/www/htdocs -s /root/Bin/fake_shell.sh wwwftp
 			fi
-			for file in src/home/taglio/Bin/*; do
+			for file in $basedir/src/home/taglio/Bin/*; do
 				if [[ -e "$file" ]]; then
 					install -o taglio -g wheel -m 0750  $file /home/taglio/Bin/
 				fi
@@ -628,7 +628,7 @@ function configuration {
 		
 		;;
 		"scripts")
-			for file in src/root/Bin/*.sh; do
+			for file in $basedir/src/root/Bin/*.sh; do
 				if [[ -e "$file" ]]; then
 					install -o root -g wheel -m 0700  $file /root/Bin/
 				fi
@@ -644,11 +644,11 @@ function configuration {
 				"local")
 					unbound-anchor -a /var/unbound/db/root.key
 					wget --no-check-certificate https://192.0.47.9/domain/named.root -O /var/unbound/db/root.hints
-					install -o _unbound -g _unbound -m 0750  src/var/unbound/db/ca-certificates.crt /var/unbound/db/
+					install -o _unbound -g _unbound -m 0750  $basedir/src/var/unbound/db/ca-certificates.crt /var/unbound/db/
 					chown _unbound:_unbound /var/unbound/db/*
-					install -o _unbound -g _unbound -m 0750  src/var/unbound/etc/unbound-local.conf /var/unbound/etc/unbound.conf
-					install -o _unbound -g _unbound -m 0750  src/var/unbound/etc/remote-control.conf /var/unbound/etc/
-					install -o _unbound -g _unbound -m 0750  src/var/unbound/etc/forward-zone.conf /var/unbound/etc/
+					install -o _unbound -g _unbound -m 0750  $basedir/src/var/unbound/etc/unbound-local.conf /var/unbound/etc/unbound.conf
+					install -o _unbound -g _unbound -m 0750  $basedir/src/var/unbound/etc/remote-control.conf /var/unbound/etc/
+					install -o _unbound -g _unbound -m 0750  $basedir/src/var/unbound/etc/forward-zone.conf /var/unbound/etc/
 					custom "/var" "2"
 					if [[ -z $pidof_unbound ]]; then
 						rcctl start unbound ||  error_exit "$LINENO: ERROR: UNBOUND failed."
@@ -658,8 +658,8 @@ function configuration {
 					fi
 				;;
 				"ipsec")
-					install -o _unbound -g _unbound -m 0750  src/var/unbound/etc/unbound.conf /var/unbound/etc/unbound.conf
-					install -o _unbound -g _unbound -m 0750  src/var/unbound/etc/stub-zone.conf /var/unbound/etc/stub-zone.conf
+					install -o _unbound -g _unbound -m 0750  $basedir/src/var/unbound/etc/unbound.conf /var/unbound/etc/unbound.conf
+					install -o _unbound -g _unbound -m 0750  $basedir/src/var/unbound/etc/stub-zone.conf /var/unbound/etc/stub-zone.conf
 					rcctl restart unbound ||  error_exit "$LINENO: ERROR: UNBOUND failed."
 				;;
 			esac
@@ -672,10 +672,10 @@ function configuration {
 			fi
 			case $subphase in
 				"public")
-					install -o root -g wheel -m 0640 src/etc/ssh/sshd_public /etc/ssh/sshd_config
-					install -o root -g wheel -m 0640 src/etc/ssh/ssh_config /etc/ssh/
-					install -o root -g wheel -m 0640 src/etc/ssh/ssh_known_hosts /etc/ssh
-					install -o root -g wheel -m 0640 src/etc/ssh/authorized_keys /etc/ssh/
+					install -o root -g wheel -m 0640 $basedir/src/etc/ssh/sshd_public /etc/ssh/sshd_config
+					install -o root -g wheel -m 0640 $basedir/src/etc/ssh/ssh_config /etc/ssh/
+					install -o root -g wheel -m 0640 $basedir/src/etc/ssh/ssh_known_hosts /etc/ssh
+					install -o root -g wheel -m 0640 $basedir/src/etc/ssh/authorized_keys /etc/ssh/
 					workstahost=$(cat /etc/ssh/authorized_keys | cut -d @ -f2)
 					if [[ ! -d "/tmp/$workstahost.$landomainname" ]]; then
 						mkdir "/tmp/$workstahost.$landomainname"
@@ -707,18 +707,18 @@ function configuration {
 			mkdir -p /etc/iked/{ca,certs,crls,export,private,pubkeys}
 			mkdir -p /etc/iked/pubkeys/{ipv4,ipv6,fqdn,ufqdn}
 			cd $basedir
-			install -o root -g wheel -m 0644  src/etc/iked/ca/ca.crt /etc/iked/ca/	
+			install -o root -g wheel -m 0644  $basedir/src/etc/iked/ca/ca.crt /etc/iked/ca/	
 			openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -nocerts -passin pass:123456789 -passout pass:123456789 -out /etc/iked/private/local.key
 			openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "/etc/iked/certs/$publichost.crt"
 			openssl x509 -pubkey -noout -passin pass:123456789 -in "/etc/iked/certs/$publichost.crt"  > /etc/iked/local.pub
-			for file in $(find src/etc/iked/pubkeys/ufqdn/ -name "*@*"); do
+			for file in $(find $basedir/src/etc/iked/pubkeys/ufqdn/ -name "*@*"); do
 				install -o root -g wheel -m 0644 $file /etc/iked/pubkeys/ufqdn/
 			done
 			rcctl enable iked
 			rcctl set iked flags "-vv"
 			typeset -i i
 			i=0
-			install -o root -g wheel -m 0640  src/etc/iked.conf /etc/
+			install -o root -g wheel -m 0640  $basedir/src/etc/iked.conf /etc/
 			custom "/etc" "1"
 			for vpnc_ip in $(dig vpnc.$domainname A +short @8.8.8.8)
 			do
@@ -734,16 +734,16 @@ function configuration {
 				
 				echo include \"/etc/iked.conf.$vpnc_host\" >> /etc/iked.conf
 				if [[ $(nc -w1  $vpnc_ip 22 | grep -c "ROSSSH") -eq 1 ]]; then
-					install -o root -g wheel -m 0640 src/etc/iked.conf.mikrotik "/etc/iked.conf.$vpnc_host"
+					install -o root -g wheel -m 0640 $basedir/src/etc/iked.conf.mikrotik "/etc/iked.conf.$vpnc_host"
 					if [[ -e "/tmp/$vpnc_host/$vpnc_host.rsc" ]]; then
 						rm -rf "/tmp/$vpnc_host/$vpnc_host.rsc"
 					fi
-					cp src/mikrotik/ipsec.rsc "/tmp/$vpnc_host/$vpnc_host.rsc"
+					cp $basedir/src/mikrotik/ipsec.rsc "/tmp/$vpnc_host/$vpnc_host.rsc"
 					sed -i "s/\/POPIP\//$vpnc_ip/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
 					sed -i "s/\/POP\//$vpnc_host/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
 				elif [[ $(nc -w1  $vpnc_ip 22 | grep -c "ROSSSH") -eq 0 ]]; then
-					install -o root -g wheel -m 0640 src/etc/iked.conf.openbsd "/etc/iked.conf.$vpnc_host"
-					cp src/openbsd/iked.conf.openbsd "/tmp/$vpnc_host/iked.conf.$publichost"
+					install -o root -g wheel -m 0640 $basedir/src/etc/iked.conf.openbsd "/etc/iked.conf.$vpnc_host"
+					cp $basedir/src/openbsd/iked.conf.openbsd "/tmp/$vpnc_host/iked.conf.$publichost"
 					x=$((RANDOM%2+1))
 					case $x in
 						1)
@@ -767,7 +767,7 @@ function configuration {
 				sed -i "s/\/POPIP\//$vpnc_ip/g" "/etc/iked.conf.$vpnc_host"
 				sed -i "s/\/POP\//$vpnc_host/g" "/etc/iked.conf.$vpnc_host"
 				sed -i "s/\/X\//$i/g" "/etc/iked.conf.$vpnc_host"
-				install -o root -g wheel -m 0640 src/etc/hostname.enc-X- "/etc/hostname.enc$i"
+				install -o root -g wheel -m 0640 $basedir/src/etc/hostname.enc-X- "/etc/hostname.enc$i"
 				sed -i "s/\/POP\//$vpnc_host/g" "/etc/hostname.enc$i"
 				sh /etc/netstart "enc$i"
 				i=$i+1
@@ -780,14 +780,14 @@ function configuration {
 				mkdir "/tmp/$dyndnshost"
 			fi
 			echo include \"/etc/iked.conf.$dyndnshost\" >> /etc/iked.conf
-			install -o root -g wheel -m 0640 src/etc/iked.conf.edgeos "/etc/iked.conf.$dyndnshost"
+			install -o root -g wheel -m 0640 $basedir/src/etc/iked.conf.edgeos "/etc/iked.conf.$dyndnshost"
 			sed -i "s/\/POPIP\//$(dig $dyndnshost A +short | tail -n 1)/g" "/etc/iked.conf.$dyndnshost"
 			sed -i "s/\/POP\//$dyndnshost/g" "/etc/iked.conf.$dyndnshost"
 			sed -i "s/\/X\//$i/g" "/etc/iked.conf.$dyndnshost"
-			install -o root -g wheel -m 0640 src/etc/hostname.enc-X- "/etc/hostname.enc$i"
+			install -o root -g wheel -m 0640 $basedir/src/etc/hostname.enc-X- "/etc/hostname.enc$i"
 			sed -i "s/\/POP\//$dyndnshost/g" "/etc/hostname.enc$i"
 			sh /etc/netstart "enc$i"
-			cp src/edgeos/ipsec.conf "/tmp/$dyndnshost/"
+			cp $basedir/src/edgeos/ipsec.conf "/tmp/$dyndnshost/"
 			cp "/etc/iked/certs/$publichost.crt" "/tmp/$dyndnshost/"
 			find /etc/ -type f -name "iked.*" | xargs -I {} 
 			custom "/tmp" "2"
@@ -804,7 +804,7 @@ function configuration {
 			lasttun=$lasttun+1
 			i=0
 			for file in $(find /etc -maxdepth 1 -name "iked.conf.*") ; do
-				install -o root -g wheel -m 0640 src/etc/hostname.gre-X- "/etc/hostname.gre$i"
+				install -o root -g wheel -m 0640 $basedir/src/etc/hostname.gre-X- "/etc/hostname.gre$i"
 				pophost=$(echo $file | sed "s/\/etc\/iked.conf.//")
 				sed -i "s/\/POPHOST\//$pophost/g" "/etc/hostname.gre$i"
 				if [ "$pophost" == "uk.telecomlobby.com" ]; then
@@ -834,14 +834,14 @@ function configuration {
 				grelocalip=$lastnet-3
 				sed -i "s/\/GRELOCALIP\//10.10.10.$grelocalip/g" "/etc/hostname.gre$i"
 				if grep -q "ecp384" $file; then
-					cat src/mikrotik/gre.rsc >> "/tmp/$pophost/$pophost.rsc"
+					cat $basedir/src/mikrotik/gre.rsc >> "/tmp/$pophost/$pophost.rsc"
 					sed -i "s/\/GREPOPIP\//10.10.10.$grepopip\/32/g" "/tmp/$pophost/$pophost.rsc"
 					sed -i "s/\/HOSTNAME\//$hostname/g" "/tmp/$pophost/$pophost.rsc"
 					sed -i "s/\/PUBLICIP\//$publicip/g" "/tmp/$pophost/$pophost.rsc"
 				elif grep -q "ecp256" $file; then
-					cp src/edgeos/scripts/ES-SRCID-_netwatch.sh "/tmp/$pophost/ES-${publichostname}_netwatch.sh" 
-					cp src/edgeos/scripts/ES-SRCID--updown.sh "/tmp/$pophost/ES-$publichostname-updown.sh"
-					cp src/edgeos/gre.sh "/tmp/$pophost/"
+					cp $basedir/src/edgeos/scripts/ES-SRCID-_netwatch.sh "/tmp/$pophost/ES-${publichostname}_netwatch.sh" 
+					cp $basedir/src/edgeos/scripts/ES-SRCID--updown.sh "/tmp/$pophost/ES-$publichostname-updown.sh"
+					cp $basedir/src/edgeos/gre.sh "/tmp/$pophost/"
 					sed -i "s/\/GREPOPIP\//10.10.10.$grepopip/g" "/tmp/$pophost/ES-${publichostname}_netwatch.sh"
 					sed -i "s/\/GREPOPIP\//10.10.10.$grepopip/g" "/tmp/$pophost/gre.sh"
 					sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" "/tmp/$pophost/ES-${publichostname}_netwatch.sh"
@@ -849,8 +849,8 @@ function configuration {
 					sed -i "s/\/TUN\//tun$lasttun/g" "/tmp/$pophost/ES-$publichostname-updown.sh"
 					sed -i "s/\/TUN\//tun$lasttun/g" "/tmp/$pophost/gre.sh"
 				else
-					cp src/openbsd/hostname.gre.openbsd "/tmp/$pophost/hostname.gre$lasttun"
-					cp src/openbsd/hostname.enc.openbsd "/tmp/$pophost/hostname.enc$lasttun"
+					cp $basedir/src/openbsd/hostname.gre.openbsd "/tmp/$pophost/hostname.gre$lasttun"
+					cp $basedir/src/openbsd/hostname.enc.openbsd "/tmp/$pophost/hostname.enc$lasttun"
 					sed -i "s/\/PUBLICHOST\//$publichost/g" "/tmp/$pophost/hostname.gre$lasttun"
 					sed -i "s/\/PUBLICHOST\//$publichost/g" "/tmp/$pophost/hostname.enc$lasttun"
 					sed -i "s/\/X\//$lasttun/g" "/tmp/$pophost/hostname.gre$lasttun"
@@ -871,7 +871,7 @@ function configuration {
 			done
 		;;
 		"pf")
-			for file in src/etc/pf.* ; do
+			for file in $basedir/src/etc/pf.* ; do
 				if [[ -e "$file" ]]; then
 					install -o root -g wheel -m 0640  $file /etc/
 				fi
@@ -889,7 +889,7 @@ function configuration {
 				fi
 			done
  			for file in $(find /tmp -name "*.rsc"); do
-				cat src/mikrotik/firewall.rsc >> "$file"
+				cat $basedir/src/mikrotik/firewall.rsc >> "$file"
 				sed -i "s/\/HOSTNAME\//${hostname}/g" $file
 			done
 			for file in $(find /etc -maxdepth 1 -name "iked.conf.*") ; do
@@ -902,8 +902,8 @@ function configuration {
 				fi
 				sed -i "s/\/TAGGED\//${tagged}/g" /etc/pf.conf.macro.enc.{in,out}	
 				sed -i "s/\/IPTAGGED\//${iptagged}/g" /etc/pf.conf.macro.enc.{in,out}
-				cat src/openbsd/pf.conf.openbsd | head -n 1 >> /etc/pf.conf.macro.enc.in
-				cat src/openbsd/pf.conf.openbsd | tail -n 1 >> /etc/pf.conf.macro.enc.out
+				cat $basedir/src/openbsd/pf.conf.openbsd | head -n 1 >> /etc/pf.conf.macro.enc.in
+				cat $basedir/src/openbsd/pf.conf.openbsd | tail -n 1 >> /etc/pf.conf.macro.enc.out
 			done
 			sed -i '$d' /etc/pf.conf.macro.enc.{in,out}
 			
@@ -915,7 +915,7 @@ function configuration {
 		;;
 		"ospf")
 			rcctl enable ospfd
-			install -o root -g wheel -m 0600  src/etc/ospfd.conf /etc/
+			install -o root -g wheel -m 0600  $basedir/src/etc/ospfd.conf /etc/
 			sed -i "s/\/ROUTERID\//$routerid/g" /etc/ospfd.conf
 			for file in $(find /etc/ -name "hostname.gre?" -maxdepth 1); do
 				x=$(basename $file | cut -d . -f2 | sed "s/gre//g")
@@ -926,18 +926,18 @@ function configuration {
 				typeset -i latency=$(ping -c4 $pophost | tail -1| awk '{print $4}' | cut -d '/' -f 2 | cut -d . -f1)
 				typeset -i metric=$(expr $latency / 2)
 				sed -i "s/\/METRIC\//${metric}/g" /etc/ospfd.conf
-				cat src/openbsd/ospfd.conf.openbsd >> /etc/ospfd.conf	
+				cat $basedir/src/openbsd/ospfd.conf.openbsd >> /etc/ospfd.conf	
 				if [[ $(ls "/tmp/$pophost/" | grep -c "hostname") -eq 2 ]]; then
 					typeset -i lasttun
 					lasttun=$(dig gre18994.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')
 					lasttun=$lasttun+1
-					cp src/openbsd/ospfd.conf.openbsd "/tmp/$pophost/ospfd.conf"
+					cp $basedir/src/openbsd/ospfd.conf.openbsd "/tmp/$pophost/ospfd.conf"
 					sed -i "s/\/X\//$lasttun/g" "/tmp/$pophost/ospfd.conf"	
 					sed -i "s/\/METRIC\//${metric}/g" "/tmp/$pophost/ospfd.conf"	
 					sed -i "s/\/OSPFMD5\//${ospfmd5}/g" "/tmp/$pophost/ospfd.conf"
 				elif [[ $(ls "/tmp/$pophost/" | grep -c "rsc") -eq 2 ]]; then
 					pophostname=$(echo $pophost | cut -d . -f1)
-					cp src/mikrotik/ospfd.rsc "/tmp/$pophost"
+					cp $basedir/src/mikrotik/ospfd.rsc "/tmp/$pophost"
 					sed -i "s/\/HOSTNAME\//${hostname}/g" "/tmp/$pophost/ospfd.rsc"
 					sed -i "s/\/OSPFMD5\//${ospfmd5}/g" "/tmp/$pophost/ospfd.rsc"
 					sed -i "s/\/METRIC\//${metric}/g" "/tmp/$pophost/ospfd.rsc"
@@ -949,7 +949,7 @@ function configuration {
 					cat "/tmp/$pophost/ospfd.rsc" >> "/tmp/$pophost/$pophost.rsc"
 				elif [[ $(ls "/tmp/$pophost/" | grep -c "netwatch") -eq 1 ]]; then
 					tunif=$(cat "/tmp/$pophost/gre.sh" | awk '{ print $4 }' | grep tun | head -n 1)
-					cp src/edgeos/ospf.sh "/tmp/$pophost/"
+					cp $basedir/src/edgeos/ospf.sh "/tmp/$pophost/"
 					sed -i "s/\/TUNIF\//${tunif}/g" "/tmp/$pophost/ospf.sh"
 					sed -i "s/\/OSPFMD5\//${ospfmd5}/g" "/tmp/$pophost/ospf.sh"
 					sed -i "s/\/METRIC\//${metric}/g" "/tmp/$pophost/ospf.sh"
@@ -968,7 +968,7 @@ function configuration {
 			fi
 		;;
 		"ntpd")
-			install -o root -g wheel -m 0644  src/etc/ntpd.conf /etc/
+			install -o root -g wheel -m 0644  $basedir/src/etc/ntpd.conf /etc/
 			cleanold "/etc/"
 			rcctl restart ntpd  ||  error_exit "$LINENO: ERROR: NTPD failed."
 		;;	
@@ -996,7 +996,7 @@ function configuration {
 				rm -rf /etc/ssh/remote_install
 				mkdir /etc/ssh/remote_install
 			fi
-			for file in $(find src/etc/ssh/remote_install/ -type f); do
+			for file in $(find $basedir/src/etc/ssh/remote_install/ -type f); do
 				filename=$(basename $file)
 				if [[ "$filename" != "rc.local" ]]; then
 					install -o root -g wheel -m 0640 $file /etc/ssh/remote_install/
@@ -1005,7 +1005,7 @@ function configuration {
 				fi
 			done
 			custom "/etc/ssh/remote_install" "1"
-			install -o root -g wheel -m 0750 src/usr/local/sbin/remote-install /usr/local/sbin/
+			install -o root -g wheel -m 0750 $basedir/src/usr/local/sbin/remote-install /usr/local/sbin/
 			pidof_remote=$(pidof "remote")
 			if [[ -z $pidof_remote ]]; then
 				/usr/sbin/sshd -f /etc/ssh/remote_install/remote_install.conf
@@ -1013,7 +1013,7 @@ function configuration {
 				kill -9 $(cat /var/run/sshd-remote-install.pid)
 				/usr/sbin/sshd -f /etc/ssh/remote_install/remote_install.conf
 			fi
-			install -o root -g wheel -m 0640 src/etc/httpd.conf.acmefirst /etc/httpd.conf
+			install -o root -g wheel -m 0640 $basedir/src/etc/httpd.conf.acmefirst /etc/httpd.conf
 			custom "/etc/" "1"
 			httpd -n
 			pidof_httpd=$(pidof "httpd")
@@ -1038,7 +1038,7 @@ function configuration {
 		
 		"relayd")
 			
-			install -o root -g wheel -m 0640 src/etc/relayd.conf /etc/
+			install -o root -g wheel -m 0640 $basedir/src/etc/relayd.conf /etc/
 			custom "/etc" "1"
 			sed -i "s/\/PUBV6\//${ipv6egress}/g" /etc/relayd.conf
 			rcctl enable relayd 
@@ -1114,7 +1114,7 @@ case $1 in
 		fi
 		echo "changing installurl"
 		if [[ $configini -eq 1 ]]; then
-			install -o root -g wheel -m 0644 src/etc/installurl /etc/
+			install -o root -g wheel -m 0644 $basedir/src/etc/installurl /etc/
 		else
 			ctrl=
 			while [ -z $ctrl ]
@@ -1122,7 +1122,7 @@ case $1 in
 				echo 'Go ahead type 1 '
 				read ctrl
 				if [[ "$ctrl" -eq 1 ]]; then
-					install -o root -g wheel -m 0644 src/etc/installurl /etc/
+					install -o root -g wheel -m 0644 $basedir/src/etc/installurl /etc/
 					echo "installurl#$ctrl" >> /tmp/config.ini
 				else
 					error_exit "$LINENO: EXIT FROM USER." 
