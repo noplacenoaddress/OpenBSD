@@ -35,7 +35,7 @@ case $3 in
 	"-N")
 		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 			echo -e "Connecting to $vpnc_host"
-			ssh $vpnc_host.$localdomainname doas sh "$proghome/setup_node" -U newhost
+			ssh -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U newhost
 		done	
 	;;
 	*)
