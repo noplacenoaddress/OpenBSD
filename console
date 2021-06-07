@@ -3,6 +3,9 @@
 #GLOBAL VAR
 
 uid=$(id -u)
+userna=$(id -nu $uid)
+userhome="/home/taglio"
+proghome="$userhome/Sources/Git/OpenBSD"
 
 if [[ $uid -ne 1000 ]]; then
 	echo -e $0 "you've got to run $0 as UID=1000 \n"
@@ -23,9 +26,9 @@ localdomainname=$2
 
 
 case $3 in
-	"-N")
+	"-G")
 		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
-			
+			ssh $vpnc_host.$localdomainname git -C "$proghome" pull
 		done	
 	;;
 	*)
