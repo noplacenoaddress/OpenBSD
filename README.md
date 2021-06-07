@@ -230,8 +230,6 @@ changing installurl
 Go ahead type 1 
 ```
 
-[![OpenBSD MESH IPSec guerrila host](https://asciinema.org/a/418291.png)](https://asciinema.org/a/418291)
-
 After some points the program give us the root ssh `ed25519` key of the new host. That is [EdDSA](https://en.wikipedia.org/wiki/EdDSA) in [public key cryptography](https://en.wikipedia.org/wiki/Public-key_cryptography).  Update the repository:
 
 ``` shell
@@ -245,12 +243,13 @@ Use the script `git_openbsd.sh` using values depending in your forked repository
 Next update every host using `git pull` using the `console` script and launch the `newhost` option using the same script:
 
  ``` shell
-root@ganesha:/home/taglio/Sources/Git/OpenBSD# sh setup_node -U newhost     
-pf.conf.table.ipsec upgrade
-root@ganesha:/home/taglio/Sources/Git/OpenBSD# 
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -G
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -N
  ```
 
-#### 
+[![OpenBSD MESH IPSec guerrila host](https://asciinema.org/a/418749.png)](https://asciinema.org/a/418749)
+
+
 
 #### Remote upgrade
 
