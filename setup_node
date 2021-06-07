@@ -23,7 +23,7 @@
 set -o errexit
 set -o nounset
 
-PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin:/root/Bin
+PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin:/root/Bin:/home/taglio/Sources/Git/OpenBSD
 BACKUPS="/root/Backups"
 
 #GLOBAL VAR
