@@ -247,9 +247,17 @@ riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -G
 riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -N
  ```
 
+The `console` script depend on a `TXT` record in the master `nsd` for the LAN domain name:
+
+```shell
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ host -t txt openbsd.telecom.lobby
+openbsd.telecom.lobby descriptive text "ganesha;saraswati;shiva;varuna;"
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ 
+```
+
+Those are the host names of every OpenBSD guy connected to our network, remember to update it!
+
 [![OpenBSD MESH IPSec guerrila host](https://asciinema.org/a/418749.png)](https://asciinema.org/a/418749)
-
-
 
 #### Remote upgrade
 
