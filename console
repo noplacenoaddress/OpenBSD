@@ -13,6 +13,7 @@ if [[ $# -eq 0 ]]; then
 	echo -e $0 "have to be used with the following options \
 			\n-I  -> local domain name [x]\
 			\n-N  -> newhost [o]\
+			\n-G  -> git pull [o]\
 			\n"
 	
 	exit 1
