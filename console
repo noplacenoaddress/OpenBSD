@@ -28,6 +28,7 @@ localdomainname=$2
 case $3 in
 	"-G")
 		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+			echo -e "Connecting to $vpnc_host"
 			ssh $vpnc_host.$localdomainname git -C "$proghome" pull
 		done	
 	;;
