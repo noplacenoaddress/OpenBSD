@@ -1260,7 +1260,7 @@ case $1 in
 			    
 			done
 		fi
-		sleep 60
+		sleep 120
 		echo "configuring unbound"
 		if [[ $configini -eq 1 ]]; then
 			sleep 3
