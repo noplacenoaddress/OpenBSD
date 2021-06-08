@@ -1267,6 +1267,7 @@ case $1 in
 			configuration "unbound" "local"
 		else
 			ctrl=
+			sleep 60
 			while [ -z $ctrl ]
 			do
 				echo 'Go ahead type 1 '
