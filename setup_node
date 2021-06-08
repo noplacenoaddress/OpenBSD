@@ -1260,14 +1260,14 @@ case $1 in
 			    
 			done
 		fi
-
+		sleep 60
 		echo "configuring unbound"
 		if [[ $configini -eq 1 ]]; then
 			sleep 3
 			configuration "unbound" "local"
 		else
 			ctrl=
-			sleep 60
+			
 			while [ -z $ctrl ]
 			do
 				echo 'Go ahead type 1 '
