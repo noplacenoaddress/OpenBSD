@@ -1260,26 +1260,20 @@ case $1 in
 			    
 			done
 		fi
-		sleep 120
 		echo "configuring unbound"
 		if [[ $configini -eq 1 ]]; then
 			sleep 3
 			configuration "unbound" "local"
 		else
 			ctrl=
-			
-			while [ -z $ctrl ]
-			do
-				echo 'Go ahead type 1 '
-				read ctrl
-				if [[ "$ctrl" -eq 1 ]]; then
-					configuration "unbound" "local"
-					echo "unbound#$ctrl" >> /tmp/config.ini
-				else
-					error_exit "$LINENO: EXIT FROM USER." 
-				fi
-			    
-			done
+			echo 'Go ahead type 1 '
+			read ctrl
+			if [[ "$ctrl" -eq 1 ]]; then
+				configuration "unbound" "local"
+				echo "unbound#$ctrl" >> /tmp/config.ini
+			else
+				error_exit "$LINENO: EXIT FROM USER." 
+			fi
 		fi
 		echo "configuring ssh \n"
 		if [[ $configini -eq 1 ]]; then
