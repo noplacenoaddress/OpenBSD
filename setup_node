@@ -1265,7 +1265,7 @@ case $1 in
 			sleep 3
 			configuration "unbound" "local"
 		else
-			ctrl=
+			#ctrl=
 			echo 'Go ahead type 1 '
 			read ctrl
 			if [[ "$ctrl" -eq 1 ]]; then
