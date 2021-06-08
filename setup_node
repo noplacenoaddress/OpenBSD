@@ -599,8 +599,8 @@ function configuration {
 			cd $basedir
 			sh /etc/rc.local
 			if [[ ! -e /root/.ssh/id_ed25519 ]]; then
-				ssh-keygen -t ed25519 -N "" -C "root@$hostname.$landomainname" -f /root/.ssh/id_ed25519
-				ssh-keygen -N "" -C "root@$hostname.$landomainname" -f /root/.ssh/id_rsa
+				cat /dev/zero | ssh-keygen -t ed25519 -N "" -C "root@$hostname.$landomainname" -f /root/.ssh/id_ed25519
+				cat /dev/zero | ssh-keygen -N "" -C "root@$hostname.$landomainname" -f /root/.ssh/id_rsa
 			fi
 			echo "Add your new id_ed25519.pub to the repository and update others hosts and the CA server"
 			cat /root/.ssh/id_ed25519.pub
