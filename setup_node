@@ -644,7 +644,7 @@ function configuration {
 			fi
 			case $subphase in 
 				"local")
-					/usr/sbin/unbound-anchor -a /var/unbound/db/root.key
+					install -o _unbound -g _unbound -m 0750  $basedir/src/var/unbound/db/root.key /var/unbound/db/
 					wget --no-check-certificate https://192.0.47.9/domain/named.root -O /var/unbound/db/root.hints
 					install -o _unbound -g _unbound -m 0750  $basedir/src/var/unbound/db/ca-certificates.crt /var/unbound/db/
 					chown _unbound:_unbound /var/unbound/db/*
