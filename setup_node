@@ -49,6 +49,8 @@ ipv6prefix=
 ipv6defrouter=
 sha256ctrl=0
 
+umask 002
+
 if [[ $uid -ne 0 ]]; then
 	print $0 "you've got to run $0 as UID=0 \n"
 	exit 1
