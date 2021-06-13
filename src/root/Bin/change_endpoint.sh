@@ -13,4 +13,5 @@ echo "updating GRE"
 sed -i "s/$OLDIP/$NEWIP/g" /etc/hostname.$1
 ifconfig $1 destroy
 sh /etc/netstart $1
+rcctl restart ospfd
 
