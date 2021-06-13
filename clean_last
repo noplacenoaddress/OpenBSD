@@ -42,4 +42,5 @@ for file in $(grep "$last" /etc/* | grep hostname | cut -d : -f1); do
 	/bin/rm -r $file
 done
 sed -i "/interface $ospfinterface/,/}/d" /etc/ospfd.conf
-rcctl restart ospfd
+nohup rcctl restart ospfd & > /tmp/nohup
+exit
