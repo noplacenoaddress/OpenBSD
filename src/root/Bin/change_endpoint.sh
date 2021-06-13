@@ -7,10 +7,10 @@ echo "updating PF"
 sed -i "s/$OLDIP/$NEWIP/g" /etc/pf.conf.table.ipsec
 pfctl -f /etc/pf.conf
 echo "updating IKED"
-sed -i "s/$OLDIP/$NEWIP/g" /etc/iked.conf.RT-01.cat.telecomlobby.com
+sed -i "s/$OLDIP/$NEWIP/g" /etc/iked.conf.$2
 rcctl restart iked
 echo "updating GRE"
-sed -i "s/$OLDIP/$NEWIP/g" /etc/hostname.gre1
-ifconfig gre1 destroy
+sed -i "s/$OLDIP/$NEWIP/g" /etc/hostname.$1
+ifconfig $1 destroy
 sh /etc/netstart $1
 
