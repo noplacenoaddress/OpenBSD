@@ -94,12 +94,12 @@ function cleanold {
 	typeset var directory=$1
 	for file in $directory*.old; do
 		if [[ -e "$file" ]]; then
-			mv $file $backups
+			mv $file $BACKUPS
 		fi
 	done
 	for file in $directory.*.old; do
 		if [[ -e "$file" ]]; then
-			mv $file $backups
+			mv $file $BACKUPS
 		fi	
 	done
 }
