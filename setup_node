@@ -825,23 +825,24 @@ function configuration {
 			lasttun=$lasttun+1
 			i=0
 			for file in $(find /etc -maxdepth 1 -name "iked.conf.*") ; do
-				install -o root -g wheel -m 0640 $basedir/src/etc/hostname.gre-X- "/etc/hostname.gre$i"
+				index=$(cat $file | tail -n 1 | awk '{print $4}' | sed 's/enc//')
+				install -o root -g wheel -m 0640 $basedir/src/etc/hostname.gre-X- "/etc/hostname.gre$index"
 				pophost=$(echo $file | sed "s/\/etc\/iked.conf.//")
-				sed -i "s/\/POPHOST\//$pophost/g" "/etc/hostname.gre$i"
+				sed -i "s/\/POPHOST\//$pophost/g" "/etc/hostname.gre$index"
 				if [ "$pophost" == "uk.telecomlobby.com" ]; then
-					sed -i "s/\/GROUP\//nsd/g" "/etc/hostname.gre$i"
+					sed -i "s/\/GROUP\//nsd/g" "/etc/hostname.gre$index"
 				else
-					sed -i "s/\/GROUP\//gre/g" "/etc/hostname.gre$i"
+					sed -i "s/\/GROUP\//gre/g" "/etc/hostname.gre$index"
 				fi
-				sed -i "s/\/PUBLICIP\//$publicip/g" "/etc/hostname.gre$i"
-				sed -i "s/\/X\//$i/g" "/etc/hostname.gre$i"
+				sed -i "s/\/PUBLICIP\//$publicip/g" "/etc/hostname.gre$index"
+				sed -i "s/\/X\//$index/g" "/etc/hostname.gre$index"
 				count=$(dig $pophost A +short @8.8.8.8 | wc -l)
 				if [[ $count -gt 1 ]]; then
 					popip=$(dig $pophost A +short @8.8.8.8 | tail -n 1)
 				else
 					popip=$(dig $pophost A +short @8.8.8.8)
 				fi
-				sed -i "s/\/POPIP\//$popip/g" "/etc/hostname.gre$i"
+				sed -i "s/\/POPIP\//$popip/g" "/etc/hostname.gre$index"
 				if [ $i -eq 0 ]; then
 					typeset -i lastnet
 					lastnet=$(dig gre7058.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')
@@ -850,10 +851,10 @@ function configuration {
 				fi
 				typeset -i grepopip
 				grepopip=$lastnet-2
-				sed -i "s/\/GREPOPIP\//10.10.10.$grepopip/g" "/etc/hostname.gre$i"
+				sed -i "s/\/GREPOPIP\//10.10.10.$grepopip/g" "/etc/hostname.gre$index"
 				typeset -i  grelocalip
 				grelocalip=$lastnet-3
-				sed -i "s/\/GRELOCALIP\//10.10.10.$grelocalip/g" "/etc/hostname.gre$i"
+				sed -i "s/\/GRELOCALIP\//10.10.10.$grelocalip/g" "/etc/hostname.gre$index"
 				if grep -q "ecp384" $file; then
 					cat $basedir/src/mikrotik/gre.rsc >> "/tmp/$pophost/$pophost.rsc"
 					sed -i "s/\/GREPOPIP\//10.10.10.$grepopip\/32/g" "/tmp/$pophost/$pophost.rsc"
