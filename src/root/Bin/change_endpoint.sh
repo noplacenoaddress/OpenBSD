@@ -8,10 +8,11 @@ sed -i "s/$OLDIP/$NEWIP/g" /etc/pf.conf.table.ipsec
 pfctl -f /etc/pf.conf
 echo "updating IKED"
 sed -i "s/$OLDIP/$NEWIP/g" /etc/iked.conf.$2
-rcctl restart iked
 echo "updating GRE"
 sed -i "s/$OLDIP/$NEWIP/g" /etc/hostname.$1
 ifconfig $1 destroy
 sh /etc/netstart $1
-rcctl restart ospfd
+nohup sleep 5; rcctl restart {iked,ospfd} & > /tmp/nohup
+exit
+ 
 
