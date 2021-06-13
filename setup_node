@@ -529,6 +529,20 @@ function upgrade {
 		"scripts")
 			configuration "scripts"
 		;;
+		"dyndnspop")
+			for vpnc_host in $(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g'); do
+				vpnc_ip=$(dig $vpnc_host A +short @8.8.8.8 | tail -n 1)
+				if [[ ! -z $vpnc_ip ]]; then
+					for iked_conf in $(ls /etc/iked.conf.*); do
+						if [[ $(grep -c "ecp256" $iked_conf) -eq 2 ]]; then
+							pophost=$(cat $iked_conf | head -n 1 | awk '{print $2}' | sed 's/"//g')
+							greinterface=$(cat $iked_conf | tail -n 1 | awk '{print $4}' | sed 's/enc/gre/') 
+							sh /root/Bin/change_endpoint.sh $greinterface $pophost
+						fi
+					done
+				fi
+			done
+		;;
 	esac
 }
 function configuration {
@@ -1419,6 +1433,7 @@ case $1 in
 				\nrelayd   \
 				\nnewhost \
 				\nscripts \
+				\ndyndnspop \
 				\n"
 			exit 1 
 		fi
@@ -1481,6 +1496,9 @@ case $1 in
 			;;
 			"scripts")
 				upgrade "scripts"
+			;;
+			"dyndnspop")
+				upgrade "dyndnspop"
 			;;
 			"all")
 				sh setup_node -I
