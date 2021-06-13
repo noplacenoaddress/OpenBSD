@@ -547,6 +547,15 @@ function upgrade {
 		;;
 	esac
 }
+
+function admin {
+	case $1 in
+		"cleanlast")
+			sh clean_last
+		;;
+	esac
+}
+
 function configuration {
 	phase=$1
 	if [[ $# -eq 2 ]]; then
@@ -1535,7 +1544,13 @@ case $1 in
 				\ncleanlast \
 				\n"
 			exit 1 
-		fi			
+		fi
+		case $2 in
+			"cleanlast")
+				echo "configuring smtpd"
+				admin "cleanlast"
+			;;
+		esac		
 	;;
 	*)
 		exit 1
