@@ -17,6 +17,7 @@ if [[ $# -eq 0 ]]; then
 			\n-I  -> local domain name [x]\
 			\n-N  -> newhost [o]\
 			\n-G  -> git pull [o]\
+			\n-S  -> scripts [o] \
 			\n"
 	
 	exit 1
@@ -36,6 +37,12 @@ case $3 in
 		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 			echo -e "Connecting to $vpnc_host"
 			ssh -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U newhost
+		done	
+	;;
+	"-S")
+		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+			echo -e "Connecting to $vpnc_host"
+			ssh -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U scripts
 		done	
 	;;
 	*)
