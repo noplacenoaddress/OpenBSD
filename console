@@ -19,6 +19,7 @@ if [[ $# -eq 0 ]]; then
 			\n-G  -> git pull [o]\
 			\n-S  -> scripts [o] \
 			\n-D  -> dyndnspop [o] \
+			\n-C  -> cleanlast [o] \
 			\n"
 	
 	exit 1
@@ -51,6 +52,12 @@ case $3 in
 			echo -e "Connecting to $vpnc_host"
 			ssh -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U dyndnspop
 			sleep 10
+		done	
+	;;
+	"-D")
+		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+			echo -e "Connecting to $vpnc_host"
+			ssh -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -A cleanlast
 		done	
 	;;
 	*)
