@@ -538,6 +538,7 @@ function upgrade {
 							pophost=$(cat $iked_conf | head -n 1 | awk '{print $2}' | sed 's/"//g')
 							greinterface=$(cat $iked_conf | tail -n 1 | awk '{print $4}' | sed 's/enc/gre/') 
 							sh /root/Bin/change_endpoint.sh $greinterface $pophost 
+							
 						fi
 					done
 				fi

@@ -13,7 +13,7 @@ echo "updating GRE"
 sed -i "s/$OLDIP/$NEWIP/g" /etc/hostname.$1
 ifconfig $1 destroy
 sh /etc/netstart $1
-nohup "sleep 15; rcctl restart ospfd" & > /tmp/nohup
+nohup rcctl restart ospfd & 
 exit
  
 
