@@ -61,6 +61,7 @@ if [[ $# -eq 0 ]]; then
 			\n-I  -> install \
 			\n-U  -> upgrade \
 			\n-D  -> daemons \
+			\n-A  -> administrate \
 			\n"
 	
 	exit 1
@@ -1526,6 +1527,15 @@ case $1 in
 			;;
 		esac
 			
+	;;
+	"-A")
+		if [[ $# -ne 2 ]]; then
+			print $0 "ADMINISTRATE option must be followed by: \
+				\n \
+				\ncleanlast \
+				\n"
+			exit 1 
+		fi			
 	;;
 	*)
 		exit 1
