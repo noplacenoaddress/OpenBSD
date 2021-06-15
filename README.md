@@ -242,70 +242,9 @@ remote: Resolving deltas: 100% (4/4), completed with 4 local objects.
 To github.com:redeltaglio/OpenBSD.git
    c773e1e..48dc7f5  taglio-15062021 -> taglio-15062021
 riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -G
-Connecting to ganesha
-Host key fingerprint is SHA256:mZiIJWncSs+jJUjAho8NNQeO1wSHKVpFORP5wZdDaNo
-+--[ED25519 256]--+
-|+.=BB= o..       |
-|=*+O= = +        |
-|+OO +B o .       |
-|+=oB..Eo o       |
-|. + * o S        |
-|   + .           |
-|  .              |
-|                 |
-|                 |
-+----[SHA256]-----+
-From https://github.com/redeltaglio/OpenBSD
-   d653a14..3377d51  master     -> origin/master
-Updating d653a14..3377d51
-Fast-forward
- src/etc/iked/pubkeys/ufqdn/neo@ca.telecomlobby.com | 9 +++++++++
- 1 file changed, 9 insertions(+)
- create mode 100644 src/etc/iked/pubkeys/ufqdn/neo@ca.telecomlobby.com
-Connecting to saraswati
-Host key fingerprint is SHA256:mZiIJWncSs+jJUjAho8NNQeO1wSHKVpFORP5wZdDaNo
-+-[ED25519-CERT]--+
-|+.=BB= o..       |
-|=*+O= = +        |
-|+OO +B o .       |
-|+=oB..Eo o       |
-|. + * o S        |
-|   + .           |
-|  .              |
-|                 |
-|                 |
-+----[SHA256]-----+
-From https://github.com/redeltaglio/OpenBSD
-   d653a14..3377d51  master     -> origin/master
-Updating d653a14..3377d51
-Fast-forward
- src/etc/iked/pubkeys/ufqdn/neo@ca.telecomlobby.com | 9 +++++++++
- 1 file changed, 9 insertions(+)
- create mode 100644 src/etc/iked/pubkeys/ufqdn/neo@ca.telecomlobby.com
-Connecting to shiva
-Host key fingerprint is SHA256:ErNNl+RHBQnPgqJSO7G192ei7iFkXEp4YdvoxuozmhA
-+-[ED25519-CERT]--+
-|      o   o.o+.  |
-|     o = + =.    |
-|    + X = = +    |
-|   . % @ . o     |
-|E . = % S        |
-| . . * o .       |
-|.   . . . o o    |
-| . oo  . o +     |
-|  o..o o+        |
-+----[SHA256]-----+
-From https://github.com/redeltaglio/OpenBSD
-   d653a14..3377d51  master     -> origin/master
-Updating d653a14..3377d51
-Fast-forward
- src/etc/iked/pubkeys/ufqdn/neo@ca.telecomlobby.com | 9 +++++++++
- 1 file changed, 9 insertions(+)
- create mode 100644 src/etc/iked/pubkeys/ufqdn/neo@ca.telecomlobby.com
-riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -N
+
 ```
-
-
 
 #### Login and start the connection process
 
