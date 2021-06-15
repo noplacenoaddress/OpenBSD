@@ -221,6 +221,10 @@ riccardo@trimurti:~/Work/redama/durpa$
 
 The p12 file have to be protected by the password `123456789`.
 
+Next use the script `ipsec_newpubkey` to add the new public IPsec key to the `src/etc/iked/pubkeys/ufqdn` directory update the repository and use the console script in the right way:
+
+
+
 #### Login and start the connection process
 
 Install the git package:
