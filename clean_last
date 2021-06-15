@@ -29,6 +29,16 @@ if [[ $uid -ne 0 ]]; then
 fi
 nohup backup "etc" & > /tmp/nohup
 last=$(basename $(cat /etc/iked.conf | grep "iked.conf." | tail -n 1 | awk '{print $2}' | sed 's/"//g' | sed 's/iked.conf.//'))
+publichostname=$(echo $last | cut -d . -f1)
+domainname=$(echo $last | sed "s/$publichostname.//")
+
+for a in $(dig ipsec20591.$domainname TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+	b=$(echo $a | cut -d : -f1)
+	if [[ "$b" -eq "$publichostname" ]]; then
+		srcid=$(echo $a | cut -d : -f2)
+	fi
+done
+
 filename=$(find /etc -name "*$last" -maxdepth 1 -type f)
 sed -i "/$last/d" /etc/iked.conf
 /bin/rm -r "$filename"
@@ -42,5 +52,6 @@ for file in $(grep "$last" /etc/* | grep hostname | cut -d : -f1); do
 	/bin/rm -r $file
 done
 sed -i "/interface $ospfinterface/,/}/d" /etc/ospfd.conf
+/bin/rm -r "/etc/iked/pubkeys/ufqdn/$srcid@ca.$domainname"
 nohup rcctl restart ospfd & > /tmp/nohup
 exit
