@@ -544,7 +544,7 @@ function upgrade {
 				echo "Which file do you want to update [type dst complete PATH]? "
 				read fileupdate
 				cp -p $fileupdate "$BACKUPS/file/$(basename $fileupdate)"
-				gitfile="src/$(echo $fileupdate | cut -d / -f2)"
+				gitfile="$basedir/src/$(echo $fileupdate | cut -d / -f2)"
 				install -o root -g wheel $gitfile $fileupdate
 				chmod --reference="$BACKUPS/file/$(basename $fileupdate)" $fileupdate
 				chown --reference="$BACKUPS/file/$(basename $fileupdate)" $fileupdate		
