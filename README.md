@@ -328,6 +328,14 @@ root@cyberanarkhia:/home/taglio/Sources/Git/OpenBSD-private-CA#
 
 Use `newhost` and `transfer` options.
 
+[![OpenBSD MESH IPSec guerrila host](https://asciinema.org/a/420482.png)](https://asciinema.org/a/420482)
+
+#### You successfully installed and connected a new OpenBSD MESH guerrilla host
+
+*Ok baby let's rock&roll. We've configured a new IPSec MESH host in a semi automatic way, a lot of work done in a few clicks with our preferred system operative, the secure fish! OpenBSD!*
+
+
+
 #### Remote upgrade
 
 ![](https://redama.es/Imagenes/varuna_shell.png)
