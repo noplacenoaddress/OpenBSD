@@ -526,6 +526,8 @@ function upgrade {
 			
 			sh "$basedir/$app" -U pf
 			install -o root -g wheel -m 0640 $basedir/src/etc/ssh/remote_install/authorized_keys /etc/ssh/remote_install/
+			pubkey=$(ls -lt src/etc/iked/pubkeys/ufqdn/ | awk '{print $9}' | awk 'FNR == 2 {print}')
+			install -o root -g wheel -m 0640 "$basedir/src/etc/iked/pubkeys/ufqdn/$pubkey" /etc/iked/pubkeys/ufqdn/
 			
 		;;
 		"scripts")
