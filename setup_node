@@ -633,6 +633,12 @@ function configuration {
 			echo "dhclient, resolv.conf.tail, doas.conf, myname and sysctl.conf \n"
 			install -o root -g wheel -m 0644  $basedir/src/etc/{dhclient.conf,resolv.conf.tail,doas.conf,myname,sysctl.conf} /etc/
 			cat $basedir/src/etc/rc.local >> /etc/rc.local
+			file="/etc/sysctl.conf"
+			while IFS= read -r line
+			do
+				# display line or do somthing on $line
+				sysctl -w $line
+			done <"$file"
 			echo "vether"
 			install -o root -g wheel -m 0644  $basedir/src/etc/hostname.vether0 /etc/
 			echo "configuring iperf uptimed and oidentd \n"
