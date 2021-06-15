@@ -637,7 +637,7 @@ function configuration {
 			while IFS= read -r line
 			do
 				if [[ ! -z $line ]]; then
-					sysctl -w $line
+					sysctl -w ${line}
 				fi
 			done <"$file"
 			echo "vether"
