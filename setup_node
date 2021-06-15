@@ -636,8 +636,9 @@ function configuration {
 			file="/etc/sysctl.conf"
 			while IFS= read -r line
 			do
-				# display line or do somthing on $line
-				sysctl -w $line
+				if [[ ! -z $line ]]; then
+					sysctl -w $line
+				fi
 			done <"$file"
 			echo "vether"
 			install -o root -g wheel -m 0644  $basedir/src/etc/hostname.vether0 /etc/
