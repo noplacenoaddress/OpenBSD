@@ -12,7 +12,7 @@ Applications are multiples, from bypass the European [ECHELON](https://en.wikipe
 
 I'm an addicted of privacy and security and I'm very tired about the modern slavery network transmitted by weapons from the European elite. 
 
-*Vatican and Aristocracy are totally guilty about the recent destroy of democracy.*
+*Vatican and Aristocracy are totally guilty about the recent destroy of democracy. They are owners of an exploitation camp transmitted by electromagnetic weapons and elaborated by artificial intelligence from the Collserola tower in Barcelona above all the Mediterranean area. Electronic slavery, the modern slavery that United Nation is investigating is my goal.*
 
 #### VPS election
 
