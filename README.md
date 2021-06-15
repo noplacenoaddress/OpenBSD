@@ -361,6 +361,8 @@ openbsd			IN TXT	 "ganesha;saraswati;shiva;varuna;"
 root@cyberanarkhia:/var/nsd/zones/master# 
 ```
 
+Enter in the new system and add a password, use a great password manager in your workstation like [KeePassXC](https://keepassxc.org/):
+
 
 
 #### Remote upgrade
