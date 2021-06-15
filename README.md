@@ -334,6 +334,33 @@ Use `newhost` and `transfer` options.
 
 *Ok baby let's rock&roll. We've configured a new IPSec MESH host in a semi automatic way, a lot of work done in a few clicks with our preferred system operative, the secure fish! OpenBSD!*
 
+The first step after is to add the new [SSHFP](https://en.wikipedia.org/wiki/SSHFP_record) record to our internal [nsd](https://en.wikipedia.org/wiki/NSD) server. Scan them:
+
+```shell
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ssh-keyscan -D -t ed25519 varuna.telecom.lobby
+; varuna.telecom.lobby:22 SSH-2.0-OpenSSH_8.6
+varuna.telecom.lobby IN SSHFP 4 1 6e77aacf6c65bac6ff6dcb8e21ce9beb7cb9d832
+varuna.telecom.lobby IN SSHFP 4 2 9baacb4c882270c8f37f2fbc847f1094b2b78a34da4650ec24a3b69ad6033dc3
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ 
+```
+
+And update the zone in the server and the `openbsd` record:
+
+```shell
+root@cyberanarkhia:/var/nsd/zones/master# rcctl restart nsd                                                                                                                                                                                                                 
+nsd(ok)
+nsd(ok)
+root@cyberanarkhia:/var/nsd/zones/master# rcctl restart unbound
+unbound(ok)
+unbound(ok)
+root@cyberanarkhia:/var/nsd/zones/master# cat telecom.lobby | grep varuna                                                                                                                                                                                                        
+varuna		IN A 192.168.13.59
+varuna.telecom.lobby IN SSHFP 4 1 6e77aacf6c65bac6ff6dcb8e21ce9beb7cb9d832
+varuna.telecom.lobby IN SSHFP 4 2 9baacb4c882270c8f37f2fbc847f1094b2b78a34da4650ec24a3b69ad6033dc3
+openbsd			IN TXT	 "ganesha;saraswati;shiva;varuna;"
+root@cyberanarkhia:/var/nsd/zones/master# 
+```
+
 
 
 #### Remote upgrade
