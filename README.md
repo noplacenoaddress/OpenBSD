@@ -303,6 +303,31 @@ Those are the host names of every OpenBSD guy connected to our network, remember
 
 [![OpenBSD MESH IPSec guerrila host](https://asciinema.org/a/418749.png)](https://asciinema.org/a/418749)
 
+You've got to update also the CA server inside your network. As the other use the new `ed25519` public key:
+
+```shell
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD-private-CA$ mkdir src/etc/ssh/ca/host/durpa.telecom.lobby
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD-private-CA$ echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHfCxPKwUqEG9JaEaK6uqFDfDMFYFTblLEWPekGh8CAn root@durpa.telecom.lobby" > src/etc/ssh/ca/host/durpa.telecom.lobby/ssh_host_ed25519_key.pub
+```
+
+Update the repository using the script `git_openbsd-private-ca.sh` and next create the new `ssh_host_ed25519_key-cert.pub` with:
+
+```shell
+root@cyberanarkhia:/home/taglio/Sources/Git/OpenBSD-private-CA# ./setup_ca                                                                                                                                                                                                       
+./setup_ca have to be used with the following options 			
+ 			
+install  -> create SSH and SSL private CA 			
+verify   -> printout and verify certificates 			
+reset    -> reset filesystem hierarchy and delete certificates and keys 			
+transfer -> tar files on /home/taglio 			
+newhost -> add a new MESH host 			
+
+root@cyberanarkhia:/home/taglio/Sources/Git/OpenBSD-private-CA# 
+
+```
+
+Use `newhost` and `transfer` options.
+
 #### Remote upgrade
 
 ![](https://redama.es/Imagenes/varuna_shell.png)
