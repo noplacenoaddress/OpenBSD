@@ -15,7 +15,7 @@
 #####
 #
 #TODO ssh reverse tool in installation to launch different process executed by hand
-#
+# configure to create /tmp/config.ini
 #
 #
 #####
