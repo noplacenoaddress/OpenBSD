@@ -221,7 +221,89 @@ riccardo@trimurti:~/Work/redama/durpa$
 
 The p12 file have to be protected by the password `123456789`.
 
-Next use the script `ipsec_newpubkey` to add the new public IPsec key to the `src/etc/iked/pubkeys/ufqdn` directory update the repository and use the console script in the right way:
+Next use the script `ipsec_newpubkey` to add the new public IPSec key to the `src/etc/iked/pubkeys/ufqdn` directory update the repository and use the console script in the right way:
+
+```shell
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ./ipsec_newpubkey /home/riccardo/Work/redama/varuna/bg.telecomlobby.com.p12 
+neo@ca.telecomlobby.com created please update repository and all the others Openbsd hosts
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ sh git_openbsd.sh 
+git add, commit, sign and push
+check branch
+[taglio-15062021 48dc7f5]  Please enter the commit message for your changes. Lines starting  with '' will be ignored, and an empty message aborts the commit.
+ 1 file changed, 9 insertions(+)
+ create mode 100644 src/etc/iked/pubkeys/ufqdn/neo@ca.telecomlobby.com
+Enumerating objects: 14, done.
+Counting objects: 100% (14/14), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (7/7), done.
+Writing objects: 100% (8/8), 1.73 KiB | 886.00 KiB/s, done.
+Total 8 (delta 4), reused 3 (delta 0), pack-reused 0
+remote: Resolving deltas: 100% (4/4), completed with 4 local objects.
+To github.com:redeltaglio/OpenBSD.git
+   c773e1e..48dc7f5  taglio-15062021 -> taglio-15062021
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -G
+Connecting to ganesha
+Host key fingerprint is SHA256:mZiIJWncSs+jJUjAho8NNQeO1wSHKVpFORP5wZdDaNo
++--[ED25519 256]--+
+|+.=BB= o..       |
+|=*+O= = +        |
+|+OO +B o .       |
+|+=oB..Eo o       |
+|. + * o S        |
+|   + .           |
+|  .              |
+|                 |
+|                 |
++----[SHA256]-----+
+From https://github.com/redeltaglio/OpenBSD
+   d653a14..3377d51  master     -> origin/master
+Updating d653a14..3377d51
+Fast-forward
+ src/etc/iked/pubkeys/ufqdn/neo@ca.telecomlobby.com | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+ create mode 100644 src/etc/iked/pubkeys/ufqdn/neo@ca.telecomlobby.com
+Connecting to saraswati
+Host key fingerprint is SHA256:mZiIJWncSs+jJUjAho8NNQeO1wSHKVpFORP5wZdDaNo
++-[ED25519-CERT]--+
+|+.=BB= o..       |
+|=*+O= = +        |
+|+OO +B o .       |
+|+=oB..Eo o       |
+|. + * o S        |
+|   + .           |
+|  .              |
+|                 |
+|                 |
++----[SHA256]-----+
+From https://github.com/redeltaglio/OpenBSD
+   d653a14..3377d51  master     -> origin/master
+Updating d653a14..3377d51
+Fast-forward
+ src/etc/iked/pubkeys/ufqdn/neo@ca.telecomlobby.com | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+ create mode 100644 src/etc/iked/pubkeys/ufqdn/neo@ca.telecomlobby.com
+Connecting to shiva
+Host key fingerprint is SHA256:ErNNl+RHBQnPgqJSO7G192ei7iFkXEp4YdvoxuozmhA
++-[ED25519-CERT]--+
+|      o   o.o+.  |
+|     o = + =.    |
+|    + X = = +    |
+|   . % @ . o     |
+|E . = % S        |
+| . . * o .       |
+|.   . . . o o    |
+| . oo  . o +     |
+|  o..o o+        |
++----[SHA256]-----+
+From https://github.com/redeltaglio/OpenBSD
+   d653a14..3377d51  master     -> origin/master
+Updating d653a14..3377d51
+Fast-forward
+ src/etc/iked/pubkeys/ufqdn/neo@ca.telecomlobby.com | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+ create mode 100644 src/etc/iked/pubkeys/ufqdn/neo@ca.telecomlobby.com
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$
+```
 
 
 
