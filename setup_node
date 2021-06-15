@@ -569,7 +569,7 @@ function upgrade {
 function admin {
 	case $1 in
 		"cleanlast")
-			sh clean_last
+			sh  $basedir/clean_last
 		;;
 	esac
 }
@@ -1303,7 +1303,7 @@ case $1 in
 				srcid=$(echo $a | cut -d : -f2)
 			fi
 		done
-
+		hostname "$hostname.$landomainname"
 		echo "configuring basic"
 		if [[ $configini -eq 1 ]]; then
 			configuration "basic" 
