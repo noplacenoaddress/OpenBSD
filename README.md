@@ -363,7 +363,65 @@ root@cyberanarkhia:/var/nsd/zones/master#
 
 Enter in the new system and add a password, use a great password manager in your workstation like [KeePassXC](https://keepassxc.org/):
 
+```shell
+taglio@varuna:/etc$ su
+Password:
+root@varuna:/etc# passwd taglio
+Changing password for taglio.
+New password:
+Retype new password:
+root@varuna:/etc# 
+```
+
 Then create a new SSL internal [CSR](https://en.wikipedia.org/wiki/Certificate_signing_request) certificate request and download it to the CA server to create a new [x.509](https://en.wikipedia.org/wiki/X.509) [CRT](https://en.wikipedia.org/wiki/X.690#DER_encoding) for the internal services like `httpd(8)` and the surely next installed daemon [dovecot](https://www.dovecot.org/).
+
+```shell
+root@varuna:/home/taglio/Sources/Git/OpenBSD# sh setup_node -A sslcareq
+Generating RSA private key, 2048 bit long modulus
+.......................................................+++++
+..............+++++
+e is 65537 (0x10001)
+writing RSA key
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Country Name (2 letter code) []:BG
+State or Province Name (full name) []:Lovech
+Locality Name (eg, city) []:Troyan
+Organization Name (eg, company) []:VPNC
+root@varuna:/home/taglio/Sources/Git/OpenBSD# sh setup_node -A sslcareq rces/Git/OpenBSD# 
+Generating RSA private key, 2048 bit long modulus
+...................................................................+++++
+.......+++++
+e is 65537 (0x10001)
+writing RSA key
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Country Name (2 letter code) []:BG
+State or Province Name (full name) []:Lovech
+Locality Name (eg, city) []:Troyan
+Organization Name (eg, company) []:Telecom Lobby
+Organizational Unit Name (eg, section) []:VPNC
+Common Name (eg, fully qualified host name) []:varuna.telecom.lobby
+Email Address []:varuna@ca.telecom.lobby
+
+Please enter the following 'extra' attributes
+to be sent with your certificate request
+A challenge password []:
+Download csr from http://varuna.telecom.lobby/varuna.telecom.lobby.csr to the CA server
+root@varuna:/home/taglio/Sources/Git/OpenBSD#
+```
+
+
 
 #### Remote upgrade
 
