@@ -231,12 +231,16 @@ function upgrade {
 			if [[ ! -d "$basedir/../OpenBSD-private-CA" ]]; then
 				echo "OpenBSD-private-CA not found cloning it..."
 				cd  ..
-				doas -u taglio git clone https://github.com/redeltaglio/OpenBSD-private-CA.git
+				git clone https://github.com/redeltaglio/OpenBSD-private-CA.git
+				chown -R taglio:wheel OpenBSD-private-CA/
 				cd OpenBSD-private-CA
 				sh setup_host
 			else
 				cd "$basedir/../OpenBSD-private-CA"
-				doas -u taglio git pull
+				git pull
+				cd ..
+				chown -R taglio:wheel OpenBSD-private-CA/
+				cd OpenBSD-private-CA
 				sh setup_host
 			fi	
 		;;
@@ -664,7 +668,7 @@ function configuration {
 			cat /root/.ssh/id_ed25519.pub
 			echo "Add your new ssh_host_ed25519_key.pub to the CA repository src/etc/ssh/ca/host/$hostname.$landomainname/ and create the new SSHCA certificate"
 			cat /etc/ssh/ssh_host_ed25519_key.pub
-			echo "Update the nsd internal $landomainname zone $hostname SSHFP record"
+			echo "Update the nsd internal $landomainname zone $hostname SSHFP record, you can do it automatically"
 			ssh-keygen -r $hostname -f /etc/ssh/ssh_host_ed25519_key.pub
 		;;	
 		"users")
