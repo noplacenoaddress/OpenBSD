@@ -1471,6 +1471,7 @@ case $1 in
 		fi
 		sh "$basedir/$app" -U unbound_ipsec
 		sh "$basedir/$app" -U ssh_ipsec
+		pfctl -f /etc/pf.conf
 		echo "You successfully installed and connected a new OpenBSD MESH guerrilla host"	
 	;;
 	"-U")
