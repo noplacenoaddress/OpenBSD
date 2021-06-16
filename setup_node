@@ -576,9 +576,13 @@ function admin {
 			sh  $basedir/clean_last
 		;;
 		"sslcareq")
+			
 			openssl genrsa -out "private/$(hostname).key" 2048
 			openssl rsa -in "/etc/ssl/private/$(hostname).key" -out "/etc/ssl/private/$(hostname)-nopwd.key"
 			openssl req -new -key "/etc/ssl/private/$(hostname)-nopwd.key" -out "/etc/ssl/csr/$(hostname).csr"
+			if [[ ! -d "/var/www/htdocs/$(hostname)" ]]; then
+				mkdir "/var/www/htdocs/$(hostname)"
+			fi
 			cp "/etc/ssl/csr/$(hostname).csr" "/var/www/htdocs/$(hostname)"
 			echo "Download csr from http://$(hostname)/$(hostname).csr to the CA server"
 		;;
