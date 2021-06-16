@@ -1304,6 +1304,7 @@ case $1 in
 			fi
 		done
 		hostname "$hostname.$landomainname"
+		#ssh-keygen host ed25519 key
 		echo "configuring basic"
 		if [[ $configini -eq 1 ]]; then
 			configuration "basic" 
