@@ -577,6 +577,9 @@ function admin {
 		;;
 		"sslcareq")
 			cd /etc/ssl
+			if [[ ! -d csr ]]; then
+				mkdir {csr,certs}
+			fi
 			openssl genrsa -out "private/$(hostname).key" 2048
 			openssl rsa -in "/etc/ssl/private/$(hostname).key" -out "/etc/ssl/private/$(hostname)-nopwd.key"
 			openssl req -new -key "/etc/ssl/private/$(hostname)-nopwd.key" -out "/etc/ssl/csr/$(hostname).csr"
