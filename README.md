@@ -363,7 +363,7 @@ root@cyberanarkhia:/var/nsd/zones/master#
 
 Enter in the new system and add a password, use a great password manager in your workstation like [KeePassXC](https://keepassxc.org/):
 
-
+Then create a new SSL internal [CSR](https://en.wikipedia.org/wiki/Certificate_signing_request) certificate request and download it to the CA server to create a new [x.509](https://en.wikipedia.org/wiki/X.509) [CRT](https://en.wikipedia.org/wiki/X.690#DER_encoding) for the internal services like `httpd(8)` and the surely next installed daemon [dovecot](https://www.dovecot.org/).
 
 #### Remote upgrade
 
