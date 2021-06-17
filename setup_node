@@ -16,7 +16,7 @@
 #
 #TODO ssh reverse tool in installation to launch different process executed by hand
 # configure to create /tmp/config.ini
-#
+# ospf metric revise
 #
 #####
 
@@ -1476,6 +1476,8 @@ case $1 in
 		sh "$basedir/$app" -U ssh_ipsec
 		pfctl -f /etc/pf.conf
 		rcctl restart syslogd
+		rm /etc/ssh/principals/taglio
+		echo "wheel" > /etc/ssh/principals/taglio
 		echo "You successfully installed and connected a new OpenBSD MESH guerrilla host"	
 	;;
 	"-U")

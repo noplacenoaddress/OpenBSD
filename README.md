@@ -346,6 +346,34 @@ Use `newhost` and `transfer` options.
 
 [![OpenBSD MESH IPSec guerrila host](https://asciinema.org/a/420482.png)](https://asciinema.org/a/420482)
 
+#### Automatic install
+
+```shell
+taglio@varuna:/home/taglio$ cat /tmp/config.ini                                                                                                                                                                                                                  static#1
+ipv6ctrl#static
+ipv6egress#2a01:8740:1:ff48::64a8
+ipv6prefix#48
+ipv6defrouter#2a01:8740:1:ff00::1
+installurl#1
+shell#1
+users#1
+hostname#varuna
+landomainname#telecom.lobby
+routerid#192.168.13.59
+basic#1
+unbound#1
+ssh#1
+ipsec#1
+gre#1
+pf#1
+ospf#1
+remote#1
+taglio@varuna:/home/taglio$ 
+
+```
+
+This is the configuration file obtained by the semi automatic installation process. You can adapt to your configuration but be careful with the `static` or `dynamic` IPv6. To archive that you can use also the `configure` script in the root of the repository, simply answer to the questions. 
+
 #### You successfully installed and connected a new OpenBSD MESH guerrilla host
 
 *Ok baby let's rock&roll. We've configured a new IPSec MESH host in a semi automatic way, a lot of work done in a few clicks with our preferred system operative, the secure fish! OpenBSD!*
