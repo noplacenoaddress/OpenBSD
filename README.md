@@ -277,8 +277,24 @@ Go ahead type 1
 After some points the program give us the root ssh `ed25519` key of the new host. That is [EdDSA](https://en.wikipedia.org/wiki/EdDSA) in [public key cryptography](https://en.wikipedia.org/wiki/Public-key_cryptography).  Update the repository:
 
 ``` shell
-riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ sed -i '/durpa.telecom.lobby/d' src/etc/ssh/remote_install/authorized_keys 
-riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHfCxPKwUqEG9JaEaK6uqFDfDMFYFTblLEWPekGh8CAn root@durpa.telecom.lobby" >> src/etc/ssh/remote_install/authorized_keys 
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ sed -i '/durga.telecom.lobby/d' src/etc/ssh/remote_install/authorized_keys 
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHfCxPKwUqEG9JaEaK6uqFDfDMFYFTblLEWPekGh8CAn root@durga.telecom.lobby" >> src/etc/ssh/remote_install/authorized_keys 
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$
+```
+
+To do this operation you can use also the `console` script in the forked repository root:
+
+```shell
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -RS
+Type the LAN hostname 
+durga.telecom.lobby
+Type the public hostname 
+de.telecomlobby.com
+Type the ED25519 hash 
+AAAAC3NzaC1lZDI1NTE5AAAAIH6Kju+51Vud+0cHKgpdFNSRIpXM/PcLQAO86xKgc+Op
+remote_install/authorized_keys and ssh_known_hosts UPDATED
+		
+ please use git_openbsd.sh to update the public GIT
 riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$
 ```
 
