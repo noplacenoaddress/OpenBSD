@@ -322,8 +322,8 @@ Those are the host names of every OpenBSD guy connected to our network, remember
 You've got to update also the CA server inside your network. As the other use the new `ed25519` public key:
 
 ```shell
-riccardo@trimurti:~/Work/telecom.lobby/OpenBSD-private-CA$ mkdir src/etc/ssh/ca/host/durpa.telecom.lobby
-riccardo@trimurti:~/Work/telecom.lobby/OpenBSD-private-CA$ echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHfCxPKwUqEG9JaEaK6uqFDfDMFYFTblLEWPekGh8CAn root@durpa.telecom.lobby" > src/etc/ssh/ca/host/durpa.telecom.lobby/ssh_host_ed25519_key.pub
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD-private-CA$ mkdir src/etc/ssh/ca/host/durga.telecom.lobby
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD-private-CA$ echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHfCxPKwUqEG9JaEaK6uqFDfDMFYFTblLEWPekGh8CAn root@durga.telecom.lobby" > src/etc/ssh/ca/host/durpa.telecom.lobby/ssh_host_ed25519_key.pub
 ```
 
 Update the repository using the script `git_openbsd-private-ca.sh` and next create the new `ssh_host_ed25519_key-cert.pub` with:
@@ -392,24 +392,7 @@ root@varuna:/etc#
 Then create a new SSL internal [CSR](https://en.wikipedia.org/wiki/Certificate_signing_request) certificate request and download it to the CA server to create a new [x.509](https://en.wikipedia.org/wiki/X.509) [CRT](https://en.wikipedia.org/wiki/X.690#DER_encoding) for the internal services like `httpd(8)` and the surely next installed daemon [dovecot](https://www.dovecot.org/).
 
 ```shell
-root@varuna:/home/taglio/Sources/Git/OpenBSD# sh setup_node -A sslcareq
-Generating RSA private key, 2048 bit long modulus
-.......................................................+++++
-..............+++++
-e is 65537 (0x10001)
-writing RSA key
-You are about to be asked to enter information that will be incorporated
-into your certificate request.
-What you are about to enter is what is called a Distinguished Name or a DN.
-There are quite a few fields but you can leave some blank
-For some fields there will be a default value,
-If you enter '.', the field will be left blank.
------
-Country Name (2 letter code) []:BG
-State or Province Name (full name) []:Lovech
-Locality Name (eg, city) []:Troyan
-Organization Name (eg, company) []:VPNC
-root@varuna:/home/taglio/Sources/Git/OpenBSD# sh setup_node -A sslcareq rces/Git/OpenBSD# 
+root@varuna:/home/taglio/Sources/Git/OpenBSD# sh setup_node -A sslcareq 
 Generating RSA private key, 2048 bit long modulus
 ...................................................................+++++
 .......+++++
