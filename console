@@ -21,6 +21,7 @@ if [[ $# -eq 0 ]]; then
 			\n-D  -> dyndnspop [o] \
 			\n-F  -> single file update [o] \
 			\n-C  -> cleanlast [o] \
+			\n-RS  -> repository ssh update [o] \
 			\n"
 	
 	exit 1
@@ -67,6 +68,41 @@ case $3 in
 			echo -e "Connecting to $vpnc_host"
 			ssh -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -A cleanlast
 		done	
+	;;
+	"-RS")
+		lanhost=
+		while [ -z $lanhost ]
+		do
+			echo 'Type the LAN hostname '
+			read lanhost
+		done
+		pubhost=
+		while [ -z $pubhost ]
+		do
+			echo 'Type the public hostname '
+			read pubhost
+		done
+		hash=
+		while [ -z $hash ]
+		do
+			echo 'Type the ED25519 hash '
+			read hash
+		done 	
+		if [[ $(grep -c $lanhost src/etc/ssh/remote_install/authorized_keys) -gt 0 ]]; then
+			for linenum in $(grep -n $lanhost src/etc/ssh/remote_install/authorized_keys | cut -d : -f1); do
+				sed -i "$linenum"d src/etc/ssh/remote_install/authorized_keys
+			done
+		fi
+		echo "ssh-ed25519 $hash root@$lanhost" >> src/etc/ssh/remote_install/authorized_keys
+		if [[ $(grep -c $pubhost src/etc/ssh/ssh_known_hosts) -gt 0 ]]; then
+			for linenum in $(grep -n $pubhost src/etc/ssh/ssh_known_hosts | cut -d : -f1); do
+				sed -i "$linenum"d src/etc/ssh/ssh_known_hosts
+			done
+		fi
+		echo "# $pubhost:31137 SSH-2.0-OpenSSH_8.6" >> src/etc/ssh/ssh_known_hosts
+		echo "[$pubhost]:31137 ssh-ed25519 $hash" >> src/etc/ssh/ssh_known_hosts
+		echo -e "remote_install/authorized_keys and ssh_known_hosts UPDATED
+		\n please use git_openbsd.sh to update the public GIT"
 	;;
 	*)
 	;;
