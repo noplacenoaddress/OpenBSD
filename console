@@ -21,7 +21,8 @@ if [[ $# -eq 0 ]]; then
 			\n-D  -> dyndnspop [o] \
 			\n-F  -> single file update [o] \
 			\n-C  -> cleanlast [o] \
-			\n-RS  -> repository ssh update [o] \
+			\n-RS -> repository ssh update [o] \
+			\n-K  -> new IKED pk12 archive [o] \ 
 			\n"
 	
 	exit 1
@@ -104,6 +105,33 @@ case $3 in
 		echo "[$pubhost]:31137 ssh-ed25519 $hash" >> src/etc/ssh/ssh_known_hosts
 		echo -e "remote_install/authorized_keys and ssh_known_hosts UPDATED
 		\n please use git_openbsd.sh to update the public GIT"
+	;;
+	"-K")
+		ikedpub=
+		while [ -z $ikedpub ]
+		do
+			echo 'Type the PATH to the new iked PK12 file '
+			read ikedpub
+		done
+		pk12=$(basename $ikedpub)
+		publichost=$(echo $pk12 | sed 's/.p12//')
+		publichostname=$(echo $publichost | cut -d . -f1)
+		domainname=$(echo $publichost | sed "s/$publichostname.//")
+
+
+		for a in $(dig ipsec20591.$domainname TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+			b=$(echo $a | cut -d : -f1)
+			if [[ "$b" -eq "$publichostname" ]]; then
+				srcid=$(echo $a | cut -d : -f2)
+			fi
+		done
+
+
+		openssl pkcs12 -nodes -in $ikedpub -nocerts -passin pass:123456789 -passout pass:123456789 -out "$tmpdir/local.key"
+		openssl pkcs12 -nodes -in $ikedpub -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "$tmpdir/new.crt"
+		openssl x509 -pubkey -noout -passin pass:123456789 -in "$tmpdir/new.crt"  > src/etc/iked/pubkeys/ufqdn/"$srcid@ca.$domainname"
+		rm -rf $tmpdir
+		echo -e "$srcid@ca.$domainname created please update repository and all the others Openbsd hosts"		
 	;;
 	*)
 	;;
