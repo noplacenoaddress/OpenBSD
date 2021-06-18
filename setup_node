@@ -1007,8 +1007,8 @@ function configuration {
 				ospfmd5=$(tr -cd '[:alnum:],.' < /dev/urandom | fold -w 15 | head -n 1)
 				sed -i "s/\/OSPFMD5\//${ospfmd5}/g" /etc/ospfd.conf
 				pophost=$(cat /etc/`basename $file` | head -n 1 | cut -d ' ' -f2 | sed "s/\"//g")
-				#popip=$(dig -x $pophost +short @8.8.8.8)
-				typeset -i latency=$(ping -c4 $popip | tail -1| awk '{print $4}' | cut -d '/' -f 2 | cut -d . -f1)
+				#popip=$(dig $pophost A +short @8.8.8.8)
+				typeset -i latency=$(ping -c4 $pophost | tail -1| awk '{print $4}' | cut -d '/' -f 2 | cut -d . -f1)
 				typeset -i metric=$(expr $latency / 2)
 				sed -i "s/\/METRIC\//${metric}/g" /etc/ospfd.conf
 				cat $basedir/src/openbsd/ospfd.conf.openbsd >> /etc/ospfd.conf	
