@@ -125,8 +125,8 @@ case $3 in
 				srcid=$(echo $a | cut -d : -f2)
 			fi
 		done
-
-
+		ssh-keygen -f "/home/riccardo/.ssh/known_hosts" -R "$publichost"
+		scp $ikedpub "$userna@$publichost:/tmp"
 		openssl pkcs12 -nodes -in $ikedpub -nocerts -passin pass:123456789 -passout pass:123456789 -out "$tmpdir/local.key"
 		openssl pkcs12 -nodes -in $ikedpub -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "$tmpdir/new.crt"
 		openssl x509 -pubkey -noout -passin pass:123456789 -in "$tmpdir/new.crt"  > src/etc/iked/pubkeys/ufqdn/"$srcid@ca.$domainname"
