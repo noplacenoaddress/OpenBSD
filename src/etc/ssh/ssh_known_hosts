@@ -5,7 +5,7 @@
 # us.telecomlobby.com:31137 SSH-2.0-OpenSSH_8.6
 [us.telecomlobby.com]:31137 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKugDXoBFKt69t3O97KHh4yEKEBZ6PMW+iLs40aRjN2A
 [bg.telecomlobby.com]:31137 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPh1lOsfMa9EtuLiqkDEPuXDuk2QFGcPNZUguNPx6eue
-[de.telecomlobby.com]:31137 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOgLWH2q49zvFu60Kruy9EY9uiv1FvCLkuH3skzlkeNK
 [bg.telecomlobby.com]:31137 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILIk5CAm5Rpc9p27lB/L58XYzG/W0LuwMwuCa+ayw3x6
+# de.telecomlobby.com:31137 SSH-2.0-OpenSSH_8.6
 # de.telecomlobby.com:31137 SSH-2.0-OpenSSH_8.6
 [de.telecomlobby.com]:31137 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILIO2zqC8dmWWNyfj0Ml7AbCYrrZGDG8p6NM1Hd86rVJ

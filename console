@@ -22,8 +22,7 @@ if [[ $# -eq 0 ]]; then
 			\n-F  -> single file update [o] \
 			\n-C  -> cleanlast [o] \
 			\n-RS -> repository ssh update [o] \
-			\n-K  -> new IKED pk12 archive [o] \ 
-			\n"
+			\n-K  -> new IKED pk12 archive [o] \n"
 	
 	exit 1
 fi
@@ -113,6 +112,7 @@ case $3 in
 			echo 'Type the PATH to the new iked PK12 file '
 			read ikedpub
 		done
+		tmpdir=$(mktemp -d)
 		pk12=$(basename $ikedpub)
 		publichost=$(echo $pk12 | sed 's/.p12//')
 		publichostname=$(echo $publichost | cut -d . -f1)
@@ -126,7 +126,7 @@ case $3 in
 			fi
 		done
 		ssh-keygen -f "/home/riccardo/.ssh/known_hosts" -R "$publichost"
-		scp $ikedpub "$userna@$publichost:/tmp"
+		scp $ikedpub "taglio@$publichost:/tmp"
 		openssl pkcs12 -nodes -in $ikedpub -nocerts -passin pass:123456789 -passout pass:123456789 -out "$tmpdir/local.key"
 		openssl pkcs12 -nodes -in $ikedpub -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "$tmpdir/new.crt"
 		openssl x509 -pubkey -noout -passin pass:123456789 -in "$tmpdir/new.crt"  > src/etc/iked/pubkeys/ufqdn/"$srcid@ca.$domainname"
