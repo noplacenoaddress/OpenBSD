@@ -686,6 +686,14 @@ function configuration {
 			echo "Update the nsd internal $landomainname zone $hostname SSHFP record, you can do it automatically"
 			
 			ssh-keygen -r $hostname -f /etc/ssh/ssh_host_ed25519_key.pub
+			if [[ $configini -eq 1 ]]; then
+				ctrl=
+				while [ -z $ctrl ]
+				do
+					echo 'Go ahead type 1 '
+					read ctrl
+				done
+			fi
 		;;	
 		"users")
 			echo "vmail, dsync, _iperfd, wwwuser"
