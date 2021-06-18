@@ -349,7 +349,7 @@ Use `newhost` and `transfer` options.
 #### Automatic install
 
 ```shell
-taglio@varuna:/home/taglio$ cat /tmp/config.ini                                                                                                                                                                                                                  static#1
+taglio@varuna:/home/taglio$ cat /tmp/config.ini                                                                                                                                                                                                                 static#1
 ipv6ctrl#static
 ipv6egress#2a01:8740:1:ff48::64a8
 ipv6prefix#48
@@ -373,6 +373,8 @@ taglio@varuna:/home/taglio$
 ```
 
 This is the configuration file obtained by the semi automatic installation process. You can adapt to your configuration but be careful with the `static` or `dynamic` IPv6. To archive that you can use also the `configure` script in the root of the repository, simply answer to the questions. 
+
+[![OpenBSD MESH IPSec guerrila host](https://asciinema.org/a/421061.png)](https://asciinema.org/a/421061)
 
 #### You successfully installed and connected a new OpenBSD MESH guerrilla host
 
