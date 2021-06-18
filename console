@@ -99,6 +99,7 @@ case $3 in
 				sed -i "$linenum"d src/etc/ssh/ssh_known_hosts	
 			done
 		fi
+		
 		echo "# $pubhost:31137 SSH-2.0-OpenSSH_8.6" >> src/etc/ssh/ssh_known_hosts
 		echo "[$pubhost]:31137 ssh-ed25519 $hash" >> src/etc/ssh/ssh_known_hosts
 		echo -e "remote_install/authorized_keys and ssh_known_hosts UPDATED
