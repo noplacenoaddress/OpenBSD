@@ -1157,7 +1157,7 @@ function configuration {
 					if [[ ! -d "/var/www/htdocs/$hostname.$landomainname" ]]; then
 						mkdir "/var/www/htdocs/$hostname.$landomainname"
 					fi
-					if [[ $(ls | grep -c "sha256") -ne 0 ]]; then
+					if [[ $(ls "/var/www/htdocs/$publichost/" | grep -c "sha256") -ne 0 ]]; then
 						mv "/var/www/htdocs/$publichost/"* "/var/www/htdocs/$hostname.$landomainname"
 					fi
 					chown -R wwwftp:www "/var/www/htdocs/$hostname.$landomainname"
