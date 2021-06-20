@@ -1698,7 +1698,8 @@ case $1 in
 		fi
 		case $2 in
 			"powernsd")
-					
+				echo "configuring nsd and powerdns"
+				configuration "powernsd"	
 			;;
 			"smtpd")
 				echo "configuring smtpd"
