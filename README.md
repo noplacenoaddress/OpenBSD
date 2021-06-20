@@ -473,15 +473,21 @@ If the VPS provider got the option to install OpenBSD, a custom ISO or hasn't th
 
 The upgrade our git repository and launch the `upgrade.sh` script. Remember to wait a couple of days after the [release announce](https://www.openbsd.org/69.html) is published by [Theo de Raddt](https://www.theos.com/deraadt/).
 
-#### Registered domains application
-
-Start with two VPS, one master in DNS service and the other slave. All the others services will be replicated. Some providers doesn't permit the installation of OpenBSD as a default option so install Linux and then rewrite the disc with `dd` as explained:
-
 #### Possible applications
 
 Let's start discussing how we can boost our presence in Internet using that guerrilla MESH system that guaranty our privacy and security on the web. My first project is regarding a website replicated over different countries in all the languages over the world. Something very important to obtain maximum results about clients, about web goods sell, about be recognized over it and about whatever we want to obtain searching for visibility.
 
 I've got to cases, one is about the correct information about the modern slavery network transmitted by electromagnetic weapons to the marginal and worker class of many countries, also Europeans. The other is to have got a great site about my professional work, Redama, a wireless ISP but also an Internet website that sold security focused end devices and gateways.   
+
+Next some daemons that we've got to configure to start a new world of applications, remember that my goals are:
+
+- a distributed spider to search for clients for my business and to catalog emails, fax numbers and contacts of United Nations personal that work fighting the modern slavery. I'm a private investigator and I've got to massively denunciate the remote neural control and interference to the brain facility.
+- a multi language web site, one for my work the other for my page of public compliant. 
+- a massive system of alert by www, smtpd and SIP.
+
+#### NSD and PowerDNS
+
+![](https://tadviser.com/images/e/ee/OpenBSD_5-9.jpg)
 
 Nice Regards,
 
