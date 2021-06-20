@@ -11,6 +11,7 @@
 #smtpd: https://unixsheikh.com/tutorials/arch-linux-mail-server-tutorial-part-2-opensmtpd-dovecot-dkimproxy-and-lets-encrypt.html
 #smtpd: https://wiki.archlinux.org/title/OpenSMTPD
 #smtpd: https://git.sr.ht/~guidocella/personal-email-server-guide
+#nsd and powerdns: https://github.com/vedetta-com/dithematic
 
 #####
 #
