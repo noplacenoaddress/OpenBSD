@@ -161,6 +161,7 @@ function backup {
 			for file in $(find "/root" -type f -maxdepth 1 -name ".*"); do
 				cp -p $file "$CURRENTBACKUP/$1/root"
 			done
+			
 			cp -p /etc/{dhclient.conf,resolv.conf.tail,doas.conf,myname,sysctl.conf,hostname.vether0,daily.local,rc.local} "$CURRENTBACKUP/$1/etc"
 		;;
 		"users")
@@ -231,6 +232,7 @@ function backup {
 function upgrade {
 	case $1 in
 		"unbound")
+			pkill dhclient
 			install -o root -g wheel -m 0644 $basedir/src/etc/resolv.conf /etc/
 			install -o _unbound -g _unbound -m 0750  $basedir/src/var/unbound/etc/unbound.conf /var/unbound/etc/unbound.conf
 			install -o _unbound -g _unbound -m 0750  $basedir/src/var/unbound/etc/stub-zone.conf /var/unbound/etc/stub-zone.conf
@@ -614,7 +616,7 @@ function configuration {
 			ifconfig $egressinterface -inet6
 			install -o root -g wheel -m 0640  $basedir/src/etc/hostname.egress "/etc/hostname.$egressinterface"
 			install -o root -g wheel -m 0640 $basedir/src/etc/mygate /etc/
-			if [[ ! -z $ipv6egress ]]; then
+			if [[ "$ipv6ctrl" -eq "static" ]]; then
 				rcctl stop slaacd
 				rcctl disable slaacd
 				tmphostname=$(mktemp)
