@@ -1162,6 +1162,9 @@ case $1 in
 					ipv6defrouter=$(cat /tmp/config.ini  | grep ipv6defrouter |cut -d \# -f2)
 					;;
 				"dynamic")
+					ipv6egress=$(slaacctl show interface | grep 2001 | awk 'NR>2' | head -n 1 | cut -d , -f1)
+					ipv6prefix=$(slaacctl show interface | grep 2001 | awk 'NR>2' | head -n 1 | cut -d \/ -f2)
+					ipv6defrouter=$(netstat -rn -f inet6 | awk 'NR>8' | head -n 1 | awk '{print $2}')
 					;;
 			esac
 			configuration "static"
