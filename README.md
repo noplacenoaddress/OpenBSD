@@ -463,7 +463,20 @@ root@varuna:/home/taglio/Sources/Git/OpenBSD#
 
 If we've got some others type of endpoints in our network the system have prepared automatically the scripts to configure them. In my case, as you know, I've got an EdgeOS router and other Mikrotik VPS. Those are responsible to bind service in my little WISP opened in Spain. One work that I've lost in 2016 due to a thief organized in the modern slavery network but that I restart one year ago with a lot of trouble and very few clients due to extreme corruption in front of me. 
 
-***I'm fighting hard.*** 
+***I'm fighting hard.***
+
+#### Others system operatives 
+
+![VyOS](https://www.programmersought.com/images/37/227a77d35c99e18bb4a03c3aeece6045.png)
+
+In my MESH network I've got to others types of system operatives dedicated to my business of selling Internet and IP transport using terrestrial radio waves. A wireless Internet service provider.
+
+The types of are:
+
+- [EdgeOS](https://dl.ubnt.com/guides/edgemax/EdgeOS_UG.pdf) a commercial and customized version of [VyOS](https://en.wikipedia.org/wiki/VyOS) from [Ubiquiti](https://es.wikipedia.org/wiki/Ubiquiti_Networks). 
+- [RouterOS](https://mikrotik.com/software) a commercial and customized version of Linux from [Mikrotik](https://en.wikipedia.org/wiki/MikroTik).
+
+My software build scripts to automatic configure the new hosts also for those guys.
 
 #### Remote upgrade
 
