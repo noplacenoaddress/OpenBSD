@@ -1,4 +1,4 @@
-server "/HOSTNAME/./LANDOMAINAME/" {
+server "/HOSTNAME/./LANDOMAINNAME/" {
 	listen on vether0 port 80
-	root "htdocs//HOSTNAME/./LANDOMAINAME/"
+	root "htdocs//HOSTNAME/./LANDOMAINNAME/"
 }
