@@ -504,7 +504,7 @@ function upgrade {
 			for file in $(find /etc -maxdepth 1 -name "iked.conf.*" -type f); do
 				if [[ $(grep -c "brainpool512" $file) -eq 1 ]]; then
 					remotehost=$(echo $file | sed "s/\/etc\/iked.conf.//")
-					ssh-keyscan -t ed25519 -p 31137 $remotehost >> /etc/ssh/ssh_known_hosts
+					ssh-keyscan -t ed25519 -p 31137 $remotehost > /etc/ssh/ssh_known_hosts
 					ssh -p 31137 $remotehost -v
 				fi
 			done
@@ -764,7 +764,7 @@ function configuration {
 				"public")
 					install -o root -g wheel -m 0640 $basedir/src/etc/ssh/sshd_public /etc/ssh/sshd_config
 					install -o root -g wheel -m 0640 $basedir/src/etc/ssh/ssh_config /etc/ssh/
-					install -o root -g wheel -m 0640 $basedir/src/etc/ssh/ssh_known_hosts /etc/ssh
+					#install -o root -g wheel -m 0640 $basedir/src/etc/ssh/ssh_known_hosts /etc/ssh
 					install -o root -g wheel -m 0640 $basedir/src/etc/ssh/authorized_keys /etc/ssh/
 					workstahost=$(cat /etc/ssh/authorized_keys | cut -d @ -f2)
 					if [[ ! -d "/tmp/$workstahost.$landomainname" ]]; then
