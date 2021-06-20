@@ -489,6 +489,11 @@ Next some daemons that we've got to configure to start a new world of applicatio
 
 ![](https://tadviser.com/images/e/ee/OpenBSD_5-9.jpg)
 
+[PowerDNS](https://en.wikipedia.org/wiki/PowerDNS) is a [DNS server](https://en.wikipedia.org/wiki/Name_server) that we are going to use because of it [GeoIP](https://en.wikipedia.org/wiki/Internet_geolocation) [features](https://doc.powerdns.com/authoritative/backends/geoip.html).
+
+
+
 Nice Regards,
 
 Riccardo `<taglio>` Giuntoli.
+
