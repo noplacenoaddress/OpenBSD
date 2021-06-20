@@ -1142,6 +1142,8 @@ function configuration {
 		"httpd")
 			case $subphase in
 				"basic")	
+					(: "${hostname?}") 2>/dev/null || hostname=$(hostname -s)
+					(: "${landomainname?}") 2>/dev/null || landomainname=$(hostname | sed "s/`hostname -s`.//")
 					install -o root -g wheel -m 0640 $basedir/src/etc/httpd.conf.mime.types /etc
 					install -o root -g wheel -m 0640 $basedir/src/etc/httpd.conf /etc
 					install -o root -g wheel -m 0640 $basedir/src/etc/httpd.conf.local /etc
