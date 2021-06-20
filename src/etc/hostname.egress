@@ -1,0 +1,5 @@
+-inet
+-inet6
+inet /PUBLICIP/ /PUBLICNETMASK/ /PUBLICBCAST/
+inet6 autoconf -temporary -soii
+ 

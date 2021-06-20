@@ -1,4 +1,4 @@
 -inet
 -inet6
 lladdr random
-inet /ROUTERID/
+inet /ROUTERID//32

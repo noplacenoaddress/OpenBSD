@@ -1,0 +1,60 @@
+#!/bin/ksh
+
+ipconnected=$(cat /var/log/authlog | grep Accepted | tail -n 1| awk '{print $11}')
+hostconnected=$(dig -x $ipconnected +short @8.8.8.8 | sed 's/.$//')
+egressinterface=$(ifconfig egress | cut -d  : -f1 | head -n1)
+publicip=$(ifconfig $egressinterface | grep inet |grep -v inet6 | cut -d ' ' -f2)
+publicnetmask=$(ifconfig $egressinterface | grep inet | grep -v inet6 | awk '{print $4}')
+publicbcast=$(ifconfig $egressinterface | grep inet | grep -v inet6 | awk '{print $6}')
+publichost=$(dig -x $publicip +short @8.8.8.8 | sed 's/.$//')
+domainname=$(print $publichost | sed 's/^[^.]*.//')
+defaultv4router=$(route -n show | awk '/default/{print $2}' | head -n 1)
+macdefaultv4router=$(arp -an | grep $defaultv4router |  awk '{print $2}')
+tmpdir=$(mktemp -d)
+
+cd $tmpdir
+wget "http://$hostconnected/$publichost.tar" 
+wget "http://$hostconnected/$publichost.sha256" 
+logger "$0: update downloaded from $hostconnected"
+tarsha256=$(sha256 "$publichost.tar" | awk '{print $4}')
+if [ "$tarsha256" == $(cat "$publichost.sha256") ]; then
+	tar xvf "$publichost.tar"
+	cd "$publichost"
+	install -o root -g wheel -m 0640 hostname.gre? /etc/
+	install -o root -g wheel -m 0640 hostname.enc? /etc/
+	srcid=$(cat iked.conf.$hostconnected | grep srcid | awk '{print $2}' | sed 's/"//g' | cut -d @ -f1)
+	sed -i "s/$srcid/$(hostname -s)/" iked.conf.*	
+	vpnc_host=$(ls iked.conf.* | sed 's/iked.conf.//')
+	if [[ $(grep -c $vpnc_host /etc/iked.conf) -eq 0 ]]; then
+		echo include \"/etc/iked.conf.$vpnc_host\" >> /etc/iked.conf
+	fi
+	#if [[ $(grep -c $vpnc_host /etc/pf.conf.macro.enc.in) -eq 0 ]]; then
+	#	echo "pass in quick on enc proto gre from $ipconnected to \$pub tagged $vpnc_host" >> /etc/pf.conf.macro.enc.in
+	#	pfctl -f /etc/pf.conf
+	#fi
+	#if [[ $(grep -c $vpnc_host /etc/pf.conf.macro.enc.out) -eq 0 ]]; then
+	#	echo "pass out quick on enc proto gre from \$pub to $ipconnected tagged $vpnc_host" >> /etc/pf.conf.macro.enc.out 
+	#	pfctl -f /etc/pf.conf
+	#fi
+	greinterface=$(ls hostname.gre? | sed 's/hostname.//')
+	encinterface=$(ls hostname.enc? | sed 's/hostname.//')
+	sh /etc/netstart $greinterface
+	sh /etc/netstart $encinterface
+	if [[ $(grep -c $greinterface /etc/ospfd.conf) -ne 1 ]]; then
+		sed -i '$d' /etc/ospfd.conf
+		cat ospfd.conf >> /etc/ospfd.conf
+		echo "}" >> /etc/ospfd.conf
+	fi
+	mv iked.conf.* /etc
+	chown root:wheel /etc/iked.conf.*
+	chmod go-rwx /etc/iked.conf.*
+	iked -n
+	rcctl restart iked
+	rcctl restart ospfd
+	
+else
+	logger "$0: sha256 failed from $publichost.tar"
+fi
+
+
+

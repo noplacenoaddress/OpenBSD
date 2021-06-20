@@ -8,13 +8,13 @@ It will replicate all the services on the network, and it can be deleted without
 
 Especially focused above security in every ISO/OSI pile level. 
 
-Applications are multiples, from bypass the European ECHELON, an enormous sniffer from some ISP, or the great firewall in China, to create very secure not logged chat, to dynamic traditional services that will move from an host to another in a total transparent mode to the final user.
+Applications are multiples, from bypass the European [ECHELON](https://en.wikipedia.org/wiki/ECHELON), an enormous sniffer from some ISP, or the great firewall in China, to create very secure not logged chat, to dynamic traditional services that will move from an host to another in a total transparent mode to the final user.
 
 I'm an addicted of privacy and security and I'm very tired about the modern slavery network transmitted by weapons from the European elite. 
 
-**Vatican and Aristocracy are totally guilty about the recent destroy of democracy.**
+*Vatican, a big part of Aristocracy and a lot of leafs, and some corrupted secret services are totally guilty about the recent destroy of democracy. They are owners of an exploitation camp transmitted by electromagnetic weapons and elaborated by artificial intelligence from the Collserola tower in Barcelona above all the Mediterranean area. Electronic slavery, the modern slavery that United Nation is investigating is my goal.*
 
-### Install procedure
+#### VPS election
 
 First of all you've got to rent a VPS in one service provider, there are a lot on Internet a great resource to find the correct one is this website:
 
@@ -26,6 +26,7 @@ Some that I use or I've used:
 - [AlphaVPS - Cheap and Reliable Hosting and Servers](https://alphavps.com/)
 - [VPS Hosting in Europe and USA. Join VPS2DAY now!](https://www.vps2day.com/)
 - [Liveinhost Web Services &#8211; The Best Web Hosting | Fast Professional Website Hosting Services](https://www.liveinhost.com/)
+- [Scaleway Dedibox | The Reference for Dedicated Servers  | Scaleway](https://www.scaleway.com/en/dedibox/)
 
 Try to understand that we've got to build a network of VPS interconnected site to site between everyone with IPsec and every host is plug and play, I mean that we can add or remove VPS just running the software in this repository. First of all it is important to understand that we can use this design in two different application, one will use registered domains the other will use free dns services. Goal for everyone is security trough simplicity, open source design and the correct use and implementation of robust compliance protocols and daemons. The system operative is [OpenBSD](https://www.openbsd.org/) but later we will use also [Alpine Linux](https://alpinelinux.org/). At that point the goal will be interoperability and the search of near perfect TCP/IP throughput. Another goal will be the use of ARM64 mobile devices also based up Alpine, my favorite one is:
 
@@ -42,8 +43,8 @@ Many times we've got to resolve problems like the one where OpenBSD isn't listed
 First of all install a classic Linux, like Debian for example. Next ssh to the new machine with the credentials provided. Next download the latest stable `miniroot` image into the root and write it to the start of our virtual disk, in linux normally  it will be `vda`.
 
 ```sh
-# wget https://cdn.openbsd.org/pub/OpenBSD/6.8/amd64/miniroot68.img
-# dd if=miniroot68.img of=/dev/vda bs=4M
+# wget https://cdn.openbsd.org/pub/OpenBSD/6.9/amd64/miniroot69.img
+# dd if=miniroot69.img of=/dev/vda bs=4M
 ```
 
  After the successful write to the virtual disk we've got to reboot the machine but we will do it in a particular way using the `proc` filesystem:
@@ -53,7 +54,9 @@ First of all install a classic Linux, like Debian for example. Next ssh to the n
 # echo b > /proc/sysrq-trigger 
 ```
 
-Next reopen the KVM web console and the installation process of OpenBSD will start. Interrupt it choosing for the (S)hell option and:
+#### Semi automatic system installation
+
+Open the `KVM` web console and the installation process of OpenBSD will start. Interrupt it choosing for the (S)hell option and:
 
 ```shell
 # dhclient vio0
@@ -62,11 +65,190 @@ Next reopen the KVM web console and the installation process of OpenBSD will sta
 # reboot
 ```
 
+The default `root` password in our `install.conf` file is `123456789`. But it is encrypted as `$2b$10$4tPKeRmxVyffVkrQMve70.CiPmE28khH9UXiuSYpzAKbZrOfQq0Pm`.
+
+The default `uid 1000` user is `taglio`, my nickname and unix user. You can update `installation/install-vps` file with your. I also specify my `ed25519` ssh key that I've got generated with `ssh-keygen -t ed25519 -C "taglio@telecom.lobby"`as you can appreciate in the configuration file:
+
+`Public ssh key for user = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKG4yMhKX37SXV8LGDuVe4r1PBSS5HOWb6jFpNiG3cvW taglio@telecom.lobby`
+
+*Please update this file with your specifications forking my repository*.
+
 After the reboot login in the new node and change the password and upgrade the system with `syspatch`.
+
+#### [![OpenBSD MESH IPSec guerrila host](https://img.youtube.com/vi/6-M4IxeSctI/0.jpg)](https://www.youtube.com/watch?v=6-M4IxeSctI "OpenBSD MESH IPSec guerrila host")
 
 #### First steps
 
-#### Next that we will have a running fresh and patched OpenBSD system let's start to configure our guerrilla MESH node. Install the git package:
+First of all I want to underline that we use some values in the `DNS` master zone of the domain where we want to attach our new `VPS` host. *It's not exactly all automatic*.
+
+``` shell
+root@ganesha:/var/nsd/zones/master# cat telecomlobby.com.zone | grep ipsec && cat telecomlobby.com.zone | grep gre
+ipsec20591		IN TXT "uk:ganesha;us:saraswati;jp:shiva;es:indra;fr:uma;bg:neo;"
+gre7058			IN TXT "216"
+gre18994		IN TXT "3"
+root@ganesha:/var/nsd/zones/master#
+```
+
+We use the [TXT record](https://en.wikipedia.org/wiki/TXT_record) to add some more information to the process of automatically add the new host to our MESH network. Hostname are:
+
+```shell
+root@ganesha:/var/nsd/zones/master# echo ipsec${RANDOM} && echo gre${RANDOM} && echo gre${RANDOM}
+ipsec6150
+gre9262
+gre1331
+root@ganesha:/var/nsd/zones/master# 
+```
+
+```$RANDOM``` is a special variable in `ksh` used to generate random numbers between 0 and 32767.
+
+The string specified by `TXT` value of `ipsec` is `;` separated values and contain [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) [country codes](https://en.wikipedia.org/wiki/Country_code) followed by `:` and the name of the host machine.
+
+The string specified by `TXT` values of the two `gre` are integer, the first between  0 and 255 indicating last /30 network allocated by a `gre` point to point and the second is a counter indicating the number of MESH guerrilla OpenBSD hosts.
+
+Remember to update those `TXT` to archive the connection process.
+
+It's important also to configure DNS resolution and also [RDNS](https://en.wikipedia.org/wiki/Reverse_DNS_lookup) of the assigned IPv4 address in our master zone. Depending on the provider adding the reverse dns resolution host it could be writing to the support office or simply use a web mask.
+
+[![OpenBSD MESH IPSec guerrila host](https://asciinema.org/a/417997.png)](https://asciinema.org/a/417997)
+
+Next we've got to update the master zone of the principle public domain, in my case `telecomlobby.com`.
+
+The first value to update is the IPv4 of the new machine:
+
+```shell
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ dig de.telecomlobby.com A +short
+45.63.116.141
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ssh ganesha.telecom.lobby
+Host key fingerprint is SHA256:mZiIJWncSs+jJUjAho8NNQeO1wSHKVpFORP5wZdDaNo
++--[ED25519 256]--+
+|+.=BB= o..       |
+|=*+O= = +        |
+|+OO +B o .       |
+|+=oB..Eo o       |
+|. + * o S        |
+|   + .           |
+|  .              |
+|                 |
+|                 |
++----[SHA256]-----+
+OpenBSD 6.9 (GENERIC) #2: Sat May 22 12:49:54 MDT 2021
+    root@syspatch-69-amd64.openbsd.org:/usr/src/sys/arch/amd64/compile/GENERIC
+real mem = 1056813056 (1007MB)
+avail mem = 1009553408 (962MB)
+10:49AM  up 2 days, 23:46, 2 users, load averages: 0.01, 0.02, 0.00
+ID              Pri State        DeadTime Address         Iface     Uptime
+192.168.13.59   1   FULL/P2P     00:00:34 10.10.10.201    gre4      02:55:38
+192.168.13.81   1   FULL/P2P     00:00:30 10.10.10.217    gre3      06:51:01
+192.168.13.1    1   FULL/P2P     00:00:36 10.10.10.225    gre2      06:45:49
+192.168.13.34   1   FULL/P2P     00:00:33 10.10.10.230    gre1      06:51:03
+192.168.13.33   1   FULL/P2P     00:00:36 10.10.10.250    gre0      1d06h55m
+Go 'way!  You're bothering me!
+ 
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ doas su
+doas (taglio@ganesha.telecom.lobby) password: 
+root@ganesha:/home/taglio# cd /var/nsd/zones/master
+root@ganesha:/var/nsd/zones/master# cat telecomlobby.com.zone | grep vpnc 
+vpnc			IN A 45.32.144.15
+vpnc			IN A 78.141.201.0
+vpnc			IN A 155.138.247.27
+vpnc			IN A 139.180.206.19
+vpncN			IN A 94.72.143.163
+vpnc			IN TXT "RT-01.cat.telecomlobby.com"
+root@ganesha:/var/nsd/zones/master# 
+
+```
+
+As you can see theres some values about the `vpnc` and `vpncN` host:
+
+- `vpnc IN A` in the list of public IPv4 that are connected through IPsec in our MESH network.
+- `vpncN IN A` in the new host to add to.
+
+Upgrade the configuration to reflect to new one and test it:
+
+``` shell
+riccardo@trimurti:~$ dig @8.8.8.8 vpnc.telecomlobby.com A +short
+45.32.144.15
+78.141.201.0
+155.138.247.27
+139.180.206.19
+94.72.143.163
+riccardo@trimurti:~$ dig @8.8.8.8 vpncN.telecomlobby.com A +short
+45.63.116.141
+riccardo@trimurti:~$ 
+```
+
+In my configuration I've got also a dynamic IPv4 [EdgeOS](https://dl.ubnt.com/guides/edgemax/EdgeOS_UG.pdf) endpoint and another with fixed IPv4 [RouterOS](https://es.wikipedia.org/wiki/MikroTik) one. In EdgeOS I've got to update the black hole routing table excluding the new ip:
+
+```shell
+taglio@indra# set protocols static interface-route 45.63.116.141/32 next-hop-interface pppoe0
+[edit]
+taglio@indra# commit
+[edit]
+taglio@indra# save
+Saving configuration to '/config/config.boot'...
+Done
+[edit]
+taglio@indra# exit
+```
+
+In the RouterOS one I've got to update the address list relative to the host presents in my IPSec network:
+
+```shell
+[admin@uma.telecom.lobby] /ip firewall address-list> add list=servers comment=durpa address=45.63.116.141/32
+[admin@uma.telecom.lobby] /ip firewall address-list> 
+```
+
+#### Update the IPSec CA server 
+
+Now start to configure the `CA server` about the `IPsec` public and private key.
+
+In my network layout I've got a [Mikrotik](https://mikrotik.com/) `VPS` that administrate the `IPsec` certificate repositories.
+
+[![Mikrotik CA certificate](https://img.youtube.com/vi/A7O_Pe91a6Y/0.jpg)](https://youtu.be/A7O_Pe91a6Y "Mikrotik CA certificate")
+
+Download the [p12](https://en.wikipedia.org/wiki/PKCS_12) combined certificate and private key and upload into the new host `/tmp` directory.
+
+``` shell
+sftp> get cert_export_de.telecomlobby.com.p12
+Fetching /cert_export_de.telecomlobby.com.p12 to cert_export_de.telecomlobby.com.p12
+/cert_export_de.telecomlobby.c 100% 3880    74.6KB/s   00:00    
+sftp> ^D
+riccardo@trimurti:~/Work/redama$ mv cert_export_de.telecomlobby.com.p12 de.telecomlobby.com.p12
+riccardo@trimurti:~/Work/redama/durpa$ scp de.telecomlobby.com.p12 taglio@de.telecomlobby.com:/tmp
+de.telecomlobby.com.p12        100% 3880   106.4KB/s   00:00    
+riccardo@trimurti:~/Work/redama/durpa$ 
+```
+
+The p12 file have to be protected by the password `123456789`.
+
+Next use the script `ipsec_newpubkey` to add the new public IPSec key to the `src/etc/iked/pubkeys/ufqdn` directory update the repository and use the console script in the right way:
+
+```shell
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ./ipsec_newpubkey /home/riccardo/Work/redama/varuna/bg.telecomlobby.com.p12 
+neo@ca.telecomlobby.com created please update repository and all the others Openbsd hosts
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ sh git_openbsd.sh 
+git add, commit, sign and push
+check branch
+[taglio-15062021 48dc7f5]  Please enter the commit message for your changes. Lines starting  with '' will be ignored, and an empty message aborts the commit.
+ 1 file changed, 9 insertions(+)
+ create mode 100644 src/etc/iked/pubkeys/ufqdn/neo@ca.telecomlobby.com
+Enumerating objects: 14, done.
+Counting objects: 100% (14/14), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (7/7), done.
+Writing objects: 100% (8/8), 1.73 KiB | 886.00 KiB/s, done.
+Total 8 (delta 4), reused 3 (delta 0), pack-reused 0
+remote: Resolving deltas: 100% (4/4), completed with 4 local objects.
+To github.com:redeltaglio/OpenBSD.git
+   c773e1e..48dc7f5  taglio-15062021 -> taglio-15062021
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -G
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -N
+
+```
+
+#### Login and start the connection process
+
+Install the git package:
 
 ```shell
 neo# pkg_add git
@@ -76,15 +258,201 @@ neo$ git clone https://github.com/noplacenoaddress/OpenBSD.git
 
 Next let's start to configure the system with our script `setup_node`, you've got to go ahead to every point pressing `1` or to type different variables:
 
+- the type of IPv6 address:
+  - `static`: 
+    - [IPv6 address](https://en.wikipedia.org/wiki/IPv6) without prefixlen.
+    - The [prefixlen](https://www.ciscopress.com/articles/article.asp?p=2803866&seqNum=2).
+    - The [IPv6 default route](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/iproute_pi/configuration/xe-16-10/iri-xe-16-10-book/ip6-route-static-xe.pdf).
+  - `dynamic`, using [slaacd (8)](https://www.openbsd.org/papers/florian_slaacd_bsdcan2018.pdf)
 - `hostname`, the name of the machine.
+- `landomainname`, the interior domain name that in my case is `telecom.lobby`
 - `routerid`, the OSPFD router id and the IP of the `vether0` interface.
-- `publichost`, the DNS of the public ip of the `vio0` interface.
 
 ```shell
 root@neo:/home/taglio/Sources/Git/OpenBSD# sh setup_node                                                                                                                                                                                                  
 changing installurl
 Go ahead type 1 
 ```
+
+After some points the program give us the root ssh `ed25519` key of the new host. That is [EdDSA](https://en.wikipedia.org/wiki/EdDSA) in [public key cryptography](https://en.wikipedia.org/wiki/Public-key_cryptography).  Update the repository:
+
+``` shell
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ sed -i '/durga.telecom.lobby/d' src/etc/ssh/remote_install/authorized_keys 
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHfCxPKwUqEG9JaEaK6uqFDfDMFYFTblLEWPekGh8CAn root@durga.telecom.lobby" >> src/etc/ssh/remote_install/authorized_keys 
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$
+```
+
+To do this operation you can use also the `console` script in the forked repository root:
+
+```shell
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -RS
+Type the LAN hostname 
+durga.telecom.lobby
+Type the public hostname 
+de.telecomlobby.com
+Type the ED25519 hash 
+AAAAC3NzaC1lZDI1NTE5AAAAIH6Kju+51Vud+0cHKgpdFNSRIpXM/PcLQAO86xKgc+Op
+remote_install/authorized_keys and ssh_known_hosts UPDATED
+		
+ please use git_openbsd.sh to update the public GIT
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$
+```
+
+Use the script `git_openbsd.sh` using values depending in your forked repository to update the git.
+
+Next update every host using `git pull` using the `console` script and launch the `newhost` option using the same script:
+
+ ``` shell
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -G
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -N
+ ```
+
+The `console` script depend on a `TXT` record in the master `nsd` for the LAN domain name:
+
+```shell
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ host -t txt openbsd.telecom.lobby
+openbsd.telecom.lobby descriptive text "ganesha;saraswati;shiva;varuna;"
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ 
+```
+
+Those are the host names of every OpenBSD guy connected to our network, remember to update it!
+
+[![OpenBSD MESH IPSec guerrila host](https://asciinema.org/a/418749.png)](https://asciinema.org/a/418749)
+
+You've got to update also the CA server inside your network. As the other use the new `ed25519` public key:
+
+```shell
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD-private-CA$ mkdir src/etc/ssh/ca/host/durga.telecom.lobby
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD-private-CA$ echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHfCxPKwUqEG9JaEaK6uqFDfDMFYFTblLEWPekGh8CAn root@durga.telecom.lobby" > src/etc/ssh/ca/host/durpa.telecom.lobby/ssh_host_ed25519_key.pub
+```
+
+Update the repository using the script `git_openbsd-private-ca.sh` and next create the new `ssh_host_ed25519_key-cert.pub` with:
+
+```shell
+root@cyberanarkhia:/home/taglio/Sources/Git/OpenBSD-private-CA# ./setup_ca                                                                                                                                                                                                       
+./setup_ca have to be used with the following options 			
+ 			
+install  -> create SSH and SSL private CA 			
+verify   -> printout and verify certificates 			
+reset    -> reset filesystem hierarchy and delete certificates and keys 			
+transfer -> tar files on /home/taglio 			
+newhost -> add a new MESH host 			
+
+root@cyberanarkhia:/home/taglio/Sources/Git/OpenBSD-private-CA# 
+
+```
+
+Use `newhost` and `transfer` options.
+
+[![OpenBSD MESH IPSec guerrila host](https://asciinema.org/a/420482.png)](https://asciinema.org/a/420482)
+
+#### Automatic install
+
+```shell
+taglio@varuna:/home/taglio$ cat /tmp/config.ini                                                                                                                                                                                                                 static#1
+ipv6ctrl#static
+ipv6egress#2a01:8740:1:ff48::64a8
+ipv6prefix#48
+ipv6defrouter#2a01:8740:1:ff00::1
+installurl#1
+shell#1
+users#1
+hostname#varuna
+landomainname#telecom.lobby
+routerid#192.168.13.59
+basic#1
+unbound#1
+ssh#1
+ipsec#1
+gre#1
+pf#1
+ospf#1
+remote#1
+taglio@varuna:/home/taglio$ 
+
+```
+
+This is the configuration file obtained by the semi automatic installation process. You can adapt to your configuration but be careful with the `static` or `dynamic` IPv6. To archive that you can use also the `configure` script in the root of the repository, simply answer to the questions. 
+
+[![OpenBSD MESH IPSec guerrila host](https://asciinema.org/a/421061.png)](https://asciinema.org/a/421061)
+
+#### You successfully installed and connected a new OpenBSD MESH guerrilla host
+
+*Ok baby let's rock&roll. We've configured a new IPSec MESH host in a semi automatic way, a lot of work done in a few clicks with our preferred system operative, the secure fish! OpenBSD!*
+
+The first step after is to add the new [SSHFP](https://en.wikipedia.org/wiki/SSHFP_record) record to our internal [nsd](https://en.wikipedia.org/wiki/NSD) server. Scan them:
+
+```shell
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ssh-keyscan -D -t ed25519 varuna.telecom.lobby
+; varuna.telecom.lobby:22 SSH-2.0-OpenSSH_8.6
+varuna.telecom.lobby IN SSHFP 4 1 6e77aacf6c65bac6ff6dcb8e21ce9beb7cb9d832
+varuna.telecom.lobby IN SSHFP 4 2 9baacb4c882270c8f37f2fbc847f1094b2b78a34da4650ec24a3b69ad6033dc3
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ 
+```
+
+And update the zone in the server and the `openbsd` record:
+
+```shell
+root@cyberanarkhia:/var/nsd/zones/master# rcctl restart nsd                                                                                                                                                                                                                 
+nsd(ok)
+nsd(ok)
+root@cyberanarkhia:/var/nsd/zones/master# rcctl restart unbound
+unbound(ok)
+unbound(ok)
+root@cyberanarkhia:/var/nsd/zones/master# cat telecom.lobby | grep varuna                                                                                                                                                                                                        
+varuna		IN A 192.168.13.59
+varuna.telecom.lobby IN SSHFP 4 1 6e77aacf6c65bac6ff6dcb8e21ce9beb7cb9d832
+varuna.telecom.lobby IN SSHFP 4 2 9baacb4c882270c8f37f2fbc847f1094b2b78a34da4650ec24a3b69ad6033dc3
+openbsd			IN TXT	 "ganesha;saraswati;shiva;varuna;"
+root@cyberanarkhia:/var/nsd/zones/master# 
+```
+
+Enter in the new system and add a password, use a great password manager in your workstation like [KeePassXC](https://keepassxc.org/):
+
+```shell
+taglio@varuna:/etc$ su
+Password:
+root@varuna:/etc# passwd taglio
+Changing password for taglio.
+New password:
+Retype new password:
+root@varuna:/etc# 
+```
+
+Then create a new SSL internal [CSR](https://en.wikipedia.org/wiki/Certificate_signing_request) certificate request and download it to the CA server to create a new [x.509](https://en.wikipedia.org/wiki/X.509) [CRT](https://en.wikipedia.org/wiki/X.690#DER_encoding) for the internal services like `httpd(8)` and the surely next installed daemon [dovecot](https://www.dovecot.org/).
+
+```shell
+root@varuna:/home/taglio/Sources/Git/OpenBSD# sh setup_node -A sslcareq 
+Generating RSA private key, 2048 bit long modulus
+...................................................................+++++
+.......+++++
+e is 65537 (0x10001)
+writing RSA key
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Country Name (2 letter code) []:BG
+State or Province Name (full name) []:Lovech
+Locality Name (eg, city) []:Troyan
+Organization Name (eg, company) []:Telecom Lobby
+Organizational Unit Name (eg, section) []:VPNC
+Common Name (eg, fully qualified host name) []:varuna.telecom.lobby
+Email Address []:varuna@ca.telecom.lobby
+
+Please enter the following 'extra' attributes
+to be sent with your certificate request
+A challenge password []:
+Download csr from http://varuna.telecom.lobby/varuna.telecom.lobby.csr to the CA server
+root@varuna:/home/taglio/Sources/Git/OpenBSD#
+```
+
+If we've got some others type of endpoints in our network the system have prepared automatically the scripts to configure them. In my case, as you know, I've got an EdgeOS router and other Mikrotik VPS. Those are responsible to bind service in my little WISP opened in Spain. One work that I've lost in 2016 due to a thief organized in the modern slavery network but that I restart one year ago with a lot of trouble and very few clients due to extreme corruption in front of me. 
+
+***I'm fighting hard.*** 
 
 #### Remote upgrade
 

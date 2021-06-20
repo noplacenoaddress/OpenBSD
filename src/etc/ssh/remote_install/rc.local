@@ -1,0 +1,4 @@
+if [ -e /etc/ssh/remote_install/remote_install.conf ]; then
+	echo -n 'sshd remote install'; /usr/sbin/sshd -f /etc/ssh/remote_install/remote_install.conf
+fi
+

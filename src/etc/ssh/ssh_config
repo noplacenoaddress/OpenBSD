@@ -1,9 +1,6 @@
-Host *
-	IdentityFile ~/.ssh/id_ed25519
-	SendEnv LANG LC_*
-	HashKnownHosts no
-	GSSAPIAuthentication yes
-	VerifyHostKeyDNS ask
-	VisualHostKey yes
+Host *.telecomlobby.com
+	IdentityFile /root/.ssh/id_ed25519
+	User root
+
 
 

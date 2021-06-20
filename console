@@ -1,0 +1,138 @@
+#!/usr/bin/bash
+
+#GLOBAL VAR
+
+uid=$(id -u)
+userna=$(id -nu $uid)
+userhome="/home/taglio"
+proghome="$userhome/Sources/Git/OpenBSD"
+
+if [[ $uid -ne 1000 ]]; then
+	echo -e $0 "you've got to run $0 as UID=1000 \n"
+	exit 1
+fi
+
+if [[ $# -eq 0 ]]; then
+	echo -e $0 "have to be used with the following options \
+			\n-I  -> local domain name [x]\
+			\n-N  -> newhost [o]\
+			\n-G  -> git pull [o]\
+			\n-S  -> scripts [o] \
+			\n-D  -> dyndnspop [o] \
+			\n-F  -> single file update [o] \
+			\n-C  -> cleanlast [o] \
+			\n-RS -> repository ssh update [o] \
+			\n-K  -> new IKED pk12 archive [o] \n"
+	
+	exit 1
+fi
+
+localdomainname=$2
+
+
+case $3 in
+	"-G")
+		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+			echo -e "Connecting to $vpnc_host"
+			ssh $vpnc_host.$localdomainname git -C "$proghome" pull
+		done	
+	;;
+	"-N")
+		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+			echo -e "Connecting to $vpnc_host"
+			ssh -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U newhost
+		done	
+	;;
+	"-S")
+		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+			echo -e "Connecting to $vpnc_host"
+			ssh -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U scripts
+		done	
+	;;
+	"-D")
+		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+			echo -e "Connecting to $vpnc_host"
+			ssh -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U dyndnspop
+			sleep 10
+		done	
+	;;
+	"-F")
+		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+			echo -e "Connecting to $vpnc_host"
+			ssh -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U file
+			sleep 10
+		done	
+	;;
+	"-C")
+		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+			echo -e "Connecting to $vpnc_host"
+			ssh -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -A cleanlast
+		done	
+	;;
+	"-RS")
+		lanhost=
+		while [ -z $lanhost ]
+		do
+			echo 'Type the LAN hostname '
+			read lanhost
+		done
+		pubhost=
+		while [ -z $pubhost ]
+		do
+			echo 'Type the public hostname '
+			read pubhost
+		done
+		hash=
+		while [ -z $hash ]
+		do
+			echo 'Type the ED25519 hash '
+			read hash
+		done 	
+		if [[ $(grep -c $lanhost src/etc/ssh/remote_install/authorized_keys) -gt 0 ]]; then
+			for linenum in $(grep -n $lanhost src/etc/ssh/remote_install/authorized_keys | cut -d : -f1); do
+				sed -i "$linenum"d src/etc/ssh/remote_install/authorized_keys
+			done
+		fi
+		echo "ssh-ed25519 $hash root@$lanhost" >> src/etc/ssh/remote_install/authorized_keys
+		if [[ $(grep -c $pubhost src/etc/ssh/ssh_known_hosts) -gt 0 ]]; then
+			for linenum in $(grep -n $pubhost src/etc/ssh/ssh_known_hosts | cut -d : -f1); do
+				sed -i "$linenum"d src/etc/ssh/ssh_known_hosts	
+			done
+		fi
+		
+		echo "# $pubhost:31137 SSH-2.0-OpenSSH_8.6" >> src/etc/ssh/ssh_known_hosts
+		echo "[$pubhost]:31137 ssh-ed25519 $hash" >> src/etc/ssh/ssh_known_hosts
+		echo -e "remote_install/authorized_keys and ssh_known_hosts UPDATED
+		\n please use git_openbsd.sh to update the public GIT"
+	;;
+	"-K")
+		ikedpub=
+		while [ -z $ikedpub ]
+		do
+			echo 'Type the PATH to the new iked PK12 file '
+			read ikedpub
+		done
+		tmpdir=$(mktemp -d)
+		pk12=$(basename $ikedpub)
+		publichost=$(echo $pk12 | sed 's/.p12//')
+		publichostname=$(echo $publichost | cut -d . -f1)
+		domainname=$(echo $publichost | sed "s/$publichostname.//")
+
+
+		for a in $(dig ipsec20591.$domainname TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+			b=$(echo $a | cut -d : -f1)
+			if [[ "$b" -eq "$publichostname" ]]; then
+				srcid=$(echo $a | cut -d : -f2)
+			fi
+		done
+		ssh-keygen -f "/home/riccardo/.ssh/known_hosts" -R "$publichost"
+		scp $ikedpub "taglio@$publichost:/tmp"
+		openssl pkcs12 -nodes -in $ikedpub -nocerts -passin pass:123456789 -passout pass:123456789 -out "$tmpdir/local.key"
+		openssl pkcs12 -nodes -in $ikedpub -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "$tmpdir/new.crt"
+		openssl x509 -pubkey -noout -passin pass:123456789 -in "$tmpdir/new.crt"  > src/etc/iked/pubkeys/ufqdn/"$srcid@ca.$domainname"
+		rm -rf $tmpdir
+		echo -e "$srcid@ca.$domainname created please update repository and all the others Openbsd hosts"		
+	;;
+	*)
+	;;
+esac

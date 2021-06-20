@@ -3,6 +3,6 @@
 # sh/ksh initialization
 dmesg | head -n 4
 uptime
-#ospfctl sh nei
+ospfctl sh nei
 /usr/games/fortune -a 
 export ENV=$HOME/.kshrc
