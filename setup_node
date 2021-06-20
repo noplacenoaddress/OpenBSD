@@ -83,11 +83,14 @@ function pkg {
 		"shell")
 			pkg_add colorls nano wget fping iperf uptimed oidentd sqlite3 \
 				nmap tor ipcalc gnupg-- rspamd--
-			;;
+		;;
 		"smtpd")
 			pkg_add opensmtpd-filter-rspamd \
 				dovecot dovecot-pigeonhole
-			;;
+		;;
+		"powernsd")
+			pkg_add powerdns ldns-utils drill
+		;;
 	esac
 }
 
@@ -1174,6 +1177,9 @@ function configuration {
 		"smtpd")
 			pkg "smtpd"
 		;;
+		"powernsd")
+			pkg "powernsd"
+		;;
 	esac
 }
 
@@ -1683,7 +1689,7 @@ case $1 in
 		if [[ $# -ne 2 ]]; then
 			print $0 "DAEMONS option must be followed by: \
 				\n \
-				\nnsd \
+				\npowernsd \
 				\nhttpd \
 				\nsmtpd  \
 				\nimapd   \
@@ -1691,6 +1697,9 @@ case $1 in
 			exit 1 
 		fi
 		case $2 in
+			"powernsd")
+					
+			;;
 			"smtpd")
 				echo "configuring smtpd"
 				configuration "smtpd"
