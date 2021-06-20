@@ -594,6 +594,7 @@ function admin {
 				mkdir "/var/www/htdocs/$(hostname)"
 			fi
 			cp "/etc/ssl/csr/$(hostname).csr" "/var/www/htdocs/$(hostname)"
+			
 			echo "Download csr from http://$(hostname)/$(hostname).csr to the CA server"
 		;;
 	esac
@@ -1143,7 +1144,7 @@ function configuration {
 				"basic")	
 					install -o root -g wheel -m 0640 $basedir/src/etc/httpd.conf.mime.types /etc
 					install -o root -g wheel -m 0640 $basedir/src/etc/httpd.conf /etc
-					install -o root -g wheel -m 0640 $basedir/src/etc/httpd.conf.conf.local /etc
+					install -o root -g wheel -m 0640 $basedir/src/etc/httpd.conf.local /etc
 					install -o root -g wheel -m 0640 $basedir/src/etc/httpd.conf.vhosts.basic /etc/httpd.conf.vhosts
 					custom "/etc" "1"
 					if [[ ! -d "/var/www/htdocs/$publichost" ]]; then
@@ -1154,6 +1155,7 @@ function configuration {
 					if [[ ! -d "/var/www/htdocs/$hostname.$landomainname" ]]; then
 						mkdir "/var/www/htdocs/$hostname.$landomainname"
 					fi
+					mv "/var/www/htdocs/$publichost/"* "/var/www/htdocs/$hostname.$landomainname"
 					chown -R wwwftp:www "/var/www/htdocs/$hostname.$landomainname"
 					rcctl restart httpd
 			esac
