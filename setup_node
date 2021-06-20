@@ -16,7 +16,7 @@
 #
 #TODO ssh reverse tool in installation to launch different process executed by hand
 # configure to create /tmp/config.ini
-# ospf metric revise
+# 
 #
 #####
 
@@ -209,6 +209,11 @@ function backup {
 				done
 			fi
 		;;
+		"httpdbasic")	
+			for file in $(find /etc -name "httpd.*" -type f -maxdepth 1); do
+				cp -p $file "$CURRENTBACKUP/$1/"
+			done
+		;;
 		"relayd")
 			configuration "relayd"
 		;;
@@ -243,6 +248,8 @@ function upgrade {
 				cd OpenBSD-private-CA
 				sh setup_host
 			fi	
+			rm /etc/ssh/principals/taglio
+			echo "wheel" > /etc/ssh/principals/taglio
 		;;
 		"ipsec")
 			sha256compare "/etc/iked/ca/ca.crt" "$basedir/src/etc/iked/ca/ca.crt"
@@ -1131,7 +1138,26 @@ function configuration {
 			
 			
 		;;	
-		
+		"httpd")
+			case $subphase in
+				"basic")	
+					install -o root -g wheel -m 0640 $basedir/src/etc/httpd.conf.mime.types /etc
+					install -o root -g wheel -m 0640 $basedir/src/etc/httpd.conf /etc
+					install -o root -g wheel -m 0640 $basedir/src/etc/httpd.conf.conf.local /etc
+					install -o root -g wheel -m 0640 $basedir/src/etc/httpd.conf.vhosts.basic /etc/httpd.conf.vhosts
+					custom "/etc" "1"
+					if [[ ! -d "/var/www/htdocs/$publichost" ]]; then
+						mkdir "/var/www/htdocs/$publichost"
+						
+					fi
+					chown -R wwwftp:www "/var/www/htdocs/$publichost"
+					if [[ ! -d "/var/www/htdocs/$hostname.$landomainname" ]]; then
+						mkdir "/var/www/htdocs/$hostname.$landomainname"
+					fi
+					chown -R wwwftp:www "/var/www/htdocs/$hostname.$landomainname"
+					rcctl restart httpd
+			esac
+		;;
 		"relayd")
 			
 			install -o root -g wheel -m 0640 $basedir/src/etc/relayd.conf /etc/
@@ -1486,12 +1512,61 @@ case $1 in
 				fi
 			done
 		fi
-		sh "$basedir/$app" -U unbound_ipsec
-		sh "$basedir/$app" -U ssh_ipsec
+		echo "configuring unbound for IPSec MESH network \n"
+		if [[ $configini -eq 1 ]]; then
+			upgrade "unbound"
+		else 
+			ctrl=
+			while [ -z $ctrl ]
+			do
+				echo 'Go ahead type 1 '
+				read ctrl
+				if [[ "$ctrl" -eq 1 ]]; then
+					upgrade "unbound" 
+					echo "unboundipsec#$ctrl" >> /tmp/config.ini
+				else
+					error_exit "$LINENO: EXIT FROM USER." 
+				fi
+			done
+		fi
+		echo "configuring sshd for IPSec MESH network with certificates\n"
+		if [[ $configini -eq 1 ]]; then
+			upgrade "ssh"
+		else 
+			ctrl=
+			while [ -z $ctrl ]
+			do
+				echo 'Go ahead type 1 '
+				read ctrl
+				if [[ "$ctrl" -eq 1 ]]; then
+					upgrade "ssh" 
+					echo "sshipsec#$ctrl" >> /tmp/config.ini
+				else
+					error_exit "$LINENO: EXIT FROM USER." 
+				fi
+			done
+		fi
 		pfctl -f /etc/pf.conf
 		rcctl restart syslogd
-		rm /etc/ssh/principals/taglio
-		echo "wheel" > /etc/ssh/principals/taglio
+		echo "configuring basic httpd for IPSec MESH network operations\n"
+		if [[ $configini -eq 1 ]]; then
+			configuration "httpd" "basic"
+		else 
+			ctrl=
+			while [ -z $ctrl ]
+			do
+				echo 'Go ahead type 1 '
+				read ctrl
+				if [[ "$ctrl" -eq 1 ]]; then
+					configuration "httpd" "basic" 
+					echo "httpdbasic#$ctrl" >> /tmp/config.ini
+				else
+					error_exit "$LINENO: EXIT FROM USER." 
+				fi
+			done
+		fi
+		pfctl -f /etc/pf.conf
+		rcctl restart syslogd
 		echo "You successfully installed and connected a new OpenBSD MESH guerrilla host"	
 	;;
 	"-U")
@@ -1515,6 +1590,7 @@ case $1 in
 				\nnewhost \
 				\nscripts \
 				\ndyndnspop \
+				\nhttpdbasic \
 				\n"
 			exit 1 
 		fi
@@ -1565,6 +1641,10 @@ case $1 in
 			"remote")
 				backup "remote"
 				upgrade "remote"
+			;;
+			"httpdbasic")
+				backup "httpdbasic"
+				configuration "httpd" "basic"
 			;;
 			"remoteinstall")
 				upgrade "remoteinstall"
@@ -1620,7 +1700,6 @@ case $1 in
 		fi
 		case $2 in
 			"cleanlast")
-				echo "configuring smtpd"
 				admin "cleanlast"
 			;;
 			"sslcareq")

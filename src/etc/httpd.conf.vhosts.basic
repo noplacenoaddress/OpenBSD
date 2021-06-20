@@ -1,0 +1,9 @@
+server "/PUBLICHOST/" {
+        listen on egress port 80
+        root "htdocs//PUBLICHOST/"
+        location "/.well-known/acme-challenge/*" {
+                root "/acme"
+                request strip 2
+        }
+}
+

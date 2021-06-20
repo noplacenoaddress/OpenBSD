@@ -1,4 +1,4 @@
-server "ganesha.telecom.lobby" {
+server "/HOSTNAME/./LANDOMAINAME/" {
 	listen on vether0 port 80
-	root "htdocs/ganesha.telecom.lobby"
+	root "htdocs//HOSTNAME/./LANDOMAINAME/"
 }
