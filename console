@@ -93,8 +93,8 @@ case $3 in
 				sed -i "$linenum"d src/etc/ssh/remote_install/authorized_keys
 			done
 		fi
-		#	
-		#	echo "ssh-ed25519 $hash root@$lanhost" >> src/etc/ssh/remote_install/authorized_keys
+		
+		echo "ssh-ed25519 $hash root@$lanhost" >> src/etc/ssh/remote_install/authorized_keys
 		#	if [[ $(grep -c $pubhost src/etc/ssh/ssh_known_hosts) -gt 0 ]]; then
 		#		for linenum in $(grep -n $pubhost src/etc/ssh/ssh_known_hosts | cut -d : -f1); do
 		#			sed -i "$linenum"d src/etc/ssh/ssh_known_hosts	
