@@ -206,6 +206,15 @@ In my network layout I've got a [Mikrotik](https://mikrotik.com/) `VPS` that adm
 
 [![Mikrotik CA certificate](https://img.youtube.com/vi/A7O_Pe91a6Y/0.jpg)](https://youtu.be/A7O_Pe91a6Y "Mikrotik CA certificate")
 
+You can use also the RouterOS console:
+
+```shell
+[admin@uma.telecom.lobby] > /certificate add name=au.telecomlobby.com country=AU s
+tate="New South Wales" locality=Sidney common-name=au.telecomlobby.com subject-alt
+-name=email:vishnu@ca.telecomlobby.com
+[admin@uma.telecom.lobby] >
+```
+
 Download the [p12](https://en.wikipedia.org/wiki/PKCS_12) combined certificate and private key and upload into the new host `/tmp` directory.
 
 ``` shell

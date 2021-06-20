@@ -1565,8 +1565,11 @@ case $1 in
 				fi
 			done
 		fi
+		install -o root -g wheel -m 0640 src/etc/ntpd.conf /etc
+		rcctl restart ntpd
 		pfctl -f /etc/pf.conf
 		rcctl restart syslogd
+		sh "$basedir/$app" -A sslcareq
 		echo "You successfully installed and connected a new OpenBSD MESH guerrilla host"	
 	;;
 	"-U")
