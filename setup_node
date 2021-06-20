@@ -203,7 +203,7 @@ function backup {
 			configuration "ntpd"
 		;;
 		"remote")
-			if [[ -d /etc/ssh/remote_install ]]; then
+			if [[ -d /etc/ssh/remote_install ]]; then	
 				for file in $(find "/etc/ssh/remote_install" -type f -maxdepth 1); do
 					cp -p $file "$CURRENTBACKUP/$1/"
 				done
@@ -1085,9 +1085,11 @@ function configuration {
 			done
 			if [[ ! -d /etc/ssh/remote_install ]]; then
 				mkdir /etc/ssh/remote_install
+				chmod g-w /etc/ssh/remote_install
 			else
 				rm -rf /etc/ssh/remote_install
 				mkdir /etc/ssh/remote_install
+				chmod g-w /etc/ssh/remote_install
 			fi
 			for file in $(find $basedir/src/etc/ssh/remote_install/ -type f); do
 				filename=$(basename $file)
