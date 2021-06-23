@@ -645,7 +645,7 @@ function admin {
 							if [[ $(grep -c "$vpnc_host" $file) -eq 1 ]]; then
 								grepopip=$(cat $file | awk 'FNR == 5 {print}' | awk '{print $4}')
 								cat $basedir/src/mikrotik/gre.rsc >> "/tmp/$vpnc_host/$vpnc_host.rsc"
-								sed -i "s/\/GREPOPIP\//$grepopip\/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
+								sed -i "s/\/GREPOPIP\//$grepopip/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
 							fi 
 						done
 						custom "/tmp/$vpnc_host/" "1"
