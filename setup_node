@@ -598,7 +598,10 @@ function admin {
 			fi
 			rm -rf /tmp/root-ca.{crt,pem} 
 			if [[ ! -d csr ]]; then
-				mkdir {csr,certs}
+				mkdir csr
+			fi
+			if [[ ! -d certs ]]; then
+				mkdir certs
 			fi
 			openssl genrsa -out "private/$(hostname).key" 2048
 			openssl rsa -in "/etc/ssl/private/$(hostname).key" -out "/etc/ssl/private/$(hostname)-nopwd.key"
