@@ -23,7 +23,7 @@ if [[ $# -eq 0 ]]; then
 			\n-C  -> cleanlast [o] \
 			\n-RS -> repository ssh update [o] \
 			\n-K  -> new IKED pk12 archive [o] \
-			\n-T  -> tmux and SSH to all openbsd MESH hosts \n"
+			\n-T  -> tmux and SSH to all openbsd MESH hosts [o]\n"
 	
 	exit 1
 fi
