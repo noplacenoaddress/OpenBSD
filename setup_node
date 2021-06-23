@@ -636,7 +636,6 @@ function admin {
 						cp $basedir/src/mikrotik/ipsec.rsc "/tmp/$vpnc_host/$vpnc_host.rsc"
 						sed -i "s/\/POPIP\//$vpnc_ip/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
 						sed -i "s/\/POP\//$vpnc_host/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
-						custom "/tmp/$vpnc_host/" "1"
 						for file in $(ls /etc/hostname.gre?); do
 							if [[ $(grep -c "$vpnc_host" $file) -eq 1 ]]; then
 								grepopip=$(cat $file | awk 'FNR == 5 {print}' | awk '{print $4}')
@@ -644,6 +643,7 @@ function admin {
 								sed -i "s/\/GREPOPIP\//$grepopip\/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
 							fi 
 						done
+						custom "/tmp/$vpnc_host/" "1"
 						echo "Download Mikrotik Routeros script from http://$(hostname)/$vpnc_host/$vpnc_host.rsc"
 						if [[ -d "/var/www/htdocs/$(hostname)/" ]]; then
 							rm -rf "/var/www/htdocs/$(hostname)/"
