@@ -1652,6 +1652,7 @@ case $1 in
 		rcctl restart syslogd
 		sh "$basedir/$app" -A sslcareq
 		echo "You successfully installed and connected a new OpenBSD MESH guerrilla host"	
+		sh "$basedir/$app" -A otheros
 	;;
 	"-U")
 		if [[ $# -ne 2 ]]; then
