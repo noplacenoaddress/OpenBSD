@@ -461,7 +461,11 @@ root@varuna:/home/taglio/Sources/Git/OpenBSD#
 
 *Recent versions of our tool will do it automatically.*
 
-[![OpenBSD MESH IPSec guerrila host](https://asciinema.org/a/421920.png)](https://asciinema.org/a/421920)***I'm fighting hard.***
+[![OpenBSD MESH IPSec guerrila host](https://asciinema.org/a/421920.png)](https://asciinema.org/a/421920)
+
+
+
+***I'm fighting hard.***
 
 #### Others system operatives 
 
