@@ -278,8 +278,7 @@ Next let's start to configure the system with our script `setup_node`, you've go
 - `routerid`, the OSPFD router id and the IP of the `vether0` interface.
 
 ```shell
-root@neo:/home/taglio/Sources/Git/OpenBSD# sh setup_node                                                                                                                                                                                                  
-changing installurl
+root@neo:/home/taglio/Sources/Git/OpenBSD# sh setup_node                                                                                                                                                                                          changing installurl
 Go ahead type 1 
 ```
 
@@ -358,7 +357,7 @@ Use `newhost` and `transfer` options.
 #### Automatic install
 
 ```shell
-taglio@varuna:/home/taglio$ cat /tmp/config.ini                                                                                                                                                                                                                 static#1
+taglio@varuna:/home/taglio$ cat /tmp/config.ini                                                                                                                                                                                                       static#1
 ipv6ctrl#static
 ipv6egress#2a01:8740:1:ff48::64a8
 ipv6prefix#48

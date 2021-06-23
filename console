@@ -24,7 +24,8 @@ if [[ $# -eq 0 ]]; then
 			\n-RS -> repository ssh update [o] \
 			\n-K  -> new IKED pk12 archive [o] \
 			\n-T  -> tmux and SSH to all openbsd MESH hosts [o] \
-			\n-M  -> Mikrotik add new OpenBSD [o] \
+			\n-M  -> Mikrotik RouterOS add new OpenBSD [o] \
+			\n-E  -> Ubiquiti EdgeOS add new OpenBSD [o] \
 			\n"
 	
 	exit 1
@@ -171,6 +172,21 @@ case $3 in
 		scp "/tmp/$mkpublichost.rsc" "admin@$mkhost:/$mkpublichost.rsc"
 		ssh admin@$mkhost /import file-name=$mkpublichost.rsc
 		echo -e "Host $openbsd.$2 configured into Mikrotik $mkhost.$2"
+		ssh admin@$mkhost /sys package update check-for-updates
+	;;
+	"-E")
+		edgehost=
+		while [ -z $edgehost ]
+		do
+			echo 'Type the EdgeOS internal hostname '
+			read edgehost
+		done
+		openbsd=
+		while [ -z $openbsd ]
+		do
+			echo 'Type the new OpenBSD internal hostname '
+			read openbsd
+		done
 	;;
 	*)
 	;;
