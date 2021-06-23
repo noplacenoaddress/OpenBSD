@@ -590,7 +590,7 @@ function admin {
 		;;
 		"sslcareq")
 			cd /etc/ssl
-			ftp -o /tmp/root-ca.crt http://oscp.$(hostname | sed "s/$(hostname -s).//")/root-ca.crt
+			ftp -o /tmp/root-ca.crt http://ocsp.$(hostname | sed "s/$(hostname -s).//")/root-ca.crt
 			openssl x509 -in /tmp/root-ca.crt -out /tmp/root-ca.pem
 			cat /tmp/root-ca.pem >> /etc/ssl/cert.pem
 			rm -rf /tmp/root-ca.{crt,pem} 
