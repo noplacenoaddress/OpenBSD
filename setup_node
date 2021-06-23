@@ -658,15 +658,9 @@ function admin {
 						typeset -u publichostname=$(echo $publichost | sed "s/.$domainname//")
 						typeset -u pophostname=$(echo $vpnc_host | sed "s/.$domainname//")
 						sed -i "s/\/POPHOSTNAME\//$pophostname/" "/tmp/$vpnc_host/$vpnc_host.rsc"
-						typeset -i a=$(ifconfig $greinterface | tail -n 1 | awk '{print $2}' | cut -d . -f4)
-						typeset -i b=$(ifconfig $greinterface | tail -n 1 | awk '{print $4}' | cut -d . -f4)
-						if (( $a < $b )); then
-							(( grenetwork=$a-1 ))
-						else
-							(( grenetwork=$b-1 ))
-						fi
-						grenetwork="$grenetwork"
-						sed -i "s/\/GRENETWORK\//10.10.10.$grenetwork/" "/tmp/$vpnc_host/$vpnc_host.rsc"
+						greip=$(ifconfig $greinterface | tail -n 1 | awk '{print $2}')
+						grenetwork=$(ipcalc -c $greip / 30 | grep network | awk '{ print $3 }')
+						sed -i "s/\/GRENETWORK\//$grenetwork/" "/tmp/$vpnc_host/$vpnc_host.rsc"
 						custom "/tmp/$vpnc_host" "1"
 						echo "Download Mikrotik Routeros script from http://$(hostname)/$vpnc_host/$vpnc_host.rsc"
 						mv "/tmp/$vpnc_host" "/var/www/htdocs/$(hostname)/"
