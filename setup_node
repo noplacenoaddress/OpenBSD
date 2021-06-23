@@ -592,7 +592,10 @@ function admin {
 			cd /etc/ssl
 			ftp -o /tmp/root-ca.crt http://ocsp.$(hostname | sed "s/$(hostname -s).//")/root-ca.crt
 			openssl x509 -in /tmp/root-ca.crt -out /tmp/root-ca.pem
-			cat /tmp/root-ca.pem >> /etc/ssl/cert.pem
+			if [[ $(grep -c "ocsp.$(hostname | sed "s/$(hostname -s).//")") -eq 0 ]]; then 
+				echo "\nocsp.$(hostname | sed "s/$(hostname -s).//")\n" >> /etc/ssl/cert.pem
+				cat /tmp/root-ca.crt >> /etc/ssl/cert.pem
+			fi
 			rm -rf /tmp/root-ca.{crt,pem} 
 			if [[ ! -d csr ]]; then
 				mkdir {csr,certs}
@@ -605,6 +608,16 @@ function admin {
 			fi
 			cp "/etc/ssl/csr/$(hostname).csr" "/var/www/htdocs/$(hostname)"
 			echo "Download csr from http://$(hostname)/$(hostname).csr to the CA server"
+			ctrl=
+			echo "Have you created the certificate onto the CA?"
+			while [ -z $ctrl ]
+			do
+				echo "Type 1 to go ahead "
+				read ctrl
+			done
+			ftp -o certs/$(hostname).crt http://web.telecom.lobby/CA_transfer/$(hostname)/$(hostname).crt
+			openssl x509 -in certs/$(hostname).crt -out certs/$(hostname).pem
+			echo "CRT downloaded and PEM created"
 		;;
 	esac
 }
