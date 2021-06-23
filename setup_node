@@ -623,6 +623,7 @@ function admin {
 			echo "CRT downloaded and PEM created"
 		;;
 		"otheros")
+			hostname=$(hostname -s)
 			for vpnc_ip in $(dig vpnc.$domainname A +short @8.8.8.8); do
 				if [[ $(nc -w1  $vpnc_ip 22 | grep -c "ROSSSH") -eq 1 ]]; then
 					vpnc_host=$(dig -x $vpnc_ip +short @8.8.8.8 | sed 's/.$//')
@@ -636,6 +637,9 @@ function admin {
 						sed -i "s/\/POP\//$vpnc_host/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
 						custom "/tmp/$vpnc_host/" "1"
 						echo "Download Mikrotik Routeros script from http://$(hostname)/$vpnc_host/$vpnc_host.rsc"
+						if [[ -d "/var/www/htdocs/$(hostname)/" ]]; then
+							rm -rf "/var/www/htdocs/$(hostname)/"
+						fi
 						mv "/tmp/$vpnc_host" "/var/www/htdocs/$(hostname)/"
 					fi
 				fi
