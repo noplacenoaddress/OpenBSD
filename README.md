@@ -463,7 +463,7 @@ root@varuna:/home/taglio/Sources/Git/OpenBSD#
 
 [![OpenBSD MESH IPSec guerrila host](https://asciinema.org/a/421920.png)](https://asciinema.org/a/421920)
 
-
+In this video you can appreciate also a [tmux](https://en.wikipedia.org/wiki/Tmux) session with all the OpenBSD host connected via `ssh` automatically, one session to the internal CA server that in my case is `cyberanarkhia`, and the last onto the workstation that in my case is `trimurti`, an [Ubuntu](https://en.wikipedia.org/wiki/Ubuntu) host.
 
 ***I'm fighting hard.***
 
