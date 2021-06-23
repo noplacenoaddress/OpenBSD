@@ -480,6 +480,45 @@ The types of are:
 
 My software build scripts to automatic configure the new hosts also for those guys.
 
+To add the new OpenBSD host to my Mikrotik steps are very simple. Do this in the new guy:
+
+```shell
+root@varuna:/home/taglio/Sources/Git/OpenBSD# sh setup_node -A otheros
+Download Mikrotik Routeros script from http://varuna.telecom.lobby/fr.telecomlobby.com/fr.telecomlobby.com.rsc
+root@varuna:/home/taglio/Sources/Git/OpenBSD# 
+```
+
+ And do that from the workstation:
+
+```shell
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -M
+Type the Mikrotik internal hostname 
+uma
+Type the new OpenBSD internal hostname 
+varuna
+--2021-06-23 15:27:46--  http://varuna.telecom.lobby/fr.telecomlobby.com/fr.telecomlobby.com.rsc
+Resolving varuna.telecom.lobby (varuna.telecom.lobby)... 192.168.13.59
+Connecting to varuna.telecom.lobby (varuna.telecom.lobby)|192.168.13.59|:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 1686 (1,6K) [application/octet-stream]
+Saving to: ‘/tmp/fr.telecomlobby.com.rsc’
+
+/tmp/fr.telecomlobby.com.rsc                                         100%[====================================================================================================================================================================>]   1,65K  --.-KB/s    in 0,07s   
+
+2021-06-23 15:27:46 (22,5 KB/s) - ‘/tmp/fr.telecomlobby.com.rsc’ saved [1686/1686]
+
+fr.telecomlobby.com.rsc                                                                                                                                                                                                                         100% 1686    63.5KB/s   00:00    
+
+Script file loaded and executed successfully
+Host varuna.telecom.lobby configured into Mikrotik uma.telecom.lobby
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ 
+
+```
+
+And here you a video:
+
+
+
 #### Remote upgrade
 
 ![](https://redama.es/Imagenes/varuna_shell.png)
