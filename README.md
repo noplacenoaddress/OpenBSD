@@ -461,9 +461,7 @@ root@varuna:/home/taglio/Sources/Git/OpenBSD#
 
 *Recent versions of our tool will do it automatically.*
 
-If we've got some others type of endpoints in our network the system have prepared automatically the scripts to configure them. In my case, as you know, I've got an EdgeOS router and other Mikrotik VPS. Those are responsible to bind service in my little WISP opened in Spain. One work that I've lost in 2016 due to a thief organized in the modern slavery network but that I restart one year ago with a lot of trouble and very few clients due to extreme corruption in front of me. 
-
-***I'm fighting hard.***
+[![OpenBSD MESH IPSec guerrila host](https://asciinema.org/a/421920.png)](https://asciinema.org/a/421920)***I'm fighting hard.***
 
 #### Others system operatives 
 
