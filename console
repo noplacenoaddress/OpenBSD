@@ -23,7 +23,9 @@ if [[ $# -eq 0 ]]; then
 			\n-C  -> cleanlast [o] \
 			\n-RS -> repository ssh update [o] \
 			\n-K  -> new IKED pk12 archive [o] \
-			\n-T  -> tmux and SSH to all openbsd MESH hosts [o]\n"
+			\n-T  -> tmux and SSH to all openbsd MESH hosts [o] \
+			\n-M  -> Mikrotik add new OpenBSD [o] \
+			\n"
 	
 	exit 1
 fi
@@ -149,6 +151,26 @@ case $3 in
 		tmux new-window 
 		tmux rename-window $(hostname -s)
 		tmux -2 attach-session -t "LOBBY"
+	;;
+	"-M")
+		mkhost=
+		while [ -z $mkhost ]
+		do
+			echo 'Type the Mikrotik internal hostname '
+			read mkhost
+		done
+		openbsd=
+		while [ -z $openbsd ]
+		do
+			echo 'Type the new OpenBSD internal hostname '
+			read openbsd
+		done
+		mkaddr=$(ssh admin@$mkhost /ip addr pr where dynamic | awk '{print $3}' | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b")
+		mkpublichost=$(dig -x $mkaddr +short @8.8.8.8 | sed 's/.$//')
+		wget "http://$openbsd.$2/$mkpublichost/$mkpublichost.rsc" -O "/tmp/$mkpublichost.rsc"
+		scp "/tmp/$mkpublichost.rsc" "admin@$mkhost:/$mkpublichost.rsc"
+		ssh admin@$mkhost /import file-name=$mkpublichost.rsc
+		echo -e "Host $openbsd.$2 configured into Mikrotik $mkhost.$2"
 	;;
 	*)
 	;;
