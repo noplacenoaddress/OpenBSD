@@ -592,7 +592,7 @@ function admin {
 			cd /etc/ssl
 			ftp -o /tmp/root-ca.crt http://ocsp.$(hostname | sed "s/$(hostname -s).//")/root-ca.crt
 			openssl x509 -in /tmp/root-ca.crt -out /tmp/root-ca.pem
-			if [[ $(grep -c "ocsp.$(hostname | sed "s/$(hostname -s).//")") -eq 0 ]]; then 
+			if [[ $(grep -c "ocsp.$(hostname | sed "s/$(hostname -s).//")" /etc/ssl/cert.pem) -eq 0 ]]; then 
 				echo "\nocsp.$(hostname | sed "s/$(hostname -s).//")\n" >> /etc/ssl/cert.pem
 				cat /tmp/root-ca.crt >> /etc/ssl/cert.pem
 			fi
