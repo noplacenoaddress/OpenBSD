@@ -517,7 +517,7 @@ riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$
 
 And here you a video:
 
-
+[![OpenBSD MESH IPSec guerrila host](https://asciinema.org/a/421957.png)](https://asciinema.org/a/421957)
 
 #### Remote upgrade
 
