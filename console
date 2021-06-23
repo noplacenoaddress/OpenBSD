@@ -23,7 +23,7 @@ if [[ $# -eq 0 ]]; then
 			\n-C  -> cleanlast [o] \
 			\n-RS -> repository ssh update [o] \
 			\n-K  -> new IKED pk12 archive [o] \
-			\n-S  -> tmux and SSH to all openbsd MESH hosts \n"
+			\n-T  -> tmux and SSH to all openbsd MESH hosts \n"
 	
 	exit 1
 fi
@@ -134,6 +134,17 @@ case $3 in
 		openssl x509 -pubkey -noout -passin pass:123456789 -in "$tmpdir/new.crt"  > src/etc/iked/pubkeys/ufqdn/"$srcid@ca.$domainname"
 		rm -rf $tmpdir
 		echo -e "$srcid@ca.$domainname created please update repository and all the others Openbsd hosts"		
+	;;
+	"-T")
+		echo -e "Launching TMUX"
+		tmux new-session -d -s "LOBBY"
+		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+			echo -e "Creating $vpnc_host TMUX windows"
+			tmux rename-window "$vpnc_host"
+			tmux send -t "LOBBY:$vpnc_host" ssh SPACE "$vpnc_host.$localdomainname" ENTER
+			tmux new-window 
+		done
+		tmux -2 attach-session -t "LOBBY"
 	;;
 	*)
 	;;
