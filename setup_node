@@ -651,10 +651,13 @@ function admin {
 						done
 						cat $basedir/src/mikrotik/firewall.rsc >> "/tmp/$vpnc_host/$vpnc_host.rsc"
 						md5=$(awk "/$greinterface/{x=NR+11}(NR<=x){print}" /etc/ospfd.conf  | awk 'FNR == 4 {print}' | awk '{print $3}' | sed "s/\"//g")
-						metric=$(awk "/$greinterface/{x=NR+11}(NR<=x){print}" ospfd.conf  | awk 'FNR == 6 {print}' | awk '{print $2}')
+						metric=$(awk "/$greinterface/{x=NR+11}(NR<=x){print}" /etc/ospfd.conf  | awk 'FNR == 6 {print}' | awk '{print $2}')
 						cat $basedir/src/mikrotik/ospfd.rsc >> "/tmp/$vpnc_host/$vpnc_host.rsc"
 						sed -i "s/\/METRIC\//$metric/" "/tmp/$vpnc_host/$vpnc_host.rsc"
 						sed -i "s/\/OSPFMD5\//$md5/" "/tmp/$vpnc_host/$vpnc_host.rsc"
+						publichostname=$(echo $publichost | sed "s/.$domainname//")
+						pophostname=$(echo $vpnc_host | sed "s/.$domainname//")
+						sed -i "s/\/POPHOSTNAME\//$pophostname/" "/tmp/$vpnc_host/$vpnc_host.rsc"
 						custom "/tmp/$vpnc_host" "1"
 						echo "Download Mikrotik Routeros script from http://$(hostname)/$vpnc_host/$vpnc_host.rsc"
 						mv "/tmp/$vpnc_host" "/var/www/htdocs/$(hostname)/"
