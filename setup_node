@@ -634,7 +634,7 @@ function admin {
 						cp $basedir/src/mikrotik/ipsec.rsc "/tmp/$vpnc_host/$vpnc_host.rsc"
 						sed -i "s/\/POPIP\//$vpnc_ip/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
 						sed -i "s/\/POP\//$vpnc_host/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
-						custom "/var/www/htdocs/$(hostname)/" "1"
+						custom "/tmp/$vpnc_host/" "1"
 						echo "Download Mikrotik Routeros script from http://$(hostname)/$vpnc_host/$vpnc_host.rsc"
 						mv "/tmp/$vpnc_host" "/var/www/htdocs/$(hostname)/"
 					fi
