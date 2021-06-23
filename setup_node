@@ -960,7 +960,7 @@ function configuration {
 				sed -i "s/\/GRELOCALIP\//10.10.10.$grelocalip/g" "/etc/hostname.gre$index"
 				if grep -q "ecp384" $file; then
 					cat $basedir/src/mikrotik/gre.rsc >> "/tmp/$pophost/$pophost.rsc"
-					sed -i "s/\/GREPOPIP\//10.10.10.$grepopip\/32/g" "/tmp/$pophost/$pophost.rsc"
+					sed -i "s/\/GREPOPIP\//10.10.10.$grepopip\/g" "/tmp/$pophost/$pophost.rsc"
 					sed -i "s/\/HOSTNAME\//$hostname/g" "/tmp/$pophost/$pophost.rsc"
 					sed -i "s/\/PUBLICIP\//$publicip/g" "/tmp/$pophost/$pophost.rsc"
 				elif grep -q "ecp256" $file; then
@@ -1061,7 +1061,7 @@ function configuration {
 					sed -i "s/\/X\//$lasttun/g" "/tmp/$pophost/ospfd.conf"	
 					sed -i "s/\/METRIC\//${metric}/g" "/tmp/$pophost/ospfd.conf"	
 					sed -i "s/\/OSPFMD5\//${ospfmd5}/g" "/tmp/$pophost/ospfd.conf"
-				elif [[ $(ls "/tmp/$pophost/" | grep -c "rsc") -eq 2 ]]; then
+				elif [[ $(ls "/tmp/$pophost/" | grep -c "rsc") -ne 0 ]]; then
 					pophostname=$(echo $pophost | cut -d . -f1)
 					cp $basedir/src/mikrotik/ospfd.rsc "/tmp/$pophost"
 					sed -i "s/\/HOSTNAME\//${hostname}/g" "/tmp/$pophost/ospfd.rsc"
