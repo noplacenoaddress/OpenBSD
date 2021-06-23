@@ -643,11 +643,18 @@ function admin {
 						sed -i "s/\/POP\//$vpnc_host/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
 						for file in $(ls /etc/hostname.gre?); do
 							if [[ $(grep -c "$vpnc_host" $file) -eq 1 ]]; then
+								greinterface=$(echo $file | cut -d . -f2)
 								grepopip=$(cat $file | awk 'FNR == 5 {print}' | awk '{print $4}')
 								cat $basedir/src/mikrotik/gre.rsc >> "/tmp/$vpnc_host/$vpnc_host.rsc"
 								sed -i "s/\/GREPOPIP\//$grepopip/" "/tmp/$vpnc_host/$vpnc_host.rsc"
 							fi 
 						done
+						cat $basedir/src/mikrotik/firewall.rsc >> "/tmp/$vpnc_host/$vpnc_host.rsc"
+						md5=$(awk "/$greinterface/{x=NR+11}(NR<=x){print}" /etc/ospfd.conf  | awk 'FNR == 4 {print}' | awk '{print $3}' | sed "s/\"//g")
+						metric=$(awk "/$greinterface/{x=NR+11}(NR<=x){print}" ospfd.conf  | awk 'FNR == 6 {print}' | awk '{print $2}')
+						cat $basedir/src/mikrotik/ospfd.rsc >> "/tmp/$vpnc_host/$vpnc_host.rsc"
+						sed -i "s/\/METRIC\//$metric/" "/tmp/$vpnc_host/$vpnc_host.rsc"
+						sed -i "s/\/OSPFMD5\//$md5/" "/tmp/$vpnc_host/$vpnc_host.rsc"
 						custom "/tmp/$vpnc_host" "1"
 						echo "Download Mikrotik Routeros script from http://$(hostname)/$vpnc_host/$vpnc_host.rsc"
 						mv "/tmp/$vpnc_host" "/var/www/htdocs/$(hostname)/"
