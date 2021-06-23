@@ -624,6 +624,7 @@ function admin {
 		;;
 		"otheros")
 			hostname=$(hostname -s)
+			srcid=$(echo $publichost | sed "s/.$domainname//")
 			for vpnc_ip in $(dig vpnc.$domainname A +short @8.8.8.8); do
 				if [[ $(nc -w1  $vpnc_ip 22 | grep -c "ROSSSH") -eq 1 ]]; then
 					vpnc_host=$(dig -x $vpnc_ip +short @8.8.8.8 | sed 's/.$//')
