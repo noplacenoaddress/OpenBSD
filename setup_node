@@ -653,7 +653,7 @@ function admin {
 					fi
 				fi
 			done
-			
+			rm -rf "/tmp/$vpnc_host"
 		;;
 	esac
 }
