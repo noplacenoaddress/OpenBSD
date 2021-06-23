@@ -144,6 +144,10 @@ case $3 in
 			tmux send -t "LOBBY:$vpnc_host" ssh SPACE "$vpnc_host.$localdomainname" ENTER
 			tmux new-window 
 		done
+		tmux rename-window "CA"
+		tmux send -t "LOBBY:CA" ssh SPACE "ca.$localdomainname" ENTER
+		tmux new-window 
+		tmux rename-window $(hostname -s)
 		tmux -2 attach-session -t "LOBBY"
 	;;
 	*)
