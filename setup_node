@@ -629,6 +629,13 @@ function admin {
 					if [[ -d "/tmp/$vpnc_host" ]]; then
 						echo "Download Mikrotik Routeros script from http://$(hostname)/$vpnc_host/$vpnc_host.rsc"
 						mv "/tmp/$vpnc_host" "/var/www/htdocs/$(hostname)/"
+					else
+						mkdir "/tmp/$vpnc_host"
+						cp $basedir/src/mikrotik/ipsec.rsc "/tmp/$vpnc_host/$vpnc_host.rsc"
+						sed -i "s/\/POPIP\//$vpnc_ip/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
+						sed -i "s/\/POP\//$vpnc_host/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
+						echo "Download Mikrotik Routeros script from http://$(hostname)/$vpnc_host/$vpnc_host.rsc"
+						mv "/tmp/$vpnc_host" "/var/www/htdocs/$(hostname)/"
 					fi
 				fi
 			done
