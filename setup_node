@@ -686,8 +686,8 @@ function admin {
 						if [[ $(grep -c "$vpnc_host" $file) -eq 1 ]]; then
 							greinterface=$(echo $file | cut -d . -f2)
 							grepopip=$(cat $file | awk 'FNR == 5 {print}' | awk '{print $4}')
-							sed -i "s/\/GREPOPIP\//10.10.10.$grepopip/g" "/tmp/$vpnc_host/ES-${publichostname}_netwatch.sh"
-							sed -i "s/\/GREPOPIP\//10.10.10.$grepopip/g" "/tmp/$vpnc_host/gre.sh"
+							sed -i "s/\/GREPOPIP\/$grepopip/g" "/tmp/$vpnc_host/ES-${publichostname}_netwatch.sh"
+							sed -i "s/\/GREPOPIP\//$grepopip/g" "/tmp/$vpnc_host/gre.sh"
 							sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" "/tmp/$vpnc_host/ES-${publichostname}_netwatch.sh"
 						fi 
 					done
