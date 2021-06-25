@@ -675,6 +675,10 @@ function admin {
 					mv "/tmp/$vpnc_host" "/var/www/htdocs/$(hostname)/"
 					mv "/tmp/$vpnc_host.tar" "/var/www/htdocs/$(hostname)/"
 					rm -rf "/tmp/$vpnc_host"
+				else
+					mkdir "/tmp/$vpnc_host"
+					cp $basedir/src/edgeos/ipsec.conf "/tmp/$vpnc_host/"
+					cp "/etc/iked/certs/$publichost.crt" "/tmp/$vpnc_host/"
 				fi
 			done
 			
@@ -1030,6 +1034,8 @@ function configuration {
 					sed -i "s/\/TUN\//tun$lasttun/g" "/tmp/$pophost/ES-${publichostname}_netwatch.sh"
 					sed -i "s/\/TUN\//tun$lasttun/g" "/tmp/$pophost/ES-$publichostname-updown.sh"
 					sed -i "s/\/TUN\//tun$lasttun/g" "/tmp/$pophost/gre.sh"
+					sed -i "s/\/PUBLICHOST\//$publichost/g" "/tmp/$pophost/gre.sh"
+					sed -i "s/\/PUBLICIP\//$publicip/g" "/tmp/$pophost/gre.sh"
 				else
 					cp $basedir/src/openbsd/hostname.gre.openbsd "/tmp/$pophost/hostname.gre$lasttun"
 					cp $basedir/src/openbsd/hostname.enc.openbsd "/tmp/$pophost/hostname.enc$lasttun"
@@ -1133,7 +1139,7 @@ function configuration {
 				elif [[ $(ls "/tmp/$pophost/" | grep -c "netwatch") -eq 1 ]]; then
 					tunif=$(cat "/tmp/$pophost/gre.sh" | awk '{ print $4 }' | grep tun | head -n 1)
 					cp $basedir/src/edgeos/ospf.sh "/tmp/$pophost/"
-					sed -i "s/\/TUNIF\//${tunif}/g" "/tmp/$pophost/ospf.sh"
+					sed -i "s/\/TUN\//${tunif}/g" "/tmp/$pophost/ospf.sh"
 					sed -i "s/\/OSPFMD5\//${ospfmd5}/g" "/tmp/$pophost/ospf.sh"
 					sed -i "s/\/METRIC\//${metric}/g" "/tmp/$pophost/ospf.sh"
 				fi
