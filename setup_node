@@ -677,18 +677,18 @@ function admin {
 					rm -rf "/tmp/$vpnc_host"
 				else
 					tmpdir=$(mktemp -d)
-					cp $basedir/src/edgeos/ipsec.conf "/tmp/$tmpdir/"
-					cp "/etc/iked/certs/$publichost.crt" "/tmp/$tmpdir/"
+					cp $basedir/src/edgeos/ipsec.conf "$tmpdir"
+					cp "/etc/iked/certs/$publichost.crt" "$tmpdir"
 					cp $basedir/src/edgeos/scripts/ES-SRCID-_netwatch.sh "/tmp/$vpnc_host/ES-${publichostname}_netwatch.sh" 
 					cp $basedir/src/edgeos/scripts/ES-SRCID--updown.sh "/tmp/$vpnc_host/ES-$publichostname-updown.sh"
-					cp $basedir/src/edgeos/gre.sh "/tmp/$tmpdir/"
+					cp $basedir/src/edgeos/gre.sh "$tmpdir"
 					for file in $(ls /etc/hostname.gre?); do
 						if [[ $(grep -c "$vpnc_host" $file) -eq 1 ]]; then
 							greinterface=$(echo $file | cut -d . -f2)
 							grepopip=$(cat $file | awk 'FNR == 5 {print}' | awk '{print $4}')
-							sed -i "s/\/GREPOPIP\//$grepopip/g" "/tmp/$tmpdir/ES-${publichostname}_netwatch.sh"
-							sed -i "s/\/GREPOPIP\//$grepopip/g" "/tmp/$tmpdir/gre.sh"
-							sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" "/tmp/$tmpdir/ES-${publichostname}_netwatch.sh"
+							sed -i "s/\/GREPOPIP\//$grepopip/g" "$tmpdirES-${publichostname}_netwatch.sh"
+							sed -i "s/\/GREPOPIP\//$grepopip/g" "$tmpdirgre.sh"
+							sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" "$tmpdirES-${publichostname}_netwatch.sh"
 						fi 
 					done
 					lasttun=$(ls -l /etc/hostname.gre? | tail -n 1 |awk '{print $9}' | sed "s/\/etc\/hostname.gre//")
@@ -710,25 +710,25 @@ function admin {
 							;;						
 						esac
 					done
-					sed -i "s/\/TUN\//tun$lasttun/g" "/tmp/$tmpdir/ES-${publichostname}_netwatch.sh"
-					sed -i "s/\/TUN\//tun$lasttun/g" "/tmp/$tmpdir/ES-$publichostname-updown.sh"
-					sed -i "s/\/TUN\//tun$lasttun/g" "/tmp/$tmpdir/gre.sh"
-					sed -i "s/\/PUBLICHOST\//$publichost/g" "/tmp/$tmpdir/gre.sh"
-					sed -i "s/\/PUBLICIP\//$publicip/g" "/tmp/$tmpdir/gre.sh"
+					sed -i "s/\/TUN\//tun$lasttun/g" "$tmpdirES-${publichostname}_netwatch.sh"
+					sed -i "s/\/TUN\//tun$lasttun/g" "$tmpdirES-$publichostname-updown.sh"
+					sed -i "s/\/TUN\//tun$lasttun/g" "$tmpdirgre.sh"
+					sed -i "s/\/PUBLICHOST\//$publichost/g" "$tmpdirgre.sh"
+					sed -i "s/\/PUBLICIP\//$publicip/g" "$tmpdirgre.sh"
 					if [[ -d "/var/www/htdocs/$(hostname)/${tmpdir}" ]]; then
 						rm -rf "/var/www/htdocs/$(hostname)/${tmpdir}/"
 					fi
 					md5=$(awk "/$greinterface/{x=NR+11}(NR<=x){print}" /etc/ospfd.conf  | awk 'FNR == 4 {print}' | awk '{print $3}' | sed "s/\"//g")
 					metric=$(awk "/$greinterface/{x=NR+11}(NR<=x){print}" /etc/ospfd.conf  | awk 'FNR == 6 {print}' | awk '{print $2}')
-					cp $basedir/src/edgeos/ospf.sh "/tmp/$tmpdir/"
-					sed -i "s/\/TUN\//tun$lasttun/g" "/tmp/$tmpdir/ospf.sh"
-					sed -i "s/\/OSPFMD5\//${md5}/g" "/tmp/$tmpdir/ospf.sh"
-					sed -i "s/\/METRIC\//${metric}/g" "/tmp/$tmpdir/ospf.sh"
-					mv "/tmp/$tmpdir/" "/var/www/htdocs/$(hostname)/"
+					cp $basedir/src/edgeos/ospf.sh "$tmpdir"
+					sed -i "s/\/TUN\//tun$lasttun/g" "$tmpdirospf.sh"
+					sed -i "s/\/OSPFMD5\//${md5}/g" "$tmpdirospf.sh"
+					sed -i "s/\/METRIC\//${metric}/g" "$tmpdirospf.sh"
+					mv "$tmpdir" "/var/www/htdocs/$(hostname)/"
 					custom "/tmp/$tmpdir" 1
 					tar -cvf "/tmp/$vpnc_host.tar" -C /tmp -s /tmp// $tmpdir
 					mv "/tmp/$vpnc_host.tar" "/var/www/htdocs/$(hostname)/"
-					rm -rf  "/tmp/$tmpdir/"
+					rm -rf  "$tmpdir"
 				fi
 			done
 			
