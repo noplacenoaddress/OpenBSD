@@ -692,7 +692,7 @@ function admin {
 						fi 
 					done
 					lasttun=$(ls -l /etc/hostname.gre? | tail -n 1 |awk '{print $9}' | sed "s/\/etc\/hostname.gre//")
-					local lasttunctrl=
+						lasttunctrl=
 					while [ -z $lasttunctrl ]
 					do
 						echo "Is EdgeOS tun interface $lasttun? "
@@ -715,8 +715,6 @@ function admin {
 					sed -i "s/\/TUN\//tun$lasttun/g" "/tmp/$vpnc_host/gre.sh"
 					sed -i "s/\/PUBLICHOST\//$publichost/g" "/tmp/$vpnc_host/gre.sh"
 					sed -i "s/\/PUBLICIP\//$publicip/g" "/tmp/$vpnc_host/gre.sh"
-					custom "/tmp/$vpnc_host" 1
-					tar -cvf "/tmp/$vpnc_host.tar" -C /tmp -s /tmp// $vpnc_host
 					if [[ -d "/var/www/htdocs/$(hostname)/${vpnc_host}" ]]; then
 						rm -rf "/var/www/htdocs/$(hostname)/${vpnc_host}/"
 					fi
@@ -727,6 +725,8 @@ function admin {
 					sed -i "s/\/OSPFMD5\//${md5}/g" "/tmp/$vpnc_host/ospf.sh"
 					sed -i "s/\/METRIC\//${metric}/g" "/tmp/$vpnc_host/ospf.sh"
 					mv "/tmp/$vpnc_host/" "/var/www/htdocs/$(hostname)/"
+					custom "/tmp/$vpnc_host" 1
+					tar -cvf "/tmp/$vpnc_host.tar" -C /tmp -s /tmp// $vpnc_host
 					mv "/tmp/$vpnc_host.tar" "/var/www/htdocs/$(hostname)/"
 					rm -rf  "/tmp/$vpnc_host/"
 				fi
