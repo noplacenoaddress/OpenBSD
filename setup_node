@@ -701,7 +701,7 @@ function admin {
 							"yes")
 							;;
 							"no")
-								echo "Type the name of the TUN interface "
+								echo "Type the last digit of the TUN interface "
 								read lasttun
 							;;
 							*)
