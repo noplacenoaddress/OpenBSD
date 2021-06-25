@@ -26,6 +26,7 @@ if [[ $# -eq 0 ]]; then
 			\n-T  -> tmux and SSH to all openbsd MESH hosts [o] \
 			\n-M  -> Mikrotik RouterOS add new OpenBSD [o] \
 			\n-E  -> Ubiquiti EdgeOS add new OpenBSD [o] \
+			\n-P  -> Mass syspatch OpenBSD hosts [o] \
 			\n"
 	
 	exit 1
@@ -71,6 +72,12 @@ case $3 in
 		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 			echo -e "Connecting to $vpnc_host"
 			ssh -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -A cleanlast
+		done	
+	;;
+	"-P")
+		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+			echo -e "Connecting to $vpnc_host"
+			ssh -t $vpnc_host.$localdomainname doas syspatch
 		done	
 	;;
 	"-RS")
