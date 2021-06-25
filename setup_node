@@ -717,10 +717,15 @@ function admin {
 					sed -i "s/\/PUBLICIP\//$publicip/g" "/tmp/$vpnc_host/gre.sh"
 					custom "/tmp/$vpnc_host" 1
 					tar -cvf "/tmp/$vpnc_host.tar" -C /tmp -s /tmp// $vpnc_host
-		
 					if [[ -d "/var/www/htdocs/$(hostname)/${vpnc_host}" ]]; then
 						rm -rf "/var/www/htdocs/$(hostname)/${vpnc_host}/"
 					fi
+					md5=$(awk "/$greinterface/{x=NR+11}(NR<=x){print}" /etc/ospfd.conf  | awk 'FNR == 4 {print}' | awk '{print $3}' | sed "s/\"//g")
+					metric=$(awk "/$greinterface/{x=NR+11}(NR<=x){print}" /etc/ospfd.conf  | awk 'FNR == 6 {print}' | awk '{print $2}')
+					cp $basedir/src/edgeos/ospf.sh "/tmp/$vpnc_host/"
+					sed -i "s/\/TUN\//tun$lasttun/g" "/tmp/$vpnc_host/ospf.sh"
+					sed -i "s/\/OSPFMD5\//${md5}/g" "/tmp/$vpnc_host/ospf.sh"
+					sed -i "s/\/METRIC\//${metric}/g" "/tmp/$vpnc_host/ospf.sh"
 					mv "/tmp/$vpnc_host/" "/var/www/htdocs/$(hostname)/"
 					mv "/tmp/$vpnc_host.tar" "/var/www/htdocs/$(hostname)/"
 					rm -rf  "/tmp/$vpnc_host/"
