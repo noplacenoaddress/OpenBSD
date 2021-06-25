@@ -692,7 +692,7 @@ function admin {
 						fi 
 					done
 					lasttun=$(ls -l /etc/hostname.gre? | tail -n 1 |awk '{print $9}' | sed "s/\/etc\/hostname.gre//")
-					lasttunctrl=
+					local lasttunctrl=
 					while [ -z $lasttunctrl ]
 					do
 						echo "Is EdgeOS tun interface $lasttun? "
