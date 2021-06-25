@@ -702,9 +702,9 @@ function admin {
 					if [[ -d "/var/www/htdocs/$(hostname)/${vpnc_host}" ]]; then
 						rm -rf "/var/www/htdocs/$(hostname)/${vpnc_host}/"
 					fi
-					mv "/tmp/$vpnc_host" "/var/www/htdocs/$(hostname)/"
+					mv "/tmp/$vpnc_host/" "/var/www/htdocs/$(hostname)/"
 					mv "/tmp/$vpnc_host.tar" "/var/www/htdocs/$(hostname)/"
-					rm -rf  "/tmp/$vpnc_host"
+					rm -rf  "/tmp/$vpnc_host/"
 				fi
 			done
 			
