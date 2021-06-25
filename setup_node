@@ -691,7 +691,7 @@ function admin {
 							sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" "/tmp/$vpnc_host/ES-${publichostname}_netwatch.sh"
 						fi 
 					done
-					lasttun=$(ls -l hostname.gre? | tail -n 1 |awk '{print $9}' | sed "s/hostname.gre//")
+					lasttun=$(ls -l /etc/hostname.gre? | tail -n 1 |awk '{print $9}' | sed "s/hostname.gre//")
 					sed -i "s/\/TUN\//tun$lasttun/g" "/tmp/$vpnc_host/ES-${publichostname}_netwatch.sh"
 					sed -i "s/\/TUN\//tun$lasttun/g" "/tmp/$vpnc_host/ES-$publichostname-updown.sh"
 					sed -i "s/\/TUN\//tun$lasttun/g" "/tmp/$vpnc_host/gre.sh"
