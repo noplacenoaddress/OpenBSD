@@ -679,6 +679,7 @@ function admin {
 					mkdir "/tmp/$vpnc_host"
 					cp $basedir/src/edgeos/ipsec.conf "/tmp/$vpnc_host/"
 					cp "/etc/iked/certs/$publichost.crt" "/tmp/$vpnc_host/"
+					custom "/tmp/$vpnc_host" 1
 				fi
 			done
 			
