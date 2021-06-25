@@ -680,6 +680,13 @@ function admin {
 					cp $basedir/src/edgeos/ipsec.conf "/tmp/$vpnc_host/"
 					cp "/etc/iked/certs/$publichost.crt" "/tmp/$vpnc_host/"
 					custom "/tmp/$vpnc_host" 1
+					tar -cvf "/tmp/$vpnc_host.tar" -C /tmp -s /tmp// $vpnc_host
+					if [[ -d "/var/www/htdocs/$(hostname)/$vpnc_host" ]]; then
+						rm -rf "/var/www/htdocs/$(hostname)/$vpnc_host"
+					fi
+					mv "/tmp/$vpnc_host" "/var/www/htdocs/$(hostname)/"
+					mv "/tmp/$vpnc_host.tar" "/var/www/htdocs/$(hostname)/"
+					rm -rf  "/tmp/$vpnc_host"
 				fi
 			done
 			
