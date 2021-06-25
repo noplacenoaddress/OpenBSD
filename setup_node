@@ -667,6 +667,16 @@ function admin {
 					fi
 				fi
 			done
+			for vpnc_host in $(dig vpnc.$domainname TXT +short @8.8.8.8 | sed 's/\"//g'); do
+				vpnc_ip=$(dig $vpnc_host A +short @8.8.8.8 | tail -n 1)
+				if [[ -d "/tmp/$vpnc_host" ]]; then
+					echo "Download Ubiquiti EdgeOS scripts from http://$(hostname)/$vpnc_host/$vpnc_host.tar"
+					tar -cvf "/tmp/$vpnc_host.tar" -C /tmp -s /tmp// $vpnc_host
+					mv "/tmp/$vpnc_host" "/var/www/htdocs/$(hostname)/"
+					mv "/tmp/$vpnc_host.tar" "/var/www/htdocs/$(hostname)/"
+					rm -rf "/tmp/$vpnc_host"
+				fi
+			done
 			
 		;;
 	esac
