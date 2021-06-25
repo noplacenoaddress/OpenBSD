@@ -185,7 +185,7 @@ case $3 in
 		edgehost=
 		while [ -z $edgehost ]
 		do
-			echo 'Type the EdgeOS internal hostname '
+			echo 'Type the EdgeOS external hostname '
 			read edgehost
 		done
 		openbsd=
@@ -194,6 +194,10 @@ case $3 in
 			echo 'Type the new OpenBSD internal hostname '
 			read openbsd
 		done
+		wget "http://$openbsd.$2/$edgehost.tar" -O "/tmp/$edgehost.tar"
+		cd /tmp
+		tar xvf "/tmp/$edgehost.tar"
+		cd $edgehost
 	;;
 	*)
 	;;
