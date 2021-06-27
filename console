@@ -195,6 +195,15 @@ case $3 in
 			echo 'Type the new OpenBSD internal hostname '
 			read openbsd
 		done
+		publicip=$(ssh -q $openbsd.$localdomain ifconfig egress | awk 'FNR == 7' | awk '{print $2}')
+		publicdomainname=$(dig $publicip -x +short | awk -F. '{$1="";OFS="." ; print $0}' | sed 's/^.//')
+		publichostname=$(echo $edgehost | sed "s/.$publicdomainname//")
+		for edge_host in $(dig edgeos.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+			publicedgehost=$(echo $edge_host | cut -d : -f2)
+			if [[ $publichostname = $publicedgehost ]]; then
+				edgeos=$(echo $edge_host | cut -d : -f1)
+			fi
+		done
 		wget "http://$openbsd.$2/$edgehost.tar" -O "/tmp/$edgehost.tar"
 		cd /tmp
 		if [[ ! -d "$edgehost" ]]; then
@@ -202,6 +211,13 @@ case $3 in
 		fi 
 		tar xvf "/tmp/$edgehost.tar" -C "/tmp/$edgehost" 
 		cd $edgehost
+		for file in $(ls .); do
+			if [[ $file = "gre.sh" || $file = "ospf.sh" ]]; then
+				for line in $(cat $file); do
+					ssh -q $edgeos /opt/vyatta/bin/vyatta-op-cmd-wrapper $line
+				done
+			fi
+		done
 		
 	;;
 	*)
