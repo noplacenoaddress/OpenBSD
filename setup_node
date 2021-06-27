@@ -692,7 +692,7 @@ function admin {
 						fi 
 					done
 					lasttun=$(ls -l /etc/hostname.gre? | tail -n 1 |awk '{print $9}' | sed "s/\/etc\/hostname.gre//")
-						lasttunctrl=
+					lasttunctrl=
 					while [ -z $lasttunctrl ]
 					do
 						echo "Is EdgeOS tun interface $lasttun? "
@@ -724,8 +724,8 @@ function admin {
 					sed -i "s/\/TUN\//tun$lasttun/g" "$tmpdir/ospf.sh"
 					sed -i "s/\/OSPFMD5\//${md5}/g" "$tmpdir/ospf.sh"
 					sed -i "s/\/METRIC\//${metric}/g" "$tmpdir/ospf.sh"
-					custom "/tmp/$tmpdir" 1
-					mv "$tmpdir" "/var/www/htdocs/$(hostname)/${vpnc_host}/"
+					custom "$tmpdir" 1
+					mv "$tmpdir" "/var/www/htdocs/$(hostname)/${vpnc_host}/" 	
 					tar -cvf "/tmp/$vpnc_host.tar" -C /tmp -s /tmp// $tmpdir
 					mv "/tmp/$vpnc_host.tar" "/var/www/htdocs/$(hostname)/"
 					rm -rf  "$tmpdir"
