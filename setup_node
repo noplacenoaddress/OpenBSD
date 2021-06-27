@@ -725,7 +725,7 @@ function admin {
 					sed -i "s/\/OSPFMD5\//${md5}/g" "$tmpdir/ospf.sh"
 					sed -i "s/\/METRIC\//${metric}/g" "$tmpdir/ospf.sh"
 					custom "$tmpdir" 1
-					tar -cvf "/tmp/$vpnc_host.tar" -C /tmp -s /tmp$tmpdir// "$tmpdir/"
+					tar -cvf "/tmp/$vpnc_host.tar" -C /tmp -s $tmpdir// "$tmpdir/"
 					mv "$tmpdir" "/var/www/htdocs/$(hostname)/${vpnc_host}/" 	
 					mv "/tmp/$vpnc_host.tar" "/var/www/htdocs/$(hostname)/"
 					rm -rf  "$tmpdir"
