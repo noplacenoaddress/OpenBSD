@@ -1,18 +1,18 @@
 #!/bin/vbash
 
 configure
-set interface tunnel /TUN/
-set interface tunnel /TUN/ address /GREPOPIP/
-set interface tunnel /TUN/ description /PUBLICHOST/
-set interface tunnel /TUN/ encapsulation gre
-set interface tunnel /TUN/ firewall
-set interface tunnel /TUN/ firewall local
-set interface tunnel /TUN/ firewall local name GRE
-set interface tunnel /TUN/ local-ip 0.0.0.0
-set interface tunnel /TUN/ mtu 1392
-set interface tunnel /TUN/ multicast enable
-set interface tunnel /TUN/ remote-ip /PUBLICIP/
-set interface tunnel /TUN/ ttl 255
+set interfaces tunnel /TUN/
+set interfaces tunnel /TUN/ address /GREPOPIP/
+set interfaces tunnel /TUN/ description /PUBLICHOST/
+set interfaces tunnel /TUN/ encapsulation gre
+set interfaces tunnel /TUN/ firewall
+set interfaces tunnel /TUN/ firewall local
+set interfaces tunnel /TUN/ firewall local name GRE
+set interfaces tunnel /TUN/ local-ip 0.0.0.0
+set interfaces tunnel /TUN/ mtu 1392
+set interfaces tunnel /TUN/ multicast enable
+set interfaces tunnel /TUN/ remote-ip /PUBLICIP/
+set interfaces tunnel /TUN/ ttl 255
 commit
 save
 
