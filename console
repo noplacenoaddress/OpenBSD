@@ -213,7 +213,7 @@ case $3 in
 		cd $edgehost
 		for file in $(ls .); do
 			if [[ $file = "gre.sh" || $file = "ospf.sh" ]]; then
-				for line in $(cat $file); do
+				for line in $(cat $file | grep -v \#); do
 					ssh -q $edgeos /opt/vyatta/bin/vyatta-op-cmd-wrapper $line
 				done
 			fi
