@@ -27,6 +27,7 @@ if [[ $# -eq 0 ]]; then
 			\n-M  -> Mikrotik RouterOS add new OpenBSD [o] \
 			\n-E  -> Ubiquiti EdgeOS add new OpenBSD [o] \
 			\n-P  -> Mass syspatch OpenBSD hosts [o] \
+			\n
 			\n"
 	
 	exit 1
@@ -196,8 +197,12 @@ case $3 in
 		done
 		wget "http://$openbsd.$2/$edgehost.tar" -O "/tmp/$edgehost.tar"
 		cd /tmp
-		tar xvf "/tmp/$edgehost.tar"
+		if [[ ! -d "$edgehost" ]]; then
+			mkdir "$edgehost"
+		fi 
+		tar xvf "/tmp/$edgehost.tar" -C "/tmp/$edgehost"
 		cd $edgehost
+		
 	;;
 	*)
 	;;
