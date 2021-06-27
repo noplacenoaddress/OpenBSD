@@ -200,7 +200,7 @@ case $3 in
 		if [[ ! -d "$edgehost" ]]; then
 			mkdir "$edgehost"
 		fi 
-		tar xvf "/tmp/$edgehost.tar" -C "/tmp/$edgehost" 
+		tar xvf "/tmp/$edgehost.tar" -C "/tmp/$edgehost" -s /tmp//
 		cd $edgehost
 		
 	;;
