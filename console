@@ -27,7 +27,6 @@ if [[ $# -eq 0 ]]; then
 			\n-M  -> Mikrotik RouterOS add new OpenBSD [o] \
 			\n-E  -> Ubiquiti EdgeOS add new OpenBSD [o] \
 			\n-P  -> Mass syspatch OpenBSD hosts [o] \
-			\n
 			\n"
 	
 	exit 1
