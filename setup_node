@@ -726,7 +726,7 @@ function admin {
 					sed -i "s/\/METRIC\//${metric}/g" "$tmpdir/ospf.sh"
 					custom "$tmpdir" 1
 					mv "$tmpdir" "/var/www/htdocs/$(hostname)/${vpnc_host}/" 	
-					tar -cvf "/tmp/$vpnc_host.tar" -C /tmp -s /tmp// $tmpdir
+					tar -cvf "/tmp/$vpnc_host.tar" -C /tmp -s /tmp// "$tmpdir/"
 					mv "/tmp/$vpnc_host.tar" "/var/www/htdocs/$(hostname)/"
 					rm -rf  "$tmpdir"
 				fi
