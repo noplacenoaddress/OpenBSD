@@ -2,7 +2,7 @@
 
 configure
 set interfaces tunnel /TUN/
-set interfaces tunnel /TUN/ address /GREPOPIP/
+set interfaces tunnel /TUN/ address /GREPOPIP//30
 set interfaces tunnel /TUN/ description /PUBLICHOST/
 set interfaces tunnel /TUN/ encapsulation gre
 set interfaces tunnel /TUN/ firewall
