@@ -686,6 +686,7 @@ function admin {
 						if [[ $(grep -c "$vpnc_host" $file) -eq 1 ]]; then
 							greinterface=$(echo $file | cut -d . -f2)
 							grepopip=$(cat $file | awk 'FNR == 5 {print}' | awk '{print $4}')
+							grenetwork=$(ipcalc -c $grepopip / 30 | grep network | awk '{ print $3 }')
 							sed -i "s/\/GREPOPIP\//$grepopip/g" "$tmpdir/ES-${publichostname}_netwatch.sh"
 							sed -i "s/\/GREPOPIP\//$grepopip/g" "$tmpdir/gre.sh"
 							sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" "$tmpdir/ES-${publichostname}_netwatch.sh"
@@ -724,6 +725,7 @@ function admin {
 					sed -i "s/\/TUN\//tun$lasttun/g" "$tmpdir/ospf.sh"
 					sed -i "s/\/OSPFMD5\//${md5}/g" "$tmpdir/ospf.sh"
 					sed -i "s/\/METRIC\//${metric}/g" "$tmpdir/ospf.sh"
+					sed -i "s/\/GRENETWORK\//${grenetwork}\/30/g" "$tmpdir/ospf.sh"
 					custom "$tmpdir" 1
 					subdir=$(echo $tmpdir | sed "s/\/tmp\///")
 					tar -cvzf "/tmp/$vpnc_host.tar" -C $tmpdir $(ls $tmpdir)
