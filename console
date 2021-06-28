@@ -233,9 +233,10 @@ case $3 in
 		ctrl=
 		while [ -z $ctrl ]
 		do
-			echo 'Do you want to restart ipsec into $edgeos '
-			read $ctrl
+			echo "Do you want to restart ipsec into $edgeos "
+			read ctrl
 		done
+		rm -rf "/tmp/$edgehost"
 		case $ctrl in
 			"yes")
 				ssh -q $edgeos ipsec restart
