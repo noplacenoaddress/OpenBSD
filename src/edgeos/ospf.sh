@@ -1,5 +1,3 @@
-#!/bin/vbash
-
 configure
 set interfaces tunnel /TUN/ ip ospf authentication md5
 set interfaces tunnel /TUN/ ip ospf authentication md5 key-id 1 md5-key /OSPFMD5/
@@ -12,4 +10,3 @@ set interfaces tunnel /TUN/ retransmit-interval 5
 set interfaces tunnel /TUN/ transmit-delay 1
 commit
 save
-
