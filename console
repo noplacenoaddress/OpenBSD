@@ -213,10 +213,7 @@ case $3 in
 		cd $edgehost
 		for file in $(ls .); do
 			if [[ $file = "gre.sh" || $file = "ospf.sh" ]]; then
-				while  IFS= read -r line
-				 do 
-					cat $file | ssh -q $edgeos 
-				done  <"$file"
+				cat $file | ssh -q $edgeos 
 			fi
 		done
 		

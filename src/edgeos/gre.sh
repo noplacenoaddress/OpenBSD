@@ -13,4 +13,3 @@
 /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set interfaces tunnel /TUN/ ttl 255
 /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper commit
 /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper save
-/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper exit
