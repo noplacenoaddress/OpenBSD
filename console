@@ -194,9 +194,13 @@ case $3 in
 			echo 'Type the new OpenBSD internal hostname '
 			read openbsd
 		done
-		publicip=$(ssh -q $openbsd.$localdomain ifconfig egress | awk 'FNR == 7' | awk '{print $2}')
-		publicdomainname=$(dig $publicip -x +short | awk -F. '{$1="";OFS="." ; print $0}' | sed 's/^.//')
+		publicip=$(ssh -q $openbsd.$localdomainname ifconfig egress | awk 'FNR == 7' | awk '{print $2}')
+		publichost=$(dig -x $publicip +short |  sed 's/.$//' | cut -d . -f1)
+		publicdomainname=$(dig -x $publicip +short | sed "s/$publichost.//" | sed 's/.$//')
 		publichostname=$(echo $edgehost | sed "s/.$publicdomainname//")
+		echo $publicip
+		echo $publicdomainname
+		echo $publichostname
 		for edge_host in $(dig edgeos.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 			publicedgehost=$(echo $edge_host | cut -d : -f2)
 			if [[ $publichostname = $publicedgehost ]]; then
