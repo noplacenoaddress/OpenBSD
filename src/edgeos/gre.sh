@@ -1,5 +1,3 @@
-#!/bin/vbash
-
 /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper begin
 /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set interfaces tunnel /TUN/
 /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set interfaces tunnel /TUN/ address /GREPOPIP//30
@@ -15,4 +13,4 @@
 /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set interfaces tunnel /TUN/ ttl 255
 /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper commit
 /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper save
-/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper endexit
+/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper exit
