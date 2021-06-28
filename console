@@ -230,6 +230,22 @@ case $3 in
 				cat $file | ssh -qt $edgeos "cat - >> /config/ipsec.conf"
 			fi
 		done
+		ctrl=
+		while [ -z $ctrl ]
+		do
+			echo 'Do you want to restart ipsec into $edgeos '
+			read $ctrl
+		done
+		case $ctrl in
+			"yes")
+				ssh -q $edgeos ipsec restart
+			;;
+			"no")
+			;;
+			*)
+				echo 'Reply yes or no'
+			;;
+		esac
 		
 	;;
 	*)
