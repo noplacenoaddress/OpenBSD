@@ -1,5 +1,3 @@
-#!/bin/vbash
-
 configure
 set interfaces tunnel /TUN/
 set interfaces tunnel /TUN/ address /GREPOPIP//30
@@ -15,4 +13,3 @@ set interfaces tunnel /TUN/ remote-ip /PUBLICIP/
 set interfaces tunnel /TUN/ ttl 255
 commit
 save
-
