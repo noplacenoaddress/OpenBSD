@@ -11,5 +11,6 @@
 /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set interfaces tunnel /TUN/ multicast enable
 /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set interfaces tunnel /TUN/ remote-ip /PUBLICIP/
 /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set interfaces tunnel /TUN/ ttl 255
+/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set firewall group address-group PPPOE address /PUBLICIP/
 /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper commit
 /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper save
