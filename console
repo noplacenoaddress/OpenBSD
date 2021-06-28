@@ -214,6 +214,17 @@ case $3 in
 		for file in $(ls .); do
 			if [[ $file = "gre.sh" || $file = "ospf.sh" ]]; then
 				cat $file | ssh -q $edgeos 
+			elif [[ $file = *updown.sh ]]; then
+				scp $file "$edgeos:/tmp"
+				ssh $edgeos sudo mv "/tmp/$file" /config/ipsec
+			elif [[ $file = *_netwatch.sh ]]; then
+				scp $file "$edgeos:/tmp"
+				ssh $edgeos sudo mv "/tmp/$file" /config/scripts
+			elif [[ $file = *.crt ]]; then
+				scp $file "$edgeos:/tmp"
+				ssh $edgeos sudo mv "/tmp/$file" /config/auth
+			elif [[ $file = *.conf ]]; then
+				cat $file | ssh -t $edgeos "cat - >> /config/ipsec.conf"
 			fi
 		done
 		
