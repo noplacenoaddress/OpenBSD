@@ -198,9 +198,6 @@ case $3 in
 		publichost=$(dig -x $publicip +short |  sed 's/.$//' | cut -d . -f1)
 		publicdomainname=$(dig -x $publicip +short | sed "s/$publichost.//" | sed 's/.$//')
 		publichostname=$(echo $edgehost | sed "s/.$publicdomainname//")
-		echo $publicip
-		echo $publicdomainname
-		echo $publichostname
 		for edge_host in $(dig edgeos.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 			publicedgehost=$(echo $edge_host | cut -d : -f2)
 			if [[ $publichostname = $publicedgehost ]]; then
@@ -218,8 +215,7 @@ case $3 in
 			if [[ $file = "gre.sh" || $file = "ospf.sh" ]]; then
 				while  IFS= read -r line
 				 do 
-					# mostrar la línea o hacer algo en $ line 
-					echo  "ssh -q $edgeos /opt/vyatta/bin/vyatta-op-cmd-wrapper $line" 
+					cat $file | ssh -q $edgeos 
 				done  <"$file"
 			fi
 		done
