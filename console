@@ -215,16 +215,19 @@ case $3 in
 			if [[ $file = "gre.sh" || $file = "ospf.sh" ]]; then
 				cat $file | ssh -q $edgeos 
 			elif [[ $file = *updown.sh ]]; then
-				scp $file "$edgeos:/tmp"
-				ssh $edgeos sudo mv "/tmp/$file" /config/ipsec
+				a=$(echo $file | sed "s/-updown.sh//")
+				c=$(echo $a | sed "s/-//")
+				v=$(echo $file | sed "s/$a/$c/")
+				scp -q $file "$edgeos:/tmp"
+				ssh -q $edgeos sudo mv "/tmp/$file" "/config/ipsec/$v"
 			elif [[ $file = *_netwatch.sh ]]; then
-				scp $file "$edgeos:/tmp"
-				ssh $edgeos sudo mv "/tmp/$file" /config/scripts
+				scp -q $file "$edgeos:/tmp"
+				ssh -q $edgeos sudo mv "/tmp/$file" /config/scripts
 			elif [[ $file = *.crt ]]; then
-				scp $file "$edgeos:/tmp"
-				ssh $edgeos sudo mv "/tmp/$file" /config/auth
+				scp -q $file "$edgeos:/tmp"
+				ssh -q $edgeos sudo mv "/tmp/$file" /config/auth
 			elif [[ $file = *.conf ]]; then
-				cat $file | ssh -t $edgeos "cat - >> /config/ipsec.conf"
+				cat $file | ssh -qt $edgeos "cat - >> /config/ipsec.conf"
 			fi
 		done
 		
