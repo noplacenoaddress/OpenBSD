@@ -219,18 +219,20 @@ case $3 in
 				c=$(echo $a | sed "s/-//")
 				v=$(echo $file | sed "s/$a/$c/")
 				scp -q $file "$edgeos:/tmp"
-				ssh -q $edgeos sudo mv "/tmp/$file" "/config/ipsec/$v"
+				ssh -q $edgeos "sudo mv /tmp/$file /config/ipsec/$v ; chmod +x /config/ipsec/$v"
 			elif [[ $file = *_netwatch.sh ]]; then
 				a=$(echo $file | sed "s/_netwatch.sh//")
 				c=$(echo $a | sed "s/-//")
 				v=$(echo $file | sed "s/$a/$c/")
 				scp -q $file "$edgeos:/tmp"
-				ssh -q $edgeos "sudo mv /tmp/$file /config/scripts/$v; chmod +x /config/scripts/$v; sudo chown root:vyattacf /config/scripts/$v"
+				ssh -q $edgeos "sudo mv /tmp/$file /config/scripts/$v; chmod +x /config/scripts/$v"
 			elif [[ $file = *.crt ]]; then
 				scp -q $file "$edgeos:/tmp"
 				ssh -q $edgeos sudo mv "/tmp/$file" /config/auth
 			elif [[ $file = *.conf ]]; then
-				cat $file | ssh -qt $edgeos "cat - >> /config/ipsec.conf"
+				if [[ $(ssh -q $edgeos grep -c telecomlobby-$(head -n 1 $file | cut -d \- -f2) /config/ipsec.conf) -eq 0 ]]; then
+					cat $file | ssh -qt $edgeos "cat - >> /config/ipsec.conf"
+				fi
 			fi
 		done
 		ctrl=
