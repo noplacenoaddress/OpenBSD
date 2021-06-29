@@ -682,7 +682,7 @@ GROUP --> 6
 
 ```
 
-
+I've divided world into six groups depending onto GPS system. `console` give you at what group is pertaining every host connected to our guerrilla network. Next we will create three containers in which we will put those hosts to create three pulls of name servers. After depending onto the geographical position of the client doing the query the system will reply in a manner or another using the `powerdns` geo-ip feature.
 
 Nice Regards,
 
