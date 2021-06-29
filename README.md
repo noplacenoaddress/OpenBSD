@@ -585,6 +585,11 @@ GB	+513030-0000731	Europe/London
   "postal": "EC1A",
   "timezone": "Europe/London",
 }
+LAT --> 51
+LONG --> -0
+
+GROUP --> 3
+
 US/Central
 
 {
@@ -598,6 +603,11 @@ US/Central
   "postal": "75270",
   "timezone": "America/Chicago",
 }
+LAT --> 32
+LONG --> -96
+
+GROUP --> 1
+
 Japan
 
 {
@@ -611,6 +621,11 @@ Japan
   "postal": "386-0404",
   "timezone": "Asia/Tokyo",
 }
+LAT --> 36
+LONG --> 138
+
+GROUP --> 5
+
 BG	+4241+02319	Europe/Sofia
 
 {
@@ -624,6 +639,11 @@ BG	+4241+02319	Europe/Sofia
   "postal": "1000",
   "timezone": "Europe/Sofia",
 }
+LAT --> 42
+LONG --> 23
+
+GROUP --> 3
+
 DE	+5230+01322	Europe/Berlin	Germany (most areas)
 
 {
@@ -637,6 +657,11 @@ DE	+5230+01322	Europe/Berlin	Germany (most areas)
   "postal": "60311",
   "timezone": "Europe/Berlin",
 }
+LAT --> 50
+LONG --> 8
+
+GROUP --> 3
+
 AU	-3352+15113	Australia/Sydney	New South Wales (most areas)
 
 {
@@ -650,6 +675,11 @@ AU	-3352+15113	Australia/Sydney	New South Wales (most areas)
   "postal": "1001",
   "timezone": "Australia/Sydney",
 }
+LAT --> -33
+LONG --> 151
+
+GROUP --> 6
+
 ```
 
 

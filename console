@@ -275,6 +275,18 @@ case $3 in
 			[[ $zonetab ]] && echo -e "\n$zonetab\n" || echo -e "\n$local\n"
 			publicip=$(ssh -q $vpnc_host.$localdomainname ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
 			curl -s "http://ipinfo.io/$publicip" | sed '/readme/d'
+			loc=$(curl -s "http://ipinfo.io/$publicip" | grep loc | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g")
+			long=$(echo $loc | cut -d , -f2 | cut -d . -f1)
+			lat=$(echo $loc | cut -d , -f1 | cut -d . -f1)
+			echo -e "\nLAT --> $lat"
+			echo -e "LONG --> $long\n"
+			if [[ $long -ge -180 && $long -le -60 && $lat -ge 0 ]]; then group=1; fi
+			if [[ $long -ge -60 && $long -le 60 && $lat -ge 0 ]]; then group=3; fi
+			if [[ $long -ge 60 && $long -le 180 && $lat -ge 0 ]]; then group=5; fi
+			if [[ $long -ge -180 && $long -le -60 && $lat -le 0 ]]; then group=2; fi
+			if [[ $long -ge -60 && $long -le 60 && $lat -le 0 ]]; then group=4; fi
+			if [[ $long -ge 60 && $long -le 180 && $lat -le 0 ]]; then group=6; fi
+			echo -e "GROUP --> $group\n"
 		done
 	;;
 	*)
