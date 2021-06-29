@@ -549,10 +549,12 @@ Next feature for example can be serving a web page in a different language depen
 ![Political Map](https://upload.wikimedia.org/wikipedia/commons/5/55/Political_Map_of_the_World.png)
 
 ```shell
-Type the two .com domains (the principle and the secondary) divided by a comma: 
-telecomlobby,9-rg.com
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -Z
 
-telecomlobby: 
+Type the two .com domains (the principle and the secondary) divided by a comma: 
+telecomlobby.com,9-rg.com
+
+telecomlobby.com: 
    Name Server: B.NS.BUDDYNS.COM
    Name Server: JP.TELECOMLOBBY.COM
    Name Server: UK.TELECOMLOBBY.COM
@@ -682,7 +684,17 @@ GROUP --> 6
 
 ```
 
+Using the `console` script from the workstation give us a global vision of our IPSec network. It's important because of management of the DNS servers and the geo-ip feature.
+
+I use two domain names because administrating the NS pulls which others.
+
 I've divided world into six groups depending onto GPS system. `console` give you at what group is pertaining every host connected to our guerrilla network. Next we will create three containers in which we will put those hosts to create three pulls of name servers. After depending onto the geographical position of the client doing the query the system will reply in a manner or another using the `powerdns` geo-ip feature.
+
+Another important feature is that our tool give us information withing the [whois database](https://en.wikipedia.org/wiki/WHOIS) if the suite of extensions [DNSSEC](https://en.wikipedia.org/wiki/Domain_Name_System_Security_Extensions) is enable from the registrant. 
+
+#### DNSSEC
+
+![](https://www.researchgate.net/profile/Nicola-Zannone/publication/326276803/figure/fig1/AS:648934477283337@1531729444191/An-overview-of-DNSSEC.png)
 
 Nice Regards,
 
