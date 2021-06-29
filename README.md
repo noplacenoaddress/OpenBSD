@@ -548,6 +548,108 @@ Next feature for example can be serving a web page in a different language depen
 
 ![Political Map](https://upload.wikimedia.org/wikipedia/commons/5/55/Political_Map_of_the_World.png)
 
+```shell
+Type the two .com domains (the principle and the secondary) divided by a comma: 
+telecomlobby,9-rg.com
+
+telecomlobby: 
+
+DNSSEC not enable onto telecomlobby!
+<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+9-rg.com: 
+fgets: Connection reset by peer
+   Name Server: B.NS.BUDDYNS.COM
+   Name Server: JP.TELECOMLOBBY.COM
+   Name Server: UK.TELECOMLOBBY.COM
+   Name Server: US.TELECOMLOBBY.COM
+
+DNSSEC not enable onto 9-rg.com!
+<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>
+You've got servers in:
+
+
+GB	+513030-0000731	Europe/London
+
+{
+  "ip": "78.141.201.0",
+  "hostname": "uk.telecomlobby.com",
+  "city": "London",
+  "region": "England",
+  "country": "GB",
+  "loc": "51.5085,-0.1257",
+  "org": "AS20473 The Constant Company, LLC",
+  "postal": "EC1A",
+  "timezone": "Europe/London",
+}
+US/Central
+
+{
+  "ip": "155.138.247.27",
+  "hostname": "us.telecomlobby.com",
+  "city": "Dallas",
+  "region": "Texas",
+  "country": "US",
+  "loc": "32.7831,-96.8067",
+  "org": "AS20473 The Constant Company, LLC",
+  "postal": "75270",
+  "timezone": "America/Chicago",
+}
+Japan
+
+{
+  "ip": "139.180.206.19",
+  "hostname": "jp.telecomlobby.com",
+  "city": "Kamimaruko",
+  "region": "Nagano",
+  "country": "JP",
+  "loc": "36.3186,138.2733",
+  "org": "AS20473 The Constant Company, LLC",
+  "postal": "386-0404",
+  "timezone": "Asia/Tokyo",
+}
+BG	+4241+02319	Europe/Sofia
+
+{
+  "ip": "94.72.143.163",
+  "city": "Sofia",
+  "region": "Sofia-Capital",
+  "country": "BG",
+  "loc": "42.6975,23.3241",
+  "org": "AS203380 DA International Group Ltd.",
+  "postal": "1000",
+  "timezone": "Europe/Sofia",
+}
+DE	+5230+01322	Europe/Berlin	Germany (most areas)
+
+{
+  "ip": "45.63.116.141",
+  "hostname": "45.63.116.141.vultr.com",
+  "city": "Frankfurt am Main",
+  "region": "Hesse",
+  "country": "DE",
+  "loc": "50.1155,8.6842",
+  "org": "AS20473 The Constant Company, LLC",
+  "postal": "60311",
+  "timezone": "Europe/Berlin",
+}
+AU	-3352+15113	Australia/Sydney	New South Wales (most areas)
+
+{
+  "ip": "139.180.165.223",
+  "hostname": "au.telecomlobby.com",
+  "city": "Sydney",
+  "region": "New South Wales",
+  "country": "AU",
+  "loc": "-33.8678,151.2073",
+  "org": "AS20473 The Constant Company, LLC",
+  "postal": "1001",
+  "timezone": "Australia/Sydney",
+}
+```
+
+
+
 Nice Regards,
 
 Riccardo `<taglio>` Giuntoli.
