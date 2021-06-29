@@ -221,8 +221,11 @@ case $3 in
 				scp -q $file "$edgeos:/tmp"
 				ssh -q $edgeos sudo mv "/tmp/$file" "/config/ipsec/$v"
 			elif [[ $file = *_netwatch.sh ]]; then
+				a=$(echo $file | sed "s/_netwatch.sh//")
+				c=$(echo $a | sed "s/-//")
+				v=$(echo $file | sed "s/$a/$c/")
 				scp -q $file "$edgeos:/tmp"
-				ssh -q $edgeos sudo mv "/tmp/$file" /config/scripts
+				ssh -q $edgeos "sudo mv /tmp/$file /config/scripts/$v; chmod +x /config/scripts/$v; sudo chown root:vyattacf /config/scripts/$v"
 			elif [[ $file = *.crt ]]; then
 				scp -q $file "$edgeos:/tmp"
 				ssh -q $edgeos sudo mv "/tmp/$file" /config/auth
