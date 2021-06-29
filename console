@@ -27,6 +27,7 @@ if [[ $# -eq 0 ]]; then
 			\n-M  -> Mikrotik RouterOS add new OpenBSD [o] \
 			\n-E  -> Ubiquiti EdgeOS add new OpenBSD [o] \
 			\n-P  -> Mass syspatch OpenBSD hosts [o] \
+			\n-Z  -> Global network domains setup [o] \
 			\n"
 	
 	exit 1
@@ -253,6 +254,28 @@ case $3 in
 			;;
 		esac
 		
+	;;
+	"-Z")	
+		comdomains=
+		echo -e "Type the two .com domains (the principle and the secondary) divided by a comma: "
+		read comdomains
+		principledomain=$(printf $comdomains | cut -d , -f1)
+		secondarydomain=$(printf $comdomains | cut -d , -f2)
+		for domain in $(printf "$comdomains" | xargs -d, -n1); do
+			echo -e "\n$domain: "
+			whois -H $domain | grep "Name Server" | grep -v "^Name"
+			dnssec=$(whois -H $domain| grep DNSSEC | awk '{print $2}')
+			[[ $dnssec == "unsigned" ]] || echo -e "\nDNSSEC not enable onto $domain!"
+			echo "<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>"
+		done
+		echo -e "You've got servers in:\n"
+		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+			local=$(ssh -q $vpnc_host.$localdomainname readlink /etc/localtime  | sed "s/\/usr\/share\/zoneinfo\///")
+			zonetab=$(ssh -q $vpnc_host.$localdomainname cat /usr/share/zoneinfo/zone.tab | grep $local)
+			[[ $zonetab ]] && echo -e "\n$zonetab\n" || echo -e "\n$local\n"
+			publicip=$(ssh -q $vpnc_host.$localdomainname ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
+			curl -s "http://ipinfo.io/$publicip" | sed '/readme/d'
+		done
 	;;
 	*)
 	;;
