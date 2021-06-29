@@ -679,7 +679,7 @@ function admin {
 					tmpdir=$(mktemp -d)
 					cp $basedir/src/edgeos/ipsec.conf "$tmpdir"
 					cp "/etc/iked/certs/$publichost.crt" "$tmpdir"
-					cp $basedir/src/edgeos/scripts/ipsec.sh "$tmpdir"
+					cp $basedir/src/edgeos/ipsec.sh "$tmpdir"
 					cp $basedir/src/edgeos/scripts/ES-SRCID-_netwatch.sh "$tmpdir/ES-${publichostname}_netwatch.sh" 
 					cp $basedir/src/edgeos/scripts/ES-SRCID--updown.sh "$tmpdir/ES-$publichostname-updown.sh"
 					cp $basedir/src/edgeos/gre.sh "$tmpdir"
