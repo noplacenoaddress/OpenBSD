@@ -553,12 +553,15 @@ Type the two .com domains (the principle and the secondary) divided by a comma:
 telecomlobby,9-rg.com
 
 telecomlobby: 
+   Name Server: B.NS.BUDDYNS.COM
+   Name Server: JP.TELECOMLOBBY.COM
+   Name Server: UK.TELECOMLOBBY.COM
+   Name Server: US.TELECOMLOBBY.COM
 
 DNSSEC not enable onto telecomlobby!
 <<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 9-rg.com: 
-fgets: Connection reset by peer
    Name Server: B.NS.BUDDYNS.COM
    Name Server: JP.TELECOMLOBBY.COM
    Name Server: UK.TELECOMLOBBY.COM
@@ -612,6 +615,7 @@ BG	+4241+02319	Europe/Sofia
 
 {
   "ip": "94.72.143.163",
+  "hostname": "bg.telecomlobby.com",
   "city": "Sofia",
   "region": "Sofia-Capital",
   "country": "BG",
@@ -624,7 +628,7 @@ DE	+5230+01322	Europe/Berlin	Germany (most areas)
 
 {
   "ip": "45.63.116.141",
-  "hostname": "45.63.116.141.vultr.com",
+  "hostname": "de.telecomlobby.com",
   "city": "Frankfurt am Main",
   "region": "Hesse",
   "country": "DE",
