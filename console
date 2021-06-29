@@ -212,7 +212,7 @@ case $3 in
 		tar xvf "/tmp/$edgehost.tar" -C "/tmp/$edgehost" 
 		cd $edgehost
 		for file in $(ls .); do
-			if [[ $file = "gre.sh" || $file = "ospf.sh" ]]; then
+			if [[ $file = "gre.sh" || $file = "ospf.sh" || $file = "ipsec.sh" ]]; then
 				cat $file | ssh -q $edgeos 
 			elif [[ $file = *updown.sh ]]; then
 				a=$(echo $file | sed "s/-updown.sh//")
