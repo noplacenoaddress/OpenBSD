@@ -12,5 +12,8 @@
 /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set interfaces tunnel /TUN/ remote-ip /PUBLICIP/
 /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set interfaces tunnel /TUN/ ttl 255
 /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set firewall group address-group PPPOE address /PUBLICIP/
+/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set protocols static table /ROUTERIDLAST/
+/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set protocols static table /ROUTERIDLAST/ description /PUBLICHOSTNAME/
+/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set protocols static table /ROUTERIDLAST/ interface-route 0.0.0.0/0 next-hop-interface /TUN/
 /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper commit
 /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper save

@@ -690,7 +690,7 @@ I use two domain names because administrating the NS pulls which others.
 
 I've divided world into six groups depending onto GPS system. `console` give you at what group is pertaining every host connected to our guerrilla network. Next we will create three containers in which we will put those hosts to create three pulls of name servers. After depending onto the geographical position of the client doing the query the system will reply in a manner or another using the `powerdns` geo-ip feature.
 
-Another important feature is that our tool give us information withing the [whois database](https://en.wikipedia.org/wiki/WHOIS) if the suite of extensions [DNSSEC](https://en.wikipedia.org/wiki/Domain_Name_System_Security_Extensions) is enable from the registrant. 
+Another important feature is that our tool give us information withing the [whois database](https://en.wikipedia.org/wiki/WHOIS) if the suite of extensions [DNSSEC](https://en.wikipedia.org/wiki/Domain_Name_System_Security_Extensions) is enable from the registrant. 	
 
 #### DNSSEC
 
