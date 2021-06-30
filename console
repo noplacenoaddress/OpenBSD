@@ -28,6 +28,8 @@ if [[ $# -eq 0 ]]; then
 			\n-E  -> Ubiquiti EdgeOS add new OpenBSD [o] \
 			\n-P  -> Mass syspatch OpenBSD hosts [o] \
 			\n-Z  -> Global network domains setup [o] \
+			\n-OM -> Mikrotik RouterOS ospf-in/out filter [o] \
+			\n-OE -> EdgeOS ospf-in/out filter [o] \
 			\n"
 	
 	exit 1
@@ -229,13 +231,14 @@ case $3 in
 				ssh -q $edgeos "sudo mv /tmp/$file /config/scripts/$v; chmod +x /config/scripts/$v"
 			elif [[ $file = *.crt ]]; then
 				scp -q $file "$edgeos:/tmp"
-				ssh -q $edgeos sudo mv "/tmp/$file" /config/auth
+				ssh -q $edgeos sudo cp "/tmp/$file" /config/auth; sudo mv "/tmp/$file" /etc/ipsec.d/certs/
 			elif [[ $file = *.conf ]]; then
 				if [[ $(ssh -q $edgeos grep -c telecomlobby-$(head -n 1 $file | cut -d \- -f2) /config/ipsec.conf) -eq 0 ]]; then
 					cat $file | ssh -qt $edgeos "cat - >> /config/ipsec.conf"
 				fi
 			fi
 		done
+		ssh -q $edgeos echo "cp /config/auth/$publichostname.crt /etc/ipsec.d/certs/" >> /config/scripts/post-config.d/files.sh
 		ctrl=
 		while [ -z $ctrl ]
 		do
@@ -245,7 +248,7 @@ case $3 in
 		rm -rf "/tmp/$edgehost"
 		case $ctrl in
 			"yes")
-				ssh -q $edgeos ipsec restart
+				ssh -q $edgeos restart vpn
 			;;
 			"no")
 			;;
@@ -288,6 +291,71 @@ case $3 in
 			if [[ $long -ge 60 && $long -le 180 && $lat -le 0 ]]; then group=6; fi
 			echo -e "GROUP --> $group\n"
 		done
+	;;
+	"-OM")
+		mk=
+		echo -e "Type the internal hostname of the Mikrotik: "
+		read mk
+		for ((x=0 ; x<255 ;)); do
+			for ((y=0 ; y<4; )); do
+				[[ $x < 255 ]] && \
+					case $y in
+						0)
+							ssh -q admin@$mk "/routing filter add action=discard address-family=ip chain=ospf-in ospf-type=intra-area prefix=10.10.10.$x prefix-length=30 protocol=ospf"
+							ssh -q admin@$mk "/routing filter add action=discard address-family=ip chain=ospf-out ospf-type=intra-area prefix=10.10.10.$x prefix-length=30 protocol=ospf"
+						;;
+						3)
+						;;
+						*)
+							ssh -q admin@$mk "/routing filter add action=discard address-family=ip chain=ospf-in ospf-type=intra-area prefix=10.10.10.$x protocol=ospf"
+							ssh -q admin@$mk "/routing filter add action=discard address-family=ip chain=ospf-out ospf-type=intra-area prefix=10.10.10.$x protocol=ospf"
+						;;
+					esac
+				let x+=1
+				let y+=1
+			done
+		done
+	;;
+	"-OE")
+		edgeos=
+		echo -e "Type the internal hostname of the EdgeOS: "
+		read edgeos
+		edgescript=$(mktemp)
+		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper begin" > $edgescript
+		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 13" >> $edgescript
+		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 13 description OSPF-IN" >> $edgescript
+		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 31" >> $edgescript
+		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 31 description OSPF-OUT" >> $edgescript
+		for ((x=0 ; x<=255 ;)); do
+			for ((y=0 ; y<4; )); do
+				[[ $x < 255 ]] && \
+					echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 13 rule $x action deny" >> $edgescript
+					echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 31 rule $x action deny" >> $edgescript
+					case $y in
+						0)
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 13 rule $x source inverse-mask 252.255.255.255" >> $edgescript
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 13 rule $x source network 10.10.10.$x" >> $edgescript
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 31 rule $x destination inverse-mask 252.255.255.255" >> $edgescript
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 31 rule $x destination network 10.10.10.$x" >> $edgescript
+						;;
+						3)
+						;;
+						*)
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 13 rule $x source host 10.10.10.$x" >> $edgescript
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 31 rule $x destination host 10.10.10.$x" >> $edgescript
+						;;
+					esac
+				let x+=1
+				let y+=1
+			done
+		done
+		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 13 rule $x action permit" >> $edgescript
+		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 31 rule $x action permit" >> $edgescript
+		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 13 rule $x source any" >> $edgescript
+		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 31 rule $x destination any" >> $edgescript
+		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper commit" >> $edgescript
+		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper save" >> $edgescript
+		cat $edgescript | ssh -q $edgeos
 	;;
 	*)
 	;;

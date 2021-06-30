@@ -1,0 +1,229 @@
+ubnt@NTR-NLK01:~$ show configuration
+firewall {
+    all-ping enable
+    broadcast-ping disable
+    conntrack-expect-table-size 4096
+    conntrack-hash-size 4096
+    conntrack-table-size 32768
+    conntrack-tcp-loose enable
+    ipv6-receive-redirects disable
+    ipv6-src-route disable
+    ip-src-route disable
+    log-martians enable
+    receive-redirects disable
+    send-redirects disable
+    source-validation disable
+    syn-cookies enable
+}
+interfaces {
+    ethernet eth0 {
+        address 10.1.100.25/29
+        description Telecom
+        duplex auto
+        speed auto
+    }
+    ethernet eth1 {
+        address 10.1.100.1/30
+        description NTR-WRW01
+        duplex auto
+        speed auto
+    }
+    ethernet eth2 {
+        duplex auto
+        speed auto
+    }
+    ethernet eth3 {
+        duplex auto
+        speed auto
+    }
+    ethernet eth4 {
+        duplex auto
+        speed auto
+    }
+    ethernet eth5 {
+        duplex auto
+        speed auto
+    }
+    ethernet eth6 {
+        duplex auto
+        speed auto
+    }
+    ethernet eth7 {
+        duplex auto
+        speed auto
+    }
+    loopback lo {
+        address 10.1.100.21/32
+    }
+}
+policy {
+    access-list 10 {
+        description IN
+        rule 10 {
+            action permit
+            source {
+                inverse-mask 0.0.0.255
+                network 10.1.100.0
+            }
+        }
+        rule 20 {
+            action permit
+            source {
+                inverse-mask 0.0.0.255
+                network 130.159.97.0
+            }
+        }
+        rule 30 {
+            action permit
+            source {
+                inverse-mask 0.0.0.255
+                network 172.16.72.0
+            }
+        }
+        rule 50 {
+            action deny
+            source {
+                inverse-mask 0.0.7.255
+                network 209.17.250.0
+            }
+        }
+        rule 51 {
+            action deny
+            source {
+                inverse-mask 0.0.255.255
+                network 192.168.0.0
+            }
+        }
+        rule 52 {
+            action deny
+            source {
+                inverse-mask 0.15.255.255
+                network 172.16.0.0
+            }
+        }
+        rule 60 {
+            action permit
+            source {
+                any
+            }
+        }
+    }
+    route-map CONNECT {
+        rule 10 {
+            action permit
+            match {
+                interface eth0
+                ip {
+                    route-source {
+                        access-list 10
+                    }
+                }
+            }
+        }
+        rule 11 {
+            action permit
+            match {
+                interface eth1
+            }
+        }
+        rule 20 {
+            action deny
+            match {
+                interface eth4
+            }
+        }
+    }
+}
+protocols {
+    ospf {
+        area 0 {
+            network 10.1.100.0/24
+        }
+        log-adjacency-changes {
+        }
+        parameters {
+            abr-type cisco
+            router-id 10.1.100.21
+        }
+        redistribute {
+            connected {
+                metric-type 2
+            }
+            static {
+                metric 10
+                metric-type 2
+            }
+        }
+    }
+    static {
+        route 10.1.100.40/29 {
+            next-hop 10.1.100.26 {
+            }
+        }
+        route 10.1.100.48/28 {
+            next-hop 10.1.100.26 {
+            }
+        }
+        route 10.1.100.64/26 {
+            next-hop 10.1.100.26 {
+            }
+        }
+        route 10.1.100.128/26 {
+            next-hop 10.1.100.26 {
+                distance 2
+            }
+        }
+        route 10.1.100.192/27 {
+            next-hop 10.1.100.26 {
+                distance 2
+            }
+        }
+        route 10.1.100.240/28 {
+            next-hop 10.1.100.26 {
+                distance 2
+            }
+        }
+    }
+}
+service {
+    gui {
+        https-port 443
+    }
+    ssh {
+        port 22
+        protocol-version v2
+    }
+}
+system {
+    host-name *****
+    login {
+        user ubnt {
+            authentication {
+                encrypted-password ****************
+            }
+            level admin
+        }
+    }
+    name-server 10.1.100.66
+    name-server 10.1.100.67
+    ntp {
+        server {
+        }
+        server {
+        }
+        server {
+        }
+    }
+    syslog {
+        global {
+            facility all {
+                level notice
+            }
+            facility protocols {
+                level debug
+            }
+        }
+    }
+    time-zone *******
+}
+ubnt@NTR-NLK01:~$
