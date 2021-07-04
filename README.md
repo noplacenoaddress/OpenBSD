@@ -518,6 +518,21 @@ And here you a video:
 
 [![OpenBSD MESH IPSec guerrila host](https://asciinema.org/a/421957.png)](https://asciinema.org/a/421957)
 
+#### Routine maintenance
+
+![](https://thumbs.dreamstime.com/b/routine-maintenance-mechanism-golden-metallic-cogwheels-glow-effect-d-rendering-concept-gears-illustration-114332777.jpg)
+
+One of the important routine maintenance operation that we shall do in our network is the renew of the `EdDSA` key for the workstation's user authorized by the [CA server](https://github.com/redeltaglio/OpenBSD-private-CA).
+
+Use the `console` script as usual following those operations:
+
+```shell
+```
+
+
+
+
+
 #### Remote upgrade
 
 ![](https://redama.es/Imagenes/varuna_shell.png)

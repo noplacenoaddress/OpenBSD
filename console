@@ -6,6 +6,7 @@ uid=$(id -u)
 userna=$(id -nu $uid)
 userhome="/home/taglio"
 proghome="$userhome/Sources/Git/OpenBSD"
+datarelease=$(date +"%d%m%Y%H%m%S")
 
 if [[ $uid -ne 1000 ]]; then
 	echo -e $0 "you've got to run $0 as UID=1000 \n"
@@ -30,6 +31,7 @@ if [[ $# -eq 0 ]]; then
 			\n-Z  -> Global network domains setup [o] \
 			\n-OM -> Mikrotik RouterOS ospf-in/out filter [o] \
 			\n-OE -> EdgeOS ospf-in/out filter [o] \
+			\n-U  -> update the workstation's user EdDSA certificate
 			\n"
 	
 	exit 1
@@ -322,40 +324,66 @@ case $3 in
 		read edgeos
 		edgescript=$(mktemp)
 		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper begin" > $edgescript
-		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 13" >> $edgescript
-		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 13 description OSPF-IN" >> $edgescript
-		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 31" >> $edgescript
-		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 31 description OSPF-OUT" >> $edgescript
+		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 113" >> $edgescript
+		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 113 description OSPF-IN" >> $edgescript
+		#echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 131" >> $edgescript
+		#echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 131 description OSPF-OUT" >> $edgescript
 		for ((x=0 ; x<=255 ;)); do
 			for ((y=0 ; y<4; )); do
 				[[ $x < 255 ]] && \
-					echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 13 rule $x action deny" >> $edgescript
-					echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 31 rule $x action deny" >> $edgescript
+						
 					case $y in
 						0)
-							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 13 rule $x source inverse-mask 252.255.255.255" >> $edgescript
-							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 13 rule $x source network 10.10.10.$x" >> $edgescript
-							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 31 rule $x destination inverse-mask 252.255.255.255" >> $edgescript
-							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 31 rule $x destination network 10.10.10.$x" >> $edgescript
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 113 rule $((x+1)) action deny" >> $edgescript
+							#echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 131 rule $((x+1)) action deny" >> $edgescript
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 113 rule $((x+1)) source inverse-mask 252.255.255.255" >> $edgescript
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 113 rule $((x+1)) source network 10.10.10.$x" >> $edgescript
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 113 rule $((x+1)) destination any" >> $edgescript
+							#echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 131 rule $((x+1)) destination inverse-mask 252.255.255.255" >> $edgescript
+							#echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 131 rule $((x+1)) destination network 10.10.10.$x" >> $edgescript
 						;;
 						3)
 						;;
 						*)
-							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 13 rule $x source host 10.10.10.$x" >> $edgescript
-							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 31 rule $x destination host 10.10.10.$x" >> $edgescript
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 113 rule $((x+1)) action deny" >> $edgescript
+							#echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 131 rule $((x+1)) action deny" >> $edgescript
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 113 rule $((x+1)) source host 10.10.10.$x" >> $edgescript
+							#echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 131 rule $((x+1)) destination host 10.10.10.$x" >> $edgescript
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 113 rule $((x+1)) destination any" >> $edgescript
 						;;
 					esac
+					
+					
 				let x+=1
 				let y+=1
 			done
 		done
-		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 13 rule $x action permit" >> $edgescript
-		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 31 rule $x action permit" >> $edgescript
-		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 13 rule $x source any" >> $edgescript
-		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 31 rule $x destination any" >> $edgescript
+		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 113 rule $((x+10)) action permit" >> $edgescript
+		#echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 131 rule $((x+10)) action permit" >> $edgescript
+		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 113 rule $((x+10)) source any" >> $edgescript
+		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 113 rule $((x+10)) destination any" >> $edgescript
+		#echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 131 rule $((x+10)) destination any" >> $edgescript
 		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper commit" >> $edgescript
 		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper save" >> $edgescript
-		cat $edgescript | ssh -q $edgeos
+		
+		cat $edgescript | grep -v "rule 256" 
+	;;
+	"-U")
+		if [[ ! -d "$HOME/.ssh/Backup$daterelease" ]]; then
+			mkdir "$HOME/.ssh/Backup$daterelease"
+		else
+			rm -rf "$HOME/.ssh/Backup$daterelease"
+			mkdir "$HOME/.ssh/Backup$daterelease"
+		fi
+		mv "$HOME/.ssh/*ed25519*" "$HOME/.ssh/Backup$daterelease"
+		cat /dev/zero | ssh-keygen -t ed25519 -C "taglio@$localdomain"
+		ctrl=
+		while [ -z $ctrl ]
+		do
+			echo -e "Put id_ed25519.pub in a pen drive and transfer to the CA server. 
+			\n Launch setup_ca -U user and type 1 "
+			read ctrl
+		done
 	;;
 	*)
 	;;
