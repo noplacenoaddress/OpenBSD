@@ -6,7 +6,7 @@ uid=$(id -u)
 userna=$(id -nu $uid)
 userhome="/home/taglio"
 proghome="$userhome/Sources/Git/OpenBSD"
-datarelease=$(date +"%d%m%Y%H%m%S")
+daterelease=$(date +"%d%m%Y%H%m%S")
 
 if [[ $uid -ne 1000 ]]; then
 	echo -e $0 "you've got to run $0 as UID=1000 \n"
@@ -375,13 +375,33 @@ case $3 in
 			rm -rf "$HOME/.ssh/Backup$daterelease"
 			mkdir "$HOME/.ssh/Backup$daterelease"
 		fi
-		mv "$HOME/.ssh/*ed25519*" "$HOME/.ssh/Backup$daterelease"
-		cat /dev/zero | ssh-keygen -t ed25519 -C "taglio@$localdomain"
+		if [[ -e "$HOME/.ssh/id_ed25519" ]]; then
+			mv $HOME/.ssh/{id_ed25519,id_ed25519.pub,id_ed25519-cert.pub} "$HOME/.ssh/Backup$daterelease"
+		fi	
+		ssh-keygen -t ed25519 -C "taglio@$localdomain"
+		pwdfile=$(mktemp)
+		# Read Password
+		echo -n SSH CA password: 
+		read -s password
+		echo
+		# Run Command
+		echo $password > $pwdfile
+		echo -n Type the mounted FAT32 pen drive directory:
+		read fat32pen
+		if [[ ! -d "$fat32pen" ]]; then
+			mkdir "$fat32pen/CA_update"
+		else
+			rm -rf  "$fat32pen/CA_update"
+			mkdir "$fat32pen/CA_update"
+		fi
+		cp "$HOME/.ssh/id_ed25519.pub" "$fat32pen/CA_update"
+		cp  $pwdfile "$fat32pen/CA_update/capwd.txt"
+		srm $pwdfile
+		umount $fat32pen
 		ctrl=
 		while [ -z $ctrl ]
 		do
-			echo -e "Put id_ed25519.pub in a pen drive and transfer to the CA server. 
-			\n Launch setup_ca -U user and type 1 "
+			echo -e "Ready? type 1 "
 			read ctrl
 		done
 	;;
