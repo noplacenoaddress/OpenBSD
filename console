@@ -402,6 +402,8 @@ case $3 in
 			echo -e "Ready? type 1 "
 			read ctrl
 		done
+		cp "$fat32pen/CA_update/id_ed25519-cert.pub" "$HOME/.ssh/"
+		srm "$fat32pen/CA_update/"
 	;;
 	*)
 	;;
