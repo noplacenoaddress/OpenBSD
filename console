@@ -378,7 +378,7 @@ case $3 in
 		if [[ -e "$HOME/.ssh/id_ed25519" ]]; then
 			mv $HOME/.ssh/{id_ed25519,id_ed25519.pub,id_ed25519-cert.pub} "$HOME/.ssh/Backup$daterelease"
 		fi	
-		ssh-keygen -t ed25519 -C "taglio@$localdomain"
+		ssh-keygen -t ed25519 -C "taglio@$localdomainname"
 		pwdfile=$(mktemp)
 		# Read Password
 		password=$(systemd-ask-password "Enter password: ")
