@@ -13,6 +13,7 @@
 #smtpd: https://git.sr.ht/~guidocella/personal-email-server-guide
 #nsd and powerdns: https://github.com/vedetta-com/dithematic
 #geoip and powerdns: https://doc.powerdns.com/authoritative/backends/geoip.html
+#OSPF: NBMA design https://www.blackhole-networks.com/OSPF_overload/
 
 #####
 #

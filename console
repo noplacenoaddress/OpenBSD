@@ -31,6 +31,7 @@ if [[ $# -eq 0 ]]; then
 			\n-Z  -> Global network domains setup [o] \
 			\n-OM -> Mikrotik RouterOS ospf-in/out filter [o] \
 			\n-OE -> EdgeOS ospf-in/out filter [o] \
+			\n-OO -> OpenBSD ospf filter [o] \
 			\n-U  -> update the workstation's user EdDSA certificate
 			\n"
 	
@@ -304,13 +305,13 @@ case $3 in
 					case $y in
 						0)
 							ssh -q admin@$mk "/routing filter add action=discard address-family=ip chain=ospf-in ospf-type=intra-area prefix=10.10.10.$x prefix-length=30 protocol=ospf"
-							ssh -q admin@$mk "/routing filter add action=discard address-family=ip chain=ospf-out ospf-type=intra-area prefix=10.10.10.$x prefix-length=30 protocol=ospf"
+							ssh -q admin@$mk "/routing filter add action=discard address-family=ip chain=ospf-out ospf-type=intra-area prefix=10.10.10.$x prefix-length=30 protocol=ospf  match-chain=ospf-out"
 						;;
 						3)
 						;;
 						*)
 							ssh -q admin@$mk "/routing filter add action=discard address-family=ip chain=ospf-in ospf-type=intra-area prefix=10.10.10.$x protocol=ospf"
-							ssh -q admin@$mk "/routing filter add action=discard address-family=ip chain=ospf-out ospf-type=intra-area prefix=10.10.10.$x protocol=ospf"
+							ssh -q admin@$mk "/routing filter add action=discard address-family=ip chain=ospf-out ospf-type=intra-area prefix=10.10.10.$x protocol=ospf match-chain=ospf-out"
 						;;
 					esac
 				let x+=1
@@ -336,9 +337,9 @@ case $3 in
 						0)
 							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 113 rule $((x+1)) action deny" >> $edgescript
 							#echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 131 rule $((x+1)) action deny" >> $edgescript
-							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 113 rule $((x+1)) source inverse-mask 252.255.255.255" >> $edgescript
-							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 113 rule $((x+1)) source network 10.10.10.$x" >> $edgescript
-							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 113 rule $((x+1)) destination any" >> $edgescript
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 113 rule $((x+1)) destination inverse-mask 252.255.255.255" >> $edgescript
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 113 rule $((x+1)) destination network 10.10.10.$x" >> $edgescript
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 113 rule $((x+1)) source any" >> $edgescript
 							#echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 131 rule $((x+1)) destination inverse-mask 252.255.255.255" >> $edgescript
 							#echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 131 rule $((x+1)) destination network 10.10.10.$x" >> $edgescript
 						;;
@@ -347,9 +348,9 @@ case $3 in
 						*)
 							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 113 rule $((x+1)) action deny" >> $edgescript
 							#echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 131 rule $((x+1)) action deny" >> $edgescript
-							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 113 rule $((x+1)) source host 10.10.10.$x" >> $edgescript
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 113 rule $((x+1)) destination host 10.10.10.$x" >> $edgescript
 							#echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 131 rule $((x+1)) destination host 10.10.10.$x" >> $edgescript
-							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 113 rule $((x+1)) destination any" >> $edgescript
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 113 rule $((x+1)) source any" >> $edgescript
 						;;
 					esac
 					
@@ -360,13 +361,16 @@ case $3 in
 		done
 		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 113 rule $((x+10)) action permit" >> $edgescript
 		#echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 131 rule $((x+10)) action permit" >> $edgescript
-		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 113 rule $((x+10)) source any" >> $edgescript
 		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 113 rule $((x+10)) destination any" >> $edgescript
+		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 113 rule $((x+10)) source any" >> $edgescript
 		#echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 131 rule $((x+10)) destination any" >> $edgescript
 		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper commit" >> $edgescript
 		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper save" >> $edgescript
 		
 		cat $edgescript | grep -v "rule 256" 
+	;;
+	"-OO")
+		
 	;;
 	"-U")
 		if [[ ! -d "$HOME/.ssh/Backup$daterelease" ]]; then
