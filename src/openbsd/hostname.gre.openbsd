@@ -1,6 +1,7 @@
 description "/PUBLICHOST/"
 keepalive 5 2
 mtu 1392
+rtlabel gre
 !ifconfig gre/X/ /GREPOPIP/ /GRELOCALIP/ netmask 0xfffffffc up
 !ifconfig gre/X/ tunnel /POPIP/ /PUBLICIP/
 
