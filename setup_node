@@ -591,6 +591,7 @@ function upgrade {
 		;;
 		"newospf")
 			ospfdtmp=$(mktemp)
+			area0tmp=$(mktemp)
 			loc=$(curl -s "http://ipinfo.io/$publicip" | grep loc | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g")
 			long=$(echo $loc | cut -d , -f2 | cut -d . -f1)
 			lat=$(echo $loc | cut -d , -f1 | cut -d . -f1)
@@ -624,10 +625,13 @@ function upgrade {
 				if [[ $remotelong -ge -60 && $remotelong -le 60 && $remotelat -le 0 ]]; then remotegroup=34 && ospfarea="0.0.3.4"; fi
 				if [[ $remotelong -ge 60 && $remotelong -le 180 && $remotelat -le 0 ]]; then remotegroup=56 && ospfarea="0.0.5.6"; fi
 				[[ $group = $remotegroup ]] && \
-					awk "/$greinterface/{x=NR+11}(NR<=x){print}" /etc/ospfd.conf | sed '/type p2p/d'  >>  $ospfdtmp
+					awk "/$greinterface/{x=NR+11}(NR<=x){print}" /etc/ospfd.conf | sed '/type p2p/d'  >>  $ospfdtmp || \
+					awk "/$greinterface/{x=NR+11}(NR<=x){print}" /etc/ospfd.conf | sed '/type p2p/d'  >> $area0tmp
 			done
 			printf "%s\n" "}" >> $ospfdtmp
 			cat $ospfdtmp
+			echo "#####"
+			cat $area0tmp
 		;;
 	esac
 }
