@@ -613,7 +613,7 @@ function upgrade {
 			printf "%s\n" "area $ospfarea {" >>  $ospfdtmp
 			for grefile in $(ls /etc/hostname.gre?); do
 				greinterface=$(echo $grefile | cut -d . -f2)
-				greppublicip=$(cat $greinterface | grep tunnel | awk '{print $5}')
+				greppublicip=$(cat $grefile | grep tunnel | awk '{print $5}')
 				remoteloc=$(curl -s "http://ipinfo.io/$greppublicip" | grep loc | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g")
 				remotelong=$(echo $remoteloc | cut -d , -f2 | cut -d . -f1)
 				remotelat=$(echo $remoteloc | cut -d , -f1 | cut -d . -f1)
@@ -627,7 +627,7 @@ function upgrade {
 					awk "/$greinterface/{x=NR+12}(NR<=x){print}" /etc/ospfd.conf >>  $ospfdtmp
 			done
 			printf "%s\n" "}" >> $ospfdtmp
-			cat $ospftmp
+			cat $ospfdtmp
 		;;
 	esac
 }
