@@ -224,7 +224,8 @@ function backup {
 				cp -p $file "$CURRENTBACKUP/$1/"
 			done
 		;;
-		"ospf")
+		"newospf")
+		
 			cp -p /etc/ospfd.conf "$CURRENTBACKUP/$1/"
 		;;
 		"relayd")
@@ -1869,7 +1870,7 @@ case $1 in
 				upgrade "file"
 			;;
 			"newospf")
-				backup "ospf"
+				backup "newospf"
 				upgrade "newospf"
 			;;
 			"all")
