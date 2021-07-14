@@ -13,7 +13,8 @@
 #smtpd: https://git.sr.ht/~guidocella/personal-email-server-guide
 #nsd and powerdns: https://github.com/vedetta-com/dithematic
 #geoip and powerdns: https://doc.powerdns.com/authoritative/backends/geoip.html
-#OSPF: NBMA design https://www.blackhole-networks.com/OSPF_overload/
+#ospf: NBMA design https://www.blackhole-networks.com/OSPF_overload/
+#ospf: https://www.blackhole-networks.com/OSPF
 
 #####
 #
@@ -220,6 +221,9 @@ function backup {
 			for file in $(find /etc -name "httpd.*" -type f -maxdepth 1); do
 				cp -p $file "$CURRENTBACKUP/$1/"
 			done
+		;;
+		"ospf")
+			cp -p /etc/ospfd.conf "$CURRENTBACKUP/$1/"
 		;;
 		"relayd")
 			configuration "relayd"
@@ -581,6 +585,9 @@ function upgrade {
 					done
 				fi
 			done
+		;;
+		"newospf")
+			
 		;;
 	esac
 }
@@ -1748,6 +1755,7 @@ case $1 in
 				\nscripts \
 				\ndyndnspop \
 				\nhttpdbasic \
+				\nnewospf \
 				\n"
 			exit 1 
 		fi
@@ -1820,6 +1828,10 @@ case $1 in
 			;;
 			"file")
 				upgrade "file"
+			;;
+			"newospf")
+				backup "ospf"
+				upgrade "newospf"
 			;;
 			"all")
 				sh setup_node -I
