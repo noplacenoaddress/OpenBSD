@@ -32,7 +32,8 @@ if [[ $# -eq 0 ]]; then
 			\n-OM -> Mikrotik RouterOS ospf-in/out filter [o] \
 			\n-OE -> EdgeOS ospf-in/out filter [o] \
 			\n-OO -> OpenBSD ospf filter [o] \
-			\n-U  -> update the workstation's user EdDSA certificate
+			\n-U  -> update the workstation's user EdDSA certificate [o] \
+			\n-NO -> newospf configuration [o] \
 			\n"
 	
 	exit 1
@@ -441,6 +442,12 @@ case $3 in
 		done
 		cp "$fat32pen/CA_update/id_ed25519-cert.pub" "$HOME/.ssh/"
 		srm "$fat32pen/CA_update/"
+	;;
+	"-NO")
+		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+			echo -e "Connecting to $vpnc_host"
+			ssh -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U newospf
+		done
 	;;
 	*)
 	;;
