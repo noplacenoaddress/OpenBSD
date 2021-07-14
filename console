@@ -276,6 +276,7 @@ case $3 in
 		done
 		echo -e "You've got servers in:\n"
 		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+			
 			local=$(ssh -q $vpnc_host.$localdomainname readlink /etc/localtime  | sed "s/\/usr\/share\/zoneinfo\///")
 			zonetab=$(ssh -q $vpnc_host.$localdomainname cat /usr/share/zoneinfo/zone.tab | grep $local)
 			[[ $zonetab ]] && echo -e "\n$zonetab\n" || echo -e "\n$local\n"
@@ -286,13 +287,15 @@ case $3 in
 			lat=$(echo $loc | cut -d , -f1 | cut -d . -f1)
 			echo -e "\nLAT --> $lat"
 			echo -e "LONG --> $long\n"
-			if [[ $long -ge -180 && $long -le -60 && $lat -ge 0 ]]; then group=1; fi
-			if [[ $long -ge -60 && $long -le 60 && $lat -ge 0 ]]; then group=3; fi
-			if [[ $long -ge 60 && $long -le 180 && $lat -ge 0 ]]; then group=5; fi
-			if [[ $long -ge -180 && $long -le -60 && $lat -le 0 ]]; then group=2; fi
-			if [[ $long -ge -60 && $long -le 60 && $lat -le 0 ]]; then group=4; fi
-			if [[ $long -ge 60 && $long -le 180 && $lat -le 0 ]]; then group=6; fi
-			echo -e "GROUP --> $group\n"
+			if [[ $long -ge -180 && $long -le -60 && $lat -ge 0 ]]; then group=1 && ospfarea="0.0.0.1"; fi
+			if [[ $long -ge -60 && $long -le 60 && $lat -ge 0 ]]; then group=3 && ospfarea="0.0.0.3"; fi
+			if [[ $long -ge 60 && $long -le 180 && $lat -ge 0 ]]; then group=5 && ospfarea="0.0.0.5"; fi
+			if [[ $long -ge -180 && $long -le -60 && $lat -le 0 ]]; then group=2 && ospfarea="0.0.0.2"; fi
+			if [[ $long -ge -60 && $long -le 60 && $lat -le 0 ]]; then group=4 && ospfarea="0.0.0.4"; fi
+			if [[ $long -ge 60 && $long -le 180 && $lat -le 0 ]]; then group=6 && ospfarea="0.0.0.6"; fi
+			echo -e "GROUP --> $group"
+			echo -e "BACKBONE OSPFAREA 0.0.0.0"
+			echo -e "GEO OSPFAREA --> $ospfarea\n"
 		done
 	;;
 	"-OM")
@@ -370,7 +373,37 @@ case $3 in
 		cat $edgescript | grep -v "rule 256" 
 	;;
 	"-OO")
-		
+		ospfdconf=$(mktemp)
+		for ((x=0 ; x<=255 ;)); do
+			for ((y=0 ; y<4; )); do
+				[[ $x < 255 ]] && \
+						
+					case $y in
+						0)
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 113 rule $((x+1)) action deny" >> $edgescript
+							#echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 131 rule $((x+1)) action deny" >> $edgescript
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 113 rule $((x+1)) destination inverse-mask 252.255.255.255" >> $edgescript
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 113 rule $((x+1)) destination network 10.10.10.$x" >> $edgescript
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 113 rule $((x+1)) source any" >> $edgescript
+							#echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 131 rule $((x+1)) destination inverse-mask 252.255.255.255" >> $edgescript
+							#echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 131 rule $((x+1)) destination network 10.10.10.$x" >> $edgescript
+						;;
+						3)
+						;;
+						*)
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 113 rule $((x+1)) action deny" >> $edgescript
+							#echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 131 rule $((x+1)) action deny" >> $edgescript
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 113 rule $((x+1)) destination host 10.10.10.$x" >> $edgescript
+							#echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 131 rule $((x+1)) destination host 10.10.10.$x" >> $edgescript
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 113 rule $((x+1)) source any" >> $edgescript
+						;;
+					esac
+					
+					
+				let x+=1
+				let y+=1
+			done
+		done
 	;;
 	"-U")
 		if [[ ! -d "$HOME/.ssh/Backup$daterelease" ]]; then
