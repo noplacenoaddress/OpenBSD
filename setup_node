@@ -605,12 +605,6 @@ function upgrade {
 			if [[ $long -ge 60 && $long -le 180 && $lat -le 0 ]]; then group=56 && ospfarea="0.0.5.6"; fi
 			printf "%s\n\n" "# \$OpenBSD: ospfd.conf,v 1.2 2018/08/07 07:06:20 claudio Exp $" > $ospfdtmp
 			printf "%s\n" "# areas" >> $ospfdtmp
-			printf "%s\n" "area 0.0.0.0 {" >> $ospfdtmp
-			printf "\t%s\n" " interface vether0 {" >> $ospfdtmp
-			printf "\t\t%s\n" "metric 1" >> $ospfdtmp
-			printf "\t\t%s\n" "passive" >> $ospfdtmp
-			printf "\t%s\n" "}" >> $ospfdtmp
-			printf "%s\n" "}" >> $ospfdtmp
 			printf "%s\n" "area $ospfarea {" >>  $ospfdtmp
 			for grefile in $(ls /etc/hostname.gre?); do
 				greinterface=$(echo $grefile | cut -d . -f2)
@@ -629,9 +623,16 @@ function upgrade {
 					awk "/$greinterface/{x=NR+11}(NR<=x){print}" /etc/ospfd.conf | sed '/type p2p/d'  >> $area0tmp
 			done
 			printf "%s\n" "}" >> $ospfdtmp
+			printf "%s\n" "area 0.0.0.0 {" >> $ospfdtmp
+			printf "\t%s\n" " interface vether0 {" >> $ospfdtmp
+			printf "\t\t%s\n" "metric 1" >> $ospfdtmp
+			printf "\t\t%s\n" "passive" >> $ospfdtmp
+			printf "\t%s\n" "}" >> $ospfdtmp
+			cat $area0tmp >> $ospfdtmp
+			printf "%s\n" "}" >> $ospfdtmp
 			cat $ospfdtmp
-			echo "#####"
-			cat $area0tmp
+			
+			
 		;;
 	esac
 }
