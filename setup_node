@@ -630,7 +630,9 @@ function upgrade {
 			printf "\t%s\n" "}" >> $ospfdtmp
 			cat $area0tmp >> $ospfdtmp
 			printf "%s\n" "}" >> $ospfdtmp
-			cat $ospfdtmp
+			install -o root -g wheel -m 0600 $ospfdtmp /etc/ospfd.conf
+			/usr/sbin/ospfd -nf /etc/ospfd.conf
+			/usr/sbin/rcctl restart ospfd
 		;;
 	esac
 }
