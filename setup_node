@@ -622,15 +622,14 @@ function upgrade {
 					awk "/$greinterface/{x=NR+11}(NR<=x){print}" /etc/ospfd.conf | uniq -u |  awk 'NF' | sed '/type p2p/d'  | sed '/metric/d' >>  $ospfdtmp || \
 					awk "/$greinterface/{x=NR+11}(NR<=x){print}" /etc/ospfd.conf | uniq -u | awk 'NF' | sed '/type p2p/d'  | sed '/metric/d' >> $area0tmp
 			done
-			printf "%s\n" "}" >> $ospfdtmp
-			printf "%s\n" "area 0.0.0.0 {" >> $ospfdtmp
 			printf "\t%s\n" " interface vether0 {" >> $ospfdtmp
 			printf "\t\t%s\n" "metric 1" >> $ospfdtmp
 			printf "\t\t%s\n" "passive" >> $ospfdtmp
 			printf "\t%s\n" "}" >> $ospfdtmp
+			printf "%s\n" "}" >> $ospfdtmp
+			printf "%s\n" "area 0.0.0.0 {" >> $ospfdtmp
 			cat $area0tmp >> $ospfdtmp
 			printf "%s\n" "}" >> $ospfdtmp
-			
 			/usr/sbin/ospfd -nf $ospfdtmp
 			install -o root -g wheel -m 0600 $ospfdtmp /etc/ospfd.conf
 			/usr/sbin/ospfd -nf /etc/ospfd.conf
