@@ -448,6 +448,28 @@ case $3 in
 			echo -e "Connecting to $vpnc_host"
 			ssh -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U newospf
 		done
+		edgeos=
+		echo -e "Type the internal hostname of the EdgeOS: "
+		read edgeos
+		edgescript=$(mktemp)
+		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper begin" > $edgescript
+		for tunedge in $(ssh $edgeos /sbin/ip link | grep tun | awk {'print $2'} | sed "s/@NONE://"); do
+			echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set interfaces tunnel $tunedge ip ospf network broadcast" >> $edgescript
+			echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete interfaces tunnel $tunedge ip ospf cost" >> $edgescript
+		done
+		edgepublicip=$(ssh $edgeos /sbin/ip addr show dev pppoe0 | awk 'FNR == 3' | awk {'print $2'})
+		loc=$(curl -s "http://ipinfo.io/$edgepublicip" | grep loc | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g")
+		long=$(echo $loc | cut -d , -f2 | cut -d . -f1)
+		lat=$(echo $loc | cut -d , -f1 | cut -d . -f1)
+		echo -e "\nLAT --> $lat"
+		echo -e "LONG --> $long\n"
+		if [[ $long -ge -180 && $long -le -60 && $lat -ge 0 ]]; then group=12 && ospfarea="0.0.1.2"; fi
+		if [[ $long -ge -60 && $long -le 60 && $lat -ge 0 ]]; then group=34 && ospfarea="0.0.3.4"; fi
+		if [[ $long -ge 60 && $long -le 180 && $lat -ge 0 ]]; then group=56 && ospfarea="0.0.5.6"; fi
+		if [[ $long -ge -180 && $long -le -60 && $lat -le 0 ]]; then group=12 && ospfarea="0.0.1.2"; fi
+		if [[ $long -ge -60 && $long -le 60 && $lat -le 0 ]]; then group=34 && ospfarea="0.0.3.4"; fi
+		if [[ $long -ge 60 && $long -le 180 && $lat -le 0 ]]; then group=56 && ospfarea="0.0.5.6"; fi
+		
 	;;
 	*)
 	;;
