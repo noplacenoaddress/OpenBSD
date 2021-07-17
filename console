@@ -444,16 +444,16 @@ case $3 in
 		srm "$fat32pen/CA_update/"
 	;;
 	"-NO")
-		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
-			echo -e "Connecting to $vpnc_host"
-			ssh -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U newospf
-		done
+		#for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+		#	echo -e "Connecting to $vpnc_host"
+		#	ssh -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U newospf
+		#done
 		edgeos=
 		echo -e "Type the internal hostname of the EdgeOS: "
 		read edgeos
 		edgescript=$(mktemp)
 		auxscript=$(mktemp)
-		edgepublicip=$(ssh $edgeos /sbin/ip addr show dev pppoe0 | awk 'FNR == 3' | awk {'print $2'})
+		edgepublicip=$(ssh -q $edgeos /sbin/ip addr show dev pppoe0 | awk 'FNR == 3' | awk {'print $2'})
 		loc=$(curl -s "http://ipinfo.io/$edgepublicip" | grep loc | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g")
 		long=$(echo $loc | cut -d , -f2 | cut -d . -f1)
 		lat=$(echo $loc | cut -d , -f1 | cut -d . -f1)
@@ -466,11 +466,11 @@ case $3 in
 		if [[ $long -ge -60 && $long -le 60 && $lat -le 0 ]]; then group=34 && ospfarea="0.0.3.4"; fi
 		if [[ $long -ge 60 && $long -le 180 && $lat -le 0 ]]; then group=56 && ospfarea="0.0.5.6"; fi
 		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper begin" > $edgescript
-		for tunedge in $(ssh $edgeos /sbin/ip link | grep tun | awk {'print $2'} | sed "s/@NONE://"); do
+		for tunedge in $(ssh -q $edgeos /sbin/ip link | grep tun | awk {'print $2'} | sed "s/@NONE://"); do
 			echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set interfaces tunnel $tunedge ip ospf network broadcast" >> $edgescript
 			echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete interfaces tunnel $tunedge ip ospf cost" >> $edgescript
-			tunpublicip=$(ssh $edgeos /sbin/ip link list dev $tunedge | awk 'FNR == 2' | awk '{print $4}')
-			tunprivateip=$(ssh $edgeos /sbin/ip addr show dev $tunedge | awk 'FNR == 3' | awk '{print $2}')
+			tunpublicip=$(ssh -q $edgeos /sbin/ip link list dev $tunedge | awk 'FNR == 2' | awk '{print $4}')
+			tunprivateip=$(ssh -q $edgeos /sbin/ip addr show dev $tunedge | awk 'FNR == 3' | awk '{print $2}')
 			tunnetwork=$(ipcalc -c $tunprivateip | grep Network | awk '{print $2}')
 			remoteloc=$(curl -s "http://ipinfo.io/$tunpublicip" | grep loc | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g")
 			remotelong=$(echo $remoteloc | cut -d , -f2 | cut -d . -f1)
@@ -487,6 +487,30 @@ case $3 in
 		done
 		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete protocols ospf area 0.0.0.0" >> $edgescript
 		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set protocols ospf area $ospfarea" >> $edgescript
+		cat $auxscript | grep $ospfarea >> $edgescript
+		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set protocols ospf area 0.0.0.0" >> $edgescript
+		cat $auxscript | grep "0.0.0.0" >> $edgescript
+		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper commit" >> $edgescript
+		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper save" >> $edgescript
+		cat $edgescript
+		mk=
+		echo -e "Type the internal hostname of the Mikrotik: "
+		read mk
+		mkscript=$(mktemp)
+		mkpubip=$(ssh -q admin@$mk /ip addr pr where dynamic | awk '{print $3}' | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b")
+		loc=$(curl -s "http://ipinfo.io/$mkpubip" | grep loc | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g")
+		long=$(echo $loc | cut -d , -f2 | cut -d . -f1)
+		lat=$(echo $loc | cut -d , -f1 | cut -d . -f1)
+		echo -e "\nLAT --> $lat"
+		echo -e "LONG --> $long\n"
+		if [[ $long -ge -180 && $long -le -60 && $lat -ge 0 ]]; then group=12 && ospfarea="0.0.1.2"; fi
+		if [[ $long -ge -60 && $long -le 60 && $lat -ge 0 ]]; then group=34 && ospfarea="0.0.3.4"; fi
+		if [[ $long -ge 60 && $long -le 180 && $lat -ge 0 ]]; then group=56 && ospfarea="0.0.5.6"; fi
+		if [[ $long -ge -180 && $long -le -60 && $lat -le 0 ]]; then group=12 && ospfarea="0.0.1.2"; fi
+		if [[ $long -ge -60 && $long -le 60 && $lat -le 0 ]]; then group=34 && ospfarea="0.0.3.4"; fi
+		if [[ $long -ge 60 && $long -le 180 && $lat -le 0 ]]; then group=56 && ospfarea="0.0.5.6"; fi
+		echo "/routing ospf area add name=$group area-id=$ospfarea" > $mkscript
+		
 		
 	;;
 	*)
