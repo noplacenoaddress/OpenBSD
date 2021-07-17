@@ -46,45 +46,45 @@ case $3 in
 	"-G")
 		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 			echo -e "Connecting to $vpnc_host"
-			ssh $vpnc_host.$localdomainname git -C "$proghome" pull
+			ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 $vpnc_host.$localdomainname git -C "$proghome" pull
 		done	
 	;;
 	"-N")
 		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 			echo -e "Connecting to $vpnc_host"
-			ssh -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U newhost
+			ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U newhost
 		done	
 	;;
 	"-S")
 		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 			echo -e "Connecting to $vpnc_host"
-			ssh -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U scripts
+			ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U scripts
 		done	
 	;;
 	"-D")
 		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 			echo -e "Connecting to $vpnc_host"
-			ssh -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U dyndnspop
+			ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U dyndnspop
 			sleep 10
 		done	
 	;;
 	"-F")
 		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 			echo -e "Connecting to $vpnc_host"
-			ssh -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U file
+			ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U file
 			sleep 10
 		done	
 	;;
 	"-C")
 		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 			echo -e "Connecting to $vpnc_host"
-			ssh -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -A cleanlast
+			ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -A cleanlast
 		done	
 	;;
 	"-P")
 		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 			echo -e "Connecting to $vpnc_host"
-			ssh -t $vpnc_host.$localdomainname doas syspatch
+			ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -t $vpnc_host.$localdomainname doas syspatch
 		done	
 	;;
 	"-RS")
@@ -180,7 +180,7 @@ case $3 in
 			echo 'Type the new OpenBSD internal hostname '
 			read openbsd
 		done
-		mkaddr=$(ssh admin@$mkhost /ip addr pr where dynamic | awk '{print $3}' | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b")
+		mkaddr=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q admin@$mkhost /ip addr pr where dynamic | awk '{print $3}' | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b")
 		mkpublichost=$(dig -x $mkaddr +short @8.8.8.8 | sed 's/.$//')
 		wget "http://$openbsd.$2/$mkpublichost/$mkpublichost.rsc" -O "/tmp/$mkpublichost.rsc"
 		scp "/tmp/$mkpublichost.rsc" "admin@$mkhost:/$mkpublichost.rsc"
@@ -201,7 +201,7 @@ case $3 in
 			echo 'Type the new OpenBSD internal hostname '
 			read openbsd
 		done
-		publicip=$(ssh -q $openbsd.$localdomainname ifconfig egress | awk 'FNR == 7' | awk '{print $2}')
+		publicip=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q $openbsd.$localdomainname ifconfig egress | awk 'FNR == 7' | awk '{print $2}')
 		publichost=$(dig -x $publicip +short |  sed 's/.$//' | cut -d . -f1)
 		publicdomainname=$(dig -x $publicip +short | sed "s/$publichost.//" | sed 's/.$//')
 		publichostname=$(echo $edgehost | sed "s/.$publicdomainname//")
@@ -237,7 +237,7 @@ case $3 in
 				scp -q $file "$edgeos:/tmp"
 				ssh -q $edgeos sudo cp "/tmp/$file" /config/auth; sudo mv "/tmp/$file" /etc/ipsec.d/certs/
 			elif [[ $file = *.conf ]]; then
-				if [[ $(ssh -q $edgeos grep -c telecomlobby-$(head -n 1 $file | cut -d \- -f2) /config/ipsec.conf) -eq 0 ]]; then
+				if [[ $(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q $edgeos grep -c telecomlobby-$(head -n 1 $file | cut -d \- -f2) /config/ipsec.conf) -eq 0 ]]; then
 					cat $file | ssh -qt $edgeos "cat - >> /config/ipsec.conf"
 				fi
 			fi
@@ -278,10 +278,10 @@ case $3 in
 		echo -e "You've got servers in:\n"
 		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 			
-			local=$(ssh -q $vpnc_host.$localdomainname readlink /etc/localtime  | sed "s/\/usr\/share\/zoneinfo\///")
-			zonetab=$(ssh -q $vpnc_host.$localdomainname cat /usr/share/zoneinfo/zone.tab | grep $local)
+			local=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q $vpnc_host.$localdomainname readlink /etc/localtime  | sed "s/\/usr\/share\/zoneinfo\///")
+			zonetab=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q $vpnc_host.$localdomainname cat /usr/share/zoneinfo/zone.tab | grep $local)
 			[[ $zonetab ]] && echo -e "\n$zonetab\n" || echo -e "\n$local\n"
-			publicip=$(ssh -q $vpnc_host.$localdomainname ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
+			publicip=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q $vpnc_host.$localdomainname ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
 			curl -s "http://ipinfo.io/$publicip" | sed '/readme/d'
 			loc=$(curl -s "http://ipinfo.io/$publicip" | grep loc | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g")
 			long=$(echo $loc | cut -d , -f2 | cut -d . -f1)
@@ -444,16 +444,52 @@ case $3 in
 		srm "$fat32pen/CA_update/"
 	;;
 	"-NO")
-		#for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
-		#	echo -e "Connecting to $vpnc_host"
-		#	ssh -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U newospf
-		#done
+		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+			echo -e "Connecting to $vpnc_host"
+			ssh -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U newospf
+		done
+		mk=
+		echo -e "Type the internal hostname of the Mikrotik: "
+		read mk
+		mkscript=$(mktemp)
+		mkpubip=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q admin@$mk /ip addr pr where dynamic | awk '{print $3}' | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b")
+		loc=$(curl -s "http://ipinfo.io/$mkpubip" | grep loc | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g")
+		long=$(echo $loc | cut -d , -f2 | cut -d . -f1)
+		lat=$(echo $loc | cut -d , -f1 | cut -d . -f1)
+		echo -e "\nLAT --> $lat"
+		echo -e "LONG --> $long\n"
+		if [[ $long -ge -180 && $long -le -60 && $lat -ge 0 ]]; then group=12 && ospfarea="0.0.1.2"; fi
+		if [[ $long -ge -60 && $long -le 60 && $lat -ge 0 ]]; then group=34 && ospfarea="0.0.3.4"; fi
+		if [[ $long -ge 60 && $long -le 180 && $lat -ge 0 ]]; then group=56 && ospfarea="0.0.5.6"; fi
+		if [[ $long -ge -180 && $long -le -60 && $lat -le 0 ]]; then group=12 && ospfarea="0.0.1.2"; fi
+		if [[ $long -ge -60 && $long -le 60 && $lat -le 0 ]]; then group=34 && ospfarea="0.0.3.4"; fi
+		if [[ $long -ge 60 && $long -le 180 && $lat -le 0 ]]; then group=56 && ospfarea="0.0.5.6"; fi
+		echo "/routing ospf area add name=$group area-id=$ospfarea" > $mkscript
+		echo ":foreach i in=[/routing ospf interface find where interface~\"gre-*\"] do={/routing ospf interface set \$i cost=\"\"}" >> $mkscript
+		echo ":foreach i in=[/routing ospf interface find where interface~\"gre-*\"] do={/routing ospf interface set \$i network-type=broadcast}" >> $mkscript
+		for grepubip in $(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q admin@$mk /interface gre pr | grep remote-address | awk '{print $1}' | cut -d \= -f2); do
+			grenetwork=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q admin@$mk "/ip address print where interface=[/interface get [/interface gre find where remote-address=$grepubip] name];" | awk '{print $3}' | awk 'FNR == 3')"/30"
+			remoteloc=$(curl -s "http://ipinfo.io/$grepubip" | grep loc | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g")
+			remotelong=$(echo $remoteloc | cut -d , -f2 | cut -d . -f1)
+			remotelat=$(echo $remoteloc | cut -d , -f1 | cut -d . -f1)
+			if [[ $remotelong -ge -180 && $remotelong -le -60 && $remotelat -ge 0 ]]; then remotegroup=12 ; fi
+			if [[ $remotelong -ge -60 && $remotelong -le 60 && $remotelat -ge 0 ]]; then remotegroup=34 ; fi
+			if [[ $remotelong -ge 60 && $remotelong -le 180 && $remotelat -ge 0 ]]; then remotegroup=56 ; fi
+			if [[ $remotelong -ge -180 && $remotelong -le -60 && $remotelat -le 0 ]]; then remotegroup=12 ; fi
+			if [[ $remotelong -ge -60 && $remotelong -le 60 && $remotelat -le 0 ]]; then remotegroup=34 ; fi
+			if [[ $remotelong -ge 60 && $remotelong -le 180 && $remotelat -le 0 ]]; then remotegroup=56 ; fi
+			[[ $group = $remotegroup ]] && \
+				echo "/routing ospf network set network=\"$grenetwork\" area=$group" >> $mkscript
+		done 
+		cat $mkscript
+		scp $mkscript "admin@$mk:/newospfd.rsc"
+		ssh admin@$mk /import file-name=newospfd.rsc		
 		edgeos=
 		echo -e "Type the internal hostname of the EdgeOS: "
 		read edgeos
 		edgescript=$(mktemp)
 		auxscript=$(mktemp)
-		edgepublicip=$(ssh -q $edgeos /sbin/ip addr show dev pppoe0 | awk 'FNR == 3' | awk {'print $2'})
+		edgepublicip=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q $edgeos /sbin/ip addr show dev pppoe0 | awk 'FNR == 3' | awk {'print $2'})
 		loc=$(curl -s "http://ipinfo.io/$edgepublicip" | grep loc | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g")
 		long=$(echo $loc | cut -d , -f2 | cut -d . -f1)
 		lat=$(echo $loc | cut -d , -f1 | cut -d . -f1)
@@ -469,8 +505,8 @@ case $3 in
 		for tunedge in $(ssh -q $edgeos /sbin/ip link | grep tun | awk {'print $2'} | sed "s/@NONE://"); do
 			echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set interfaces tunnel $tunedge ip ospf network broadcast" >> $edgescript
 			echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete interfaces tunnel $tunedge ip ospf cost" >> $edgescript
-			tunpublicip=$(ssh -q $edgeos /sbin/ip link list dev $tunedge | awk 'FNR == 2' | awk '{print $4}')
-			tunprivateip=$(ssh -q $edgeos /sbin/ip addr show dev $tunedge | awk 'FNR == 3' | awk '{print $2}')
+			tunpublicip=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q $edgeos /sbin/ip link list dev $tunedge | awk 'FNR == 2' | awk '{print $4}')
+			tunprivateip=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q $edgeos /sbin/ip addr show dev $tunedge | awk 'FNR == 3' | awk '{print $2}')
 			tunnetwork=$(ipcalc -c $tunprivateip | grep Network | awk '{print $2}')
 			remoteloc=$(curl -s "http://ipinfo.io/$tunpublicip" | grep loc | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g")
 			remotelong=$(echo $remoteloc | cut -d , -f2 | cut -d . -f1)
@@ -492,42 +528,7 @@ case $3 in
 		cat $auxscript | grep "0.0.0.0" >> $edgescript
 		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper commit" >> $edgescript
 		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper save" >> $edgescript
-		cat $edgescript
-		mk=
-		echo -e "Type the internal hostname of the Mikrotik: "
-		read mk
-		mkscript=$(mktemp)
-		mkpubip=$(ssh -q admin@$mk /ip addr pr where dynamic | awk '{print $3}' | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b")
-		loc=$(curl -s "http://ipinfo.io/$mkpubip" | grep loc | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g")
-		long=$(echo $loc | cut -d , -f2 | cut -d . -f1)
-		lat=$(echo $loc | cut -d , -f1 | cut -d . -f1)
-		echo -e "\nLAT --> $lat"
-		echo -e "LONG --> $long\n"
-		if [[ $long -ge -180 && $long -le -60 && $lat -ge 0 ]]; then group=12 && ospfarea="0.0.1.2"; fi
-		if [[ $long -ge -60 && $long -le 60 && $lat -ge 0 ]]; then group=34 && ospfarea="0.0.3.4"; fi
-		if [[ $long -ge 60 && $long -le 180 && $lat -ge 0 ]]; then group=56 && ospfarea="0.0.5.6"; fi
-		if [[ $long -ge -180 && $long -le -60 && $lat -le 0 ]]; then group=12 && ospfarea="0.0.1.2"; fi
-		if [[ $long -ge -60 && $long -le 60 && $lat -le 0 ]]; then group=34 && ospfarea="0.0.3.4"; fi
-		if [[ $long -ge 60 && $long -le 180 && $lat -le 0 ]]; then group=56 && ospfarea="0.0.5.6"; fi
-		echo "/routing ospf area add name=$group area-id=$ospfarea" > $mkscript
-		echo ":foreach i in=[/routing ospf interface find where interface~\"gre-*\"] do={/routing ospf interface set \$i cost=\"\"}" >> $mkscript
-		echo ":foreach i in=[/routing ospf interface find where interface~\"gre-*\"] do={/routing ospf interface set \$i network-type=broadcast}" >> $mkscript
-		for grepubip in $(ssh -q admin@$mk /interface gre pr | grep remote-address | awk '{print $1}' | cut -d \= -f2); do
-			grenetwork=$(ssh -q admin@$mk "/ip address print where interface=[/interface get [/interface gre find where remote-address=$grepubip] name];" | awk '{print $3}' | awk 'FNR == 3')"/30"
-			remoteloc=$(curl -s "http://ipinfo.io/$grepubip" | grep loc | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g")
-			remotelong=$(echo $remoteloc | cut -d , -f2 | cut -d . -f1)
-			remotelat=$(echo $remoteloc | cut -d , -f1 | cut -d . -f1)
-			if [[ $remotelong -ge -180 && $remotelong -le -60 && $remotelat -ge 0 ]]; then remotegroup=12 ; fi
-			if [[ $remotelong -ge -60 && $remotelong -le 60 && $remotelat -ge 0 ]]; then remotegroup=34 ; fi
-			if [[ $remotelong -ge 60 && $remotelong -le 180 && $remotelat -ge 0 ]]; then remotegroup=56 ; fi
-			if [[ $remotelong -ge -180 && $remotelong -le -60 && $remotelat -le 0 ]]; then remotegroup=12 ; fi
-			if [[ $remotelong -ge -60 && $remotelong -le 60 && $remotelat -le 0 ]]; then remotegroup=34 ; fi
-			if [[ $remotelong -ge 60 && $remotelong -le 180 && $remotelat -le 0 ]]; then remotegroup=56 ; fi
-			[[ $group = $remotegroup ]] && \
-				echo "/routing ospf network set network=\"$grenetwork\" area=$group" >> $mkscript
-		done 
-		cat $mkscript
-		
+		cat $edgescript | ssh -q $edgeos 
 	;;
 	*)
 	;;
