@@ -556,6 +556,43 @@ Ready? type 1
 
 Next take the pen drive to the CA server physic station and run the setup_ca script with the correct option `setup_ca upuser`. Return it to the workstation and type `1`. 
 
+#### New OSPFD concept.
+
+![](https://gihyo.jp/assets/images/ICON/2015/1384_bsd-yomoyama.jpg)
+
+I've got some problems with the old concept of [Ospfd](https://github.com/redeltaglio/GNS3-OpenBSD-OpenOSPFD), so I've studied better the protocol and decide to implement in a different way in my network. To migrate from the old configuration, *versions anteriors to July 2021*, to the new one use our tool `console` as usual:
+
+```shell
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console 
+./console have to be used with the following options 
+-I  -> local domain name [x]
+-N  -> newhost [o]
+-G  -> git pull [o]
+-S  -> scripts [o] 
+-D  -> dyndnspop [o] 
+-F  -> single file update [o] 
+-C  -> cleanlast [o] 
+-RS -> repository ssh update [o] 
+-K  -> new IKED pk12 archive [o] 
+-T  -> tmux and SSH to all openbsd MESH hosts [o] 
+-M  -> Mikrotik RouterOS add new OpenBSD [o] 
+-E  -> Ubiquiti EdgeOS add new OpenBSD [o] 
+-P  -> Mass syspatch OpenBSD hosts [o] 
+-Z  -> Global network domains setup [o] 
+-OM -> Mikrotik RouterOS ospf-in/out filter [o] 
+-OE -> EdgeOS ospf-in/out filter [o] 
+-OO -> OpenBSD ospf filter [o] 
+-U  -> update the workstation's user EdDSA certificate [o] 
+-NO -> newospf configuration [o] 
+
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -NO
+
+```
+
+The new configuration follow the same concept of division in quadrants of the planet earth. Got a backbone area and the other that pertain in where is physically the server.
+
+
+
 #### Remote upgrade
 
 ![](https://redama.es/Imagenes/varuna_shell.png)
