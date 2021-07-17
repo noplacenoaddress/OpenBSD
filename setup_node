@@ -619,8 +619,8 @@ function upgrade {
 				if [[ $remotelong -ge -60 && $remotelong -le 60 && $remotelat -le 0 ]]; then remotegroup=34 && ospfarea="0.0.3.4"; fi
 				if [[ $remotelong -ge 60 && $remotelong -le 180 && $remotelat -le 0 ]]; then remotegroup=56 && ospfarea="0.0.5.6"; fi
 				[[ $group = $remotegroup ]] && \
-					awk "/$greinterface/{x=NR+11}(NR<=x){print}" /etc/ospfd.conf | uniq -u |  awk 'NF' | sed '/type p2p/d'  | sed '/metric/d' >>  $ospfdtmp || \
-					awk "/$greinterface/{x=NR+11}(NR<=x){print}" /etc/ospfd.conf | uniq -u | awk 'NF' | sed '/type p2p/d'  | sed '/metric/d' >> $area0tmp
+					awk "/$greinterface/{x=NR+11}(NR<=x){print}" /etc/ospfd.conf | sed '/type p2p/d'  | sed '/metric/d' | uniq -u |  awk 'NF' >>  $ospfdtmp || \
+					awk "/$greinterface/{x=NR+11}(NR<=x){print}" /etc/ospfd.conf | sed '/type p2p/d'  | sed '/metric/d' | uniq -u |  awk 'NF' >> $area0tmp
 			done
 			printf "\t%s\n" " interface vether0 {" >> $ospfdtmp
 			printf "\t\t%s\n" "metric 1" >> $ospfdtmp
