@@ -592,7 +592,7 @@ function upgrade {
 		"newospf")
 			ospfdtmp=$(mktemp)
 			area0tmp=$(mktemp)
-			routerid=$(cat /etc/ospfd.conf | grep router-id | awk '{print $2}' | sed "s/\"//g")
+			routerid=$(cat /etc/ospfd.conf | grep router\-id | awk '{print $2}' | sed "s/\"//g")
 			loc=$(curl -s "http://ipinfo.io/$publicip" | grep loc | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g")
 			long=$(echo $loc | cut -d , -f2 | cut -d . -f1)
 			lat=$(echo $loc | cut -d , -f1 | cut -d . -f1)
