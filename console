@@ -480,8 +480,8 @@ case $3 in
 				echo "/routing ospf network set network=\"$grenetwork\" area=$group" >> $mkscript
 		done 
 		cat $mkscript
-		scp $mkscript "admin@$mk:/newospfd.rsc"
-		ssh admin@$mk /import file-name=newospfd.rsc		
+		#scp $mkscript "admin@$mk:/newospfd.rsc"
+		#ssh admin@$mk /import file-name=newospfd.rsc		
 		edgeos=
 		echo -e "Type the internal hostname of the EdgeOS: "
 		read edgeos
