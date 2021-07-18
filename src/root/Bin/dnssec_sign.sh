@@ -5,26 +5,24 @@ ZONEDIR="/var/nsd/zones/master"
 DNSSECDIR="/var/nsd/etc/dnssec"
 
 
-if [[ $# -eq 0 ]];then
-	print "No Arguments"
+[[ $# -eq 0 ]] && \
+	print "No Arguments" && \
 	exit
-fi
 
-if [[ $2 == "clean" ]];then
-	rm $DNSSECDIR/*$DOMAIN*
-	rm $ZONEDIR/$DOMAIN.zone.signed
+
+[[ $2 == "clean" ]] && \
+	rm $DNSSECDIR/*$DOMAIN* && \
+	rm $ZONEDIR/$DOMAIN.zone.signed && \
 	exit
-fi
 
-if [[ $2 == "reload" ]];then
-	ZSK=$(basename $(grep -r "`grep '(zsk)' *.signed |cut -f3-10`" $DNSSECDIR/K$DOMAIN.*.key | cut -d ':' -f1) .key)
-	KSK=$(basename $(grep -r "`grep '(ksk)' *.signed |cut -f3-10`" $DNSSECDIR/K$DOMAIN.*.key | cut -d ':' -f1) .key)
+[[ $2 == "reload" ]] && \
+	ZSK=$(basename $(grep -r "`grep '(zsk)' *.signed |cut -f3-10`" $DNSSECDIR/K$DOMAIN.*.key | cut -d ':' -f1) .key) && \
+	KSK=$(basename $(grep -r "`grep '(ksk)' *.signed |cut -f3-10`" $DNSSECDIR/K$DOMAIN.*.key | cut -d ':' -f1) .key) && \
 
-	ldns-signzone -n -p -s $(head -n 1000 /dev/random | sha1 | cut -b 1-16) -f $ZONEDIR/$DOMAIN.zone.signed $DOMAIN.zone $DNSSECDIR/$ZSK $DNSSECDIR/$KSK
-	nsd-control reload $DOMAIN
-	nsd-control notify $DOMAIN
+	ldns-signzone -n -p -s $(head -n 1000 /dev/random | sha1 | cut -b 1-16) -f $ZONEDIR/$DOMAIN.zone.signed $DOMAIN.zone $DNSSECDIR/$ZSK $DNSSECDIR/$KSK && \
+	nsd-control reload $DOMAIN && \
+	nsd-control notify $DOMAIN && \
 	exit
-fi
 
 cd $ZONEDIR
 
