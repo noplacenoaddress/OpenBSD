@@ -15,7 +15,7 @@ DNSSECDIR="/var/nsd/etc/dnssec"
 	rm $ZONEDIR/$DOMAIN.zone.signed && \
 	exit
 	
-[[ $2 == "cleanall" ]] && \
+[[ $1 == "cleanall" ]] && \
 	rm -rf $DNSSECDIR/* && \
 	exit
 
