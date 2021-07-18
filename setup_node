@@ -709,7 +709,7 @@ function admin {
 						md5=$(awk "/$greinterface/{x=NR+11}(NR<=x){print}" /etc/ospfd.conf  | awk 'FNR == 4 {print}' | awk '{print $3}' | sed "s/\"//g")
 						metric=$(awk "/$greinterface/{x=NR+11}(NR<=x){print}" /etc/ospfd.conf  | awk 'FNR == 6 {print}' | awk '{print $2}')
 						cat $basedir/src/mikrotik/ospfd.rsc >> "/tmp/$vpnc_host/$vpnc_host.rsc"
-						sed -i "s/\/METRIC\//$metric/" "/tmp/$vpnc_host/$vpnc_host.rsc"
+						#sed -i "s/\/METRIC\//$metric/" "/tmp/$vpnc_host/$vpnc_host.rsc"
 						sed -i "s/\/OSPFMD5\//$md5/" "/tmp/$vpnc_host/$vpnc_host.rsc"
 						typeset -u publichostname=$(echo $publichost | sed "s/.$domainname//")
 						typeset -u pophostname=$(echo $vpnc_host | sed "s/.$domainname//")
@@ -782,7 +782,7 @@ function admin {
 					cp $basedir/src/edgeos/ospf.sh "$tmpdir"
 					sed -i "s/\/TUN\//tun$lasttun/g" "$tmpdir/ospf.sh"
 					sed -i "s/\/OSPFMD5\//${md5}/g" "$tmpdir/ospf.sh"
-					sed -i "s/\/METRIC\//${metric}/g" "$tmpdir/ospf.sh"
+					#sed -i "s/\/METRIC\//${metric}/g" "$tmpdir/ospf.sh"
 					sed -i "s/\/GRENETWORK\//${grenetwork}\/30/g" "$tmpdir/ospf.sh"
 					custom "$tmpdir" 1
 					subdir=$(echo $tmpdir | sed "s/\/tmp\///")
@@ -1225,7 +1225,7 @@ function configuration {
 				#popip=$(dig $pophost A +short @8.8.8.8)
 				typeset -i latency=$(ping -c4 $pophost | tail -1| awk '{print $4}' | cut -d '/' -f 2 | cut -d . -f1)
 				typeset -i metric=$(expr $latency / 2)
-				sed -i "s/\/METRIC\//${metric}/g" /etc/ospfd.conf
+				#sed -i "s/\/METRIC\//${metric}/g" /etc/ospfd.conf
 				cat $basedir/src/openbsd/ospfd.conf.openbsd >> /etc/ospfd.conf	
 				if [[ $(ls "/tmp/$pophost/" | grep -c "hostname") -eq 2 ]]; then
 					typeset -i lasttun
@@ -1233,14 +1233,14 @@ function configuration {
 					lasttun=$lasttun+1
 					cp $basedir/src/openbsd/ospfd.conf.openbsd "/tmp/$pophost/ospfd.conf"
 					sed -i "s/\/X\//$lasttun/g" "/tmp/$pophost/ospfd.conf"	
-					sed -i "s/\/METRIC\//${metric}/g" "/tmp/$pophost/ospfd.conf"	
+					#sed -i "s/\/METRIC\//${metric}/g" "/tmp/$pophost/ospfd.conf"	
 					sed -i "s/\/OSPFMD5\//${ospfmd5}/g" "/tmp/$pophost/ospfd.conf"
 				elif [[ $(ls "/tmp/$pophost/" | grep -c "rsc") -ne 0 ]]; then
 					pophostname=$(echo $pophost | cut -d . -f1)
 					cp $basedir/src/mikrotik/ospfd.rsc "/tmp/$pophost"
 					sed -i "s/\/HOSTNAME\//${hostname}/g" "/tmp/$pophost/ospfd.rsc"
 					sed -i "s/\/OSPFMD5\//${ospfmd5}/g" "/tmp/$pophost/ospfd.rsc"
-					sed -i "s/\/METRIC\//${metric}/g" "/tmp/$pophost/ospfd.rsc"
+					#sed -i "s/\/METRIC\//${metric}/g" "/tmp/$pophost/ospfd.rsc"
 					typeset -u pophostname=$pophostname
 					sed -i "s/\/POPHOSTNAME\//${pophostname}/g" "/tmp/$pophost/ospfd.rsc"
 					greip=$(ifconfig `basename $file | cut -d . -f2` |  grep inet | cut -d ' ' -f2 | tail -n 1)
@@ -1252,7 +1252,7 @@ function configuration {
 					cp $basedir/src/edgeos/ospf.sh "/tmp/$pophost/"
 					sed -i "s/\/TUN\//${tunif}/g" "/tmp/$pophost/ospf.sh"
 					sed -i "s/\/OSPFMD5\//${ospfmd5}/g" "/tmp/$pophost/ospf.sh"
-					sed -i "s/\/METRIC\//${metric}/g" "/tmp/$pophost/ospf.sh"
+					#sed -i "s/\/METRIC\//${metric}/g" "/tmp/$pophost/ospf.sh"
 				fi
 			done
 			cat /etc/ospfd.conf | sed -n -e :a -e '1,12!{P;N;D;};N;ba' > /tmp/ospfd.conf
