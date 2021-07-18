@@ -30,7 +30,7 @@ export ZSK=`ldns-keygen -a RSASHA1-NSEC3-SHA1 -b 1024 $DOMAIN`
 export KSK=`ldns-keygen -k -a RSASHA1-NSEC3-SHA1 -b 2048 $DOMAIN`
 
 [[ -e $ZSK.ds ]] && rm $ZSK.ds 
-[[ -e $KSK.ds ]] && $KSK.ds
+[[ -e $KSK.ds ]] && rm $KSK.ds
 mv $ZSK.* $DNSSECDIR && mv $KSK.* $DNSSECDIR
 chown root:_nsd $DNSSECDIR/* && chmod ug+r,o-rwx $DNSSECDIR/* 
 
