@@ -14,6 +14,10 @@ DNSSECDIR="/var/nsd/etc/dnssec"
 	rm $DNSSECDIR/*$DOMAIN* && \
 	rm $ZONEDIR/$DOMAIN.zone.signed && \
 	exit
+	
+[[ $2 == "cleanall" ]] && \
+	rm -rf $DNSSECDIR/* && \
+	exit
 
 [[ $2 == "reload" ]] && \
 	ZSK=$(basename $(grep -r "`grep '(zsk)' *.signed |cut -f3-10`" $DNSSECDIR/K$DOMAIN.*.key | cut -d ':' -f1) .key) && \
