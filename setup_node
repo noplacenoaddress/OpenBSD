@@ -15,6 +15,7 @@
 #geoip and powerdns: https://doc.powerdns.com/authoritative/backends/geoip.html
 #ospf: NBMA design https://www.blackhole-networks.com/OSPF_overload/
 #ospf: https://www.blackhole-networks.com/OSPF
+#dnssec: https://help.dreamhost.com/hc/en-us/articles/219539467
 
 #####
 #
