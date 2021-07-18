@@ -591,7 +591,7 @@ riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -NO
 
 The new configuration follow the same concept of division in quadrants of the planet earth. Got a backbone area and the other that pertain in where is physically the server.
 
-
+[![OpenBSD MESH IPSec network: new OSPFD configuration](https://asciinema.org/a/425997.png)](https://asciinema.org/a/425997)
 
 #### Remote upgrade
 
