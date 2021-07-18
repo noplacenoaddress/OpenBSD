@@ -625,7 +625,6 @@ Next feature for example can be serving a web page in a different language depen
 
 ```shell
 riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -Z
-
 Type the two .com domains (the principle and the secondary) divided by a comma: 
 telecomlobby.com,9-rg.com
 
@@ -635,10 +634,11 @@ telecomlobby.com:
    Name Server: UK.TELECOMLOBBY.COM
    Name Server: US.TELECOMLOBBY.COM
 
-DNSSEC not enable onto telecomlobby!
+DNSSEC not enable onto telecomlobby.com!
 <<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 9-rg.com: 
+fgets: Connection reset by peer
    Name Server: B.NS.BUDDYNS.COM
    Name Server: JP.TELECOMLOBBY.COM
    Name Server: UK.TELECOMLOBBY.COM
@@ -665,9 +665,12 @@ GB	+513030-0000731	Europe/London
 LAT --> 51
 LONG --> -0
 
-GROUP --> 3
+GROUP --> 34
+BACKBONE OSPFAREA 0.0.0.0
+GEO OSPFAREA --> 0.0.3.4
 
-US/Central
+
+US	+415100-0873900	America/Chicago	Central (most areas)
 
 {
   "ip": "155.138.247.27",
@@ -683,25 +686,31 @@ US/Central
 LAT --> 32
 LONG --> -96
 
-GROUP --> 1
+GROUP --> 12
+BACKBONE OSPFAREA 0.0.0.0
+GEO OSPFAREA --> 0.0.1.2
 
-Japan
+
+JP	+353916+1394441	Asia/Tokyo
 
 {
   "ip": "139.180.206.19",
   "hostname": "jp.telecomlobby.com",
-  "city": "Kamimaruko",
-  "region": "Nagano",
+  "city": "Tokyo",
+  "region": "Tokyo",
   "country": "JP",
-  "loc": "36.3186,138.2733",
+  "loc": "35.6895,139.6917",
   "org": "AS20473 The Constant Company, LLC",
-  "postal": "386-0404",
+  "postal": "151-0052",
   "timezone": "Asia/Tokyo",
 }
-LAT --> 36
-LONG --> 138
+LAT --> 35
+LONG --> 139
 
-GROUP --> 5
+GROUP --> 56
+BACKBONE OSPFAREA 0.0.0.0
+GEO OSPFAREA --> 0.0.5.6
+
 
 BG	+4241+02319	Europe/Sofia
 
@@ -719,7 +728,10 @@ BG	+4241+02319	Europe/Sofia
 LAT --> 42
 LONG --> 23
 
-GROUP --> 3
+GROUP --> 34
+BACKBONE OSPFAREA 0.0.0.0
+GEO OSPFAREA --> 0.0.3.4
+
 
 DE	+5230+01322	Europe/Berlin	Germany (most areas)
 
@@ -737,7 +749,10 @@ DE	+5230+01322	Europe/Berlin	Germany (most areas)
 LAT --> 50
 LONG --> 8
 
-GROUP --> 3
+GROUP --> 34
+BACKBONE OSPFAREA 0.0.0.0
+GEO OSPFAREA --> 0.0.3.4
+
 
 AU	-3352+15113	Australia/Sydney	New South Wales (most areas)
 
@@ -755,15 +770,18 @@ AU	-3352+15113	Australia/Sydney	New South Wales (most areas)
 LAT --> -33
 LONG --> 151
 
-GROUP --> 6
+GROUP --> 56
+BACKBONE OSPFAREA 0.0.0.0
+GEO OSPFAREA --> 0.0.5.6
 
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ 
 ```
 
 Using the `console` script from the workstation give us a global vision of our IPSec network. It's important because of management of the DNS servers and the geo-ip feature.
 
 I use two domain names because administrating the NS pulls which others.
 
-I've divided world into six groups depending onto GPS system. `console` give you at what group is pertaining every host connected to our guerrilla network. Next we will create three containers in which we will put those hosts to create three pulls of name servers. After depending onto the geographical position of the client doing the query the system will reply in a manner or another using the `powerdns` geo-ip feature.
+I've divided world into three groups depending onto GPS system. `console` give you at what group is pertaining every host connected to our guerrilla network. Next we will create three containers in which we will put those hosts to create three pulls of name servers. After depending onto the geographical position of the client doing the query the system will reply in a manner or another using the `powerdns` geo-ip feature.
 
 Another important feature is that our tool give us information withing the [whois database](https://en.wikipedia.org/wiki/WHOIS) if the suite of extensions [DNSSEC](https://en.wikipedia.org/wiki/Domain_Name_System_Security_Extensions) is enable from the registrant. 	
 
