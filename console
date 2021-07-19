@@ -34,6 +34,7 @@ if [[ $# -eq 0 ]]; then
 			\n-OO -> OpenBSD ospf filter [o] \
 			\n-U  -> update the workstation's user EdDSA certificate [o] \
 			\n-NO -> newospf configuration [o] \
+			\n-PF -> new firewall configuration [o] \
 			\n"
 	
 	exit 1
@@ -65,6 +66,13 @@ case $3 in
 		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 			echo -e "Connecting to $vpnc_host"
 			ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U dyndnspop
+			sleep 10
+		done	
+	;;
+	"-PF")
+		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+			echo -e "Connecting to $vpnc_host"
+			ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U pf
 			sleep 10
 		done	
 	;;
