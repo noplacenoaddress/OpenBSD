@@ -558,7 +558,7 @@ Next take the pen drive to the CA server physic station and run the setup_ca scr
 
 Another simple maintenance process is add another host to one table of `pf`. For example:
 
-
+[![OpenBSD MESH IPSec network: PF manteinance](https://asciinema.org/a/426193.png)](https://asciinema.org/a/426193)
 
 #### New OSPFD concept.
 
