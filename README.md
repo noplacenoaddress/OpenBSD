@@ -556,6 +556,10 @@ Ready? type 1
 
 Next take the pen drive to the CA server physic station and run the setup_ca script with the correct option `setup_ca upuser`. Return it to the workstation and type `1`. 
 
+Another simple maintenance process is add another host to one table of `pf`. For example:
+
+
+
 #### New OSPFD concept.
 
 ![](https://gihyo.jp/assets/images/ICON/2015/1384_bsd-yomoyama.jpg)
@@ -807,6 +811,10 @@ DNSSECDIR="/var/nsd/etc/dnssec"
 [[ $2 == "clean" ]] && \
 	rm $DNSSECDIR/*$DOMAIN* && \
 	rm $ZONEDIR/$DOMAIN.zone.signed && \
+	exit
+	
+[[ $1 == "cleanall" ]] && \
+	rm -rf $DNSSECDIR/* && \
 	exit
 
 [[ $2 == "reload" ]] && \
