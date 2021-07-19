@@ -54,7 +54,7 @@ ipv6prefix=
 ipv6defrouter=
 sha256ctrl=0
 [[ -e /etc/hostname.vether0 ]] && \
-	routerid=$(cat /etc/hostname.vether0 | awk '{print $2}' | sed "s/\/32//")
+	routerid=$(cat /etc/hostname.vether0 | grep inet | awk '{print $2}' | sed "s/\/32//" | sed '/^$/d')
 
 umask 002
 
