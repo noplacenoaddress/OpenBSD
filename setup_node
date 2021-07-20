@@ -390,24 +390,31 @@ function upgrade {
 					echo "$vpnc_ip/32" >> "$tmpdir/pf.conf.table.ipsec"
 				fi
 			done
-			sha256compare "/etc/pf.conf.table.ipsec" "$tmpdir/pf.conf.table.ipsec"
+			[[ -e "/etc/pf.conf.table.ipsec" ]] && sha256compare "/etc/pf.conf.table.ipsec" "$tmpdir/pf.conf.table.ipsec" || sha256ctrl=1
 			if [[ $sha256ctrl -eq 1 ]]; then
 				echo "pf.conf.table.ipsec upgrade"
 				install -o root -g wheel -m 0640  "$tmpdir/pf.conf.table.ipsec" /etc/
 				pfctl -nf /etc/pf.conf
 				pfctl -f /etc/pf.conf
 			fi
-			sha256compare "/etc/pf.conf.table.nsd" "$tmpdir/pf.conf.table.nsd"
+			[[ -e "/etc/pf.conf.table.nsd" ]] && sha256compare "/etc/pf.conf.table.nsd" "$tmpdir/pf.conf.table.nsd" || sha256ctrl=1
 			if [[ $sha256ctrl -eq 1 ]]; then
 				echo "pf.conf.table.nsd upgrade"
 				install -o root -g wheel -m 0640  "$tmpdir/pf.conf.table.nsd" /etc/
 				pfctl -nf /etc/pf.conf
 				pfctl -f /etc/pf.conf
 			fi
-			sha256compare "/etc/pf.conf.table.users" "$tmpdir/pf.conf.table.users"
+			[[ -e "/etc/pf.conf.table.users" ]] && sha256compare "/etc/pf.conf.table.users" "$tmpdir/pf.conf.table.users" || sha256ctrl=1
 			if [[ $sha256ctrl -eq 1 ]]; then
 				echo "pf.conf.table.users upgrade"
 				install -o root -g wheel -m 0640  "$tmpdir/pf.conf.table.users" /etc/
+				pfctl -nf /etc/pf.conf
+				pfctl -f /etc/pf.conf
+			fi
+			[[ -e "/etc/pf.conf.table.clientes" ]] && sha256compare "/etc/pf.conf.table.clientes" "$tmpdir/pf.conf.table.clientes" || sha256ctrl=1
+			if [[ $sha256ctrl -eq 1 ]]; then
+				echo "pf.conf.table.clientes upgrade"
+				install -o root -g wheel -m 0640  "$tmpdir/pf.conf.table.clientes" /etc/
 				pfctl -nf /etc/pf.conf
 				pfctl -f /etc/pf.conf
 			fi
