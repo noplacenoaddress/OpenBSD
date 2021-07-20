@@ -1,0 +1,7 @@
+# /sbin/pfctl -t clientes -T kill -f /etc/pf.conf.table.clientes
+# /sbin/pfctl -t clientes -T add -f /etc/pf.conf.table.clientes
+# /sbin/pfctl -t clientes -T show
+#
+140.82.54.216/32
+104.238.190.21/32
+95.179.254.201/32
