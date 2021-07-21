@@ -4,7 +4,7 @@ set -o nounset
 set -o errexit
 
 TUN_IFACE="tun0"
-BACKUP_ROUTE="tun3"
+BACKUP_IFACE="/TUNBACKUP/"
 
 case "${PLUTO_VERB}" in
 	up-host)
@@ -15,13 +15,14 @@ case "${PLUTO_VERB}" in
 		echo "Accepting gre keepalive"
 		sysctl -w "net.ipv4.conf.${TUN_IFACE}.accept_local=1"
 		echo "Adding default route to table 3"
-		ip route del table 2 default
-		ip route add table 2 default nexthop dev ${TUN_IFACE}
+		ip route del table /ROUTERIDLAST/ default
+		ip route add table /ROUTERIDLAST/ default nexthop dev ${TUN_IFACE}
 		
 		;;
 	down-host)
 		ifconfig $TUN_IFACE down
-		ip route add table 2 default nexthop dev ${BACKUP_ROUTE}
+		ip route add table /ROUTERIDLAST/ default nexthop dev ${BACKUP_IFACE}
+		
 		;;
 esac
 
