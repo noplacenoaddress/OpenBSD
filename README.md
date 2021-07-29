@@ -876,7 +876,7 @@ nsd(ok)
 root@ganesha:/var/nsd/etc# 
 ```
 
-
+![](https://github.com/redeltaglio/OpenBSD/raw/master/img/dnskey_dnssec.png)
 
 Nice Regards,
 
