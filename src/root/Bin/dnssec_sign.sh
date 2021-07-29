@@ -1,5 +1,8 @@
 #!/bin/ksh
 
+#https://dnsviz.net/d/dreamhost.com/dnssec/
+#https://help.dreamhost.com/hc/es/articles/219539467-Generalidades-DNSSEC
+
 DOMAIN=$1
 ZONEDIR="/var/nsd/zones/master"
 DNSSECDIR="/var/nsd/etc/dnssec"
