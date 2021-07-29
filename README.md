@@ -843,9 +843,20 @@ ldns-signzone -n -p -s $(head -n 1000 /dev/random | sha1 | cut -b 1-16) -f $ZONE
 ldns-key2ds -n -1 $DOMAIN.zone.signed && ldns-key2ds -n -2 $DOMAIN.zone.signed
 ```
 
+I've got the two domains registered with [dreamhost](https://en.wikipedia.org/wiki/DreamHost) , they have got a section in them forum with the rules to use DNSSEC:
 
+- [DNSSEC overview](https://help.dreamhost.com/hc/en-us/articles/219539467-DNSSEC-overview)
 
+Let's see the output of our `dnssec_sign.sh` script:
 
+```shell
+root@ganesha:/var/nsd/zones/master# dnssec_sign.sh 9-rg.com 
+9-rg.com.       86400   IN      DS      61419 7 1 2b2a9ff48c50d380fb8a1dfd98441ae346d69c02
+9-rg.com.       86400   IN      DS      61419 7 2 ae0e5e3d0ab5b6d4d36450356f1d77dbaa8b156e29aac8b8f64d448d3d054f4b
+root@ganesha:/var/nsd/zones/master# 
+```
+
+This output contain the informations that we shall to publish in a dedicated support ticket.
 
 Nice Regards,
 
