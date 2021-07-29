@@ -26,8 +26,9 @@ DNSSECDIR="/var/nsd/etc/dnssec"
 [[ $2 == "reload" ]] && \
 	ZSK=$(basename $(grep -r "`grep '(zsk)' *.signed |cut -f3-10`" $DNSSECDIR/K$DOMAIN.*.key | cut -d ':' -f1) .key) && \
 	KSK=$(basename $(grep -r "`grep '(ksk)' *.signed |cut -f3-10`" $DNSSECDIR/K$DOMAIN.*.key | cut -d ':' -f1) .key) && \
-
-	ldns-signzone -n -p -s $(head -n 1000 /dev/random | sha1 | cut -b 1-16) -f $ZONEDIR/$DOMAIN.zone.signed $DOMAIN.zone $DNSSECDIR/$ZSK $DNSSECDIR/$KSK && \
+	[[ $DOMAIN == "9-rg.com" ]] && DOMAIN="9rgcom"
+	ldns-signzone -n -p -s $(head -n 1000 /dev/random | sha1 | cut -b 1-16) -f $ZONEDIR/$DOMAIN.zone.signed  $ZONEDIR/$DOMAIN.zone $DNSSECDIR/$ZSK $DNSSECDIR/$KSK && \
+	[[ $DOMAIN == "9rgcom" ]] && DOMAIN="9-rg.com"
 	nsd-control reload $DOMAIN && \
 	nsd-control notify $DOMAIN && \
 	exit
