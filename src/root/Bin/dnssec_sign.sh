@@ -27,7 +27,7 @@ DNSSECDIR="/var/nsd/etc/dnssec"
 	ZSK=$(basename $(grep -r "`grep '(zsk)' *.signed |cut -f3-10`" $DNSSECDIR/K$DOMAIN.*.key | cut -d ':' -f1) .key) && \
 	KSK=$(basename $(grep -r "`grep '(ksk)' *.signed |cut -f3-10`" $DNSSECDIR/K$DOMAIN.*.key | cut -d ':' -f1) .key) && \
 	[[ $DOMAIN == "9-rg.com" ]] && DOMAIN="9rgcom"
-	ldns-signzone -n -p -s $(head -n 1000 /dev/random | sha1 | cut -b 1-16) -f $ZONEDIR/$DOMAIN.zone.signed  $ZONEDIR/$DOMAIN.zone $DNSSECDIR/$ZSK $DNSSECDIR/$KSK && \
+	ldns-signzone -n -p -s $(head -n 1000 /dev/random | sha1 | cut -b 1-16) -f $ZONEDIR/$DOMAIN.zone.signed $DOMAIN.zone $DNSSECDIR/$ZSK $DNSSECDIR/$KSK && \
 	[[ $DOMAIN == "9rgcom" ]] && DOMAIN="9-rg.com"
 	nsd-control reload $DOMAIN && \
 	nsd-control notify $DOMAIN && \
@@ -46,7 +46,7 @@ chown root:_nsd $DNSSECDIR/* && chmod ug+r,o-rwx $DNSSECDIR/*
 # now it's time to create the .signed zone file
 [[ $DOMAIN == "9-rg.com" ]] && DOMAIN="9rgcom"
 
-ldns-signzone -n -p -s $(head -n 1000 /dev/random | sha1 | cut -b 1-16) -f $ZONEDIR/$DOMAIN.zone.signed $ZONEDIR/$DOMAIN.zone $DNSSECDIR/$ZSK $DNSSECDIR/$KSK
+ldns-signzone -n -p -s $(head -n 1000 /dev/random | sha1 | cut -b 1-16) -f $ZONEDIR/$DOMAIN.zone.signed $DOMAIN.zone $DNSSECDIR/$ZSK $DNSSECDIR/$KSK
 
 # and here are our DS records to give to our registrar
-ldns-key2ds -n -1 $ZONEDIR/$DOMAIN.zone.signed && ldns-key2ds -n -2 $ZONEDIR/$DOMAIN.zone.signed
+ldns-key2ds -n -1 $DOMAIN.zone.signed && ldns-key2ds -n -2 $DOMAIN.zone.signed
