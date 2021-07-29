@@ -21,6 +21,7 @@ DNSSECDIR="/var/nsd/etc/dnssec"
 	
 [[ $1 == "cleanall" ]] && \
 	rm -rf $DNSSECDIR/* && \
+	rm $ZONEDIR/*.signed && \
 	exit
 
 [[ $2 == "reload" ]] && \
