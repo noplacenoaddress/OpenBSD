@@ -858,6 +858,26 @@ root@ganesha:/var/nsd/zones/master#
 
 This output contain the informations that we shall to publish in a dedicated support ticket.
 
+Change the `nsd.conf` file and specify the new signed zone:
+
+```shell
+zone:
+name: "9-rg.com"
+zonefile: "master/9rgcom.zone.signed"
+include-pattern: "telecomlobby"
+```
+
+And reload the server:
+
+```shell
+root@ganesha:/var/nsd/etc# rcctl restart nsd                                                                                                                      
+nsd(ok)
+nsd(ok)
+root@ganesha:/var/nsd/etc# 
+```
+
+
+
 Nice Regards,
 
 Riccardo `<taglio>` Giuntoli.
