@@ -939,12 +939,9 @@ function configuration {
 		
 		;;
 		"scripts")
-			for file in $basedir/src/root/Bin/*.sh; do
-				if [[ -e "$file" ]]; then
-					install -o root -g wheel -m 0700  $file /root/Bin/
-				fi
+			for file in "$basedir/src/root/Bin/*.sh"; do
+				install -o root -g wheel -m 0700  $file /root/Bin/
 			done
-			cleanold "/root/Bin/"
 		;;
 		"unbound")
 			pidof_unbound=$(pidof "unbound")
