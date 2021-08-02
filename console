@@ -278,9 +278,9 @@ case $3 in
 		secondarydomain=$(printf $comdomains | cut -d , -f2)
 		for domain in $(printf "$comdomains" | xargs -d, -n1); do
 			echo -e "\n$domain: "
-			whois -H $domain | grep "Name Server" | grep -v "^Name"
-			dnssec=$(whois -H $domain| grep DNSSEC | awk '{print $2}')
-			[[ $dnssec == "unsigned" ]] || echo -e "\nDNSSEC not enable onto $domain!"
+			whois $domain | grep "Name Server" | grep -v "^Name"
+			dnssec=$(whois $domain| grep DNSSEC | grep -c "unsigned")
+			[[ $dnssec > 0 ]] && echo -e "\nDNSSEC not enable onto $domain!" || echo -e "\nDNSSEC enabled onto $domain!"
 			echo "<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>"
 		done
 		echo -e "You've got servers in:\n"

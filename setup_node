@@ -96,7 +96,7 @@ function pkg {
 				dovecot dovecot-pigeonhole
 		;;
 		"powernsd")
-			pkg_add powerdns ldns-utils drill
+			pkg_add powerdns ldns-utils drill validns
 		;;
 	esac
 }
