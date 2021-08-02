@@ -1,3 +1,5 @@
+
+
 # OpenBSD on demand mesh host
 
 ![Puffy rules](https://www.openbsd.org/art/puffy/ppuf800X725.gif)
@@ -858,6 +860,18 @@ root@ganesha:/var/nsd/zones/master#
 
 This output contain the informations that we shall to publish in a dedicated support ticket.
 
+When provide add the informations about DNSSEC into the whois database you can find them using this command:
+
+```shell
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ whois 9-rg.com | grep DNSSEC
+   DNSSEC: signedDelegation
+   DNSSEC DS Data: 22020 7 2 548BDCFE84669FFA8783E753BD1A8279C5374DF32707D5CB6B74445BCC733F5E
+   DNSSEC DS Data: 22020 7 1 728023CADD4CDF96909000A9E79BEF424B3677A0
+DNSSEC: signedDelegation
+riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ 
+
+```
+
 Change the `nsd.conf` file and specify the new signed zone:
 
 ```shell
@@ -875,6 +889,8 @@ nsd(ok)
 nsd(ok)
 root@ganesha:/var/nsd/etc# 
 ```
+
+
 
 ![](https://github.com/redeltaglio/OpenBSD/raw/master/img/dnskey_dnssec.png)
 
