@@ -6,8 +6,7 @@ server:
         do-ip6: yes
         ip-address: /PUBV6/
         ip-address: /PUBLICIP/
-        ip-address: /GRESLAVE12/
-        ip-address: /GRESLAVE56/
+        ip-address: /GRESLAVE/
         refuse-any: no  
         identity: "/PUBLICHOST/"
         
@@ -23,14 +22,10 @@ key:
 pattern:
         name: "telecomlobby"
         notify: /GRESLAVE12/ /PUBLICHOSTNAME/
-        provide-xfr: /GRESLAVE12/ /PUBLICHOSTNAME/
-        notify: /GRESLAVE56/ /PUBLICHOSTNAME/
-        provide-xfr: /GRESLAVE56/ /PUBLICHOSTNAME/
+        provide-xfr: /GRESLAVE/ /PUBLICHOSTNAME/
         
 zone:
 	name: "/NSDDOMAIN/"
 	zonefile: "/ZONEFILE/"
 	include-pattern: telecomlobby
-
-
 
