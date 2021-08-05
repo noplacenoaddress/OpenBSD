@@ -320,6 +320,9 @@ case $3 in
 		printf '%s\n' $nsd34p
 		printf '%s\n' $nsd12p
 		printf '%s\n' $nsd56p
+		[[ ${#G12[@]} > 1 ]] && rand12s=$[$RANDOM % ${#G12[@]}] || rand12s="${G12[0]}"
+		[[ ${#G34[@]} > 1 ]] && rand34s=$[$RANDOM % ${#G34[@]}] || rand34s="${G34[0]}"
+		[[ ${#G56[@]} > 1 ]] && rand56s=$[$RANDOM % ${#G56[@]}] || rand56s="${G56[0]}"
 		echo -e "The master NSD server for $secondarydomain in the group 34 is ${G34[$rand34s]} slaves are in the group 12 ${G12[$rand12s]} and in the group 56 ${G56[$rand56s]}"
 		publicip=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q ${G34[$rand34s]}.$localdomainname ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
 		nsd34s=$(curl -s "http://ipinfo.io/$publicip" | grep hostname | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g" | tr '[:lower:]' '[:upper:]')
