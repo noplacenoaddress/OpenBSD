@@ -160,10 +160,25 @@ function config_nsd {
 				"master")
 					install -o root -g _nsd -m 0540 "$basedir/var/nsd/etc/master.template" /var/nsd/etc/nsd.conf
 					custom "/var/nsd/etc/" 1
-					sed -i "s/\//GRESLAVE12/\//" /var/nsd/etc/nsd.conf
-					sed -i "s/\//GRESLAVE56/\//" /var/nsd/etc/nsd.conf
+					sed -i "s/\/GRESLAVE12\//$3/" /var/nsd/etc/nsd.conf
+					sed -i "s/\/GRESLAVE56\//$4/" /var/nsd/etc/nsd.conf
+					sed -i "s/\/TSIG\//$5/" /var/nsd/etc/nsd.conf
+					[[ $(nsd-checkconf /var/nsd/etc/nsd.conf) == "" ]] && \
+						rcctl start nsd \
+						|| \
+						echo "NSD configuration failed" && \
+						exit 1
 				;;
 				"slave")
+					install -o root -g _nsd -m 0540 "$basedir/var/nsd/etc/slave.template" /var/nsd/etc/nsd.conf
+					custom "/var/nsd/etc/" 1
+					sed -i "s/\/GRESLAVE\//$3/" /var/nsd/etc/nsd.conf
+					sed -i "s/\/TSIG\//$4/" /var/nsd/etc/nsd.conf
+					[[ $(nsd-checkconf /var/nsd/etc/nsd.conf) == "" ]] && \
+						rcctl start nsd \
+						|| \
+						echo "NSD configuration failed" && \
+						exit 1
 				;;
 			esac
 		;;
@@ -1429,7 +1444,10 @@ function configuration {
 				"local")
 				;;
 				"distributed")
-					config_nsd "basic" "$3" "$4" (: "${5?}") 2>/dev/null && "$5"
+					[[ $(wc -l /tmp/powernsd_distributed) -eq 3 ]] && \
+						config_nsd "basic" "master" "$(awk 'FNR == 1' /tmp/powernsd_distributed)" "$(awk 'FNR == 2' /tmp/powernsd_distributed)" "$(awk 'FNR == 3' /tmp/powernsd_distributed)"\
+						|| \
+						config_nsd "basic" "slave" "$(awk 'FNR == 1' /tmp/powernsd_distributed)"  "$(awk 'FNR == 2' /tmp/powernsd_distributed)"
 				;;
 			esac	
 			
