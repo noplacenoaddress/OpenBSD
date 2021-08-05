@@ -153,6 +153,15 @@ function sha256compare {
 	fi
 }
 
+function config_nsd {
+	case $1 in
+		"basic")
+			
+		;;
+		*)
+		;;
+	esac
+}
 
 function backup {
 	CURRENTBACKUP="$BACKUPS/$datarelease"
@@ -1402,11 +1411,18 @@ function configuration {
 				|| \
 				backup "nsd" && \
 				rm -rf /var/nsd && \
-				mkdir -p /var/nsd/{db,etc,run,run/xfr,zones} && \
-				chown -R root:_nsd /var/nsd/{db,etc,run} && \
-				
-				
-				
+				mkdir -p /var/nsd/{db,etc,run,run/xfr,zones,zones/master,zones/slave} && \
+				chmod 775 /var/nsd/{db,run,zones/slave} && \
+				chmod 750 /var/nsd/etc && \
+				chmod 755 /var/nsd/{zones,zones/master} && \
+				chown -R root:_nsd /var/nsd/{db,etc,run,zones/slave}
+			case $subphase in
+				"local")
+				;;
+				"distributed")
+					config_nsd "basic" "$3" "$4" (: "${5?}") 2>/dev/null && "$5"
+				;;
+			esac	
 			
 		;;
 	esac
