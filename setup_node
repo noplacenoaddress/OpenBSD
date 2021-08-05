@@ -228,6 +228,11 @@ function backup {
 				cp -p $file "$CURRENTBACKUP/$1/"
 			done
 		;;
+		"nsd")
+			for file in $(find "/var/nsd" -type f -not -path "/var/nsd/run/*"); do
+				cp -p $file "$CURRENTBACKUP/$1/"
+			done
+		;;
 		"newospf")
 		
 			cp -p /etc/ospfd.conf "$CURRENTBACKUP/$1/"
@@ -1391,6 +1396,18 @@ function configuration {
 		;;
 		"powernsd")
 			pkg "powernsd"
+			[[ $(pidof "nsd") == "" ]] && \
+				rcctl enable nsd && \
+				rcctl set nsd flags "-c /var/nsd/etc/nsd.conf" \
+				|| \
+				backup "nsd" && \
+				rm -rf /var/nsd && \
+				mkdir -p /var/nsd/{db,etc,run,run/xfr,zones} && \
+				chown -R root:_nsd /var/nsd/{db,etc,run} && \
+				
+				
+				
+			
 		;;
 	esac
 }
