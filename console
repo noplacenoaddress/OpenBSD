@@ -270,7 +270,7 @@ case $3 in
 		esac
 		
 	;;
-	"-Z")	
+	"-Z")
 		comdomains=
 		echo -e "Type the two .com domains (the principle and the secondary) divided by a comma: "
 		read comdomains
@@ -296,16 +296,41 @@ case $3 in
 			lat=$(echo $loc | cut -d , -f1 | cut -d . -f1)
 			echo -e "\nLAT --> $lat"
 			echo -e "LONG --> $long\n"
-			if [[ $long -ge -180 && $long -le -60 && $lat -ge 0 ]]; then group=12 && ospfarea="0.0.1.2"; fi
-			if [[ $long -ge -60 && $long -le 60 && $lat -ge 0 ]]; then group=34 && ospfarea="0.0.3.4"; fi
-			if [[ $long -ge 60 && $long -le 180 && $lat -ge 0 ]]; then group=56 && ospfarea="0.0.5.6"; fi
-			if [[ $long -ge -180 && $long -le -60 && $lat -le 0 ]]; then group=12 && ospfarea="0.0.1.2"; fi
-			if [[ $long -ge -60 && $long -le 60 && $lat -le 0 ]]; then group=34 && ospfarea="0.0.3.4"; fi
-			if [[ $long -ge 60 && $long -le 180 && $lat -le 0 ]]; then group=56 && ospfarea="0.0.5.6"; fi
+			if [[ $long -ge -180 && $long -le -60 && $lat -ge 0 ]]; then group=12 && ospfarea="0.0.1.2" && G12+=("$vpnc_host"); fi
+			if [[ $long -ge -60 && $long -le 60 && $lat -ge 0 ]]; then group=34 && ospfarea="0.0.3.4" && G34+=("$vpnc_host"); fi
+			if [[ $long -ge 60 && $long -le 180 && $lat -ge 0 ]]; then group=56 && ospfarea="0.0.5.6" && G56+=("$vpnc_host"); fi
+			if [[ $long -ge -180 && $long -le -60 && $lat -le 0 ]]; then group=12 && ospfarea="0.0.1.2" && G12+=("$vpnc_host"); fi
+			if [[ $long -ge -60 && $long -le 60 && $lat -le 0 ]]; then group=34 && ospfarea="0.0.3.4" && G34+=("$vpnc_host"); fi
+			if [[ $long -ge 60 && $long -le 180 && $lat -le 0 ]]; then group=56 && ospfarea="0.0.5.6" && G56+=("$vpnc_host"); fi
 			echo -e "GROUP --> $group"
 			echo -e "BACKBONE OSPFAREA 0.0.0.0"
 			echo -e "GEO OSPFAREA --> $ospfarea\n"
 		done
+		[[ ${#G12[@]} > 1 ]] && rand12p=$[$RANDOM % ${#G12[@]}] || rand12p="${G12[0]}"
+		[[ ${#G34[@]} > 1 ]] && rand34p=$[$RANDOM % ${#G34[@]}] || rand34p="${G34[0]}"
+		[[ ${#G56[@]} > 1 ]] && rand56p=$[$RANDOM % ${#G56[@]}] || rand56p="${G56[0]}"
+		echo -e "The master NSD server for $principledomain in the group 34 is ${G34[$rand34p]} slaves are in the group 12 ${G12[$rand12p]} and in the group 56 ${G56[$rand56p]}"
+		publicip=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q ${G34[$rand34p]}.$localdomainname ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
+		nsd34p=$(curl -s "http://ipinfo.io/$publicip" | grep hostname | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g" | sed "s/$principledomain/$secondarydomain/" | tr '[:lower:]' '[:upper:]')
+		publicip=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q ${G12[$rand12p]}.$localdomainname ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
+		nsd12p=$(curl -s "http://ipinfo.io/$publicip" | grep hostname | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g" | sed "s/$principledomain/$secondarydomain/" | tr '[:lower:]' '[:upper:]')
+		publicip=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q ${G56[$rand56p]}.$localdomainname ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
+		nsd56p=$(curl -s "http://ipinfo.io/$publicip" | grep hostname | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g" | sed "s/$principledomain/$secondarydomain/" | tr '[:lower:]' '[:upper:]')
+		echo -e "Please configure WHOIS server for $principledomain with:"
+		printf '%s\n' $nsd34p
+		printf '%s\n' $nsd12p
+		printf '%s\n' $nsd56p
+		echo -e "The master NSD server for $secondarydomain in the group 34 is ${G34[$rand34s]} slaves are in the group 12 ${G12[$rand12s]} and in the group 56 ${G56[$rand56s]}"
+		publicip=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q ${G34[$rand34s]}.$localdomainname ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
+		nsd34s=$(curl -s "http://ipinfo.io/$publicip" | grep hostname | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g" | tr '[:lower:]' '[:upper:]')
+		publicip=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q ${G12[$rand12s]}.$localdomainname ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
+		nsd12s=$(curl -s "http://ipinfo.io/$publicip" | grep hostname | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g" | tr '[:lower:]' '[:upper:]')
+		publicip=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q ${G56[$rand56s]}.$localdomainname ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
+		nsd56s=$(curl -s "http://ipinfo.io/$publicip" | grep hostname | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g" | tr '[:lower:]' '[:upper:]')
+		echo -e "Please configure WHOIS server for $secondarydomain with:"
+		printf '%s\n' $nsd34s
+		printf '%s\n' $nsd12s
+		printf '%s\n' $nsd56s	
 	;;
 	"-OM")
 		mk=
