@@ -1,0 +1,13 @@
+$ORIGIN             /DOMAIN/.
+$TTL    86400
+@       IN SOA   /FIRST/. dns-admin./DOMAIN/. (
+        /SERIAL/  ; serial YYYYMMDDnn
+        28800       ; refresh
+        7200        ; retry
+        864000      ; expire
+        86400 )     ; minimum TTL
+
+
+@               IN NS /FIRST/.
+@               IN NS /SECOND/.
+@               IN NS /THIRD/.
