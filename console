@@ -320,7 +320,9 @@ case $3 in
 		nsd56p=$(curl -s "http://ipinfo.io/$publicip" | grep hostname | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g" | sed "s/$principledomain/$secondarydomain/" | tr '[:lower:]' '[:upper:]')
 		routerid56p=$(dig "${G56[$rand56p]}.$localdomainname" A +short)
 		masterp34slave12=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G34[$rand34p]}.$localdomainname" ospfctl show fib | grep "$routerid12p" | awk '{print $4}')
+		masterp34gre12=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G34[$rand34p]}.$localdomainname" ifconfig | grep $masterp34slave12 | awk '{print $2}')
 		masterp34slave56=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G34[$rand34p]}.$localdomainname" ospfctl show fib | grep "$routerid56p" | awk '{print $4}')
+		masterp34gre56=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G34[$rand34p]}.$localdomainname" ifconfig | grep $masterp34slave56 | awk '{print $2}')
 		slavep12master34=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G12[$rand12p]}.$localdomainname" ospfctl show fib | grep "$routerid34p" | awk '{print $4}')
 		slavep56master34=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G56[$rand56p]}.$localdomainname" ospfctl show fib | grep "$routerid34p" | awk '{print $4}')
 		echo -e "Please configure WHOIS server for $principledomain with:"
@@ -328,7 +330,7 @@ case $3 in
 		printf '%s\n' $nsd12p
 		printf '%s\n' $nsd56p
 		echo -e "Useful NSD parameters:"
-		printf '%s\t%s\t%s\n' $routerid34p $masterp34slave12 $masterp34slave56
+		printf '%s\t%s\t%s\n' $routerid34p $masterp34gre12 $masterp34gre56
 		printf '%s\t%s\n' $routerid12p $slavep12master34
 		printf '%s\t%s\n' $routerid56p $slavep56master34
 		[[ ${#G12[@]} > 1 ]] && rand12s=$[$RANDOM % ${#G12[@]}] || rand12s="${G12[0]}"

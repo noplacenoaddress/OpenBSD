@@ -156,7 +156,16 @@ function sha256compare {
 function config_nsd {
 	case $1 in
 		"basic")
-			
+			case $2 in
+				"master")
+					install -o root -g _nsd -m 0540 "$basedir/var/nsd/etc/master.template" /var/nsd/etc/nsd.conf
+					custom "/var/nsd/etc/" 1
+					sed -i "s/\//GRESLAVE12/\//" /var/nsd/etc/nsd.conf
+					sed -i "s/\//GRESLAVE56/\//" /var/nsd/etc/nsd.conf
+				;;
+				"slave")
+				;;
+			esac
 		;;
 		*)
 		;;
