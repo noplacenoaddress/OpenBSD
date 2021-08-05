@@ -427,7 +427,7 @@ case $3 in
 		ssh-keygen -t ed25519 -C "taglio@$localdomainname"
 		pwdfile=$(mktemp)
 		# Read Password
-		password=$(systemd-ask-password "Enter password: ")
+		password=$(systemd-ask-password "Enter CA password: ")
 		# Run Command
 		echo $password > $pwdfile
 		echo -n Type the mounted FAT32 pen drive directory:
