@@ -6,7 +6,7 @@ server:
         do-ip6: yes
         ip-address: /PUBLICV6/
         ip-address: /PUBLICIP/
-        ip-address: /GRESLAVE12
+        ip-address: /GRESLAVE12/
         ip-address: /GRESLAVE56/
         refuse-any: no  
         identity: "/FIRST/"
