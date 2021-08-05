@@ -91,15 +91,15 @@ function pkg {
 
 	case $phase in
 		"shell")
-			pkg_add colorls nano wget fping iperf uptimed oidentd sqlite3 \
+			[[ $(pkg_info | grep -c colorls ) -eq 0 ]] && pkg_add colorls nano wget fping iperf uptimed oidentd sqlite3 \
 				nmap tor ipcalc gnupg-- rspamd--
 		;;
 		"smtpd")
-			pkg_add opensmtpd-filter-rspamd \
+			[[ $(pkg_info | grep -c dovecot ) -eq 0 ]] && pkg_add opensmtpd-filter-rspamd \
 				dovecot dovecot-pigeonhole
 		;;
 		"powernsd")
-			pkg_add powerdns ldns-utils drill validns
+			[[ $(pkg_info | grep -c powerdns ) -eq 0 ]] && pkg_add powerdns ldns-utils drill validns
 		;;
 	esac
 }
