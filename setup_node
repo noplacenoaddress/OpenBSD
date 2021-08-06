@@ -176,6 +176,12 @@ function config_nsd {
 					zonefile=$(cat nsd.conf | grep zonefile | awk '{print $2}' | sed "s/\"//g")
 					install -o root -g _nsd -m 0540 "$basedir/src/var/nsd/zones/master/zone.template" "/var/nsd/zones/master/$zonefile"
 					sed -i "s/\/NSDDOMAIN\//${6}/"  "/var/nsd/zones/master/$zonefile"
+					ns1=$(whois $6 | grep Name\ Server | tail -n 3 | awk 'FNR == 1' | awk '{print $3}' | tr '[:upper:]' '[:lower:]')
+					ns2=$(whois $6 | grep Name\ Server | tail -n 3 | awk 'FNR == 2' | awk '{print $3}' | tr '[:upper:]' '[:lower:]')
+					ns3=$(whois $6 | grep Name\ Server | tail -n 3 | awk 'FNR == 3' | awk '{print $3}' | tr '[:upper:]' '[:lower:]')
+					sed -i "s/\/FIRST\//${ns1}/" "/var/nsd/zones/master/$zonefile"
+					sed -i "s/\/SECOND\//${ns2}/" "/var/nsd/zones/master/$zonefile"
+					sed -i "s/\/THIRD\//${ns3}/" "/var/nsd/zones/master/$zonefile"
 					[[ $(nsd-checkconf /var/nsd/etc/nsd.conf) == "" ]] && \
 						rcctl start nsd \
 						|| \
