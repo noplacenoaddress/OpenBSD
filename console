@@ -370,9 +370,12 @@ case $3 in
 			echo "Start configuring $secondarydomain onto master NSD on ${G34[$rand34s]}? "
 			read ctrl
 		done
-		tsig256s=$(dd if=/dev/urandom of=/dev/stdout count=1 bs=64 status=none | openssl base64 | tr -d ' ')
-		ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -t "${G34[$rand34p]}.$localdomainname" "echo $masters34gre12 > /tmp/powernsd_distributed && echo $masters34gre56 >> /tmp/powernsd_distributed && echo $tsig256s | tr -d ' ' >> /tmp/powernsd_distributed"
-		ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -t "${G34[$rand34p]}.$localdomainname"  doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -D powernsd 
+		tsig256s=$(dd if=/dev/urandom of=/dev/stdout count=1 bs=64 status=none | openssl base64)
+		tmpupload=$(mktemp)
+		echo $masters34gre12 > $tmpupload && echo $masters34gre56 >> $tmpupload && echo ${tsig256s} | tr -d ' ' >> $tmpupload
+		scp $tmpupload "${G34[$rand34s]}.$localdomainname:/tmp/powernsd_distributed" 
+		rm -rf $tmpupload
+		ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -t "${G34[$rand34s]}.$localdomainname"  doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -D powernsd distribute
 	;;
 	"-OM")
 		mk=

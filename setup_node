@@ -1964,7 +1964,7 @@ case $1 in
 		esac
 	;;
 	"-D")
-		if [[ $# -ne 2 ]]; then
+		if [[ $# -eq 1 ]]; then
 			print $0 "DAEMONS option must be followed by: \
 				\n \
 				\npowernsd \
