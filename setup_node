@@ -1977,7 +1977,7 @@ case $1 in
 		case $2 in
 			"powernsd")
 				echo "configuring nsd and powerdns"
-				configuration "powernsd"	
+				configuration "powernsd" [[ $3 ]] && "$3"	
 			;;
 			"smtpd")
 				echo "configuring smtpd"

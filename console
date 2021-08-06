@@ -375,7 +375,7 @@ case $3 in
 		echo $masters34gre12 > $tmpupload && echo $masters34gre56 >> $tmpupload && echo ${tsig256s} | tr -d ' ' >> $tmpupload
 		scp $tmpupload "${G34[$rand34s]}.$localdomainname:/tmp/powernsd_distributed" 
 		rm -rf $tmpupload
-		ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -t "${G34[$rand34s]}.$localdomainname"  doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -D powernsd distribute
+		ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -t "${G34[$rand34s]}.$localdomainname"  doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -D powernsd distributed
 	;;
 	"-OM")
 		mk=
