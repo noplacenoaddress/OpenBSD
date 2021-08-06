@@ -158,7 +158,7 @@ function config_nsd {
 		"basic")
 			case $2 in
 				"master")
-					install -o root -g _nsd -m 0540 "$basedir/var/nsd/etc/master.template" /var/nsd/etc/nsd.conf
+					install -o root -g _nsd -m 0540 "$basedir/src/var/nsd/etc/master.template" /var/nsd/etc/nsd.conf
 					custom "/var/nsd/etc/" 1
 					sed -i "s/\/GRESLAVE12\//$3/" /var/nsd/etc/nsd.conf
 					sed -i "s/\/GRESLAVE56\//$4/" /var/nsd/etc/nsd.conf
@@ -170,7 +170,7 @@ function config_nsd {
 						exit 1
 				;;
 				"slave")
-					install -o root -g _nsd -m 0540 "$basedir/var/nsd/etc/slave.template" /var/nsd/etc/nsd.conf
+					install -o root -g _nsd -m 0540 "$basedir/src/var/nsd/etc/slave.template" /var/nsd/etc/nsd.conf
 					custom "/var/nsd/etc/" 1
 					sed -i "s/\/GRESLAVE\//$3/" /var/nsd/etc/nsd.conf
 					sed -i "s/\/TSIG\//$4/" /var/nsd/etc/nsd.conf
@@ -1444,7 +1444,7 @@ function configuration {
 				"local")
 				;;
 				"distributed")
-					[[ $(wc -l /tmp/powernsd_distributed) -eq 3 ]] && \
+					[[ $(wc -l /tmp/powernsd_distributed | awk '{print $1}') -eq 3 ]] && \
 						config_nsd "basic" "master" "$(awk 'FNR == 1' /tmp/powernsd_distributed)" "$(awk 'FNR == 2' /tmp/powernsd_distributed)" "$(awk 'FNR == 3' /tmp/powernsd_distributed)"\
 						|| \
 						config_nsd "basic" "slave" "$(awk 'FNR == 1' /tmp/powernsd_distributed)"  "$(awk 'FNR == 2' /tmp/powernsd_distributed)"
