@@ -173,7 +173,7 @@ function config_nsd {
 					else
 						sed -i "s/\/ZONEFILE\//${6}.zone/" /var/nsd/etc/nsd.conf
 					fi
-					zonefile=$(cat  /var/nsd/etc/nsd.conf | grep zonefile | awk '{print $2}' | sed "s/\"//g")
+					zonefile=$(cat  /var/nsd/etc/nsd.conf | grep zonefile | awk '{print $2}' | sed "s/\"//g" | cut -d \/ -f2)
 					install -o root -g _nsd -m 0540 "$basedir/src/var/nsd/zones/master/zone.template" "/var/nsd/zones/master/$zonefile"
 					sed -i "s/\/NSDDOMAIN\//${6}/"  "/var/nsd/zones/master/$zonefile"
 					ns1=$(whois $6 | grep Name\ Server | tail -n 3 | awk 'FNR == 1' | awk '{print $3}' | tr '[:upper:]' '[:lower:]')
