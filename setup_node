@@ -1460,13 +1460,13 @@ function configuration {
 				rcctl set nsd flags "-c /var/nsd/etc/nsd.conf" \
 				|| \
 				rcctl stop nsd && \
-				rcctl disable nsd && \
 				backup "nsd" && \
 				rm -rf /var/nsd && \
-				mkdir -p /var/nsd/{db,etc,run,run/xfr,zones,zones/master,zones/slave} && \
+				mkdir -p /var/nsd/{db,etc,etc/dnssec,run,run/xfr,zones,zones/master,zones/slave} && \
 				chmod 775 /var/nsd/{db,run,zones/slave} && \
 				chmod 750 /var/nsd/etc && \
 				chmod 755 /var/nsd/{zones,zones/master} && \
+				chmod 640 /var/nsd/etc/dnssec
 				chown -R root:_nsd /var/nsd/{db,etc,run,zones/slave}
 			case $subphase in
 				"local")
