@@ -173,6 +173,9 @@ function config_nsd {
 					else
 						sed -i "s/\/ZONEFILE\//${6}.zone/" /var/nsd/etc/nsd.conf
 					fi
+					zonefile=$(cat nsd.conf | grep zonefile | awk '{print $2}' | sed "s/\"//g")
+					install -o root -g _nsd -m 0540 "$basedir/src/var/nsd/zones/master/zone.template" "/var/nsd/zones/master/$zonefile"
+					sed -i "s/\/NSDDOMAIN\//${6}/"  "/var/nsd/zones/master/$zonefile"
 					[[ $(nsd-checkconf /var/nsd/etc/nsd.conf) == "" ]] && \
 						rcctl start nsd \
 						|| \
@@ -1449,6 +1452,8 @@ function configuration {
 				rcctl enable nsd && \
 				rcctl set nsd flags "-c /var/nsd/etc/nsd.conf" \
 				|| \
+				rcctl stop nsd && \
+				rcctl disable nsd && \
 				backup "nsd" && \
 				rm -rf /var/nsd && \
 				mkdir -p /var/nsd/{db,etc,run,run/xfr,zones,zones/master,zones/slave} && \
