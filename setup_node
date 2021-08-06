@@ -167,6 +167,12 @@ function config_nsd {
 					sed -i "s/\/GRESLAVE12\//$3/" /var/nsd/etc/nsd.conf
 					sed -i "s/\/GRESLAVE56\//$4/" /var/nsd/etc/nsd.conf
 					sed -i "s|/TSIG/|${5}|" /var/nsd/etc/nsd.conf
+					sed -i "s/\/NSDDOMAIN\//${6}/" /var/nsd/etc/nsd.conf
+					if [[ $(echo ${6} | grep -c "-") -ne 0 ]]; then
+						sed -i "s/\/ZONEFILE\//`echo ${6}  | sed -e "s/-//g" -e "s/\.//g"`.zone/" /var/nsd/etc/nsd.conf
+					else
+						sed -i "s/\/ZONEFILE\//${6}.zone/" /var/nsd/etc/nsd.conf
+					fi
 					[[ $(nsd-checkconf /var/nsd/etc/nsd.conf) == "" ]] && \
 						rcctl start nsd \
 						|| \
@@ -1448,8 +1454,9 @@ function configuration {
 				"local")
 				;;
 				"distributed")
-					[[ $(wc -l /tmp/powernsd_distributed | awk '{print $1}') -eq 3 ]] && \
-						config_nsd "basic" "master" "$(awk 'FNR == 1' /tmp/powernsd_distributed)" "$(awk 'FNR == 2' /tmp/powernsd_distributed)" "$(awk 'FNR == 3' /tmp/powernsd_distributed)"\
+					[[ $(wc -l /tmp/powernsd_distributed | awk '{print $1}') -eq 4 ]] && \
+						config_nsd "basic" "master" "$(awk 'FNR == 1' /tmp/powernsd_distributed)" "$(awk 'FNR == 2' /tmp/powernsd_distributed)" \
+							"$(awk 'FNR == 3' /tmp/powernsd_distributed)" "$(awk 'FNR == 4' /tmp/powernsd_distributed)" \
 						|| \
 						config_nsd "basic" "slave" "$(awk 'FNR == 1' /tmp/powernsd_distributed)"  "$(awk 'FNR == 2' /tmp/powernsd_distributed)"
 				;;
