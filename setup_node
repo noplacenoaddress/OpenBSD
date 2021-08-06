@@ -184,6 +184,12 @@ function config_nsd {
 					custom "/var/nsd/etc/" 1
 					sed -i "s/\/GRESLAVE\//$3/" /var/nsd/etc/nsd.conf
 					sed -i "s|/TSIG/|${4}|" /var/nsd/etc/nsd.conf
+					sed -i "s/\/NSDDOMAIN\//${5}/" /var/nsd/etc/nsd.conf
+					if [[ $(echo ${5} | grep -c "-") -ne 0 ]]; then
+						sed -i "s/\/ZONEFILE\//`echo ${5}  | sed -e "s/-//g" -e "s/\.//g"`.zone/" /var/nsd/etc/nsd.conf
+					else
+						sed -i "s/\/ZONEFILE\//${5}.zone/" /var/nsd/etc/nsd.conf
+					fi
 					[[ $(nsd-checkconf /var/nsd/etc/nsd.conf) == "" ]] && \
 						rcctl start nsd \
 						|| \
