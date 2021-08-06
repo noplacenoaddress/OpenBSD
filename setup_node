@@ -166,7 +166,7 @@ function config_nsd {
 					custom "/var/nsd/etc/" 1
 					sed -i "s/\/GRESLAVE12\//$3/" /var/nsd/etc/nsd.conf
 					sed -i "s/\/GRESLAVE56\//$4/" /var/nsd/etc/nsd.conf
-					sed -i "s/\/TSIG\//$5/" /var/nsd/etc/nsd.conf
+					sed -i "s|/TSIG/|${5}|" /var/nsd/etc/nsd.conf
 					[[ $(nsd-checkconf /var/nsd/etc/nsd.conf) == "" ]] && \
 						rcctl start nsd \
 						|| \
@@ -177,7 +177,7 @@ function config_nsd {
 					install -o root -g _nsd -m 0540 "$basedir/src/var/nsd/etc/slave.template" /var/nsd/etc/nsd.conf
 					custom "/var/nsd/etc/" 1
 					sed -i "s/\/GRESLAVE\//$3/" /var/nsd/etc/nsd.conf
-					sed -i "s/\/TSIG\//$4/" /var/nsd/etc/nsd.conf
+					sed -i "s|/TSIG/|${4}|" /var/nsd/etc/nsd.conf
 					[[ $(nsd-checkconf /var/nsd/etc/nsd.conf) == "" ]] && \
 						rcctl start nsd \
 						|| \
