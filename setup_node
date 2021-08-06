@@ -157,7 +157,7 @@ function sha256compare {
 }
 
 function config_nsd {
-	
+	serial=$(date +"%Y%m%d%S")
 	case $1 in
 		"basic")
 			case $2 in
@@ -179,6 +179,7 @@ function config_nsd {
 					ns1=$(whois $6 | grep Name\ Server | tail -n 3 | awk 'FNR == 1' | awk '{print $3}' | tr '[:upper:]' '[:lower:]')
 					ns2=$(whois $6 | grep Name\ Server | tail -n 3 | awk 'FNR == 2' | awk '{print $3}' | tr '[:upper:]' '[:lower:]')
 					ns3=$(whois $6 | grep Name\ Server | tail -n 3 | awk 'FNR == 3' | awk '{print $3}' | tr '[:upper:]' '[:lower:]')
+					sed -i "s/\/SERIAL\//${serial}/" "/var/nsd/zones/master/$zonefile"
 					sed -i "s/\/FIRST\//${ns1}/" "/var/nsd/zones/master/$zonefile"
 					sed -i "s/\/SECOND\//${ns2}/" "/var/nsd/zones/master/$zonefile"
 					sed -i "s/\/THIRD\//${ns3}/" "/var/nsd/zones/master/$zonefile"

@@ -1,6 +1,6 @@
-$ORIGIN             /DOMAIN/.
+$ORIGIN             /NSDDOMAIN/.
 $TTL    86400
-@       IN SOA   /FIRST/. dns-admin./DOMAIN/. (
+@       IN SOA   /FIRST/. dns-admin./NSDDOMAIN/. (
         /SERIAL/  ; serial YYYYMMDDnn
         28800       ; refresh
         7200        ; retry
