@@ -29,7 +29,7 @@ pattern:
         
 zone:
 	name: "/NSDDOMAIN/"
-	zonefile: "/ZONEFILE/"
+	zonefile: "master//ZONEFILE/"
 	include-pattern: telecomlobby
 
 
