@@ -2,7 +2,6 @@ server:
         hide-version: yes
         hide-identity: yes
         verbosity: 3
-        database: "" # disable database
         do-ip6: yes
         ip-address: /PUBV6/
         ip-address: /PUBLICIP/
