@@ -20,11 +20,11 @@ key:
         
 pattern:
         name: "telecomlobby"
-        notify: /GRESLAVE12/ /PUBLICHOSTNAME/
+        notify: /GRESLAVE/ /PUBLICHOSTNAME/
         provide-xfr: /GRESLAVE/ /PUBLICHOSTNAME/
         
 zone:
 	name: "/NSDDOMAIN/"
-	zonefile: "/ZONEFILE/"
+	zonefile: "slave//ZONEFILE/"
 	include-pattern: telecomlobby
 

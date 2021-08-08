@@ -1476,7 +1476,8 @@ function configuration {
 						config_nsd "basic" "master" "$(awk 'FNR == 1' /tmp/powernsd_distributed)" "$(awk 'FNR == 2' /tmp/powernsd_distributed)" \
 							"$(awk 'FNR == 3' /tmp/powernsd_distributed)" "$(awk 'FNR == 4' /tmp/powernsd_distributed)" \
 						|| \
-						config_nsd "basic" "slave" "$(awk 'FNR == 1' /tmp/powernsd_distributed)"  "$(awk 'FNR == 2' /tmp/powernsd_distributed)"
+						config_nsd "basic" "slave" "$(awk 'FNR == 1' /tmp/powernsd_distributed)"  "$(awk 'FNR == 2' /tmp/powernsd_distributed)" \
+							"$(awk 'FNR == 3' /tmp/powernsd_distributed)"
 				;;
 			esac	
 			
