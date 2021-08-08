@@ -364,32 +364,70 @@ case $3 in
 		printf '%s\t%s\t%s\n' $routerid34s $masters34gre12 $masters34gre56
 		printf '%s\t%s\n' $routerid12s $slaves12gre34
 		printf '%s\t%s\n' $routerid56s $slaves56gre34
+		tsig256s=$(dd if=/dev/urandom of=/dev/stdout count=1 bs=64 status=none | openssl base64)
+		tmpupload=$(mktemp)
 		ctrl=
 		while [ -z $ctrl ]
 		do
 			echo "Start configuring $secondarydomain onto master NSD on ${G34[$rand34s]}? "
 			read ctrl
 		done
-		tsig256s=$(dd if=/dev/urandom of=/dev/stdout count=1 bs=64 status=none | openssl base64)
-		tmpupload=$(mktemp)
-		echo $masters34gre12 > $tmpupload && echo $masters34gre56 >> $tmpupload && echo ${tsig256s} | tr -d ' ' >> $tmpupload && echo $secondarydomain >> $tmpupload
-		scp $tmpupload "${G34[$rand34s]}.$localdomainname:/tmp/powernsd_distributed" 
-		ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -t "${G34[$rand34s]}.$localdomainname"  doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -D powernsd distributed
-		echo -e "Continue with configuring $secondarydomain onto slave NSD on ${G12[$rand12s]}"
-		echo $masters34slave12 > $tmpupload && echo ${tsig256s} | tr -d ' ' >> $tmpupload && echo $secondarydomain >> $tmpupload
-		scp $tmpupload "${G12[$rand12s]}.$localdomainname:/tmp/powernsd_distributed" 
-		ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -t "${G12[$rand12s]}.$localdomainname"  doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -D powernsd distributed
-		echo -e "Continue with configuring $secondarydomain onto slave NSD on ${G56[$rand56s]}"
-		echo $masters34slave56 > $tmpupload && echo ${tsig256s} | tr -d ' ' >> $tmpupload && echo $secondarydomain >> $tmpupload
-		scp $tmpupload "${G56[$rand56s]}.$localdomainname:/tmp/powernsd_distributed" 
-		ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -t "${G56[$rand56s]}.$localdomainname"  doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -D powernsd distributed
-		echo -e "Secondary domain $secondarydomain configured"
+		case $ctrl in
+			"yes")
+				tsig256s=$(dd if=/dev/urandom of=/dev/stdout count=1 bs=64 status=none | openssl base64)
+				tmpupload=$(mktemp)
+				echo $masters34gre12 > $tmpupload && echo $masters34gre56 >> $tmpupload && echo ${tsig256s} | tr -d ' ' >> $tmpupload && echo $secondarydomain >> $tmpupload
+				scp $tmpupload "${G34[$rand34s]}.$localdomainname:/tmp/powernsd_distributed" 
+				ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -t "${G34[$rand34s]}.$localdomainname"  doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -D powernsd distributed
+			;;
+			"no")
+			;;
+			*)
+				echo "Type yes or no"
+				continue
+			;;
+		esac
 		ctrl=
 		while [ -z $ctrl ]
 		do
-			echo "Start configuring $primarydomain onto master NSD on ${G34[$rand34p]}? "
+			echo -e "Continue with configuring $secondarydomain onto slave NSD on ${G12[$rand12s]}? "
 			read ctrl
 		done
+		case $ctrl in
+			"yes")
+				
+				echo $masters34slave12 > $tmpupload && echo ${tsig256s} | tr -d ' ' >> $tmpupload && echo $secondarydomain >> $tmpupload
+				scp $tmpupload "${G12[$rand12s]}.$localdomainname:/tmp/powernsd_distributed" 
+				ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -t "${G12[$rand12s]}.$localdomainname"  doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -D powernsd distributed
+			;;
+			"no")
+			;;
+			*)
+				echo "Type yes or no"
+				continue
+			;;
+		esac
+		ctrl=
+		while [ -z $ctrl ]
+		do
+			echo -e "Continue with configuring $secondarydomain onto slave NSD on ${G56[$rand56s]}? "
+			read ctrl
+		done
+		case $ctrl in
+			"yes")
+				
+				echo $masters34slave56 > $tmpupload && echo ${tsig256s} | tr -d ' ' >> $tmpupload && echo $secondarydomain >> $tmpupload
+				scp $tmpupload "${G56[$rand56s]}.$localdomainname:/tmp/powernsd_distributed" 
+				ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -t "${G56[$rand56s]}.$localdomainname"  doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -D powernsd distributed
+			;;
+			"no")
+			;;
+			*)
+				echo "Type yes or no"
+				continue
+			;;
+		esac
+		echo -e "Secondary domain $secondarydomain configured"
 	;;
 	"-OM")
 		mk=
