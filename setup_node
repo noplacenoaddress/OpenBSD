@@ -18,7 +18,8 @@
 #dnssec: https://help.dreamhost.com/hc/en-us/articles/219539467
 #dnssec: https://github.com/redeltaglio/OpenBSD/raw/master/pdf/dnssec-lacnic-sep2016.handouts.pdf
 #dnssec: https://dnsviz.net/
-#nsd https://zonemaster.net/domain_check
+#nsd: https://zonemaster.net/domain_check
+#nsd: https://dnschecker.org/
 
 #####
 #
