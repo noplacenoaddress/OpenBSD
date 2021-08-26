@@ -264,7 +264,7 @@ Install the git package:
 ```shell
 neo# pkg_add git
 neo$ mkdir -p Sources/Git && cd Sources/Git
-neo$ git clone https://github.com/redetaglio/OpenBSD.git
+neo$ git clone https://github.com/redeltaglio/OpenBSD.git
 ```
 
 Next let's start to configure the system with our script `setup_node`, you've got to go ahead to every point pressing `1` or to type different variables:
