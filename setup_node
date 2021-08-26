@@ -1336,7 +1336,7 @@ function configuration {
 				fi
 			done
 			cat /etc/ospfd.conf | sed -n -e :a -e '1,12!{P;N;D;};N;ba' > /tmp/ospfd.conf
-			mv /tmp/ospfd.conf /etc/ospfd.conf
+			cp /tmp/ospfd.conf /etc/ospfd.conf
 			echo "}" >> /etc/ospfd.conf
 			chmod 600 /etc/ospfd.conf
 			custom "/etc" "1"
