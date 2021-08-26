@@ -1337,7 +1337,7 @@ function configuration {
 					#sed -i "s/\/METRIC\//${metric}/g" "/tmp/$pophost/ospf.sh"
 				fi
 			done
-			cat /etc/ospfd.conf | sed -n -e :a -e '1,12!{P;N;D;};N;ba' > /tmp/ospfd.conf
+			cat /etc/ospfd.conf | sed -n -e :a -e '1,9!{P;N;D;};N;ba' > /tmp/ospfd.conf
 			cp /tmp/ospfd.conf /etc/ospfd.conf
 			echo "}" >> /etc/ospfd.conf
 			chmod 600 /etc/ospfd.conf
