@@ -1,5 +1,4 @@
 	interface gre/X/ {
-		type p2p
 		auth-type crypt
 	        auth-md 1 "/OSPFMD5/"
 	        auth-md-keyid 1
