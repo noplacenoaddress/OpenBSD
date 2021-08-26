@@ -310,7 +310,9 @@ function backup {
 function upgrade {
 	case $1 in
 		"unbound")
-			pkill dhclient
+			
+			dhclient=$(pidof "dhclient") 
+			[[ "${dhclient}" != "" ]] && pkill dhclient
 			install -o root -g wheel -m 0644 $basedir/src/etc/resolv.conf /etc/
 			install -o _unbound -g _unbound -m 0750  $basedir/src/var/unbound/etc/unbound.conf /var/unbound/etc/unbound.conf
 			install -o _unbound -g _unbound -m 0750  $basedir/src/var/unbound/etc/stub-zone.conf /var/unbound/etc/stub-zone.conf
