@@ -1314,7 +1314,6 @@ function configuration {
 					lasttun=$lasttun+1
 					cp $basedir/src/openbsd/ospfd.conf.openbsd "/tmp/$pophost/ospfd.conf"
 					sed -i "s/\/X\//$lasttun/g" "/tmp/$pophost/ospfd.conf"	
-					#sed -i "s/\/METRIC\//${metric}/g" "/tmp/$pophost/ospfd.conf"	
 					sed -i "s/\/OSPFMD5\//${ospfmd5}/g" "/tmp/$pophost/ospfd.conf"
 				elif [[ $(ls "/tmp/$pophost/" | grep -c "rsc") -ne 0 ]]; then
 					pophostname=$(echo $pophost | cut -d . -f1)
