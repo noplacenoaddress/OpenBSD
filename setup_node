@@ -545,6 +545,8 @@ function upgrade {
 			fi
 		;;
 		"ospf")
+			(: "${hostname?}") 2>/dev/null || hostname=$(hostname -s)
+			(: "${landomainname?}") 2>/dev/null || landomainname=$(hostname | sed "s/`hostname -s`.//")
 			configuration "ospf"
 		;;
 		"ntpd")
