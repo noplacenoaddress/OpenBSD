@@ -59,7 +59,8 @@ ipv6prefix=
 ipv6defrouter=
 sha256ctrl=0
 [[ -e /etc/hostname.vether0 ]] && \
-	routerid=$(cat /etc/hostname.vether0 | grep inet | awk '{print $2}' | sed "s/\/32//" | sed '/^$/d')
+	routerid=$(cat /etc/hostname.vether0 | grep inet | awk '{print $2}' | sed "s/\/32//" | sed '/^$/d') && \
+	routeridlast=$(echo $routerid | cut -d . -f4)
 
 umask 002
 
@@ -214,6 +215,31 @@ function config_nsd {
 	esac
 }
 
+function edgeos_scripts {
+	sed -i "s/\/TUN\//tun$1/g" "/tmp/$pophost/ES-$publichostname-updown.sh"
+	sed -i "s/\/ROUTERIDLAST\//$2/g" "/tmp/$pophost/ES-$publichostname-updown.sh"
+	i=0
+	result=""
+	while [[ $i -le $1 ]]
+	do
+		otherstun="ctrltun${i}=\$(/sbin/ip route ls table \${PREFIX} | grep tun${i})"
+		result+=$(printf '%s' "$otherstun")$'\n'
+		sed -i "s|${result}|/OTHERSTUN/|" "/tmp/$pophost/ES-$publichostname-updown.sh"
+		(( i = i + 1 )) 
+	done
+	i=0
+	metric=1
+	result=""
+	while [[ $i -lt $1 ]]
+	do
+		otherstun="[[ \$ctrltun${i} == "" ]] && /sbin/ip route add table \${PREFIX} metric ${metric} default nexthop dev tun${i}"
+		result+=$(printf '%s' "$otherstun")$'\n'
+		sed -i "s|${result}|/OTHERSTUN2/|" "/tmp/$pophost/ES-$publichostname-updown.sh"
+		(( i = i + 1 )) 
+		(( metric = metric + 1 )) 
+	done
+}
+
 function backup {
 	CURRENTBACKUP="$BACKUPS/$datarelease"
 	mkdir -p "$CURRENTBACKUP/$1/"
@@ -312,7 +338,10 @@ function upgrade {
 		"unbound")
 			
 			dhclient=$(pidof "dhclient") 
-			[[ "${dhclient}" != "" ]] && pkill dhclient
+			[[ "${dhclient}" != "" ]] && \
+				pkill dhclient && \
+				rcctl stop dhclient && \
+				rcctl disable dhclient
 			install -o root -g wheel -m 0644 $basedir/src/etc/resolv.conf /etc/
 			install -o _unbound -g _unbound -m 0750  $basedir/src/var/unbound/etc/unbound.conf /var/unbound/etc/unbound.conf
 			install -o _unbound -g _unbound -m 0750  $basedir/src/var/unbound/etc/stub-zone.conf /var/unbound/etc/stub-zone.conf
@@ -1179,6 +1208,7 @@ function configuration {
 			if [[ -e "/etc/hostname.gre0" ]]; then
 				rm -rf /etc/hostname.gre?
 			fi
+			(: "${routeridlast?}") 2>/dev/null || routeridlast=$(echo $routerid | cut -d . -f4)
 			typeset -i i
 			typeset -i lasttun
 			lasttun=$(dig gre18994.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')
@@ -1223,15 +1253,16 @@ function configuration {
 				elif grep -q "ecp256" $file; then
 					cp $basedir/src/edgeos/scripts/ES-SRCID-_netwatch.sh "/tmp/$pophost/ES-${publichostname}_netwatch.sh" 
 					cp $basedir/src/edgeos/scripts/ES-SRCID--updown.sh "/tmp/$pophost/ES-$publichostname-updown.sh"
+					edgeos_script "${lasttun}" "${routeridlast}"
 					cp $basedir/src/edgeos/gre.sh "/tmp/$pophost/"
 					sed -i "s/\/GREPOPIP\//10.10.10.$grepopip/g" "/tmp/$pophost/ES-${publichostname}_netwatch.sh"
 					sed -i "s/\/GREPOPIP\//10.10.10.$grepopip/g" "/tmp/$pophost/gre.sh"
 					sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" "/tmp/$pophost/ES-${publichostname}_netwatch.sh"
 					sed -i "s/\/TUN\//tun$lasttun/g" "/tmp/$pophost/ES-${publichostname}_netwatch.sh"
-					sed -i "s/\/TUN\//tun$lasttun/g" "/tmp/$pophost/ES-$publichostname-updown.sh"
 					sed -i "s/\/TUN\//tun$lasttun/g" "/tmp/$pophost/gre.sh"
 					sed -i "s/\/PUBLICHOST\//$publichost/g" "/tmp/$pophost/gre.sh"
 					sed -i "s/\/PUBLICIP\//$publicip/g" "/tmp/$pophost/gre.sh"
+					sed -i "s/\/ROUTERIDLAST\//$routeridlast/g" "/tmp/$pophost/gre.sh"
 				else
 					cp $basedir/src/openbsd/hostname.gre.openbsd "/tmp/$pophost/hostname.gre$lasttun"
 					cp $basedir/src/openbsd/hostname.enc.openbsd "/tmp/$pophost/hostname.enc$lasttun"
