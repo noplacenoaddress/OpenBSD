@@ -95,7 +95,7 @@ function pkg {
 	case $phase in
 		"shell")
 			pkg_add colorls nano wget fping iperf uptimed oidentd sqlite3 \
-				nmap tor ipcalc gnupg-- rspamd--
+				nmap tor ipcalc gnupg-- rspamd-- arpd
 		;;
 		"smtpd")
 			pkg_add opensmtpd-filter-rspamd \
