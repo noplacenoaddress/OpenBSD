@@ -1,0 +1,99 @@
+#
+# $Id: config,v 1.112 2016/08/26 13:14:18 fabiankeil Exp $
+#
+# Copyright (C) 2001-2016 Privoxy Developers https://www.privoxy.org/
+#
+
+
+
+user-manual https://www.privoxy.org/user-manual/
+trust-info-url https://github.com/redeltaglio/OpenBSD/raw/master/img/50-Of-The-Most-Creative-404-Pages-On-The-Web-01.png
+admin-address riccardo@telecomlobby.com
+#config guide
+#proxy-info-url http://www.example.com/proxy-service.html
+confdir /etc/privoxy
+templdir /etc/privoxy/templates
+logdir /var/log/privoxy
+actionsfile match-all.action # Actions that are applied to all sites and maybe overruled later on.
+actionsfile default.action   # Main actions file
+actionsfile user.action      # User customizations
+filterfile default.filter
+filterfile user.filter      # User customizations
+logfile privoxyfirefox.log
+#if set all deny but the ones listed on [use ~ like *]
+#trustfile trust
+#
+#        debug     1 # Log the destination for each request Privoxy let through. See also debug 1024
+#        debug     2 # show each connection status
+#        debug     4 # show I/O status
+#        debug     8 # show header parsing
+#        debug    16 # log all data written to the network
+#        debug    32 # debug force feature
+#        debug    64 # debug regular expression filters
+#        debug   128 # debug redirects
+#        debug   256 # debug GIF de-animation
+#        debug   512 # Common Log Format
+#        debug  1024 # Log the destination for requests Privoxy didn't let through, and the reason why.
+#        debug  2048 # CGI user interface
+#        debug  4096 # Startup banner and warnings.
+#        debug  8192 # Non-fatal errors
+#        debug 32768 # log all data read from the network
+#        debug 65536 # Log the applying actions
+debug     1 # Log the destination for each request Privoxy let through. See also debug 1024.
+#debug  1024 # Actions that are applied to all sites and maybe overruled later on.
+#debug  4096 # Startup banner and warnings
+#debug  8192 # Non-fatal errors
+single-threaded 0
+hostname /HOSTNAME/
+listen-address  /ROUTERID/
+#filter mode
+toggle  1
+enable-remote-toggle  0
+#filter by X-filter http header
+enable-remote-http-toggle  0
+enable-edit-actions 0
+enforce-blocks 1
+#      src_addr[:port][/src_masklen] [dst_addr[:port][/dst_masklen]]
+#permit-access  172.16.19.0/24
+#buffer-limit 8192
+#enable if there's a parent proxy
+#enable-proxy-authentication-forwarding 0
+#forward-socks5 / 127.0.0.1:9900 .
+#forwarded-connect-retries  0
+#transparent proxy
+accept-intercepted-requests 0
+#
+allow-cgi-request-crunching 0
+split-large-forms 0
+# grow up to 300 (if browser hang stop)
+keep-alive-timeout 5
+# disable if problems
+tolerate-pipelining 1
+#default-server-timeout 60
+connection-sharing 0
+# try to reduce to 5 sec
+socket-timeout 300
+#max-client-connections 256
+handle-as-empty-doc-returns-ok 0
+#enable-compression 1
+#compression-level 3
+#client-header-order Host \
+#   Accept \
+#   Accept-Language \
+#   Accept-Encoding \
+#   Proxy-Connection \
+#   Referer \
+#   Cookie \
+#   DNT \
+#   If-Modified-Since \
+#   Cache-Control \
+#   Content-Length \
+#   Content-Type
+#
+#client-specific-tag circumvent-blocks Overrule blocks but do not affect other actions
+#          disable-content-filters Disable content-filters but do not affect other actions
+#
+#
+#            client-tag-lifetime 180
+#            # IP address with a X-Forwarded-For header.
+#            trust-x-forwarded-for 1
