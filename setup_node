@@ -3,7 +3,7 @@
 #	$Telecomlobby: setup_node,v 0.1 11/3/2021 21:01:04 taglio$
 #
 #unbound: https://blog.c6h12o6.org/post/unbound-dnssec-dns-over-tls/
-#sshd: https:/github.com/vedetta-com/vedetta/blob/master/$basedir/src/usr/local/share/doc/vedetta/OpenSSH_Principals.md	
+#sshd: https:/github.com/vedetta-com/vedetta/blob/master/$basedir/src/usr/local/share/doc/vedetta/OpenSSH_Principals.md
 #smptd: https://github.com/vedetta-com/caesonia
 #smtpd: https://www.vultr.com/docs/an-openbsd-e-mail-server-using-opensmtpd-dovecot-rspamd-and-rainloop
 #smtpd: https://prefetch.eu/blog/2020/email-server/
@@ -25,7 +25,7 @@
 #
 #TODO ssh reverse tool in installation to launch different process executed by hand
 # configure to create /tmp/config.ini
-# 
+#
 #
 #####
 
@@ -76,7 +76,7 @@ if [[ $# -eq 0 ]]; then
 			\n-D  -> daemons \
 			\n-A  -> administrate \
 			\n"
-	
+
 	exit 1
 fi
 function error_exit {
@@ -120,7 +120,7 @@ function cleanold {
 	for file in $directory.*.old; do
 		if [[ -e "$file" ]]; then
 			mv $file $BACKUPS
-		fi	
+		fi
 	done
 }
 
@@ -143,7 +143,7 @@ function custom {
 		(: "${ipv6prefix?}") 2>/dev/null && sed -i "s/\/PREFIX\//${ipv6prefix}/g" $file
 		(: "${defaultv4router?}") 2>/dev/null && sed -i "s/\/ROUTEV4\//${defaultv4router}/g" $file
 		(: "${ipv6defrouter?}") 2>/dev/null && sed -i "s/\/ROUTEV6\//${ipv6defrouter}/g" $file
-		
+
 	done
 }
 
@@ -228,7 +228,7 @@ function edgeos_scripts {
 		otherstun="ctrltun${i}=\$(/sbin/ip route ls table \${PREFIX} | grep tun${i})"
 		result+=$(printf '%s' "$otherstun")$'\n'
 		sed -i "s|${result}|/OTHERSTUN/|" "/tmp/$pophost/ES-$publichostname-updown.sh"
-		(( i = i + 1 )) 
+		(( i = i + 1 ))
 	done
 	i=0
 	metric=1
@@ -238,8 +238,8 @@ function edgeos_scripts {
 		otherstun="[[ \$ctrltun${i} == "" ]] && /sbin/ip route add table \${PREFIX} metric ${metric} default nexthop dev tun${i}"
 		result+=$(printf '%s' "$otherstun")$'\n'
 		sed -i "s|${result}|/OTHERSTUN2/|" "/tmp/$pophost/ES-$publichostname-updown.sh"
-		(( i = i + 1 )) 
-		(( metric = metric + 1 )) 
+		(( i = i + 1 ))
+		(( metric = metric + 1 ))
 	done
 }
 
@@ -248,7 +248,7 @@ function backup {
 	mkdir -p "$CURRENTBACKUP/$1/"
 	case $1 in
 		"static")
-			
+
 			cp -p /etc/{hostname.$egressinterface,mygate} "$CURRENTBACKUP/$1/"
 		;;
 		"basic")
@@ -259,7 +259,7 @@ function backup {
 			for file in $(find "/root" -type f -maxdepth 1 -name ".*"); do
 				cp -p $file "$CURRENTBACKUP/$1/root"
 			done
-			
+
 			cp -p /etc/{dhclient.conf,resolv.conf.tail,doas.conf,myname,sysctl.conf,hostname.vether0,daily.local,rc.local} "$CURRENTBACKUP/$1/etc"
 		;;
 		"users")
@@ -297,7 +297,7 @@ function backup {
 			for file in $(find "/etc" -type f -maxdepth 1 -name "pf.*"); do
 				cp -p $file "$CURRENTBACKUP/$1/"
 			done
-		
+
 		;;
 		"ospf")
 			configuration "ospf"
@@ -306,13 +306,13 @@ function backup {
 			configuration "ntpd"
 		;;
 		"remote")
-			if [[ -d /etc/ssh/remote_install ]]; then	
+			if [[ -d /etc/ssh/remote_install ]]; then
 				for file in $(find "/etc/ssh/remote_install" -type f -maxdepth 1); do
 					cp -p $file "$CURRENTBACKUP/$1/"
 				done
 			fi
 		;;
-		"httpdbasic")	
+		"httpdbasic")
 			for file in $(find /etc -name "httpd.*" -type f -maxdepth 1); do
 				cp -p $file "$CURRENTBACKUP/$1/"
 			done
@@ -323,24 +323,25 @@ function backup {
 			done
 		;;
 		"newospf")
-		
+
 			cp -p /etc/ospfd.conf "$CURRENTBACKUP/$1/"
 		;;
 		"relayd")
 			configuration "relayd"
 		;;
 		"all")
-			sh setup_node -I	
+			sh setup_node -I
 		;;
 	esac
 }
 
 
 function upgrade {
+	
 	case $1 in
 		"unbound")
-			
-			dhclient=$(pidof "dhclient") 
+
+			dhclient=$(pidof "dhclient")
 			[[ "${dhclient}" != "" ]] && \
 				pkill dhclient && \
 				rcctl stop dhclient && \
@@ -365,7 +366,7 @@ function upgrade {
 				chown -R taglio:wheel OpenBSD-private-CA/
 				cd OpenBSD-private-CA
 				sh setup_host
-			fi	
+			fi
 			rm /etc/ssh/principals/taglio
 			echo "wheel" > /etc/ssh/principals/taglio
 		;;
@@ -400,7 +401,7 @@ function upgrade {
 			cp  $basedir/src/etc/iked.conf $tmpdir
 			if [[ $(grep -c hostname /tmp/config.ini) -eq 1 ]]; then
 				srcid=$(cat /tmp/config.ini  | grep hostname |cut -d \# -f2)
-			else 
+			else
 				srcid=$(hostname -s)
 			fi
 			if [[ "$srcid" == "varuna" ]]; then
@@ -470,14 +471,14 @@ function upgrade {
 			if [[ $sha256ctrl -eq 1 ]]; then
 				rcctl restart iked ||  error_exit "$LINENO: ERROR: IKED failed."
 			fi
-			
+
 		;;
 		"gre")
 			configuration "gre"
 		;;
 		"pf")
 			tmpdir=$(mktemp -d)
-			for file in $(find $basedir/src/etc/ -name "pf.*" -type f -maxdepth 1); do 
+			for file in $(find $basedir/src/etc/ -name "pf.*" -type f -maxdepth 1); do
 				cp $file $tmpdir
 			done
 			for vpnc_ip in $(dig vpnc.$domainname A +short @8.8.8.8); do
@@ -528,7 +529,7 @@ function upgrade {
 				else
 					iptagged=$(dig $tagged A +short @8.8.8.8)
 				fi
-				sed -i "s/\/TAGGED\//${tagged}/g" $tmpdir/pf.conf.macro.enc.{in,out}	
+				sed -i "s/\/TAGGED\//${tagged}/g" $tmpdir/pf.conf.macro.enc.{in,out}
 				sed -i "s/\/IPTAGGED\//${iptagged}/g" $tmpdir/pf.conf.macro.enc.{in,out}
 				cat $basedir/src/openbsd/pf.conf.openbsd | head -n 1 >> $tmpdir/pf.conf.macro.enc.in
 				cat $basedir/src/openbsd/pf.conf.openbsd | tail -n 1 >> $tmpdir/pf.conf.macro.enc.out
@@ -601,7 +602,7 @@ function upgrade {
 					echo "authorized_keys upgrade"
 					install -o root -g wheel -m 0640  "$tmpdir/authorized_keys" /etc/ssh/remote_install
 				fi
-			else 
+			else
 				mkdir /etc/ssh/remote_install
 				for file in $(find $basedir/src/etc/ssh/remote_install/ -type f); do
 					filename=$(basename $file)
@@ -610,7 +611,7 @@ function upgrade {
 					fi
 				done
 				custom "/etc/ssh/remote_install" "1"
-					
+
 			fi
 			sha256compare "$basedir/src/usr/local/sbin/remote-install" "/usr/local/sbin/remote-install"
 			if [[ $sha256ctrl -eq 1 ]]; then
@@ -637,7 +638,7 @@ function upgrade {
 			else
 				rcctl restart httpd
 			fi
-			
+
 		;;
 		"remoteinstall")
 			echo "connecting to remote OpenBSD MESH hosts..."
@@ -660,21 +661,21 @@ function upgrade {
 				if [[ "$ctrl" -eq 1 ]]; then
 					echo "ok"
 				else
-					error_exit "$LINENO: EXIT FROM USER." 
+					error_exit "$LINENO: EXIT FROM USER."
 				fi
-			    
+
 			done
 		;;
 		"relayd")
 			configuration "relayd"
 		;;
 		"newhost")
-			
+
 			sh "$basedir/$app" -U pf
 			install -o root -g wheel -m 0640 $basedir/src/etc/ssh/remote_install/authorized_keys /etc/ssh/remote_install/
 			pubkey=$(ls -lt "$basedir/src/etc/iked/pubkeys/ufqdn/" | awk '{print $9}' | awk 'FNR == 2 {print}')
 			install -o root -g wheel -m 0640 "$basedir/src/etc/iked/pubkeys/ufqdn/$pubkey" /etc/iked/pubkeys/ufqdn/
-			
+
 		;;
 		"scripts")
 			configuration "scripts"
@@ -690,7 +691,7 @@ function upgrade {
 				read fileupdate
 				cp -p $fileupdate "$BACKUPS/file/$(basename $fileupdate)"
 				gitfile="$basedir/src$fileupdate"
-				install -o root -g wheel -m 0644 $gitfile $fileupdate	
+				install -o root -g wheel -m 0644 $gitfile $fileupdate
 			done
 		;;
 		"dyndnspop")
@@ -700,9 +701,9 @@ function upgrade {
 					for iked_conf in $(ls /etc/iked.conf.*); do
 						if [[ $(grep -c "ecp256" $iked_conf) -eq 2 ]]; then
 							pophost=$(cat $iked_conf | head -n 1 | awk '{print $2}' | sed 's/"//g')
-							greinterface=$(cat $iked_conf | tail -n 1 | awk '{print $4}' | sed 's/enc/gre/') 
-							sh /root/Bin/change_endpoint.sh $greinterface $pophost 
-							
+							greinterface=$(cat $iked_conf | tail -n 1 | awk '{print $4}' | sed 's/enc/gre/')
+							sh /root/Bin/change_endpoint.sh $greinterface $pophost
+
 						fi
 					done
 				fi
@@ -769,11 +770,11 @@ function admin {
 			cd /etc/ssl
 			ftp -o /tmp/root-ca.crt http://ocsp.$(hostname | sed "s/$(hostname -s).//")/root-ca.crt
 			openssl x509 -in /tmp/root-ca.crt -out /tmp/root-ca.pem
-			if [[ $(grep -c "ocsp.$(hostname | sed "s/$(hostname -s).//")" /etc/ssl/cert.pem) -eq 0 ]]; then 
+			if [[ $(grep -c "ocsp.$(hostname | sed "s/$(hostname -s).//")" /etc/ssl/cert.pem) -eq 0 ]]; then
 				echo "\n#ocsp.$(hostname | sed "s/$(hostname -s).//")\n" >> /etc/ssl/cert.pem
 				cat /tmp/root-ca.crt >> /etc/ssl/cert.pem
 			fi
-			rm -rf /tmp/root-ca.{crt,pem} 
+			rm -rf /tmp/root-ca.{crt,pem}
 			if [[ ! -d csr ]]; then
 				mkdir csr
 			fi
@@ -823,7 +824,7 @@ function admin {
 								grepopip=$(cat $file | awk 'FNR == 5 {print}' | awk '{print $4}')
 								cat $basedir/src/mikrotik/gre.rsc >> "/tmp/$vpnc_host/$vpnc_host.rsc"
 								sed -i "s/\/GREPOPIP\//$grepopip/" "/tmp/$vpnc_host/$vpnc_host.rsc"
-							fi 
+							fi
 						done
 						cat $basedir/src/mikrotik/firewall.rsc >> "/tmp/$vpnc_host/$vpnc_host.rsc"
 						md5=$(awk "/$greinterface/{x=NR+11}(NR<=x){print}" /etc/ospfd.conf  | awk 'FNR == 4 {print}' | awk '{print $3}' | sed "s/\"//g")
@@ -856,7 +857,7 @@ function admin {
 					cp $basedir/src/edgeos/ipsec.conf "$tmpdir"
 					cp "/etc/iked/certs/$publichost.crt" "$tmpdir"
 					cp $basedir/src/edgeos/ipsec.sh "$tmpdir"
-					cp $basedir/src/edgeos/scripts/ES-SRCID-_netwatch.sh "$tmpdir/ES-${publichostname}_netwatch.sh" 
+					cp $basedir/src/edgeos/scripts/ES-SRCID-_netwatch.sh "$tmpdir/ES-${publichostname}_netwatch.sh"
 					cp $basedir/src/edgeos/scripts/ES-SRCID--updown.sh "$tmpdir/ES-$publichostname-updown.sh"
 					cp $basedir/src/edgeos/gre.sh "$tmpdir"
 					for file in $(ls /etc/hostname.gre?); do
@@ -867,7 +868,7 @@ function admin {
 							sed -i "s/\/GREPOPIP\//$grepopip/g" "$tmpdir/ES-${publichostname}_netwatch.sh"
 							sed -i "s/\/GREPOPIP\//$grepopip/g" "$tmpdir/gre.sh"
 							sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" "$tmpdir/ES-${publichostname}_netwatch.sh"
-						fi 
+						fi
 					done
 					lasttun=$(ls -l /etc/hostname.gre? | tail -n 1 |awk '{print $9}' | sed "s/\/etc\/hostname.gre//")
 					lasttunctrl=
@@ -885,7 +886,7 @@ function admin {
 							*)
 								echo "Type yes or no"
 								exit 1
-							;;						
+							;;
 						esac
 					done
 					sed -i "s/\/TUN\//tun$lasttun/g" "$tmpdir/ES-${publichostname}_netwatch.sh"
@@ -907,12 +908,12 @@ function admin {
 					custom "$tmpdir" 1
 					subdir=$(echo $tmpdir | sed "s/\/tmp\///")
 					tar -cvzf "/tmp/$vpnc_host.tar" -C $tmpdir $(ls $tmpdir)
-					mv "$tmpdir" "/var/www/htdocs/$(hostname)/${vpnc_host}/" 	
+					mv "$tmpdir" "/var/www/htdocs/$(hostname)/${vpnc_host}/"
 					mv "/tmp/$vpnc_host.tar" "/var/www/htdocs/$(hostname)/"
 					rm -rf  "$tmpdir"
 				fi
 			done
-			
+
 		;;
 	esac
 }
@@ -951,7 +952,7 @@ function configuration {
 			echo "dot files"
 			for file in $basedir/src/home/taglio/.*; do
 				if [[ -e "$file" ]]; then
-					install -o taglio -g wheel -m 0640  $file /home/taglio/ 
+					install -o taglio -g wheel -m 0640  $file /home/taglio/
 				fi
 			done
 			cleanold "/home/taglio/"
@@ -1009,7 +1010,7 @@ function configuration {
 			echo "Add your new ssh_host_ed25519_key.pub to the CA repository src/etc/ssh/ca/host/$hostname.$landomainname/ and create the new SSHCA certificate"
 			cat /etc/ssh/ssh_host_ed25519_key.pub
 			echo "Update the nsd internal $landomainname zone $hostname SSHFP record, you can do it automatically"
-			
+
 			ssh-keygen -r $hostname -f /etc/ssh/ssh_host_ed25519_key.pub
 			if [[ $configini -eq 1 ]]; then
 				ctrl=
@@ -1019,19 +1020,19 @@ function configuration {
 					read ctrl
 				done
 			fi
-		;;	
+		;;
 		"users")
 			echo "vmail, dsync, _iperfd, wwwuser"
-			if ! getent passwd vmail 1>&-; then 
+			if ! getent passwd vmail 1>&-; then
 				useradd -m -u 2000 -g =uid -c "Virtual Mail" -d /var/vmail -s /sbin/nologin vmail
 			fi
-			if ! getent passwd dsync  1>&-; then 
+			if ! getent passwd dsync  1>&-; then
 				useradd -m -u 2001 -g =uid -c "Dsync Replication" -d /home/dsync -s /bin/ksh dsync
 			fi
-			if ! getent passwd _iperfd  1>&-; then 
+			if ! getent passwd _iperfd  1>&-; then
 				useradd -m -u 2002 -g =uid -c "Iperfd Daemon" -d /nonexistent -s /sbin/nologin _iperfd
 			fi
-			if ! getent passwd wwwftp  1>&-; then 
+			if ! getent passwd wwwftp  1>&-; then
 				useradd -u 2003 -g =uid -c "WWW Ftpd user" -d /var/www/htdocs -s /root/Bin/fake_shell.sh wwwftp
 			fi
 			for file in $basedir/src/home/taglio/Bin/*; do
@@ -1039,8 +1040,8 @@ function configuration {
 					install -o taglio -g wheel -m 0750  $file /home/taglio/Bin/
 				fi
 			done
-			
-		
+
+
 		;;
 		"scripts")
 			for file in "$basedir/src/root/Bin/*.sh"; do
@@ -1052,7 +1053,7 @@ function configuration {
 			if [[ -z $pidof_unbound ]]; then
 				rcctl enable unbound
 			fi
-			case $subphase in 
+			case $subphase in
 				"local")
 					install -o _unbound -g _unbound -m 0750  $basedir/src/var/unbound/db/root.key /var/unbound/db/
 					wget --no-check-certificate https://192.0.47.9/domain/named.root -O /var/unbound/db/root.hints
@@ -1064,7 +1065,7 @@ function configuration {
 					custom "/var" "2"
 					if [[ -z $pidof_unbound ]]; then
 						rcctl start unbound ||  error_exit "$LINENO: ERROR: UNBOUND failed."
-						
+
 					else
 						rcctl restart unbound ||  error_exit "$LINENO: ERROR: UNBOUND failed."
 					fi
@@ -1075,8 +1076,8 @@ function configuration {
 					rcctl restart unbound ||  error_exit "$LINENO: ERROR: UNBOUND failed."
 				;;
 			esac
-		;;		
-		"ssh") 
+		;;
+		"ssh")
 			publickey=$(ssh-keyscan -t ed25519 ::1 | sed "s/::1/[$publicip,$routerid]/")
 			sshfp=$(ssh-keyscan -D -t ed25519 ::1 | sed "s/::1/$hostname/")
 			if [[ ! -d /etc/ssh/ca ]]; then
@@ -1119,11 +1120,11 @@ function configuration {
 			mkdir -p /etc/iked/{ca,certs,crls,export,private,pubkeys}
 			mkdir -p /etc/iked/pubkeys/{ipv4,ipv6,fqdn,ufqdn}
 			cd $basedir
-			install -o root -g wheel -m 0644  $basedir/src/etc/iked/ca/ca.crt /etc/iked/ca/	
+			install -o root -g wheel -m 0644  $basedir/src/etc/iked/ca/ca.crt /etc/iked/ca/
 			openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -nocerts -passin pass:123456789 -passout pass:123456789 -out /etc/iked/private/local.key
 			openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "/etc/iked/certs/$publichost.crt"
 			openssl x509 -pubkey -noout -passin pass:123456789 -in "/etc/iked/certs/$publichost.crt"  > /etc/iked/local.pub
-			
+
 			for file in $(find $basedir/src/etc/iked/pubkeys/ufqdn/ -name "*@*"); do
 				install -o root -g wheel -m 0644 $file /etc/iked/pubkeys/ufqdn/
 			done
@@ -1144,7 +1145,7 @@ function configuration {
 					rm -rf "/tmp/$vpnc_host"
 					mkdir "/tmp/$vpnc_host"
 				fi
-				
+
 				echo include \"/etc/iked.conf.$vpnc_host\" >> /etc/iked.conf
 				if [[ $(nc -w1  $vpnc_ip 22 | grep -c "ROSSSH") -eq 1 ]]; then
 					install -o root -g wheel -m 0640 $basedir/src/etc/iked.conf.mikrotik "/etc/iked.conf.$vpnc_host"
@@ -1162,13 +1163,13 @@ function configuration {
 						1)
 							sed -i "s/\/TYPE\//active/g" "/etc/iked.conf.$vpnc_host"
 							sed -i "s/\/TYPE\//passive/g" "/tmp/$vpnc_host/iked.conf.$publichost"
-							
+
 						;;
 						2)
 							sed -i "s/\/TYPE\//passive/g" "/etc/iked.conf.$vpnc_host"
 							sed -i "s/\/TYPE\//active/g" "/tmp/$vpnc_host/iked.conf.$publichost"
 						;;
-					esac 
+					esac
 					sed -i "s/\/POPIP\//$vpnc_ip/g" "/tmp/$vpnc_host/iked.conf.$publichost"
 					sed -i "s/\/POP\//$vpnc_host/g" "/tmp/$vpnc_host/iked.conf.$publichost"
 					srcid=$(hostname -s)
@@ -1202,12 +1203,12 @@ function configuration {
 			sh /etc/netstart "enc$i"
 			cp $basedir/src/edgeos/ipsec.conf "/tmp/$dyndnshost/"
 			cp "/etc/iked/certs/$publichost.crt" "/tmp/$dyndnshost/"
-			find /etc/ -type f -name "iked.*" | xargs -I {} 
+			find /etc/ -type f -name "iked.*" | xargs -I {}
 			custom "/tmp" "2"
 			custom "/etc" "1"
 			rcctl start iked ||  error_exit "$LINENO: ERROR: IKED failed."
 		;;
-		"gre")	
+		"gre")
 			if [[ -e "/etc/hostname.gre0" ]]; then
 				rm -rf /etc/hostname.gre?
 			fi
@@ -1254,7 +1255,7 @@ function configuration {
 					sed -i "s/\/HOSTNAME\//$hostname/g" "/tmp/$pophost/$pophost.rsc"
 					sed -i "s/\/PUBLICIP\//$publicip/g" "/tmp/$pophost/$pophost.rsc"
 				elif grep -q "ecp256" $file; then
-					cp $basedir/src/edgeos/scripts/ES-SRCID-_netwatch.sh "/tmp/$pophost/ES-${publichostname}_netwatch.sh" 
+					cp $basedir/src/edgeos/scripts/ES-SRCID-_netwatch.sh "/tmp/$pophost/ES-${publichostname}_netwatch.sh"
 					cp $basedir/src/edgeos/scripts/ES-SRCID--updown.sh "/tmp/$pophost/ES-$publichostname-updown.sh"
 					edgeos_script "${lasttun}" "${routeridlast}"
 					cp $basedir/src/edgeos/gre.sh "/tmp/$pophost/"
@@ -1293,7 +1294,7 @@ function configuration {
 				if [[ -e "$file" ]]; then
 					install -o root -g wheel -m 0640  $file /etc/
 				fi
-			done 
+			done
 			for vpnc_ip in $(dig vpnc.$domainname A +short @8.8.8.8); do
 				echo "$vpnc_ip/32" >> /etc/pf.conf.table.ipsec
 			done
@@ -1318,13 +1319,13 @@ function configuration {
 				else
 					iptagged=$(dig $tagged A +short @8.8.8.8)
 				fi
-				sed -i "s/\/TAGGED\//${tagged}/g" /etc/pf.conf.macro.enc.{in,out}	
+				sed -i "s/\/TAGGED\//${tagged}/g" /etc/pf.conf.macro.enc.{in,out}
 				sed -i "s/\/IPTAGGED\//${iptagged}/g" /etc/pf.conf.macro.enc.{in,out}
 				cat $basedir/src/openbsd/pf.conf.openbsd | head -n 1 >> /etc/pf.conf.macro.enc.in
 				cat $basedir/src/openbsd/pf.conf.openbsd | tail -n 1 >> /etc/pf.conf.macro.enc.out
 			done
 			sed -i '$d' /etc/pf.conf.macro.enc.{in,out}
-			
+
 			custom "/etc" "1"
 			pfctrl=$(pfctl -nf /etc/pf.conf)
 			if [[ -z $pfctrl ]]; then
@@ -1345,13 +1346,13 @@ function configuration {
 				typeset -i latency=$(ping -c4 $pophost | tail -1| awk '{print $4}' | cut -d '/' -f 2 | cut -d . -f1)
 				typeset -i metric=$(expr $latency / 2)
 				#sed -i "s/\/METRIC\//${metric}/g" /etc/ospfd.conf
-				cat $basedir/src/openbsd/ospfd.conf.openbsd >> /etc/ospfd.conf	
+				cat $basedir/src/openbsd/ospfd.conf.openbsd >> /etc/ospfd.conf
 				if [[ $(ls "/tmp/$pophost/" | grep -c "hostname") -eq 2 ]]; then
 					typeset -i lasttun
 					lasttun=$(dig gre18994.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')
 					lasttun=$lasttun+1
 					cp $basedir/src/openbsd/ospfd.conf.openbsd "/tmp/$pophost/ospfd.conf"
-					sed -i "s/\/X\//$lasttun/g" "/tmp/$pophost/ospfd.conf"	
+					sed -i "s/\/X\//$lasttun/g" "/tmp/$pophost/ospfd.conf"
 					sed -i "s/\/OSPFMD5\//${ospfmd5}/g" "/tmp/$pophost/ospfd.conf"
 				elif [[ $(ls "/tmp/$pophost/" | grep -c "rsc") -ne 0 ]]; then
 					pophostname=$(echo $pophost | cut -d . -f1)
@@ -1389,9 +1390,9 @@ function configuration {
 			install -o root -g wheel -m 0644  $basedir/src/etc/ntpd.conf /etc/
 			cleanold "/etc/"
 			rcctl restart ntpd  ||  error_exit "$LINENO: ERROR: NTPD failed."
-		;;	
+		;;
 		"remote")
-			
+
 			for file in $(find /tmp -type d -maxdepth 1); do
 				filename=$(basename $file)
 				typeset -i dots=$(echo $filename| tr -cd '.' | wc -c)
@@ -1452,13 +1453,13 @@ function configuration {
 				fi
 			done
 			sleep 31
-			
-			
-			
-		;;	
+
+
+
+		;;
 		"httpd")
 			case $subphase in
-				"basic")	
+				"basic")
 					(: "${hostname?}") 2>/dev/null || hostname=$(hostname -s)
 					(: "${landomainname?}") 2>/dev/null || landomainname=$(hostname | sed "s/`hostname -s`.//")
 					install -o root -g wheel -m 0640 $basedir/src/etc/httpd.conf.mime.types /etc
@@ -1468,7 +1469,7 @@ function configuration {
 					custom "/etc" "1"
 					if [[ ! -d "/var/www/htdocs/$publichost" ]]; then
 						mkdir "/var/www/htdocs/$publichost"
-						
+
 					fi
 					chown -R wwwftp:www "/var/www/htdocs/$publichost"
 					if [[ ! -d "/var/www/htdocs/$hostname.$landomainname" ]]; then
@@ -1482,11 +1483,11 @@ function configuration {
 			esac
 		;;
 		"relayd")
-			
+
 			install -o root -g wheel -m 0640 $basedir/src/etc/relayd.conf /etc/
 			custom "/etc" "1"
 			sed -i "s/\/PUBV6\//${ipv6egress}/g" /etc/relayd.conf
-			rcctl enable relayd 
+			rcctl enable relayd
 		;;
 		"smtpd")
 			pkg "smtpd"
@@ -1517,8 +1518,8 @@ function configuration {
 						config_nsd "basic" "slave" "$(awk 'FNR == 1' /tmp/powernsd_distributed)"  "$(awk 'FNR == 2' /tmp/powernsd_distributed)" \
 							"$(awk 'FNR == 3' /tmp/powernsd_distributed)"
 				;;
-			esac	
-			
+			esac
+
 		;;
 	esac
 }
@@ -1530,7 +1531,7 @@ case $1 in
 			touch "/tmp/config.ini"
 		else
 			echo "Type 1 to use /tmp/config.ini "
-			read configini 
+			read configini
 		fi
 
 		echo "changing IPv4 from dynamic to static on $egressinterface and do a perfect IPv6"
@@ -1584,13 +1585,13 @@ case $1 in
 									continue
 									;;
 							esac
-						done	
+						done
 					configuration "static"
 				else
-					error_exit "$LINENO: EXIT FROM USER." 
+					error_exit "$LINENO: EXIT FROM USER."
 				fi
-			    
-			done		
+
+			done
 		fi
 		echo "changing installurl"
 		if [[ $configini -eq 1 ]]; then
@@ -1605,10 +1606,10 @@ case $1 in
 					install -o root -g wheel -m 0644 $basedir/src/etc/installurl /etc/
 					echo "installurl#$ctrl" >> /tmp/config.ini
 				else
-					error_exit "$LINENO: EXIT FROM USER." 
+					error_exit "$LINENO: EXIT FROM USER."
 				fi
-			    
-			done		
+
+			done
 		fi
 		echo "adding basic shell packages"
 		if [[ $configini -eq 1 ]]; then
@@ -1623,9 +1624,9 @@ case $1 in
 					pkg "shell"
 					echo "shell#$ctrl" >> /tmp/config.ini
 				else
-					error_exit "$LINENO: EXIT FROM USER." 
+					error_exit "$LINENO: EXIT FROM USER."
 				fi
-			    
+
 			done
 		fi
 
@@ -1635,19 +1636,19 @@ case $1 in
 
 		echo "configuring users"
 		if [[ $configini -eq 1 ]]; then
-			if [ ! -d /root/Bin ]; then 
+			if [ ! -d /root/Bin ]; then
 				mkdir /root/Bin
 				chmod 700 /root/Bin
 			fi
-			if [ ! -d /root/Backups ]; then 
+			if [ ! -d /root/Backups ]; then
 				mkdir /root/Backups
 				chmod 700 /root/Backups
 			fi
-			if [ ! -d /home/taglio/Bin ]; then 
-				mkdir /home/taglio/Bin 
+			if [ ! -d /home/taglio/Bin ]; then
+				mkdir /home/taglio/Bin
 				chown taglio:wheel /home/taglio/Bin
 			fi
-			
+
 			configuration "users"
 			configuration "scripts"
 		else
@@ -1657,26 +1658,26 @@ case $1 in
 				echo 'Go ahead type 1 '
 				read ctrl
 				if [[ "$ctrl" -eq 1 ]]; then
-					if [ ! -d /root/Bin ]; then 
+					if [ ! -d /root/Bin ]; then
 						mkdir /root/Bin
 						chmod 700 /root/Bin
 					fi
-					if [ ! -d /root/Backups ]; then 
+					if [ ! -d /root/Backups ]; then
 						mkdir /root/Backups
 						chmod 700 /root/Backups
 					fi
-					if [ ! -d /home/taglio/Bin ]; then 
-						mkdir /home/taglio/Bin 
+					if [ ! -d /home/taglio/Bin ]; then
+						mkdir /home/taglio/Bin
 						chown taglio:wheel /home/taglio/Bin
 					fi
-					
+
 					configuration "users"
 					configuration "scripts"
 					echo "users#$ctrl" >> /tmp/config.ini
 				else
-					error_exit "$LINENO: EXIT FROM USER." 
+					error_exit "$LINENO: EXIT FROM USER."
 				fi
-			    
+
 			done
 		fi
 		if [[ $configini -eq 1 ]]; then
@@ -1723,7 +1724,7 @@ case $1 in
 		done
 		echo "configuring basic"
 		if [[ $configini -eq 1 ]]; then
-			configuration "basic" 
+			configuration "basic"
 		else
 			ctrl=
 			while [ -z $ctrl ]
@@ -1731,12 +1732,12 @@ case $1 in
 				echo 'Go ahead type 1 '
 				read ctrl
 				if [[ "$ctrl" -eq 1 ]]; then
-					configuration "basic" 
+					configuration "basic"
 					echo "basic#$ctrl" >> /tmp/config.ini
 				else
-					error_exit "$LINENO: EXIT FROM USER." 
+					error_exit "$LINENO: EXIT FROM USER."
 				fi
-			    
+
 			done
 		fi
 		echo "configuring unbound \n"
@@ -1751,7 +1752,7 @@ case $1 in
 				configuration "unbound" "local"
 				echo "unbound#$ctrl" >> /tmp/config.ini
 			else
-				error_exit "$LINENO: EXIT FROM USER." 
+				error_exit "$LINENO: EXIT FROM USER."
 			fi
 		fi
 		echo "configuring ssh \n"
@@ -1767,7 +1768,7 @@ case $1 in
 					configuration "ssh" "public"
 					echo "ssh#$ctrl" >> /tmp/config.ini
 				else
-					error_exit "$LINENO: EXIT FROM USER." 
+					error_exit "$LINENO: EXIT FROM USER."
 				fi
 			done
 		fi
@@ -1777,7 +1778,7 @@ case $1 in
 			\nto the others nodes and reload them! \
 			\n"
 		if [[ $configini -eq 1 ]]; then
-			configuration "ipsec" 
+			configuration "ipsec"
 		else
 			ctrl=
 			while [ -z $ctrl ]
@@ -1785,15 +1786,15 @@ case $1 in
 				echo 'Go ahead type 1 '
 				read ctrl
 				if [[ "$ctrl" -eq 1 ]]; then
-					configuration "ipsec" 
+					configuration "ipsec"
 					echo "ipsec#$ctrl" >> /tmp/config.ini
 				else
-					error_exit "$LINENO: EXIT FROM USER." 
+					error_exit "$LINENO: EXIT FROM USER."
 				fi
 			done
 		fi
 		if [[ $configini -eq 1 ]]; then
-			configuration "gre" 
+			configuration "gre"
 		else
 			echo "configuring gre interfaces \
 				\n"
@@ -1803,10 +1804,10 @@ case $1 in
 				echo 'Go ahead type 1 '
 				read ctrl
 				if [[ "$ctrl" -eq 1 ]]; then
-					configuration "gre" 
+					configuration "gre"
 					echo "gre#$ctrl" >> /tmp/config.ini
 				else
-					error_exit "$LINENO: EXIT FROM USER." 
+					error_exit "$LINENO: EXIT FROM USER."
 				fi
 			done
 		fi
@@ -1814,17 +1815,17 @@ case $1 in
 		echo "configuring PF firewall and others environments \n"
 		if [[ $configini -eq 1 ]]; then
 			configuration "pf"
-		else 
+		else
 			ctrl=
 			while [ -z $ctrl ]
 			do
 				echo 'Go ahead type 1 '
 				read ctrl
 				if [[ "$ctrl" -eq 1 ]]; then
-					configuration "pf" 
+					configuration "pf"
 					echo "pf#$ctrl" >> /tmp/config.ini
 				else
-					error_exit "$LINENO: EXIT FROM USER." 
+					error_exit "$LINENO: EXIT FROM USER."
 				fi
 			done
 		fi
@@ -1832,17 +1833,17 @@ case $1 in
 		echo "configuring OSPF routing protocol \n"
 		if [[ $configini -eq 1 ]]; then
 			configuration "ospf"
-		else 
+		else
 			ctrl=
 			while [ -z $ctrl ]
 			do
 				echo 'Go ahead type 1 '
 				read ctrl
 				if [[ "$ctrl" -eq 1 ]]; then
-					configuration "ospf" 
+					configuration "ospf"
 					echo "ospf#$ctrl" >> /tmp/config.ini
 				else
-					error_exit "$LINENO: EXIT FROM USER." 
+					error_exit "$LINENO: EXIT FROM USER."
 				fi
 			done
 		fi
@@ -1850,51 +1851,51 @@ case $1 in
 		echo "preparing archives, signing them, starting httpd default host and start the remote install procedure \n"
 		if [[ $configini -eq 1 ]]; then
 			configuration "remote"
-		else 
+		else
 			ctrl=
 			while [ -z $ctrl ]
 			do
 				echo 'Go ahead type 1 '
 				read ctrl
 				if [[ "$ctrl" -eq 1 ]]; then
-					configuration "remote" 
+					configuration "remote"
 					echo "remote#$ctrl" >> /tmp/config.ini
 				else
-					error_exit "$LINENO: EXIT FROM USER." 
+					error_exit "$LINENO: EXIT FROM USER."
 				fi
 			done
 		fi
 		echo "configuring unbound for IPSec MESH network \n"
 		if [[ $configini -eq 1 ]]; then
 			upgrade "unbound"
-		else 
+		else
 			ctrl=
 			while [ -z $ctrl ]
 			do
 				echo 'Go ahead type 1 '
 				read ctrl
 				if [[ "$ctrl" -eq 1 ]]; then
-					upgrade "unbound" 
+					upgrade "unbound"
 					echo "unboundipsec#$ctrl" >> /tmp/config.ini
 				else
-					error_exit "$LINENO: EXIT FROM USER." 
+					error_exit "$LINENO: EXIT FROM USER."
 				fi
 			done
 		fi
 		echo "configuring sshd for IPSec MESH network with certificates\n"
 		if [[ $configini -eq 1 ]]; then
 			upgrade "ssh"
-		else 
+		else
 			ctrl=
 			while [ -z $ctrl ]
 			do
 				echo 'Go ahead type 1 '
 				read ctrl
 				if [[ "$ctrl" -eq 1 ]]; then
-					upgrade "ssh" 
+					upgrade "ssh"
 					echo "sshipsec#$ctrl" >> /tmp/config.ini
 				else
-					error_exit "$LINENO: EXIT FROM USER." 
+					error_exit "$LINENO: EXIT FROM USER."
 				fi
 			done
 		fi
@@ -1903,17 +1904,17 @@ case $1 in
 		echo "configuring basic httpd for IPSec MESH network operations\n"
 		if [[ $configini -eq 1 ]]; then
 			configuration "httpd" "basic"
-		else 
+		else
 			ctrl=
 			while [ -z $ctrl ]
 			do
 				echo 'Go ahead type 1 '
 				read ctrl
 				if [[ "$ctrl" -eq 1 ]]; then
-					configuration "httpd" "basic" 
+					configuration "httpd" "basic"
 					echo "httpdbasic#$ctrl" >> /tmp/config.ini
 				else
-					error_exit "$LINENO: EXIT FROM USER." 
+					error_exit "$LINENO: EXIT FROM USER."
 				fi
 			done
 		fi
@@ -1922,7 +1923,7 @@ case $1 in
 		pfctl -f /etc/pf.conf
 		rcctl restart syslogd
 		sh "$basedir/$app" -A sslcareq
-		echo "You successfully installed and connected a new OpenBSD MESH guerrilla host"	
+		echo "You successfully installed and connected a new OpenBSD MESH guerrilla host"
 		sh "$basedir/$app" -A otheros
 	;;
 	"-U")
@@ -1949,7 +1950,7 @@ case $1 in
 				\nhttpdbasic \
 				\nnewospf \
 				\n"
-			exit 1 
+			exit 1
 		fi
 		case $2 in
 			"static")
@@ -1958,7 +1959,7 @@ case $1 in
 			;;
 			"basic")
 				pkg "shell"
-				backup "basic"	
+				backup "basic"
 				configuration "basic"
 			;;
 			"static")
@@ -2027,7 +2028,7 @@ case $1 in
 			;;
 			"all")
 				sh setup_node -I
-				
+
 			;;
 		esac
 	;;
@@ -2040,7 +2041,7 @@ case $1 in
 				\nsmtpd  \
 				\nimapd   \
 				\n"
-			exit 1 
+			exit 1
 		fi
 		case $2 in
 			"powernsd")
@@ -2055,7 +2056,7 @@ case $1 in
 				configuration "smtpd"
 			;;
 		esac
-			
+
 	;;
 	"-A")
 		if [[ $# -ne 2 ]]; then
@@ -2065,7 +2066,7 @@ case $1 in
 				\nsslcareq \
 				\notheros \
 				\n"
-			exit 1 
+			exit 1
 		fi
 		case $2 in
 			"cleanlast")
@@ -2077,10 +2078,9 @@ case $1 in
 			"otheros")
 				admin "otheros"
 			;;
-		esac		
+		esac
 	;;
 	*)
 		exit 1
 	;;
 esac
-
