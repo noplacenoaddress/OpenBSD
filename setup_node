@@ -693,7 +693,7 @@ function upgrade {
 			do
 				echo "Which file do you want to update [type dst complete PATH]? "
 				read fileupdate
-				cp -p $fileupdate "$BACKUPS/file/$(basename $fileupdate)"
+				[[ -e $fileupdate ]] && cp -p $fileupdate "$BACKUPS/file/$(basename $fileupdate)"
 				gitfile="$basedir/src$fileupdate"
 				install -o root -g wheel -m 0644 $gitfile $fileupdate
 			done
