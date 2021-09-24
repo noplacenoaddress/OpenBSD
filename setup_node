@@ -20,6 +20,7 @@
 #dnssec: https://dnsviz.net/
 #nsd: https://zonemaster.net/domain_check
 #nsd: https://dnschecker.org/
+#xl2tpd client: https://findelabs.com/post/connecting-to-openbsd-l2tp-ipsec-vpn/
 
 #####
 #
@@ -106,6 +107,9 @@ function pkg {
 		;;
 		"tor")
 			pkg_add tor privoxy
+		;;
+		"l2tp")
+			pkg_add x2ltpd
 		;;
 	esac
 }
@@ -337,7 +341,7 @@ function backup {
 
 
 function upgrade {
-	
+
 	case $1 in
 		"unbound")
 
