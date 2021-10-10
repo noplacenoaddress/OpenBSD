@@ -2,8 +2,8 @@
 # /sbin/pfctl -t users -T add -f /etc/pf.conf.table.users
 # /sbin/pfctl -t users -T show
 #
+172.16.23.0/24
 172.16.19.0/24
 172.16.16.0/24
 172.16.18.0/24
 172.16.17.106/32
-
