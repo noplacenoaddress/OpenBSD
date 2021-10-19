@@ -2,7 +2,7 @@
 
 DATE=$(date +%d%m%Y)
 DATE_RELEASE=$(date +"%d/%m/%Y %H:%m:%S")
-HOMEWRK="/home/riccardo/Work/telecom.lobby"
+HOMEWRK="/home/taglio/Work/telecom.lobby"
 REPO="/OpenBSD"
 RELEASE="/OpenBSD$DATE.tar"
 
