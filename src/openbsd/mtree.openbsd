@@ -1,0 +1,229 @@
+# special.local
+#
+#	   user: taglio
+#	   machine: /HOSTNAME/./LANDOMAINNAME/
+#	   tree: /
+#	   date: /LONGDATE/
+
+# .
+/set type=file uname=root gname=wheel mode=0644
+.		type=dir mode=0755
+
+
+# ./etc
+etc		type=dir mode=0755
+    pf.conf.macro.enc.in mode=0600
+    pf.conf.macro.enc.out mode=0600
+    pf.conf.macro.public mode=0600
+    pf.conf.table.cdn mode=0600
+    pf.conf.table.clientes mode=0600
+    pf.conf.table.guifi mode=0600
+    pf.conf.table.ipsec mode=0600
+    pf.conf.table.locals mode=0600
+    pf.conf.table.nsd mode=0600
+    pf.conf.table.reserved mode=0600
+    pf.conf.table.unbound mode=0600
+    pf.conf.table.users mode=0600
+    iked.conf.RT-01.cat.telecomlobby.com mode=0600
+    iked.conf.au.telecomlobby.com mode=0600
+    iked.conf.bg.telecomlobby.com mode=0600
+    iked.conf.de.telecomlobby.com mode=0600
+    iked.conf.fr.telecomlobby.com mode=0600
+    iked.conf.jp.telecomlobby.com mode=0600
+    iked.conf.mad.telecomlobby.com mode=0600
+    iked.conf.us.telecomlobby.com mode=0600
+
+# ./etc/pdns
+pdns		type=dir mode=0755
+    pdns.conf
+# ./etc/pdns
+..
+
+
+# ./etc/mtree
+/set type=file gname=wheel mode=0644
+mtree		type=dir mode=0755
+    special.local mode=0600 optional
+# ./etc/mtree
+..
+
+
+# ./etc/ssh
+ssh		type=dir mode=0755
+    sshd_banner	optional
+# ./etc/ssh/remote_install
+remote_install type=dir mode=0755
+..
+# ./etc/ssh/ca
+ca type=dir mode=0755   
+..
+# ./etc/ssh/principals
+principals type=dir mode=0755
+..
+
+
+# ./etc/ssl
+ssl		type=dir mode=0755
+
+# ./etc/ssl/dns
+dns		type=dir mode=0755
+    *.DNSKEY	mode=0644
+
+# ./etc/ssl/dns/private
+private		type=dir mode=0700
+    *.*SK	mode=0600
+    tsig.*	mode=0600
+# ./etc/ssl/dns/private
+..
+
+# ./etc/ssl/dns
+..
+
+# ./etc/ssl
+..
+
+# ./etc
+..
+
+
+# ./usr
+usr		type=dir mode=0755
+
+
+# ./usr/local
+local		type=dir mode=0755
+
+
+# ./usr/local/bin
+bin		type=dir mode=0755
+    nsec3salt	gname=bin mode=0500
+    pdns-backup	gname=bin mode=0500
+    rmchangelist \
+		gname=bin mode=0500
+    tsig-change	gname=bin mode=0500
+    tsig-fetch	gname=bin mode=0555
+    tsig-secret	gname=bin mode=0500
+    tsig-share	gname=bin mode=0500
+    zoneadd	gname=bin mode=0500
+    zonedel	gname=bin mode=0500
+# ./usr/local/bin
+..
+
+
+# ./usr/local/share
+share		type=dir mode=0755
+
+# ./usr/local/share/doc
+doc		type=dir mode=0755
+
+# ./usr/local/share/doc/dithematic
+dithematic	type=dir mode=0755
+    nsd.conf.*	mode=0644
+    validate.tsig \
+		mode=0644
+# ./usr/local/share/doc/dithematic
+..
+
+# ./usr/local/share/doc
+..
+
+
+# ./usr/local/share/examples
+examples	type=dir mode=0755
+
+# ./usr/local/share/examples/dithematic
+dithematic	type=dir mode=0755
+    *example.com.zone \
+		mode=0644
+    nsd.conf.*.example.com \
+		mode=0644
+# ./usr/local/share/examples/dithematic
+..
+
+# ./usr/local/share/examples
+..
+
+# ./usr/local/share
+..
+
+# ./usr/local
+..
+
+# ./usr
+..
+
+
+# ./var
+var		type=dir mode=0755
+
+
+# ./var/pdns
+pdns		type=dir uname=_powerdns mode=0750
+    *.sqlite	uname=_powerdns mode=0640
+    *.sqlite.backup \
+		uname=root mode=0600 optional
+    *.sqlite.dump \
+		uname=root mode=0600 optional
+# ./var/pdns
+..
+
+
+# ./var/nsd
+nsd		type=dir mode=0755
+
+
+# ./var/nsd/db
+db		type=dir gname=_nsd mode=0775
+# ./var/nsd/db
+..
+
+
+# ./var/nsd/etc
+etc		type=dir gname=_nsd mode=0750
+    nsd.conf*	gname=_nsd mode=0640
+# ./var/nsd/etc
+..
+
+
+# ./var/nsd/zones
+zones		type=dir mode=0755
+
+
+# ./var/nsd/zones/master
+master		type=dir mode=0755
+    *.zone	mode=0600 optional
+# ./var/nsd/zones/master
+..
+
+
+# ./var/nsd/zones/slave
+slave		type=dir gname=_nsd mode=0775
+# ./var/nsd/zones/slave
+..
+
+# ./var/nsd/zones
+..
+
+# ./var/nsd
+..
+
+
+# ./var/unbound
+unbound		type=dir mode=0755
+
+
+# ./var/unbound/db
+/set type=file mode=0644
+db		type=dir uname=root gname=_unbound mode=0775
+    root.key	uname=_unbound gname=_unbound optional
+    root.zone	uname=_unbound gname=_unbound optional
+# ./var/unbound/db
+..
+
+# ./var/unbound
+..
+
+# ./var
+..
+
+..

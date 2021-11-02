@@ -54,6 +54,7 @@ dyndns=$(host -t a cat-01.hopto.org | cut -d ' ' -f4)
 basedir="/home/taglio/Sources/Git/OpenBSD"
 tmpdir=$(mktemp -d)
 datarelease=$(date +"%d%m%Y%H%m%S")
+longdate=$(date)
 userna=$(id -nu $uid)
 ipv6ctrl=
 ipv6egress=
@@ -776,6 +777,7 @@ function upgrade {
 			if ! getent passwd tsig  1>&-; then
 				useradd -u 25353 -g =uid -c "TSIG Wizard" -d /home/tsig -s /home/tsig tsig
 			fi
+			[ 0 = $(grep -c "github" /etc/changelist) ] && cat "src/openbsd/changelist.openbsd" >> "/etc/changelist"
 		;;
 	esac
 }
