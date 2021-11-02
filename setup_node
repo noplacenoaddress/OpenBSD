@@ -150,7 +150,7 @@ function custom {
 		(: "${ipv6prefix?}") 2>/dev/null && sed -i "s/\/PREFIX\//${ipv6prefix}/g" $file
 		(: "${defaultv4router?}") 2>/dev/null && sed -i "s/\/ROUTEV4\//${defaultv4router}/g" $file
 		(: "${ipv6defrouter?}") 2>/dev/null && sed -i "s/\/ROUTEV6\//${ipv6defrouter}/g" $file
-
+		(: "${longdate?}") 2>/dev/null && sed -i "s/\/LONGDATE\//${longdate}/g" $file
 	done
 }
 
@@ -778,6 +778,10 @@ function upgrade {
 				useradd -u 25353 -g =uid -c "TSIG Wizard" -d /home/tsig -s /home/tsig tsig
 			fi
 			[ 0 = $(grep -c "github" /etc/changelist) ] && cat "src/openbsd/changelist.openbsd" >> "/etc/changelist"
+			[[ ! -e "/etc/mtree/special.local" ]] && \
+				install -o root -g wheel -m 0644 "src/openbsd/mtree.openbsd" "/etc/mtree/special.login" && \
+				custom "/etc/mtree" "1"
+			
 		;;
 	esac
 }
@@ -859,7 +863,7 @@ function admin {
 						greip=$(ifconfig $greinterface | tail -n 1 | awk '{print $2}')
 						grenetwork=$(ipcalc -c $greip / 30 | grep network | awk '{ print $3 }')
 						sed -i "s/\/GRENETWORK\//$grenetwork/" "/tmp/$vpnc_host/$vpnc_host.rsc"
-						custom "/tmp/$vpnc_host" "1"
+						 "/tmp/$vpnc_host" "1"
 						echo "Download Mikrotik Routeros script from http://$(hostname)/$vpnc_host/$vpnc_host.rsc"
 						mv "/tmp/$vpnc_host" "/var/www/htdocs/$(hostname)/"
 					fi
