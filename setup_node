@@ -40,6 +40,7 @@ BACKUPS="/root/Backups"
 
 uid=$(id -u)
 app=$(basename $0)
+ver=$(uname -a | awk '{print $3}')
 egressinterface=$(ifconfig egress | cut -d  : -f1 | head -n1)
 publicip=$(ifconfig $egressinterface | grep inet |grep -v inet6 | cut -d ' ' -f2)
 publicnetmask=$(ifconfig $egressinterface | grep inet | grep -v inet6 | awk '{print $4}')
@@ -90,6 +91,17 @@ function pidof {
 	ps axc -o pid,command | awk "\$2~/^`echo $1`\$/ {print \$1}"
 }
 
+function checkOpenver {
+	ver=$(uname -a | awk '{print $3}')
+	first=$(echo "${ver}" | cut -d . -f1)
+	second=$(echo "${ver}" | cut -d . -f2)
+	firstcomp=$(echo "${1}" | cut -d . -f1)
+	secondcomp=$(echo "${1}" | cut -d . -f2)
+	(( first < firstcomp )) && return 1 || \
+		(( second < secondcomp )) && return 1 || \
+			return 0
+}
+
 function pkg {
 	typeset var phase=$1
 
@@ -111,6 +123,7 @@ function pkg {
 		"l2tp")
 			pkg_add x2ltpd
 		;;
+
 	esac
 }
 
@@ -761,6 +774,19 @@ function upgrade {
 			#install -o root -g wheel -m 0600 $ospfdtmp /etc/ospfd.conf
 			#/usr/sbin/ospfd -nf /etc/ospfd.conf
 			#/usr/sbin/rcctl restart ospfd
+		;;
+		"vedetta")
+			dhcpleased=$(pidof "dhcpleased")
+			resolvd=$(pidof "resolvd")
+			[[ "${dhcpleased}" ]] && rcctl stop dhcpleased
+			[[ "${resolvd}" ]] && rcctl stop resolvd
+			dhcpleased=$(cat /etc/rc.conf.local | grep dhcpleased)
+			resolvd=$(cat /etc/rc.conf.local | grep resolvd)
+			[[ ! "${dhcpleased}" ]] && rcctl disable dhcpleased
+			[[ ! "${resolvd}" ]] && rcctl disable resolvd
+			if ! getent passwd tsig  1>&-; then
+				useradd -u 25353 -g =uid -c "TSIG Wizard" -d /home/tsig -s /home/tsig tsig
+			fi
 		;;
 	esac
 }
@@ -1953,6 +1979,7 @@ case $1 in
 				\ndyndnspop \
 				\nhttpdbasic \
 				\nnewospf \
+				\nvedetta \
 				\n"
 			exit 1
 		fi
@@ -2029,6 +2056,9 @@ case $1 in
 			"newospf")
 				backup "newospf"
 				upgrade "newospf"
+			;;
+			"vedetta")
+				upgrade "vedetta"
 			;;
 			"all")
 				sh setup_node -I
