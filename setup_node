@@ -91,17 +91,6 @@ function pidof {
 	ps axc -o pid,command | awk "\$2~/^`echo $1`\$/ {print \$1}"
 }
 
-function checkOpenver {
-	ver=$(uname -a | awk '{print $3}')
-	first=$(echo "${ver}" | cut -d . -f1)
-	second=$(echo "${ver}" | cut -d . -f2)
-	firstcomp=$(echo "${1}" | cut -d . -f1)
-	secondcomp=$(echo "${1}" | cut -d . -f2)
-	(( first < firstcomp )) && return 1 || \
-		(( second < secondcomp )) && return 1 || \
-			return 0
-}
-
 function pkg {
 	typeset var phase=$1
 
