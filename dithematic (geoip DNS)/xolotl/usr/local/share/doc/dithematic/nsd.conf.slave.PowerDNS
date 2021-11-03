@@ -1,0 +1,6 @@
+	# PowerDNS slave
+	provide-xfr: 127.0.0.1 tsig.telecomlobby.com.
+	provide-xfr: ::1 tsig.telecomlobby.com.
+	notify: 127.0.0.1@20053 tsig.telecomlobby.com.
+	notify: ::1@20053 tsig.telecomlobby.com.
+

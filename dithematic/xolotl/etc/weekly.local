@@ -1,5 +1,0 @@
-next_part "TSIG Wizard:"
-/usr/local/bin/tsig-secret tsig.telecomlobby.com
-/usr/local/bin/tsig-change tsig.telecomlobby.com
-/usr/local/bin/tsig-share tsig.telecomlobby.com
-

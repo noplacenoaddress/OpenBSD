@@ -1,2 +1,0 @@
-ddb.panic=0 # default: 1
-kern.splassert=2 # default: 1
