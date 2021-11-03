@@ -777,7 +777,7 @@ function upgrade {
 				rcctl disable resolvd  && \
 				sed -i '/resolvd/d' "/etc/resolv.conf"
 			if ! getent passwd tsig  1>&-; then
-				useradd -u 25353 -g =uid -c "TSIG Wizard" -d /home/tsig -s /home/tsig tsig
+				useradd -u 25353 -g =uid -c "TSIG Wizard" -m -d /home/tsig -s /home/tsig tsig
 			fi
 			[ 0 = $(grep -c "github" /etc/changelist) ] && cat "src/openbsd/changelist.openbsd" >> "/etc/changelist"
 			[[ ! -e "/etc/mtree/special.local" ]] && \
