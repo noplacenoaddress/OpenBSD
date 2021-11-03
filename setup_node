@@ -1547,7 +1547,9 @@ function configuration {
 				;;
 			esac
 			[[ $(pidof "pdns") == "" ]] && \
-				[[ -s "/var/pdns/pdnssec.sqlite" ]] || sqlite3 "/var/pdns/pdnssec.sqlite" -init "src/openbsd/pdns.sql" ".exit"
+				[[ -d "/var/pdns" ]] && chown -R _powerdns:_powerdns "/var/pdns" || mkdir /var/pdns ; chown _powerdns:_powerdns /var/pdns && \
+				[[ -s "/var/pdns/pdns.sqlite" ]] && rm -rf "/var/pdns/pdns.sqlite" || sqlite3 "/var/pdns/pdns.sqlite" -init "src/openbsd/pdns-schema.sql" ".exit" ; chown _powerdns:_powerdns "/var/pdns/pdns.sqlite" && \
+				[[ -s "/var/pdns/pdnssec.sqlite" ]] && rm -rf "/var/pdns/pdnssec.sqlite" || sqlite3 "/var/pdns/pdnssec.sqlite" -init "src/openbsd/pdnssec-schema.sql" ".exit" ; chown _powerdns:_powerdns "/var/pdns/pdnssec.sqlite"
 		;;
 	esac
 }
