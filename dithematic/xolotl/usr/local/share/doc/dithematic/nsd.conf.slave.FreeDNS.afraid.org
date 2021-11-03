@@ -1,5 +1,0 @@
-	# FreeDNS.afraid.org slave
-	provide-xfr: 69.65.50.192 NOKEY
-	provide-xfr: 2001:1850:1:5:800::6b NOKEY
-	notify: 69.65.50.192 NOKEY
-

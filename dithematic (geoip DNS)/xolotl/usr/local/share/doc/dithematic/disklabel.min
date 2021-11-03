@@ -1,0 +1,8 @@
+/		256M
+swap		1G
+/var/log	512M
+/tmp		1G
+/usr		1300M
+/usr/local	1G
+/home		512M
+/var		2G-*
