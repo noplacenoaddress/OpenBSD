@@ -1546,7 +1546,8 @@ function configuration {
 							"$(awk 'FNR == 3' /tmp/powernsd_distributed)"
 				;;
 			esac
-
+			[[ $(pidof "pdns") == "" ]] && \
+				[[ -s "/var/pdns/pdnssec.sqlite" ]] || sqlite3 "/var/pdns/pdnssec.sqlite" -init "src/openbsd/pdns.sql" ".exit"
 		;;
 	esac
 }
