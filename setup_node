@@ -773,7 +773,9 @@ function upgrade {
 			dhcpleased=$(cat /etc/rc.conf.local | grep dhcpleased)
 			resolvd=$(cat /etc/rc.conf.local | grep resolvd)
 			[[ "${dhcpleased}" == "" ]] && rcctl disable dhcpleased
-			[[ "${resolvd}" == "" ]] && rcctl disable resolvd
+			[[ "${resolvd}" == "" ]] && \
+				rcctl disable resolvd  && \
+				sed -i '/resolvd/d' "/etc/resolv.conf"
 			if ! getent passwd tsig  1>&-; then
 				useradd -u 25353 -g =uid -c "TSIG Wizard" -d /home/tsig -s /home/tsig tsig
 			fi
