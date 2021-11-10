@@ -105,7 +105,7 @@ function pkg {
 				dovecot dovecot-pigeonhole
 		;;
 		"powernsd")
-			pkg_add powerdns ldns-utils drill validns
+			pkg_add ldns-utils drill validns libyaml
 		;;
 		"tor")
 			pkg_add tor privoxy
@@ -113,7 +113,19 @@ function pkg {
 		"l2tp")
 			pkg_add x2ltpd
 		;;
-
+		"compile")
+			autoconfver=$(pkg_info -Q autoconf | grep -e "^autoconf-[0-9]" | tail -n 1 | sed "s| .*$||")
+			automakever=$(pkg_info -Q automake | grep -e "^automake-[0-9]" | tail -n 1 | sed "s| .*$||")
+			pkg_add "${autoconfver}" "${automakever}" gmake-- bison ragel libtool libyaml yaml-cpp luajit
+			if [[ ! -e "/etc/profile" ]]; then
+				echo AUTOCONF_VERSION="$(echo "${autoconfver}" | sed "s|^autoconf-||")" >> "/etc/profile"
+				echo AUTOMAKE_VERSION="$(echo "${automakever}" | sed "s|^automake-||" |  sed "s|p[0-9].*$||")" >> "/etc/profile"
+				echo "export AUTOCONF_VERSION AUTOMAKE_VERSION" >> "/etc/profile"
+			fi
+			AUTOCONF_VERSION="$(echo "${autoconfver}" | sed "s|^autoconf-||")"
+			AUTOMAKE_VERSION="$(echo "${automakever}" | sed "s|^automake-||" |  sed "s|p[0-9].*$||")"
+			export AUTOCONF_VERSION AUTOMAKE_VERSION
+		;;
 	esac
 }
 
@@ -223,6 +235,12 @@ function config_nsd {
 		*)
 		;;
 	esac
+}
+
+function config_pdns {
+	pkg "compile"
+	[[ -d "/home/taglio/Sources/Git/" ]]
+
 }
 
 function edgeos_scripts {
@@ -1546,11 +1564,13 @@ function configuration {
 							"$(awk 'FNR == 3' /tmp/powernsd_distributed)"
 				;;
 			esac
+			config_pdns
 			[[ $(pidof "pdns") == "" ]] && \
 				[[ -d "/var/pdns" ]] && chown -R _powerdns:_powerdns "/var/pdns" || mkdir /var/pdns ; chown _powerdns:_powerdns /var/pdns && \
 				[[ -s "/var/pdns/pdns.sqlite" ]] && rm -rf "/var/pdns/pdns.sqlite" && \
-				[[ -s "/var/pdns/pdns.sqlite" ]] || sqlite3 "/var/pdns/pdns.sqlite" -init "src/openbsd/pdns-schema.sql" ".exit" ; chown _powerdns:_powerdns "/var/pdns/pdns.sqlite"
-				[[ -e "/etc/pdns/GeoLite2-Country.mmdb" ]] || install -o _powerdns -g _powerdns "src/openbsd/GeoLite2-Country.mmdb" "/etc/pdns"
+				[[ -s "/var/pdns/pdns.sqlite" ]] || sqlite3 "/var/pdns/pdns.sqlite" -init "src/openbsd/pdns-schema.sql" ".exit" ; chown _powerdns:_powerdns "/var/pdns/pdns.sqlite" && \
+				[[ -e "/etc/pdns/GeoLite2-Country.mmdb" ]] || install -o _powerdns -g _powerdns "src/openbsd/GeoLite2-Country.mmdb" "/etc/pdns" && \
+				[[ -e "/usr/local/lib/pdns/libgeoipbackend.so" ]] || install -o root -g wheel -m 0644 src/usr/local/lib/pdns/{libgeoipbackend.so,libpipebackend.so} "/usr/local/lib/pdns/"
 
 		;;
 	esac
