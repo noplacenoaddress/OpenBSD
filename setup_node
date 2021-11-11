@@ -13,6 +13,7 @@
 #smtpd: https://git.sr.ht/~guidocella/personal-email-server-guide
 #nsd and powerdns: https://github.com/vedetta-com/dithematic
 #geoip and powerdns: https://doc.powerdns.com/authoritative/backends/geoip.html
+#powerdns: https://github.com/PowerDNS/pdns
 #ospf: NBMA design https://www.blackhole-networks.com/OSPF_overload/
 #ospf: https://www.blackhole-networks.com/OSPF
 #dnssec: https://help.dreamhost.com/hc/en-us/articles/219539467
@@ -21,6 +22,8 @@
 #nsd: https://zonemaster.net/domain_check
 #nsd: https://dnschecker.org/
 #xl2tpd client: https://findelabs.com/post/connecting-to-openbsd-l2tp-ipsec-vpn/
+#audit: https://cisofy.com/lynis/
+#tricks: https://ioctl.uk/2018/11/openbsd-hardening-tricks/
 
 #####
 #
@@ -39,7 +42,8 @@ BACKUPS="/root/Backups"
 #GLOBAL VAR
 
 uid=$(id -u)
-app=$(basename $0)
+wheeluser=$(cat /etc/group | grep wheel | sed "s|wheel:\*:0:root||" | sed "s|^.*,||")
+app=$(basename $0) wheeluser=
 ver=$(uname -a | awk '{print $3}')
 egressinterface=$(ifconfig egress | cut -d  : -f1 | head -n1)
 publicip=$(ifconfig $egressinterface | grep inet |grep -v inet6 | cut -d ' ' -f2)
@@ -104,8 +108,8 @@ function pkg {
 			pkg_add opensmtpd-filter-rspamd \
 				dovecot dovecot-pigeonhole
 		;;
-		"powernsd")
-			pkg_add ldns-utils drill validns libyaml
+		"pdns")
+			pkg_add ldns-utils drill validns libyaml yaml-cpp luajit libmaxminddb
 		;;
 		"tor")
 			pkg_add tor privoxy
@@ -115,15 +119,16 @@ function pkg {
 		;;
 		"compile")
 			autoconfver=$(pkg_info -Q autoconf | grep -e "^autoconf-[0-9]" | tail -n 1 | sed "s| .*$||")
-			automakever=$(pkg_info -Q automake | grep -e "^automake-[0-9]" | tail -n 1 | sed "s| .*$||")
-			pkg_add "${autoconfver}" "${automakever}" gmake-- bison ragel libtool libyaml yaml-cpp luajit
+			#automakever=$(pkg_info -Q automake | grep -e "^automake-[0-9]" | tail -n 1 | sed "s| .*$||")
+			automakever="automake-1.16.3"
+			pkg_add "${autoconfver}" "${automakever}" gmake-- bison ragel libtool boost
 			if [[ ! -e "/etc/profile" ]]; then
 				echo AUTOCONF_VERSION="$(echo "${autoconfver}" | sed "s|^autoconf-||")" >> "/etc/profile"
-				echo AUTOMAKE_VERSION="$(echo "${automakever}" | sed "s|^automake-||" |  sed "s|p[0-9].*$||")" >> "/etc/profile"
+				echo AUTOMAKE_VERSION="$(echo "${automakever}" | sed "s|^automake-||" |  sed "s|.[0-9]$||")" >> "/etc/profile"
 				echo "export AUTOCONF_VERSION AUTOMAKE_VERSION" >> "/etc/profile"
 			fi
 			AUTOCONF_VERSION="$(echo "${autoconfver}" | sed "s|^autoconf-||")"
-			AUTOMAKE_VERSION="$(echo "${automakever}" | sed "s|^automake-||" |  sed "s|p[0-9].*$||")"
+			AUTOMAKE_VERSION="$(echo "${automakever}" | sed "s|^automake-||" | sed "s|.[0-9]p[0-9].*$||")"
 			export AUTOCONF_VERSION AUTOMAKE_VERSION
 		;;
 	esac
@@ -237,10 +242,31 @@ function config_nsd {
 	esac
 }
 
+function jails {
+	[[ -e "/jails" ]] || mkdir "/jails"
+	[[ -e "/jails/${1}" ]] ||  mkdir -p "/jails/${1}/usr/{lib,libexec,local/lib/}"
+}
+
 function config_pdns {
 	pkg "compile"
-	[[ -d "/home/taglio/Sources/Git/" ]]
-
+	pkg "pdns"
+	jails "pdns"
+	su "${wheeluser}"
+	if [[ -d "/home/${wheeluser}/Sources/Git/pdns" ]]; then
+		cd "/home/${wheeluser}/Sources/Git/"
+		git pull
+	else
+		cd "/home/${wheeluser}/Sources/Git/"
+		git clone https://github.com/PowerDNS/pdns.git
+	fi
+	cd "${basedir}/../pdns"
+	autoreconf -vi
+	./configure --prefix="/jails/pdns" --with-modules="geoip"  --disable-lua-records
+	gmake
+	cd docs
+	make html-docs
+	cd ..
+	make install
 }
 
 function edgeos_scripts {
