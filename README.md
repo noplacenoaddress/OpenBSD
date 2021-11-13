@@ -637,6 +637,8 @@ Our geographic aware CDN will work upon the [continent](https://en.wikipedia.org
 - **OC**, [Oceania](https://en.wikipedia.org/wiki/Oceania) 
 - **SA**, [South America](https://en.wikipedia.org/wiki/South_America)
 
+We are going to use some ASCII texts with connection between [ISO-3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country code and continent nomenclature. 
+
 Next feature for example can be serving a web page in a different language depending on the language used in the web browser of our client but this is another think.
 
 ![Political Map](https://upload.wikimedia.org/wikipedia/commons/5/55/Political_Map_of_the_World.png)
