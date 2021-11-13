@@ -36,7 +36,7 @@ if [[ $# -eq 0 ]]; then
 			\n-NO -> newospf configuration [o] \
 			\n-PF -> new firewall configuration [o] \
 			\n"
-	
+
 	exit 1
 fi
 
@@ -48,52 +48,52 @@ case $3 in
 		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 			echo -e "Connecting to $vpnc_host"
 			ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 $vpnc_host.$localdomainname git -C "$proghome" pull
-		done	
+		done
 	;;
 	"-N")
 		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 			echo -e "Connecting to $vpnc_host"
 			ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U newhost
-		done	
+		done
 	;;
 	"-S")
 		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 			echo -e "Connecting to $vpnc_host"
 			ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U scripts
-		done	
+		done
 	;;
 	"-D")
 		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 			echo -e "Connecting to $vpnc_host"
 			ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U dyndnspop
 			sleep 10
-		done	
+		done
 	;;
 	"-PF")
 		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 			echo -e "Connecting to $vpnc_host"
 			ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U pf
 			sleep 10
-		done	
+		done
 	;;
 	"-F")
 		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 			echo -e "Connecting to $vpnc_host"
 			ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U file
 			sleep 10
-		done	
+		done
 	;;
 	"-C")
 		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 			echo -e "Connecting to $vpnc_host"
 			ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -A cleanlast
-		done	
+		done
 	;;
 	"-P")
 		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 			echo -e "Connecting to $vpnc_host"
 			ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -t $vpnc_host.$localdomainname doas syspatch
-		done	
+		done
 	;;
 	"-RS")
 		lanhost=
@@ -113,20 +113,20 @@ case $3 in
 		do
 			echo 'Type the ED25519 hash '
 			read hash
-		done 	
+		done
 		if [[ $(grep -c $lanhost src/etc/ssh/remote_install/authorized_keys) -gt 0 ]]; then
 			for linenum in $(grep -n $lanhost src/etc/ssh/remote_install/authorized_keys | cut -d : -f1); do
 				sed -i "$linenum"d src/etc/ssh/remote_install/authorized_keys
 			done
 		fi
-		
+
 		echo "ssh-ed25519 $hash root@$lanhost" >> src/etc/ssh/remote_install/authorized_keys
 		#	if [[ $(grep -c $pubhost src/etc/ssh/ssh_known_hosts) -gt 0 ]]; then
 		#		for linenum in $(grep -n $pubhost src/etc/ssh/ssh_known_hosts | cut -d : -f1); do
-		#			sed -i "$linenum"d src/etc/ssh/ssh_known_hosts	
+		#			sed -i "$linenum"d src/etc/ssh/ssh_known_hosts
 		#		done
 		#	fi
-		#	
+		#
 		#	echo "# $pubhost:31137 SSH-2.0-OpenSSH_8.6" >> src/etc/ssh/ssh_known_hosts
 		#	echo "[$pubhost]:31137 ssh-ed25519 $hash" >> src/etc/ssh/ssh_known_hosts
 		echo -e "remote_install/authorized_keys and ssh_known_hosts UPDATED
@@ -158,7 +158,7 @@ case $3 in
 		openssl pkcs12 -nodes -in $ikedpub -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "$tmpdir/new.crt"
 		openssl x509 -pubkey -noout -passin pass:123456789 -in "$tmpdir/new.crt"  > src/etc/iked/pubkeys/ufqdn/"$srcid@ca.$domainname"
 		rm -rf $tmpdir
-		echo -e "$srcid@ca.$domainname created please update repository and all the others Openbsd hosts"		
+		echo -e "$srcid@ca.$domainname created please update repository and all the others Openbsd hosts"
 	;;
 	"-T")
 		echo -e "Launching TMUX"
@@ -167,11 +167,11 @@ case $3 in
 			echo -e "Creating $vpnc_host TMUX windows"
 			tmux rename-window "$vpnc_host"
 			tmux send -t "LOBBY:$vpnc_host" ssh SPACE "$vpnc_host.$localdomainname" ENTER
-			tmux new-window 
+			tmux new-window
 		done
 		tmux rename-window "CA"
 		tmux send -t "LOBBY:CA" ssh SPACE "ca.$localdomainname" ENTER
-		tmux new-window 
+		tmux new-window
 		tmux rename-window $(hostname -s)
 		tmux -2 attach-session -t "LOBBY"
 	;;
@@ -223,12 +223,12 @@ case $3 in
 		cd /tmp
 		if [[ ! -d "$edgehost" ]]; then
 			mkdir "$edgehost"
-		fi 
-		tar xvf "/tmp/$edgehost.tar" -C "/tmp/$edgehost" 
+		fi
+		tar xvf "/tmp/$edgehost.tar" -C "/tmp/$edgehost"
 		cd $edgehost
 		for file in $(ls .); do
 			if [[ $file = "gre.sh" || $file = "ospf.sh" || $file = "ipsec.sh" ]]; then
-				cat $file | ssh -q $edgeos 
+				cat $file | ssh -q $edgeos
 			elif [[ $file = *updown.sh ]]; then
 				a=$(echo $file | sed "s/-updown.sh//")
 				c=$(echo $a | sed "s/-//")
@@ -268,7 +268,7 @@ case $3 in
 				echo 'Reply yes or no'
 			;;
 		esac
-		
+
 	;;
 	"-Z")
 		comdomains=
@@ -285,7 +285,7 @@ case $3 in
 		done
 		echo -e "You've got servers in:\n"
 		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
-			
+
 			local=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q $vpnc_host.$localdomainname readlink /etc/localtime  | sed "s/\/usr\/share\/zoneinfo\///")
 			zonetab=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q $vpnc_host.$localdomainname cat /usr/share/zoneinfo/zone.tab | grep $local)
 			[[ $zonetab ]] && echo -e "\n$zonetab\n" || echo -e "\n$local\n"
@@ -294,6 +294,8 @@ case $3 in
 			loc=$(curl -s "http://ipinfo.io/$publicip" | grep loc | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g")
 			long=$(echo $loc | cut -d , -f2 | cut -d . -f1)
 			lat=$(echo $loc | cut -d , -f1 | cut -d . -f1)
+			country=$(curl -s "http://ipinfo.io/$publicip" | grep country | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g")
+			continent=$(grep "${country}" cndb/* | cut -d / -f2 | cut -d : -f1)
 			echo -e "\nLAT --> $lat"
 			echo -e "LONG --> $long\n"
 			if [[ $long -ge -180 && $long -le -60 && $lat -ge 0 ]]; then group=12 && ospfarea="0.0.1.2" && G12+=("$vpnc_host"); fi
@@ -304,7 +306,8 @@ case $3 in
 			if [[ $long -ge 60 && $long -le 180 && $lat -le 0 ]]; then group=56 && ospfarea="0.0.5.6" && G56+=("$vpnc_host"); fi
 			echo -e "GROUP --> $group"
 			echo -e "BACKBONE OSPFAREA 0.0.0.0"
-			echo -e "GEO OSPFAREA --> $ospfarea\n"
+			echo -e "GEO OSPFAREA --> $ospfarea"
+			echo -e "CONTINENT --> $continent\n"
 		done
 		[[ ${#G12[@]} > 1 ]] && rand12p=$[$RANDOM % ${#G12[@]}] || rand12p="${G12[0]}"
 		[[ ${#G34[@]} > 1 ]] && rand34p=$[$RANDOM % ${#G34[@]}] || rand34p="${G34[0]}"
@@ -357,9 +360,9 @@ case $3 in
 		slaves56master34=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G56[$rand56s]}.$localdomainname" ospfctl show fib | grep "$routerid34s" | awk '{print $4}')
 		slaves56gre34=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G56[$rand56s]}.$localdomainname" ifconfig | grep $slaves56master34 | awk '{print $2}')
 		echo -e "Please configure WHOIS server for $secondarydomain with:"
-		printf '%s\n' $nsd34s 
-		printf '%s\n' $nsd12s 
-		printf '%s\n' $nsd56s 
+		printf '%s\n' $nsd34s
+		printf '%s\n' $nsd12s
+		printf '%s\n' $nsd56s
 		echo -e "Useful NSD parameters:"
 		printf '%s\t%s\t%s\n' $routerid34s $masters34gre12 $masters34gre56
 		printf '%s\t%s\n' $routerid12s $slaves12gre34
@@ -372,7 +375,7 @@ case $3 in
 			case $ctrl in
 				[yY]*)
 					echo $masters34gre12 > $tmpupload && echo $masters34gre56 >> $tmpupload && echo ${tsig256s} | tr -d ' ' >> $tmpupload && echo $secondarydomain >> $tmpupload
-					scp $tmpupload "${G34[$rand34s]}.$localdomainname:/tmp/powernsd_distributed" 
+					scp $tmpupload "${G34[$rand34s]}.$localdomainname:/tmp/powernsd_distributed"
 					ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -t "${G34[$rand34s]}.$localdomainname"  doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -D powernsd distributed
 					break
 				;;
@@ -390,7 +393,7 @@ case $3 in
 			case $ctrl in
 				[yY]*)
 					echo $masters34slave12 > $tmpupload && echo ${tsig256s} | tr -d ' ' >> $tmpupload && echo $secondarydomain >> $tmpupload
-					scp $tmpupload "${G12[$rand12s]}.$localdomainname:/tmp/powernsd_distributed" 
+					scp $tmpupload "${G12[$rand12s]}.$localdomainname:/tmp/powernsd_distributed"
 					ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -t "${G12[$rand12s]}.$localdomainname"  doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -D powernsd distributed
 					break
 				;;
@@ -408,7 +411,7 @@ case $3 in
 			case $ctrl in
 				[yY]*)
 					echo $masters34slave56 > $tmpupload && echo ${tsig256s} | tr -d ' ' >> $tmpupload && echo $secondarydomain >> $tmpupload
-					scp $tmpupload "${G56[$rand56s]}.$localdomainname:/tmp/powernsd_distributed" 
+					scp $tmpupload "${G56[$rand56s]}.$localdomainname:/tmp/powernsd_distributed"
 					ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -t "${G56[$rand56s]}.$localdomainname"  doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -D powernsd distributed
 					break
 				;;
@@ -459,7 +462,7 @@ case $3 in
 		for ((x=0 ; x<=255 ;)); do
 			for ((y=0 ; y<4; )); do
 				[[ $x < 255 ]] && \
-						
+
 					case $y in
 						0)
 							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 113 rule $((x+1)) action deny" >> $edgescript
@@ -480,8 +483,8 @@ case $3 in
 							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 113 rule $((x+1)) source any" >> $edgescript
 						;;
 					esac
-					
-					
+
+
 				let x+=1
 				let y+=1
 			done
@@ -493,15 +496,15 @@ case $3 in
 		#echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 131 rule $((x+10)) destination any" >> $edgescript
 		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper commit" >> $edgescript
 		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper save" >> $edgescript
-		
-		cat $edgescript | grep -v "rule 256" 
+
+		cat $edgescript | grep -v "rule 256"
 	;;
 	"-OO")
 		ospfdconf=$(mktemp)
 		for ((x=0 ; x<=255 ;)); do
 			for ((y=0 ; y<4; )); do
 				[[ $x < 255 ]] && \
-						
+
 					case $y in
 						0)
 							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 113 rule $((x+1)) action deny" >> $edgescript
@@ -522,8 +525,8 @@ case $3 in
 							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set policy access-list 113 rule $((x+1)) source any" >> $edgescript
 						;;
 					esac
-					
-					
+
+
 				let x+=1
 				let y+=1
 			done
@@ -538,7 +541,7 @@ case $3 in
 		fi
 		if [[ -e "$HOME/.ssh/id_ed25519" ]]; then
 			mv $HOME/.ssh/{id_ed25519,id_ed25519.pub,id_ed25519-cert.pub} "$HOME/.ssh/Backup$daterelease"
-		fi	
+		fi
 		ssh-keygen -t ed25519 -C "taglio@$localdomainname"
 		pwdfile=$(mktemp)
 		# Read Password
@@ -601,10 +604,10 @@ case $3 in
 			if [[ $remotelong -ge 60 && $remotelong -le 180 && $remotelat -le 0 ]]; then remotegroup=56 ; fi
 			[[ $group = $remotegroup ]] && \
 				echo "/routing ospf network set network=\"$grenetwork\" area=$group" >> $mkscript
-		done 
+		done
 		cat $mkscript
 		#scp $mkscript "admin@$mk:/newospfd.rsc"
-		ssh admin@$mk /import file-name=newospfd.rsc		
+		ssh admin@$mk /import file-name=newospfd.rsc
 		edgeos=
 		echo -e "Type the internal hostname of the EdgeOS: "
 		read edgeos
@@ -647,7 +650,7 @@ case $3 in
 		cat $auxscript | grep "0.0.0.0" >> $edgescript
 		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper commit" >> $edgescript
 		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper save" >> $edgescript
-		cat $edgescript 	
+		cat $edgescript
 	;;
 	*)
 	;;
