@@ -312,7 +312,7 @@ case $3 in
 		[[ ${#G12[@]} > 1 ]] && rand12p=$[$RANDOM % ${#G12[@]}] || rand12p="${G12[0]}"
 		[[ ${#G34[@]} > 1 ]] && rand34p=$[$RANDOM % ${#G34[@]}] || rand34p="${G34[0]}"
 		[[ ${#G56[@]} > 1 ]] && rand56p=$[$RANDOM % ${#G56[@]}] || rand56p="${G56[0]}"
-		echo -e "The master NSD server for $principledomain in the group 34 is ${G34[$rand34p]} slaves are in the group 12 ${G12[$rand12p]} and in the group 56 ${G56[$rand56p]}"
+		echo -e "The master PowerDNS server for $principledomain in the group 34 is ${G34[$rand34p]} slaves are in the group 12 ${G12[$rand12p]} and in the group 56 ${G56[$rand56p]}"
 		publicip=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q ${G34[$rand34p]}.$localdomainname ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
 		nsd34p=$(curl -s "http://ipinfo.io/$publicip" | grep hostname | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g" | sed "s/$principledomain/$secondarydomain/" | tr '[:lower:]' '[:upper:]')
 		routerid34p=$(dig "${G34[$rand34p]}.$localdomainname" A +short)
@@ -341,7 +341,7 @@ case $3 in
 		[[ ${#G12[@]} > 1 ]] && rand12s=$[$RANDOM % ${#G12[@]}] || rand12s="${G12[0]}"
 		[[ ${#G34[@]} > 1 ]] && rand34s=$[$RANDOM % ${#G34[@]}] || rand34s="${G34[0]}"
 		[[ ${#G56[@]} > 1 ]] && rand56s=$[$RANDOM % ${#G56[@]}] || rand56s="${G56[0]}"
-		echo -e "The master NSD server for $secondarydomain in the group 34 is ${G34[$rand34s]} slaves are in the group 12 ${G12[$rand12s]} and in the group 56 ${G56[$rand56s]}"
+		echo -e "The master PowerDNS server for $secondarydomain in the group 34 is ${G34[$rand34s]} slaves are in the group 12 ${G12[$rand12s]} and in the group 56 ${G56[$rand56s]}"
 		publicip=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q ${G34[$rand34s]}.$localdomainname ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
 		nsd34s=$(curl -s "http://ipinfo.io/$publicip" | grep hostname | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g" | tr '[:lower:]' '[:upper:]')
 		routerid34s=$(dig "${G34[$rand34s]}.$localdomainname" A +short)
@@ -363,7 +363,7 @@ case $3 in
 		printf '%s\n' $nsd34s
 		printf '%s\n' $nsd12s
 		printf '%s\n' $nsd56s
-		echo -e "Useful NSD parameters:"
+		echo -e "Useful PowerDNS parameters:"
 		printf '%s\t%s\t%s\n' $routerid34s $masters34gre12 $masters34gre56
 		printf '%s\t%s\n' $routerid12s $slaves12gre34
 		printf '%s\t%s\n' $routerid56s $slaves56gre34
