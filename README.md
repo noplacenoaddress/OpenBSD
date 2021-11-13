@@ -644,12 +644,11 @@ Next feature for example can be serving a web page in a different language depen
 ![Political Map](https://upload.wikimedia.org/wikipedia/commons/5/55/Political_Map_of_the_World.png)
 
 ```shell
-riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -Z
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -Z
 Type the two .com domains (the principle and the secondary) divided by a comma: 
 telecomlobby.com,9-rg.com
 
 telecomlobby.com: 
-   Name Server: B.NS.BUDDYNS.COM
    Name Server: JP.TELECOMLOBBY.COM
    Name Server: UK.TELECOMLOBBY.COM
    Name Server: US.TELECOMLOBBY.COM
@@ -658,13 +657,11 @@ DNSSEC not enable onto telecomlobby.com!
 <<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 9-rg.com: 
-fgets: Connection reset by peer
-   Name Server: B.NS.BUDDYNS.COM
    Name Server: JP.TELECOMLOBBY.COM
    Name Server: UK.TELECOMLOBBY.COM
    Name Server: US.TELECOMLOBBY.COM
 
-DNSSEC not enable onto 9-rg.com!
+DNSSEC enabled onto 9-rg.com!
 <<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>
 You've got servers in:
 
@@ -688,6 +685,7 @@ LONG --> -0
 GROUP --> 34
 BACKBONE OSPFAREA 0.0.0.0
 GEO OSPFAREA --> 0.0.3.4
+CONTINENT --> EU
 
 
 US	+415100-0873900	America/Chicago	Central (most areas)
@@ -700,7 +698,7 @@ US	+415100-0873900	America/Chicago	Central (most areas)
   "country": "US",
   "loc": "32.7831,-96.8067",
   "org": "AS20473 The Constant Company, LLC",
-  "postal": "75270",
+  "postal": "75201",
   "timezone": "America/Chicago",
 }
 LAT --> 32
@@ -709,6 +707,7 @@ LONG --> -96
 GROUP --> 12
 BACKBONE OSPFAREA 0.0.0.0
 GEO OSPFAREA --> 0.0.1.2
+CONTINENT --> NA
 
 
 JP	+353916+1394441	Asia/Tokyo
@@ -721,7 +720,7 @@ JP	+353916+1394441	Asia/Tokyo
   "country": "JP",
   "loc": "35.6895,139.6917",
   "org": "AS20473 The Constant Company, LLC",
-  "postal": "151-0052",
+  "postal": "101-8656",
   "timezone": "Asia/Tokyo",
 }
 LAT --> 35
@@ -730,6 +729,7 @@ LONG --> 139
 GROUP --> 56
 BACKBONE OSPFAREA 0.0.0.0
 GEO OSPFAREA --> 0.0.5.6
+CONTINENT --> AS
 
 
 BG	+4241+02319	Europe/Sofia
@@ -751,6 +751,7 @@ LONG --> 23
 GROUP --> 34
 BACKBONE OSPFAREA 0.0.0.0
 GEO OSPFAREA --> 0.0.3.4
+CONTINENT --> EU
 
 
 DE	+5230+01322	Europe/Berlin	Germany (most areas)
@@ -763,7 +764,7 @@ DE	+5230+01322	Europe/Berlin	Germany (most areas)
   "country": "DE",
   "loc": "50.1155,8.6842",
   "org": "AS20473 The Constant Company, LLC",
-  "postal": "60311",
+  "postal": "60306",
   "timezone": "Europe/Berlin",
 }
 LAT --> 50
@@ -772,6 +773,7 @@ LONG --> 8
 GROUP --> 34
 BACKBONE OSPFAREA 0.0.0.0
 GEO OSPFAREA --> 0.0.3.4
+CONTINENT --> EU
 
 
 AU	-3352+15113	Australia/Sydney	New South Wales (most areas)
@@ -793,8 +795,30 @@ LONG --> 151
 GROUP --> 56
 BACKBONE OSPFAREA 0.0.0.0
 GEO OSPFAREA --> 0.0.5.6
+CONTINENT --> OC
 
-riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ 
+
+ES	+4024-00341	Europe/Madrid	Spain (mainland)
+
+{
+  "ip": "188.213.5.62",
+  "hostname": "mad.telecomlobby.com",
+  "city": "Madrid",
+  "region": "Madrid",
+  "country": "ES",
+  "loc": "40.4165,-3.7026",
+  "org": "AS59432 GINERNET S.L.",
+  "postal": "28037",
+  "timezone": "Europe/Madrid",
+}
+LAT --> 40
+LONG --> -3
+
+GROUP --> 34
+BACKBONE OSPFAREA 0.0.0.0
+GEO OSPFAREA --> 0.0.3.4
+CONTINENT --> EU
+
 ```
 
 Using the `console` script from the workstation give us a global vision of our IPSec network. It's important because of management of the DNS servers and the geo-ip feature.
