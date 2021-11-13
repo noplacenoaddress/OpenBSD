@@ -619,11 +619,23 @@ Next some daemons that we've got to configure to start a new world of applicatio
 - a multi language web site, one for my work the other for my page of public compliant. 
 - a massive system of alert by www, smtpd and SIP.
 
-#### NSD and PowerDNS
+#### PowerDNS
 
-![](https://raw.githubusercontent.com/redeltaglio/OpenBSD/master/img/OpenBSD_5-9.jpg)
+![](https://jpmens.net/media/2015b/powerdns-geoip.png)
 
 [PowerDNS](https://en.wikipedia.org/wiki/PowerDNS) is a [DNS server](https://en.wikipedia.org/wiki/Name_server) that we are going to use because of it [GeoIP](https://en.wikipedia.org/wiki/Internet_geolocation) [features](https://doc.powerdns.com/authoritative/backends/geoip.html). Using that we will reply to dns request in different ways depending on the geographical position of the source IP. Onto the position in the world map of our client. Why? To load balance  requests and to archive a lot of features more.
+
+The [PowerDNS module](https://doc.powerdns.com/authoritative/backends/geoip.html) about geoip it's not included in the OpenBSD package, so we've got to compile that daemon and run it under a [chroot](https://en.wikipedia.org/wiki/Chroot) environment to be sure to not add a security problem in our network. What we're going to run in our VPS secure guerrilla network is [GeoDNS](https://jpmens.net/2015/11/12/geodns-with-powerdns-geoip-back-end/) being part of a content delivery network prepared to serve data despite the geographic position of the client.
+
+Our geographic aware CDN will work upon the [continent](https://en.wikipedia.org/wiki/Continent) definition that included:
+
+- **AF**, [Africa](https://en.wikipedia.org/wiki/Africa)
+- **AN**, [Antarctica](https://en.wikipedia.org/wiki/Antarctica) 
+- **AS**, [Asia](https://en.wikipedia.org/wiki/Asia)
+- **EU**, [Europe](https://en.wikipedia.org/wiki/Europe)
+- **NA**, [North America](https://en.wikipedia.org/wiki/North_America)
+- **OC**, [Oceania](https://en.wikipedia.org/wiki/Oceania) 
+- **SA**, [South America](https://en.wikipedia.org/wiki/South_America)
 
 Next feature for example can be serving a web page in a different language depending on the language used in the web browser of our client but this is another think.
 

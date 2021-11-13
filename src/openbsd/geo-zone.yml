@@ -1,0 +1,81 @@
+domains:
+- domain: /NSDDOMAIN/
+  ttl: 7200
+  records:
+    /NSDDOMAIN/:
+      - a: 86.207.199.137
+      - aaaa: 2a01:cb14:4a1:3403::afa
+      - soa: ns0.umbriel.fr. admin.umbriel.fr. 2018100703 43200 3600 2419200 10800
+      - mx: 10 spool.mail.gandi.net.
+      - mx: 50 fb.mail.gandi.net.
+      - ns: /FIRST/
+      - ns: /SECOND/
+      - ns: /THIRD/
+      - caa: &maincaa '0 issue "letsencrypt.org"'
+      - txt: v=spf1 include:_mailcust.gandi.net ?all
+
+    ns0.umbriel.fr:
+      - a: 86.207.199.137
+      - aaaa: 2a01:cb14:4a1:3403::20
+    ns1.umbriel.fr:
+      - a: 95.179.171.108
+      - aaaa: 2001:19f0:6c01:6f9:5400:01ff:feb3:3bb5
+    ns2.umbriel.fr:
+      - a: 139.180.210.63
+      - aaaa: 2001:19f0:4401:d43:5400:01ff:feb3:3c63
+
+    eu.cdn.umbriel.fr: &europe
+      - a:
+          content: 86.207.199.137
+          ttl: 300
+      - aaaa:
+          content: 2a01:cb14:4a1:3403::afa
+          ttl: 300
+      - txt:
+          content: Europe
+          ttl: 300
+      - caa: *maincaa
+    as.cdn.umbriel.fr: &asia
+      - a:
+          content: 45.32.124.194
+          ttl: 300
+      - aaaa:
+          content: 2001:19f0:4401:113c:5400:01ff:febe:e883
+          ttl: 300
+      - txt:
+          content: Asia
+          ttl: 300
+      - caa: *maincaa
+    oc.cdn.umbriel.fr: &oceania
+      - a:
+          content: 45.77.49.191
+          ttl: 300
+      - aaaa:
+          content: 2001:19f0:5801:10fc:5400:01ff:febe:e88a
+          ttl: 300
+      - txt:
+          content: Oceania
+          ttl: 300
+      - caa: *maincaa
+    na.cdn.umbriel.fr: &northamerica
+      - a:
+          content: 144.202.67.128
+          ttl: 300
+      - aaaa:
+          content: 2001:19f0:6401:1d0a:5400:01ff:febe:d39c
+          ttl: 300
+      - txt:
+          content: NorthAmerica
+          ttl: 300
+      - caa: *maincaa
+    sa.cdn.umbriel.fr: *northamerica
+    af.cdn.umbriel.fr: *europe
+    an.cdn.umbriel.fr: *europe
+    "*.cdn.umbriel.fr": *europe
+  services:
+    cdn.umbriel.fr: "%cn.cdn.umbriel.fr"
+    code.umbriel.fr: "%cn.cdn.umbriel.fr"
+    m.umbriel.fr: "%cn.cdn.umbriel.fr"
+    p.umbriel.fr: "%cn.cdn.umbriel.fr"
+    test.umbriel.fr: "%cn.cdn.umbriel.fr"
+    www.umbriel.fr: "%cn.cdn.umbriel.fr"
