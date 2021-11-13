@@ -27,6 +27,7 @@
 #audit: https://cisofy.com/lynis/
 #tricks: https://ioctl.uk/2018/11/openbsd-hardening-tricks/
 #pleroma: https://docs-develop.pleroma.social/backend/
+#pleroma: https://umbriel.fr/blog/Pleroma_installation_report.html
 
 #####
 #
@@ -247,7 +248,7 @@ function config_nsd {
 
 function jails {
 	[[ -e "/jails" ]] || mkdir "/jails"
-	[[ -e "/jails/${1}" ]] ||  mkdir -p "/jails/${1}/usr/{lib,libexec,local/lib/}"
+	[[ -e "/jails/${1}" ]] ||  mkdir -p "/jails/${1}/usr/{lib,libexec,local/lib/}" ; mkdir -p "/jails/${1}/var/{run,log}" ; mkdir "/jails/${1}/dev"
 }
 
 function config_pdns {
@@ -279,9 +280,15 @@ function config_pdns {
 	if ! getent passwd _powerdns  1>&-; then
 		useradd -m -u 609 -g =uid -c "PowerDNS Server" -d /nonexistent -s /sbin/nologin _powerdns
 	fi
-	cp -p "/usr/lib/"{libc++.so.8.0,libc++abi.so.5.0,libc.so.96.1,libcrypto.so.47.0,libpthread.so.26.1} "/jails/pdns/usr/lib/"
+	cp -p "/usr/lib/"{libc++.so.8.0,libc++abi.so.5.0,libc.so.96.1,libcrypto.so.47.0,libpthread.so.26.1,libm.so.10.1} "/jails/pdns/usr/lib/"
 	cp -p "/usr/libexec/ld.so" "/jails/pdns/usr/libexec"
-	cp -p "/usr/local/lib/libmaxminddb.so.0.0" "/jails/pdns/usr/local/lib/"
+	cp -p "/usr/local/lib/"{libmaxminddb.so.0.0,libyaml-cpp.so.3.0,libluajit-5.1.so.1.0} "/jails/pdns/usr/local/lib/"
+	rcctl set syslogd flags "-a /jails/pdns/dev/log"
+	rcctl restart syslogd
+	cd "/jails/pdns/dev"
+	sh "/dev/MAKEDEV" std
+	rm -rf console klog kmem ksysms mem stderr stdin stdout xf86 zero
+	cd "${basedir}"
 	[[ -d "/jails/pdns/etc/pdns" ]] || mkdir  "/jails/pdns/etc/pdns"
 	[[ -L "/etc/pdns" ]] || ln -s "/jails/pdns/etc/pdns" "/etc/pdns"
 	[[ -e "/jails/pdns/etc/pdns/GeoLite2-Country.mmdb" ]] || cp "/var/db/GeoIP/GeoLite2-Country.mmdb" "/jails/pdns/etc/pdns/GeoLite2-Country.mmdb"
