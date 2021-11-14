@@ -1593,8 +1593,9 @@ function configuration {
 		"smtpd")
 			pkg "smtpd"
 		;;
-		"powernsd")
-			pkg "powernsd"
+		"powerdns")
+		
+<<END_OF_COMMENT
 			[[ $(pidof "nsd") == "" ]] && \
 				rcctl enable nsd && \
 				rcctl set nsd flags "-c /var/nsd/etc/nsd.conf" \
@@ -1620,14 +1621,11 @@ function configuration {
 							"$(awk 'FNR == 3' /tmp/powernsd_distributed)"
 				;;
 			esac
-			config_pdns
-			[[ $(pidof "pdns") == "" ]] && \
-				[[ -d "/var/pdns" ]] && chown -R _powerdns:_powerdns "/var/pdns" || mkdir /var/pdns ; chown _powerdns:_powerdns /var/pdns && \
-				[[ -s "/var/pdns/pdns.sqlite" ]] && rm -rf "/var/pdns/pdns.sqlite" && \
-				[[ -s "/var/pdns/pdns.sqlite" ]] || sqlite3 "/var/pdns/pdns.sqlite" -init "src/openbsd/pdns-schema.sql" ".exit" ; chown _powerdns:_powerdns "/var/pdns/pdns.sqlite" && \
-				[[ -e "/etc/pdns/GeoLite2-Country.mmdb" ]] || install -o _powerdns -g _powerdns "src/openbsd/GeoLite2-Country.mmdb" "/etc/pdns" && \
-				[[ -e "/usr/local/lib/pdns/libgeoipbackend.so" ]] || install -o root -g wheel -m 0644 src/usr/local/lib/pdns/{libgeoipbackend.so,libpipebackend.so} "/usr/local/lib/pdns/"
+END_OF_COMMENT
 
+			[[ $(pidof "pdns") == "" ]] && \
+				config_pdns || \
+					echo "PowerDNS is running..." ; exit 1
 		;;
 	esac
 }
@@ -2148,7 +2146,7 @@ case $1 in
 		if [[ $# -eq 1 ]]; then
 			print $0 "DAEMONS option must be followed by: \
 				\n \
-				\npowernsd \
+				\npowerdns \
 				\nhttpd \
 				\nsmtpd  \
 				\nimapd   \
@@ -2156,12 +2154,12 @@ case $1 in
 			exit 1
 		fi
 		case $2 in
-			"powernsd")
-				echo "configuring nsd and powerdns"
+			"powerdns")
+				echo "configuring GeoDNS with powerdns"
 				 (: "${3?}") 2>/dev/null && \
-					configuration "powernsd" "$3" \
+					configuration "powerdns" "$3" \
 					|| \
-					configuration "powernsd"
+					configuration "powerdns"
 			;;
 			"smtpd")
 				echo "configuring smtpd"
