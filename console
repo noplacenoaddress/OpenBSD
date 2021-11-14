@@ -330,6 +330,18 @@ case $3 in
 		#slavep12gre34=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G12[$rand12p]}.$localdomainname" ifconfig | grep $slavep12master34 | awk '{print $2}')
 		#slavep56master34=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G56[$rand56p]}.$localdomainname" ospfctl show fib | grep "$routerid34p" | awk '{print $4}')
 		#slavep56gre34=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G56[$rand56p]}.$localdomainname" ifconfig | grep $slavep56master34 | awk '{print $2}')
+		epoch=$(date +%s)
+		if [[ ! -e "../db/domains.sqlite3" ]]; then
+			echo -e "initialize sqlite3 domains local database"
+			sqlite3 "../db/domains.sqlite3" < "src/openbsd/db.sql"
+			sqlite3 "../db/domains.sqlite3" "INSERT INTO domains (name,ns34,ns12,ns56,last_update)  values (\"$principledomain\",\"$routerid34p\",\"$routerid12p\",\"$routerid56p\",$epoch);"
+			if [ $dnssec = 0 ]; then
+				dnssec_keyid=$(whois "${principledomain}" | grep DNSSEC\ DS | awk '{print $4}' | head -n 1)
+				sqlite3 "../db/domains.sqlite3" "UPDATE domains SET dnssec = 0, dnssec_keyid = ${dnssec_keyid} WHERE name = ${principledomain};"
+			fi
+		else
+			
+		fi
 		echo -e "Please configure WHOIS server for $principledomain with:"
 		printf '%s\n' $nsd34p
 		printf '%s\n' $nsd12p
