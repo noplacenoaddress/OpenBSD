@@ -334,13 +334,16 @@ case $3 in
 		if [[ ! -e "../db/domains.sqlite3" ]]; then
 			echo -e "initialize sqlite3 domains local database"
 			sqlite3 "../db/domains.sqlite3" < "src/openbsd/db.sql"
-			sqlite3 "../db/domains.sqlite3" "INSERT INTO domains (name,ns34,ns12,ns56,last_update)  values (\"$principledomain\",\"$routerid34p\",\"$routerid12p\",\"$routerid56p\",$epoch);"
-			if [ $dnssec = 0 ]; then
-				dnssec_keyid=$(whois "${principledomain}" | grep DNSSEC\ DS | awk '{print $4}' | head -n 1)
-				sqlite3 "../db/domains.sqlite3" "UPDATE domains SET dnssec = 0, dnssec_keyid = ${dnssec_keyid} WHERE name = ${principledomain};"
-			fi
+
 		else
-			
+			echo -e "erasing and initializing sqlite3 domains local database"
+			sqlite3 "../db/domains.sqlite3" "DROP TABLE domains;"
+			sqlite3 "../db/domains.sqlite3" < "src/openbsd/db.sql"
+		fi
+		sqlite3 "../db/domains.sqlite3" "INSERT INTO domains (name,ns34,ns12,ns56,last_update)  values (\"$principledomain\",\"$routerid34p\",\"$routerid12p\",\"$routerid56p\",$epoch);"
+		if [ $dnssec = 0 ]; then
+			dnssec_keyid=$(whois "${principledomain}" | grep DNSSEC\ DS | awk '{print $4}' | head -n 1)
+			sqlite3 "../db/domains.sqlite3" "UPDATE domains SET dnssec = 0, dnssec_keyid = ${dnssec_keyid} WHERE name = ${principledomain};"
 		fi
 		echo -e "Please configure WHOIS server for $principledomain with:"
 		printf '%s\n' $nsd34p
