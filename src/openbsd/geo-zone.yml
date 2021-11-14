@@ -9,8 +9,8 @@ domains:
         - ns: /THIRD/
         - mx: 10 spool.mail./NSDDOMAIN/
         - caa: &maincaa '0 issue "letsencrypt.org"'
-        - ds: 22020 7 1 728023CADD4CDF96909000A9E79BEF424B3677A0
-        - ds: 22020 7 2 548BDCFE84669FFA8783E753BD1A8279C5374DF32707D5CB6B74445BCC733F5E
+        - ds: /DS1DOMAIN/
+        - ds: /DS2DOMAIN/
     /FIRST/:
         - a: /FIRSTIPDNS/
         - aaaa: /FIRSTIPV6DNS/
