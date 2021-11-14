@@ -28,10 +28,10 @@ domains:
         - aaaa: /THIRDIPV6MAIL/
     eu.cdn./NSDDOMAIN/: &europe
       - a:
-          content: 86.207.199.137
+          content: /CDNEUIP/
           ttl: 300
       - aaaa:
-          content: 2a01:cb14:4a1:3403::afa
+          content: /CDNEUIPV6/
           ttl: 300
       - txt:
           content: Europe
@@ -39,10 +39,10 @@ domains:
       - caa: *maincaa
     as.cdn./NSDDOMAIN/: &asia
       - a:
-          content: 45.32.124.194
+          content: /CDNASIP/
           ttl: 300
       - aaaa:
-          content: 2001:19f0:4401:113c:5400:01ff:febe:e883
+          content: /CDNASIPV6/
           ttl: 300
       - txt:
           content: Asia
@@ -50,10 +50,10 @@ domains:
       - caa: *maincaa
     oc.cdn./NSDDOMAIN/: &oceania
       - a:
-          content: 45.77.49.191
+          content: /CDNOCIP/
           ttl: 300
       - aaaa:
-          content: 2001:19f0:5801:10fc:5400:01ff:febe:e88a
+          content: /CDNOCIPV6/
           ttl: 300
       - txt:
           content: Oceania
@@ -61,23 +61,20 @@ domains:
       - caa: *maincaa
     na.cdn./NSDDOMAIN/: &northamerica
       - a:
-          content: 144.202.67.128
+          content: /CDNNAIP/
           ttl: 300
       - aaaa:
-          content: 2001:19f0:6401:1d0a:5400:01ff:febe:d39c
+          content: /CDNNAIPV6/
           ttl: 300
       - txt:
           content: NorthAmerica
           ttl: 300
       - caa: *maincaa
-    sa.cdn.umbriel.fr: *northamerica
-    af.cdn.umbriel.fr: *europe
-    an.cdn.umbriel.fr: *europe
-    "*.cdn.umbriel.fr": *europe
+    sa.cdn./NSDDOMAIN/: *northamerica
+    af.cdn./NSDDOMAIN/: *europe
+    an.cdn./NSDDOMAIN/: *europe
+    "*.cdn./NSDDOMAIN/": *europe
   services:
-    cdn.umbriel.fr: "%cn.cdn.umbriel.fr"
-    code.umbriel.fr: "%cn.cdn.umbriel.fr"
-    m.umbriel.fr: "%cn.cdn.umbriel.fr"
-    p.umbriel.fr: "%cn.cdn.umbriel.fr"
-    test.umbriel.fr: "%cn.cdn.umbriel.fr"
-    www.umbriel.fr: "%cn.cdn.umbriel.fr"
+    cdn.umbriel.fr: "%cn.cdn./NSDDOMAIN/"
+    m.umbriel.fr: "%cn.cdn./NSDDOMAIN/"
+    www.umbriel.fr: "%cn.cdn./NSDDOMAIN/"
