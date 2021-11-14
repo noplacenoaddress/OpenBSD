@@ -312,7 +312,7 @@ case $3 in
 		[[ ${#G12[@]} > 1 ]] && rand12p=$[$RANDOM % ${#G12[@]}] || rand12p="${G12[0]}"
 		[[ ${#G34[@]} > 1 ]] && rand34p=$[$RANDOM % ${#G34[@]}] || rand34p="${G34[0]}"
 		[[ ${#G56[@]} > 1 ]] && rand56p=$[$RANDOM % ${#G56[@]}] || rand56p="${G56[0]}"
-		echo -e "The master PowerDNS server for $principledomain in the group 34 is ${G34[$rand34p]} slaves are in the group 12 ${G12[$rand12p]} and in the group 56 ${G56[$rand56p]}"
+		echo -e "The master PowerDNS server for $principledomain in the group 34 is ${G34[$rand34p]} in the group 12 is ${G12[$rand12p]} and in the group 56 is ${G56[$rand56p]}"
 		publicip=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q ${G34[$rand34p]}.$localdomainname ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
 		nsd34p=$(curl -s "http://ipinfo.io/$publicip" | grep hostname | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g" | sed "s/$principledomain/$secondarydomain/" | tr '[:lower:]' '[:upper:]')
 		routerid34p=$(dig "${G34[$rand34p]}.$localdomainname" A +short)
@@ -322,22 +322,22 @@ case $3 in
 		publicip=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q ${G56[$rand56p]}.$localdomainname ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
 		nsd56p=$(curl -s "http://ipinfo.io/$publicip" | grep hostname | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g" | sed "s/$principledomain/$secondarydomain/" | tr '[:lower:]' '[:upper:]')
 		routerid56p=$(dig "${G56[$rand56p]}.$localdomainname" A +short)
-		masterp34slave12=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G34[$rand34p]}.$localdomainname" ospfctl show fib | grep "$routerid12p" | awk '{print $4}')
-		masterp34gre12=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G34[$rand34p]}.$localdomainname" ifconfig | grep $masterp34slave12 | awk '{print $2}')
-		masterp34slave56=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G34[$rand34p]}.$localdomainname" ospfctl show fib | grep "$routerid56p" | awk '{print $4}')
-		masterp34gre56=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G34[$rand34p]}.$localdomainname" ifconfig | grep $masterp34slave56 | awk '{print $2}')
-		slavep12master34=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G12[$rand12p]}.$localdomainname" ospfctl show fib | grep "$routerid34p" | awk '{print $4}')
-		slavep12gre34=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G12[$rand12p]}.$localdomainname" ifconfig | grep $slavep12master34 | awk '{print $2}')
-		slavep56master34=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G56[$rand56p]}.$localdomainname" ospfctl show fib | grep "$routerid34p" | awk '{print $4}')
-		slavep56gre34=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G56[$rand56p]}.$localdomainname" ifconfig | grep $slavep56master34 | awk '{print $2}')
+		#masterp34slave12=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G34[$rand34p]}.$localdomainname" ospfctl show fib | grep "$routerid12p" | awk '{print $4}')
+		#masterp34gre12=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G34[$rand34p]}.$localdomainname" ifconfig | grep $masterp34slave12 | awk '{print $2}')
+		#masterp34slave56=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G34[$rand34p]}.$localdomainname" ospfctl show fib | grep "$routerid56p" | awk '{print $4}')
+		#masterp34gre56=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G34[$rand34p]}.$localdomainname" ifconfig | grep $masterp34slave56 | awk '{print $2}')
+		#slavep12master34=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G12[$rand12p]}.$localdomainname" ospfctl show fib | grep "$routerid34p" | awk '{print $4}')
+		#slavep12gre34=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G12[$rand12p]}.$localdomainname" ifconfig | grep $slavep12master34 | awk '{print $2}')
+		#slavep56master34=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G56[$rand56p]}.$localdomainname" ospfctl show fib | grep "$routerid34p" | awk '{print $4}')
+		#slavep56gre34=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G56[$rand56p]}.$localdomainname" ifconfig | grep $slavep56master34 | awk '{print $2}')
 		echo -e "Please configure WHOIS server for $principledomain with:"
 		printf '%s\n' $nsd34p
 		printf '%s\n' $nsd12p
 		printf '%s\n' $nsd56p
-		echo -e "Useful NSD parameters:"
-		printf '%s\t%s\t%s\n' $routerid34p $masterp34gre12 $masterp34gre56
-		printf '%s\t%s\n' $routerid12p $slavep12gre34
-		printf '%s\t%s\n' $routerid56p $slavep56gre34
+		echo -e "Useful PowerDNS parameters:"
+		printf '%s\t%s\t%s\n' $routerid34p #$masterp34gre12 $masterp34gre56
+		printf '%s\t%s\n' $routerid12p #$slavep12gre34
+		printf '%s\t%s\n' $routerid56p #$slavep56gre34
 		[[ ${#G12[@]} > 1 ]] && rand12s=$[$RANDOM % ${#G12[@]}] || rand12s="${G12[0]}"
 		[[ ${#G34[@]} > 1 ]] && rand34s=$[$RANDOM % ${#G34[@]}] || rand34s="${G34[0]}"
 		[[ ${#G56[@]} > 1 ]] && rand56s=$[$RANDOM % ${#G56[@]}] || rand56s="${G56[0]}"
@@ -351,32 +351,32 @@ case $3 in
 		publicip=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q ${G56[$rand56s]}.$localdomainname ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
 		nsd56s=$(curl -s "http://ipinfo.io/$publicip" | grep hostname | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g" | tr '[:lower:]' '[:upper:]')
 		routerid56s=$(dig "${G56[$rand56s]}.$localdomainname" A +short)
-		masters34slave12=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G34[$rand34s]}.$localdomainname" ospfctl show fib | grep "$routerid12s" | awk '{print $4}')
-		masters34gre12=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G34[$rand34s]}.$localdomainname" ifconfig | grep $masters34slave12 | awk '{print $2}')
-		masters34slave56=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G34[$rand34s]}.$localdomainname" ospfctl show fib | grep "$routerid56s" | awk '{print $4}')
-		masters34gre56=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G34[$rand34s]}.$localdomainname" ifconfig | grep $masters34slave56 | awk '{print $2}')
-		slaves12master34=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G12[$rand12s]}.$localdomainname" ospfctl show fib | grep "$routerid34s" | awk '{print $4}')
-		slaves12gre34=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G12[$rand12s]}.$localdomainname" ifconfig | grep $slaves12master34 | awk '{print $2}')
-		slaves56master34=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G56[$rand56s]}.$localdomainname" ospfctl show fib | grep "$routerid34s" | awk '{print $4}')
-		slaves56gre34=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G56[$rand56s]}.$localdomainname" ifconfig | grep $slaves56master34 | awk '{print $2}')
+		#masters34slave12=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G34[$rand34s]}.$localdomainname" ospfctl show fib | grep "$routerid12s" | awk '{print $4}')
+		#masters34gre12=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G34[$rand34s]}.$localdomainname" ifconfig | grep $masters34slave12 | awk '{print $2}')
+		#masters34slave56=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G34[$rand34s]}.$localdomainname" ospfctl show fib | grep "$routerid56s" | awk '{print $4}')
+		#masters34gre56=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G34[$rand34s]}.$localdomainname" ifconfig | grep $masters34slave56 | awk '{print $2}')
+		#slaves12master34=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G12[$rand12s]}.$localdomainname" ospfctl show fib | grep "$routerid34s" | awk '{print $4}')
+		#slaves12gre34=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G12[$rand12s]}.$localdomainname" ifconfig | grep $slaves12master34 | awk '{print $2}')
+		#slaves56master34=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G56[$rand56s]}.$localdomainname" ospfctl show fib | grep "$routerid34s" | awk '{print $4}')
+		#slaves56gre34=$(ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -q "${G56[$rand56s]}.$localdomainname" ifconfig | grep $slaves56master34 | awk '{print $2}')
 		echo -e "Please configure WHOIS server for $secondarydomain with:"
 		printf '%s\n' $nsd34s
 		printf '%s\n' $nsd12s
 		printf '%s\n' $nsd56s
 		echo -e "Useful PowerDNS parameters:"
-		printf '%s\t%s\t%s\n' $routerid34s $masters34gre12 $masters34gre56
-		printf '%s\t%s\n' $routerid12s $slaves12gre34
-		printf '%s\t%s\n' $routerid56s $slaves56gre34
+		printf '%s\t%s\t%s\n' $routerid34s #$masters34gre12 $masters34gre56
+		printf '%s\t%s\n' $routerid12s #$slaves12gre34
+		printf '%s\t%s\n' $routerid56s #$slaves56gre34
 		tsig256s=$(dd if=/dev/urandom of=/dev/stdout count=1 bs=64 status=none | openssl base64)
 		tmpupload=$(mktemp)
 		ctrl=
 		while true; do
-			read -p "Start configuring $secondarydomain onto master NSD on ${G34[$rand34s]}? yes/no: " ctrl
+			read -p "Start configuring $secondarydomain onto native PowerDNS on ${G34[$rand34s]}? yes/no: " ctrl
 			case $ctrl in
 				[yY]*)
-					echo $masters34gre12 > $tmpupload && echo $masters34gre56 >> $tmpupload && echo ${tsig256s} | tr -d ' ' >> $tmpupload && echo $secondarydomain >> $tmpupload
+					echo $routerid12s > $tmpupload && echo $routerid56s >> $tmpupload && echo ${tsig256s} | tr -d ' ' >> $tmpupload && echo $secondarydomain >> $tmpupload
 					scp $tmpupload "${G34[$rand34s]}.$localdomainname:/tmp/powernsd_distributed"
-					ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -t "${G34[$rand34s]}.$localdomainname"  doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -D powernsd distributed
+					ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -t "${G34[$rand34s]}.$localdomainname"  doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -D powerdns #distributed
 					break
 				;;
 				[nN]*)
@@ -389,12 +389,12 @@ case $3 in
 		done
 		ctrl=
 		while true; do
-			read -p "Continue with configuring $secondarydomain onto slave NSD on ${G12[$rand12s]}? yes/no: " ctrl
+			read -p "Continue with configuring $secondarydomain onto native PowerDNS on ${G12[$rand12s]}? yes/no: " ctrl
 			case $ctrl in
 				[yY]*)
 					echo $masters34slave12 > $tmpupload && echo ${tsig256s} | tr -d ' ' >> $tmpupload && echo $secondarydomain >> $tmpupload
 					scp $tmpupload "${G12[$rand12s]}.$localdomainname:/tmp/powernsd_distributed"
-					ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -t "${G12[$rand12s]}.$localdomainname"  doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -D powernsd distributed
+					ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -t "${G12[$rand12s]}.$localdomainname"  doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -D powerdns #distributed
 					break
 				;;
 				[nN]*)
@@ -407,12 +407,12 @@ case $3 in
 		done
 		ctrl=
 		while true; do
-			read -p "Continue with configuring $secondarydomain onto slave NSD on ${G56[$rand56s]}? yes/no: " ctrl
+			read -p "Continue with configuring $secondarydomain onto native PowerDNS on ${G56[$rand56s]}? yes/no: " ctrl
 			case $ctrl in
 				[yY]*)
 					echo $masters34slave56 > $tmpupload && echo ${tsig256s} | tr -d ' ' >> $tmpupload && echo $secondarydomain >> $tmpupload
 					scp $tmpupload "${G56[$rand56s]}.$localdomainname:/tmp/powernsd_distributed"
-					ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -t "${G56[$rand56s]}.$localdomainname"  doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -D powernsd distributed
+					ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -t "${G56[$rand56s]}.$localdomainname"  doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -D powerdns #distributed
 					break
 				;;
 				[nN]*)
