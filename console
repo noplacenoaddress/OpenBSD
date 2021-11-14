@@ -393,7 +393,7 @@ case $3 in
 			case $ctrl in
 				[yY]*)
 					echo $masters34slave12 > $tmpupload && echo ${tsig256s} | tr -d ' ' >> $tmpupload && echo $secondarydomain >> $tmpupload
-					scp $tmpupload "${G12[$rand12s]}.$localdomainname:/tmp/powernsd_distributed"
+					scp $tmpupload "${G12[$rand12s]}.$localdomainname:/tmp/powerdns_distributed"
 					ssh -o ConnectTimeout=1 -o ConnectionAttempts=1 -t "${G12[$rand12s]}.$localdomainname"  doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -D powerdns #distributed
 					break
 				;;

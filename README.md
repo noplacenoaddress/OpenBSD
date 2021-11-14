@@ -827,6 +827,26 @@ I use two domain names because administrating the NS pulls which others.
 
 I've divided world into three groups depending onto GPS system. `console` give you at what group is pertaining every host connected to our guerrilla network. Next we will create three containers in which we will put those hosts to create three pulls of name servers. After depending onto the geographical position of the client doing the query the system will reply in a manner or another using the `powerdns` geo-ip feature.
 
+In the GeoDNS server dynamic choose our `console` script will save data into a [SQLite](https://www.sqlite.org/index.html) database, which is initialized by a template found in `src/openbsd` directory. Schema is very simple:
+
+```sqlite
+PRAGMA foreign_keys = 1;
+
+CREATE TABLE domains (
+  id                    INTEGER PRIMARY KEY,
+  name                  VARCHAR(255) NOT NULL COLLATE NOCASE,
+  ns34                  VARCHAR(40) DEFAULT NULL,
+  ns12                  VARCHAR(40) DEFAULT NULL,
+  ns56                  VARCHAR(40) DEFAULT NULL,
+  dnssec                TINYINT DEFAULT 0,
+  dnssec_keyid          VARCHAR(5) DEFAULT NULL,
+  last_update           INTEGER DEFAULT NULL,
+  last_check            INTEGER DEFAULT NULL,
+);
+```
+
+
+
 Another important feature is that our tool give us information withing the [whois database](https://en.wikipedia.org/wiki/WHOIS) if the suite of extensions [DNSSEC](https://en.wikipedia.org/wiki/Domain_Name_System_Security_Extensions) is enable from the registrant. 	
 
 #### DNSSEC
@@ -907,7 +927,7 @@ riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ whois 9-rg.com | grep DNSSEC
    DNSSEC DS Data: 22020 7 1 728023CADD4CDF96909000A9E79BEF424B3677A0
 DNSSEC: signedDelegation
 riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ 
-
+	
 ```
 
 Change the `nsd.conf` file and specify the new signed zone:
