@@ -47,7 +47,8 @@ BACKUPS="/root/Backups"
 
 uid=$(id -u)
 wheeluser=$(cat /etc/group | grep wheel | sed "s|wheel:\*:0:root||" | sed "s|^.*,||")
-app=$(basename $0) wheeluser=
+app=$(basename $0)
+wheeluser=
 ver=$(uname -a | awk '{print $3}')
 egressinterface=$(ifconfig egress | cut -d  : -f1 | head -n1)
 publicip=$(ifconfig $egressinterface | grep inet |grep -v inet6 | cut -d ' ' -f2)
