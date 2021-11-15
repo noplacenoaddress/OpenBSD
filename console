@@ -35,6 +35,7 @@ if [[ $# -eq 0 ]]; then
 			\n-U  -> update the workstation's user EdDSA certificate [o] \
 			\n-NO -> newospf configuration [o] \
 			\n-PF -> new firewall configuration [o] \
+			\n-CHR -> new RouterOS Cloud Hosted Router istance [o] \
 			\n"
 
 	exit 1
@@ -666,6 +667,8 @@ case $3 in
 		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper commit" >> $edgescript
 		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper save" >> $edgescript
 		cat $edgescript
+	;;
+	"-CHR")
 	;;
 	*)
 	;;
