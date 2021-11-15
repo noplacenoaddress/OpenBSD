@@ -542,8 +542,43 @@ Next we've got to prepare the domain name zone with the propers values to indica
 
 - an A entry for `ixp`, in the cloud service we will add the PTR for the ip. 
 - `vpnc` and `vpncN` A values, passing the last host added from `vpncN` to the `vpnc` pool (something used normally to obtain DNS [load balancing](https://en.wikipedia.org/wiki/Load_balancing_(computing)) as with [round robin](https://en.wikipedia.org/wiki/Round-robin_DNS)) .
+- `ipsec20591` append to the TXT string `ixp:calli;`.
+- `gre7058` add the last /30 configured as usual, in this case `104`.
+- `gre18994` the number of the hosts in the `vpnc` pool, in this case `8`.
 
+Now simply start the `console` script with the `-CHR` option:
 
+```bash
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console 
+./console have to be used with the following options 			
+-I  -> local domain name [x]			
+-N  -> newhost [o]			
+-G  -> git pull [o]			
+-S  -> scripts [o] 			
+-D  -> dyndnspop [o] 			
+-F  -> single file update [o] 			
+-C  -> cleanlast [o] 			
+-RS -> repository ssh update [o] 			
+-K  -> new IKED pk12 archive [o] 			
+-T  -> tmux and SSH to all openbsd MESH hosts [o] 			
+-M  -> Mikrotik RouterOS add new OpenBSD [o] 			
+-E  -> Ubiquiti EdgeOS add new OpenBSD [o] 			
+-P  -> Mass syspatch OpenBSD hosts [o] 			
+-Z  -> Global network domains setup [o] 			
+-OM -> Mikrotik RouterOS ospf-in/out filter [o] 			
+-OE -> EdgeOS ospf-in/out filter [o] 			
+-OO -> OpenBSD ospf filter [o] 			
+-U  -> update the workstation's user EdDSA certificate [o] 			
+-NO -> newospf configuration [o] 			
+-PF -> new firewall configuration [o] 			
+-CHR -> new RouterOS Cloud Hosted Router istance [o] 			
+
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ 
+```
+
+Remember to have a IPv4 running stack configured.
+
+ 
 
 #### Routine maintenance
 
