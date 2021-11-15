@@ -524,10 +524,13 @@ I report the routine to buy a new CHR virtual router license.
 
 Licenses in CHR that are router instances running over cloud VPS services are different from the physics ones. 
 
+![](https://github.com/redeltaglio/OpenBSD/raw/master/img/routeros_licences.jpg)
+
 1. Install RouterOS using the procedure described apropos OpenBSD over a Linux installation.  
 2. Do this downloading the [RAW disc image](https://en.wikipedia.org/wiki/IMG_(file_format)) of the RouterOS prepared for [Cloud Hosted Router](https://help.mikrotik.com/docs/pages/viewpage.action?pageId=18350234).
 3. Open an account into the [Mikrotik client page](https://mikrotik.com/client).
-4. 
+4. As you can see in the image above System ID is different from physic or X86 installations. Press "Renew License" to get a one month limited free trial. When it will expire you will see a check upon "Limited Upgrades". 
+5. But the license in your account page.
 
 #### Routine maintenance
 
