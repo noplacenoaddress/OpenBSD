@@ -607,6 +607,10 @@ If the VPS provider got the option to install OpenBSD, a custom ISO or hasn't th
 
 The upgrade our git repository and launch the `upgrade.sh` script. Remember to wait a couple of days after the [release announce](https://www.openbsd.org/69.html) is published by [Theo de Raddt](https://www.theos.com/deraadt/).
 
+#### Add a new Mikrotik virtual router
+
+
+
 #### Possible applications
 
 Let's start discussing how we can boost our presence in Internet using that guerrilla MESH system that guaranty our privacy and security on the web. My first project is regarding a website replicated over different countries in all the languages over the world. Something very important to obtain maximum results about clients, about web goods sell, about be recognized over it and about whatever we want to obtain searching for visibility.
