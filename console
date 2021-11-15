@@ -8,6 +8,13 @@ userhome="/home/${userna}"
 proghome="$userhome/Sources/Git/OpenBSD"
 daterelease=$(date +"%d%m%Y%H%m%S")
 
+#FUNCTIONS
+
+function passcheck () {
+	z=$(timeout  --preserve-status 5 ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 "${userna}"@"${1}" exit)
+	echo $?
+}
+
 if [[ $uid -ne 1000 ]]; then
 	echo -e $0 "you've got to run $0 as UID=1000 \n"
 	exit 1
@@ -669,7 +676,28 @@ case $3 in
 		cat $edgescript
 	;;
 	"-CHR")
+		read -p "Type CHR public hostname: " chr
+		publichostname=$(echo "${chr}" | cut -d . -f1)
+		domainname=$(echo "${chr}" | sed "s|${publichostname}.||")
+		for a in $(dig ipsec20591.$domainname TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+			b=$(echo $a | cut -d : -f1)
+			if [[ "$b" -eq "$publichostname" ]]; then
+				srcid=$(echo $a | cut -d : -f2)
+			fi
+		done
 
+		pwd=$(passcheck "${chr}")
+		if [[ $pwd = "0" ]]; then
+			echo "sin contraseña"
+			sshcmd="ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5"
+			scpcmd="scp -o StrictHostKeyChecking=no -o ConnectTimeout=5"
+		elif [[ $pwd = "143" ]]; then
+			echo "con contraseña"
+			password=$(systemd-ask-password "Enter ${chr} ${userna} password: ")
+			sshcmd="sshpass -p ${password} ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5"
+			scpcmd="sshpass -p ${password} scp -o StrictHostKeyChecking=no -o ConnectTimeout=5"
+		fi
+		
 	;;
 	*)
 	;;

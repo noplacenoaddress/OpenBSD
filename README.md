@@ -570,7 +570,13 @@ calli@ca.telecomlobby.com created please update repository and all the others Op
 taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ 
 ```
 
-Next update the Github public repository, and pull all the OpenBSD hosts.
+Next update the Github public repository, and pull all the OpenBSD hosts. Sequence of commands are:
+
+```bash
+sh git_openbsd.sh
+./console -I telecom.lobby -G
+./console -I telecom.lobby -N
+```
 
 Now simply start the `console` script with the `-CHR` option:
 
@@ -599,14 +605,8 @@ taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console
 -PF -> new firewall configuration [o] 			
 -CHR -> new RouterOS Cloud Hosted Router istance [o] 			
 
-taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ 
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$  
 ```
-
-
-
-
-
- 
 
 #### Routine maintenance
 
