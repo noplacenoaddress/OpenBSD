@@ -546,6 +546,32 @@ Next we've got to prepare the domain name zone with the propers values to indica
 - `gre7058` add the last /30 configured as usual, in this case `104`.
 - `gre18994` the number of the hosts in the `vpnc` pool, in this case `8`.
 
+Next create the `p12` compressed and encrypted certificate as we've done with OpenBSD. Download it locally onto the workstation and use another time the `console` script with `-K` option. Remember to have an IPv4 running stack configured and to change the default `admin` user into your user, in my case `taglio`. Do it adding the new one allowing only your public address, rejoin winbox or ssh and then delete `admin`.
+
+ ```bash
+ [admin@MikroTik] > /user add name=taglio group=full address=94.72.143.163/32 password=
+ ```
+
+Add a password, I generate it with a password administration tool.
+
+```bash
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ mv /home/taglio/Work/redama/calli/cert_export_ixp.telecomlobby.com.p12 /home/taglio/Work/redama/calli/ixp.telecomlobby.com.p12
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -K
+Type the PATH to the new iked PK12 file 
+/home/taglio/Work/redama/calli/ixp.telecomlobby.com.p12
+Host ixp.telecomlobby.com not found in /home/taglio/.ssh/known_hosts
+The authenticity of host 'ixp.telecomlobby.com (5.134.119.135)' can't be established.
+RSA key fingerprint is SHA256:HtT0d7oUb8r/r43utGn4+9nfSL34tzYHn7xavgVPmW8.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added 'ixp.telecomlobby.com,5.134.119.135' (RSA) to the list of known hosts.
+taglio@ixp.telecomlobby.com's password: 
+ixp.telecomlobby.com.p12                                                                                                                                                                                                                                100% 3874    33.0KB/s   00:00    
+calli@ca.telecomlobby.com created please update repository and all the others Openbsd hosts
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ 
+```
+
+Next update the Github public repository, and pull all the OpenBSD hosts.
+
 Now simply start the `console` script with the `-CHR` option:
 
 ```bash
@@ -576,7 +602,9 @@ taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console
 taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ 
 ```
 
-Remember to have a IPv4 running stack configured.
+
+
+
 
  
 
