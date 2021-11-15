@@ -520,6 +520,12 @@ And here you a video:
 
 [![OpenBSD MESH IPSec guerrila host](https://asciinema.org/a/421957.png)](https://asciinema.org/a/421957)
 
+#### Add a new Mikrotik Cloud Hosted Router 
+
+As you can add a new OpenBSD VPS to the network, it's possible also to add a new Mikrotik VPS. Normally I use RouterOS as my WISP client endpoint IPSEC. Connection is a little bit more stable and fluid than with OpenBSD, remember that I've got an EdgeOS in my physic installation. 
+
+The OpenBSD network is more focused as Content Delivery Network, serving web pages and other services geographically  located in different parts of the world.
+
 I report the routine to buy a new CHR virtual router license. 
 
 Licenses in CHR that are router instances running over cloud VPS services are different from the physics ones. 
