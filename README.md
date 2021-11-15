@@ -538,6 +538,13 @@ Licenses in CHR that are router instances running over cloud VPS services are di
 4. As you can see in the image above System ID is different from physic or X86 installations. Press "Renew License" to get a one month limited free trial. When it will expire you will see a check upon "Limited Upgrades". 
 5. But the license in your account page.
 
+Next we've got to prepare the domain name zone with the propers values to indicate to others peers the new entry as we've done with OpenBSD, in this example the CHR istance to add is `ixp.telecomlobby.com` as public host name and `calli.telecom.lobby` as internal host name. As usual we edit those values:
+
+- an A entry for `ixp`, in the cloud service we will add the PTR for the ip. 
+- `vpnc` and `vpncN` A values, passing the last host added from `vpncN` to the `vpnc` pool (something used normally to obtain DNS [load balancing](https://en.wikipedia.org/wiki/Load_balancing_(computing)) as with [round robin](https://en.wikipedia.org/wiki/Round-robin_DNS)) .
+
+
+
 #### Routine maintenance
 
 ![](https://thumbs.dreamstime.com/b/routine-maintenance-mechanism-golden-metallic-cogwheels-glow-effect-d-rendering-concept-gears-illustration-114332777.jpg)
