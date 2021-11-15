@@ -520,6 +520,15 @@ And here you a video:
 
 [![OpenBSD MESH IPSec guerrila host](https://asciinema.org/a/421957.png)](https://asciinema.org/a/421957)
 
+I report the routine to buy a new CHR virtual router license. 
+
+Licenses in CHR that are router instances running over cloud VPS services are different from the physics ones. 
+
+1. Install RouterOS using the procedure described apropos OpenBSD over a Linux installation.  
+2. Do this downloading the [RAW disc image](https://en.wikipedia.org/wiki/IMG_(file_format)) of the RouterOS prepared for [Cloud Hosted Router](https://help.mikrotik.com/docs/pages/viewpage.action?pageId=18350234).
+3. Open an account into the [Mikrotik client page](https://mikrotik.com/client).
+4. 
+
 #### Routine maintenance
 
 ![](https://thumbs.dreamstime.com/b/routine-maintenance-mechanism-golden-metallic-cogwheels-glow-effect-d-rendering-concept-gears-illustration-114332777.jpg)
@@ -606,10 +615,6 @@ The new configuration follow the same concept of division in quadrants of the pl
 If the VPS provider got the option to install OpenBSD, a custom ISO or hasn't the solution is always the same, use `sysupgrade`.
 
 The upgrade our git repository and launch the `upgrade.sh` script. Remember to wait a couple of days after the [release announce](https://www.openbsd.org/69.html) is published by [Theo de Raddt](https://www.theos.com/deraadt/).
-
-#### Add a new Mikrotik virtual router
-
-
 
 #### Possible applications
 
