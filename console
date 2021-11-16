@@ -712,6 +712,9 @@ case $3 in
 				sshcmd="sshpass -p ${password} ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5"
 				scpcmd="sshpass -p ${password} scp -o StrictHostKeyChecking=no -o ConnectTimeout=5"
 			fi
+			echo "resetting default values"
+			eval "${scpcmd} src/mikrotik/CHR-reset.rsc ${userna}@${chr}:/"
+			eval "${sshcmd} ${userna}@${chr} :execute \{/import file-name=CHR-reset.rsc\}"
 			echo "configuring hostname, timezone, date, time"
 			eval "${sshcmd} ${userna}@${chr} /sys id set name=${srcid}.$localdomainname"
 			chrtz=$(curl -s "http://ipinfo.io/${chrpubip}" | sed '/readme/d' | grep timezone | awk '{print $2}' | sed -e "s|\"||g" -e "s|,||")
@@ -727,32 +730,45 @@ case $3 in
 			sshcmd="ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5"
 			scpcmd="scp -o StrictHostKeyChecking=no -o ConnectTimeout=5"
 			echo "adding ${chr} common IPSEC settings"
-			eval "${sshcmd} ${userna}@${chr} /ip ipsec policy group remove [find name=group_ikev2_cert] \; /ip ipsec policy group add name=group_ikev2_cert"
-			eval "${sshcmd} ${userna}@${chr} /ip ipsec profile remove [find name=NSA-RECOMMENDED] \; \
-				/ip ipsec profile add dh-group=ecp384,modp3072 dpd-interval=15s dpd-maximum-failures=1 enc-algorithm=aes-256 hash-algorithm=sha256 name=NSA-RECOMMENDED nat-traversal=no"
-			eval "${sshcmd} ${userna}@${chr} /ip ipsec proposal remove [find name=NSA] \; \
-				/ip ipsec proposal add auth-algorithms=sha256 enc-algorithms=aes-256-cbc lifetime=1h name=NSA pfs-group=none"
+			eval "${sshcmd} ${userna}@${chr} /ip ipsec policy group add name=group_ikev2_cert"
+			eval "${sshcmd} ${userna}@${chr} /ip ipsec profile add dh-group=ecp384,modp3072 dpd-interval=15s dpd-maximum-failures=1 enc-algorithm=aes-256 hash-algorithm=sha256 name=NSA-RECOMMENDED nat-traversal=no"
+			eval "${sshcmd} ${userna}@${chr} /ip ipsec proposal add auth-algorithms=sha256 enc-algorithms=aes-256-cbc lifetime=1h name=NSA pfs-group=none"
 			ipsecpeers=$(mktemp)
 			eval "${sshcmd} ${userna}@uma.telecom.lobby /ip ipsec peer export > ${ipsecpeers}"
 			sed -i "s|45.32.144.15|${chrpubip}|g" "${ipsecpeers}"
+			echo "/ip ipsec peer add name=uma_ikev2_cert address=45.32.144.15 local-address=${chrpubip} exchange-mode=ike2 passive=yes profile=NSA-RECOMMENDED" >> ${ipsecpeers}
 			eval "${scpcmd} ${ipsecpeers} ${userna}@${chr}:/ipsec_peers.rsc"
 			srm "${ipsecpeers}"
 			eval "${sshcmd} ${userna}@${chr} /import file-name=ipsec_peers.rsc"
 			echo "installing local private and public key and peers public keys"
 			read -p "Type local directory with p12 exported IPsec certificates: " p12dir
 			eval "${scpcmd} ${p12dir}/${srcid}/${chr}.p12 ${userna}@${chr}:/"
-			eval "${sshcmd} ${userna}@${chr} /certficate import file-name=${chr}.p12 name=${chr} passphrase=123456789"
-			eval "${sshcmd} ${userna}@${chr} /certficate [find name=${chr}-1.p12] name=fr.telecomlobby.com"
+			eval "${sshcmd} ${userna}@${chr} /certificate import file-name=${chr}.p12 name=${chr} passphrase=123456789"
+			eval "${sshcmd} ${userna}@${chr} /certificate set [find name=${chr}_1] name=ca.telecomlobby.com"
 			for certpath in $(find "${p12dir}" -name "*.p12"); do
 				certfile=$(basename "${certpath}")
-				peerpublichostname=$(echo "${certfile}" |  sed "s|.p12/||")
+				peerpublichostname=$(echo "${certfile}" |  sed "s|.p12||")
 				certdir=$(dirname "${certpath}")
 				peerlocalhostname=$(echo "${certdir}" | sed "s|${p12dir}/||")
 				tmpdir=$(mktemp -d)
 				openssl pkcs12 -nodes -in "${certpath}" -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "$tmpdir/$peerlocalhostname.crt"
 				eval "${scpcmd} $tmpdir/$peerlocalhostname.crt ${userna}@${chr}:/"
-				eval "${sshcmd} ${userna}@${chr} /certficate import file-name=$peerlocalhostname.crt name=${peerpublichostname}"
+				eval "${sshcmd} ${userna}@${chr} /certificate import file-name=$peerlocalhostname.crt name=${peerpublichostname} passphrase=123456789"
+				srm -r "${tmpdir}"
 			done
+			ipsecpeers=$(mktemp)
+			eval "${sshcmd} ${userna}@uma.telecom.lobby /ip ipsec identity export > ${ipsecpeers}"
+			sed -i "s|fr.telecomlobby.com|ixp.telecomlobby.com|g" "${ipsecpeers}"
+			eval "${scpcmd} ${ipsecpeers} ${userna}@${chr}:/ipsec_identity.rsc"
+			eval "${sshcmd} ${userna}@${chr} /import file-name=ipsec_identity.rsc"
+			eval "${sshcmd} ${userna}@${chr} /ip ipsec identity add peer=uma_ikev2_cert auth-method=digital-signature remote-id=user-fqdn:uma@ca.telecomlobby.com match-by=certificate certificate=ixp.telecomlobby.com remote-certificate=fr.telecomlobby.com generate-policy=no policy-template-group=group_ikev2_cert"
+			srm "${ipsecpeers}"
+			ipsecpolicy=$(mktemp)
+			eval "${sshcmd} ${userna}@uma.telecom.lobby /ip ipsec policy export > ${ipsecpolicy}"
+			sed -i "s|45.32.144.15|${chrpubip}|g" "${ipsecpolicy}"
+			echo "/ip ipsec policy add dst-address=45.32.144.15/32 peer=uma_ikev2_cert proposal=NSA protocol=gre src-address=${chrpubip}" >> "${ipsecpolicy}"
+			eval "${scpcmd} ${ipsecpolicy} ${userna}@${chr}:/ipsec_policy.rsc"
+			eval "${sshcmd} ${userna}@${chr} /import file-name=ipsec_policy.rsc"
 		fi
 	;;
 	*)
