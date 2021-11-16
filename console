@@ -734,7 +734,8 @@ case $3 in
 			eval "${sshcmd} ${userna}@${chr} /ip ipsec profile add dh-group=ecp384,modp3072 dpd-interval=15s dpd-maximum-failures=1 enc-algorithm=aes-256 hash-algorithm=sha256 name=NSA-RECOMMENDED nat-traversal=no"
 			eval "${sshcmd} ${userna}@${chr} /ip ipsec proposal add auth-algorithms=sha256 enc-algorithms=aes-256-cbc lifetime=1h name=NSA pfs-group=none"
 			ipsecpeers=$(mktemp)
-			eval "${sshcmd} ${userna}@uma.telecom.lobby /ip ipsec peer export > ${ipsecpeers}"
+			echo ":foreach P in=[/ip ipsec peer find] do={ /ip ipsec peer remove \$P }" > ${ipsecpeers}
+			eval "${sshcmd} ${userna}@uma.telecom.lobby /ip ipsec peer export >> ${ipsecpeers}"
 			sed -i "s|45.32.144.15|${chrpubip}|g" "${ipsecpeers}"
 			echo "/ip ipsec peer add name=uma_ikev2_cert address=45.32.144.15 local-address=${chrpubip} exchange-mode=ike2 passive=yes profile=NSA-RECOMMENDED" >> ${ipsecpeers}
 			eval "${scpcmd} ${ipsecpeers} ${userna}@${chr}:/ipsec_peers.rsc"
@@ -742,6 +743,7 @@ case $3 in
 			eval "${sshcmd} ${userna}@${chr} /import file-name=ipsec_peers.rsc"
 			echo "installing local private and public key and peers public keys"
 			read -p "Type local directory with p12 exported IPsec certificates: " p12dir
+			ssh "${userna}@${chr}" ":foreach C in=[/certificate find] do={/certificate remove \$C}"
 			eval "${scpcmd} ${p12dir}/${srcid}/${chr}.p12 ${userna}@${chr}:/"
 			eval "${sshcmd} ${userna}@${chr} /certificate import file-name=${chr}.p12 name=${chr} passphrase=123456789"
 			eval "${sshcmd} ${userna}@${chr} /certificate set [find name=${chr}_1] name=ca.telecomlobby.com"
@@ -757,7 +759,8 @@ case $3 in
 				srm -r "${tmpdir}"
 			done
 			ipsecpeers=$(mktemp)
-			eval "${sshcmd} ${userna}@uma.telecom.lobby /ip ipsec identity export > ${ipsecpeers}"
+			echo ":foreach P in=[/ip ipsec identity find] do={ /ip ipsec identity remove \$P }" > ${ipsecpeers}
+			eval "${sshcmd} ${userna}@uma.telecom.lobby /ip ipsec identity export >> ${ipsecpeers}"
 			sed -i "s|fr.telecomlobby.com|ixp.telecomlobby.com|g" "${ipsecpeers}"
 			eval "${scpcmd} ${ipsecpeers} ${userna}@${chr}:/ipsec_identity.rsc"
 			eval "${sshcmd} ${userna}@${chr} /import file-name=ipsec_identity.rsc"
@@ -765,11 +768,27 @@ case $3 in
 			srm "${ipsecpeers}"
 			ipsecpolicy=$(mktemp)
 			eval "${sshcmd} ${userna}@uma.telecom.lobby /ip ipsec policy export > ${ipsecpolicy}"
+			sed -i '/set/d' "${ipsecpolicy}"
+			sed -i '/policy\ group/d' "${ipsecpolicy}"
+			sed -i '/group_ikev2_cert/d' "${ipsecpolicy}"
 			sed -i "s|45.32.144.15|${chrpubip}|g" "${ipsecpolicy}"
 			echo "/ip ipsec policy add dst-address=45.32.144.15/32 peer=uma_ikev2_cert proposal=NSA protocol=gre src-address=${chrpubip}" >> "${ipsecpolicy}"
 			eval "${scpcmd} ${ipsecpolicy} ${userna}@${chr}:/ipsec_policy.rsc"
 			eval "${sshcmd} ${userna}@${chr} /import file-name=ipsec_policy.rsc"
+			echo "IPSec configured, going ahead..."
+			srm "${ipsecpolicy}"
+			echo "Cleaning files"
+			eval "${scpcmd} src/mikrotik/file_clean.rsc ${userna}@${chr}:/"
+			eval "${sshcmd} ${userna}@${chr} :execute \{/import file_clean.rsc\}"
 		fi
+		echo "start to configure GRE interfaces"
+		grepeers=$(mktemp)
+		eval "${sshcmd} ${userna}@uma.telecom.lobby /interface gre export >> ${grepeers}"
+		sed -i "s|45.32.144.15|${chrpubip}|g" "${grepeers}"
+		echo "/interface gre add allow-fast-path=no clamp-tcp-mss=no comment=uma keepalive=5s,2 local-address=${chrpubip} mtu=1392 remote-address=45.32.144.15" >> "${grepeers}"
+		eval "${scpcmd} ${grepeers} ${userna}@${chr}:/interface_gre.rsc"
+		eval "${sshcmd} ${userna}@${chr} :execute \{/import interface_gre.rsc\}"
+		srm "${grepeers}"
 	;;
 	*)
 	;;
