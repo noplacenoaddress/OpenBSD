@@ -15,6 +15,17 @@ function passcheck () {
 	echo $?
 }
 
+function capa3 () {
+	case "${2}" in
+		"wan")
+			ping -c 1 "${1}" &> /dev/null && echo 1 || echo 0
+		;;
+		"mesh")
+			[[ $(sshpass -p "${3}" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 admin@${3} :put \([/ping count=1 address="${1}"]=1\) | tail -n 1) == *"true"* ]] && echo 1 || echo 0
+		;;
+	esac
+}
+
 if [[ $uid -ne 1000 ]]; then
 	echo -e $0 "you've got to run $0 as UID=1000 \n"
 	exit 1
@@ -565,7 +576,7 @@ case $3 in
 		if [[ -e "$HOME/.ssh/id_ed25519" ]]; then
 			mv $HOME/.ssh/{id_ed25519,id_ed25519.pub,id_ed25519-cert.pub} "$HOME/.ssh/Backup$daterelease"
 		fi
-		ssh-keygen -t ed25519 -C "taglio@$localdomainname"
+			ssh-keygen -t ed25519 -C "taglio@$localdomainname"
 		pwdfile=$(mktemp)
 		# Read Password
 		password=$(systemd-ask-password "Enter CA password: ")
@@ -678,6 +689,7 @@ case $3 in
 	"-CHR")
 		read -p "Type CHR public hostname: " chr
 		publichostname=$(echo "${chr}" | cut -d . -f1)
+		chrpubip=$(dig A "${chr}" +short)
 		domainname=$(echo "${chr}" | sed "s|${publichostname}.||")
 		for a in $(dig ipsec20591.$domainname TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 			b=$(echo $a | cut -d : -f1)
@@ -685,19 +697,49 @@ case $3 in
 				srcid=$(echo $a | cut -d : -f2)
 			fi
 		done
-
-		pwd=$(passcheck "${chr}")
-		if [[ $pwd = "0" ]]; then
-			echo "sin contraseña"
+		let counter=0
+		counter=$(expr $counter + $(capa3 "${chr}" "wan"))
+		if (( counter = 1 )); then
+			echo "Layer three test passed..."
+			pwd=$(passcheck "${chr}")
+			ssh-keygen -f "$HOME/.ssh/known_hosts" -R "${chr}"
+			if [[ $pwd = "0" ]]; then
+				echo "no password present"
+				echo "follow README.md of github" ; exit 1
+			elif [[ $pwd = "143" ]]; then
+				echo "with password"
+				password=$(systemd-ask-password "Enter ${chr} ${userna} password: ")
+				sshcmd="sshpass -p ${password} ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5"
+				scpcmd="sshpass -p ${password} scp -o StrictHostKeyChecking=no -o ConnectTimeout=5"
+			fi
+			echo "configuring hostname, timezone, date, time"
+			eval "${sshcmd} ${userna}@${chr} /sys id set name=${srcid}.$localdomainname"
+			chrtz=$(curl -s "http://ipinfo.io/${chrpubip}" | sed '/readme/d' | grep timezone | awk '{print $2}' | sed -e "s|\"||g" -e "s|,||")
+			eval "${sshcmd} ${userna}@${chr} /sys clock set time-zone-name=${chrtz}"
+			chrdate=$(date +%b/%d/%Y)
+			eval "${sshcmd} ${userna}@${chr} /system clock set date=${chrdate}"
+			chrtime=$(TZ="${chrtz}" date | awk '{print $5}')
+			eval "${sshcmd} ${userna}@${chr} /system clock set time=${chrtime}"
+			echo "adding ${userna} RSA ssh key"
+			[[ -e "$HOME/.ssh/id_rsa.pub" ]] || ssh-keygen -t rsa -C "${userna}@${localdomainname}"
+			eval "${scpcmd} $HOME/.ssh/id_rsa.pub ${userna}@${chr}:/"
+			eval "${sshcmd} ${userna}@${chr} /user ssh-keys remove [find user=${userna}] \; /user ssh-keys import user=${userna} public-key-file=id_rsa.pub"
 			sshcmd="ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5"
 			scpcmd="scp -o StrictHostKeyChecking=no -o ConnectTimeout=5"
-		elif [[ $pwd = "143" ]]; then
-			echo "con contraseña"
-			password=$(systemd-ask-password "Enter ${chr} ${userna} password: ")
-			sshcmd="sshpass -p ${password} ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5"
-			scpcmd="sshpass -p ${password} scp -o StrictHostKeyChecking=no -o ConnectTimeout=5"
+			echo "adding ${chr} common IPSEC settings"
+			eval "${sshcmd} ${userna}@${chr} /ip ipsec policy group remove [find name=group_ikev2_cert] \; /ip ipsec policy group add name=group_ikev2_cert"
+			eval "${sshcmd} ${userna}@${chr} /ip ipsec profile remove [find name=NSA-RECOMMENDED] \; \
+				/ip ipsec profile add dh-group=ecp384,modp3072 dpd-interval=15s dpd-maximum-failures=1 enc-algorithm=aes-256 hash-algorithm=sha256 name=NSA-RECOMMENDED nat-traversal=no"
+			eval "${sshcmd} ${userna}@${chr} /ip ipsec proposal remove [find name=NSA] \; \
+				/ip ipsec proposal add auth-algorithms=sha256 enc-algorithms=aes-256-cbc lifetime=1h name=NSA pfs-group=none"
+			ipsecpeers=$(mktemp)
+			eval "${sshcmd} ${userna}@uma.telecom.lobby /ip ipsec peer export > ${ipsecpeers}"
+			sed -i "s|45.32.144.15|${chrpubip}|g" "${ipsecpeers}"
+			eval "${scpcmd} ${ipsecpeers} ${userna}@${chr}:/ipsec_peers.rsc"
+			eval "${sshcmd} ${userna}@${chr} /import file-name=ipsec_peers.rsc"
+			echo "installing local private and public key and peers public keys"
+			read -p "Type local directory with p12 exported IPsec certificates: " p12dir
 		fi
-		
 	;;
 	*)
 	;;

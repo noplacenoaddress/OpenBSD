@@ -299,7 +299,6 @@ function config_pdns {
 	install -o root -g wheel -m 0644 "src/openbsd/geo-zone.yml"  "/jails/pdns/etc/pdns/geo-zone.yml"
 	[[ -e "/tmp/powerdns_distributed" ]] || echo "file uploaded from WS not found" ; exit 1
 
-
 }
 
 function edgeos_scripts {

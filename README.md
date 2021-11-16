@@ -578,6 +578,22 @@ sh git_openbsd.sh
 ./console -I telecom.lobby -N
 ```
 
+It's important to have a directory out of the repository with all the p12 compressed and encrypted IPSec certificates of the MESH network:
+
+```bash
+taglio@trimurti:~/Work/redama/ipsec$ find . -name "*.p12"
+./indra/RT-01.cat.telecomlobby.com.p12
+./uma/fr.telecomlobby.com.p12
+./shiva/jp.telecomlobby.com.p12
+./varuna/bg.telecomlobby.com.p12
+./ganesha/uk.telecomlobby.com.p12
+./saraswati/us.telecomlobby.com.p12
+./vishnu/au.telecomlobby.com.p12
+./durga/de.telecomlobby.com.p12
+./calli/ixp.telecomlobby.com.p12
+taglio@trimurti:~/Work/redama/ipsec$ 
+```
+
 Now simply start the `console` script with the `-CHR` option:
 
 ```bash
