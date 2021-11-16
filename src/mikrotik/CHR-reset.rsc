@@ -10,3 +10,4 @@
 /certificate remove [find]
 /file remove [find type="script"]
 /interface gre remove [find]
+/routing filter remove [find]
