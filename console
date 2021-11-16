@@ -736,9 +736,23 @@ case $3 in
 			eval "${sshcmd} ${userna}@uma.telecom.lobby /ip ipsec peer export > ${ipsecpeers}"
 			sed -i "s|45.32.144.15|${chrpubip}|g" "${ipsecpeers}"
 			eval "${scpcmd} ${ipsecpeers} ${userna}@${chr}:/ipsec_peers.rsc"
+			srm "${ipsecpeers}"
 			eval "${sshcmd} ${userna}@${chr} /import file-name=ipsec_peers.rsc"
 			echo "installing local private and public key and peers public keys"
 			read -p "Type local directory with p12 exported IPsec certificates: " p12dir
+			eval "${scpcmd} ${p12dir}/${srcid}/${chr}.p12 ${userna}@${chr}:/"
+			eval "${sshcmd} ${userna}@${chr} /certficate import file-name=${chr}.p12 name=${chr} passphrase=123456789"
+			eval "${sshcmd} ${userna}@${chr} /certficate [find name=${chr}-1.p12] name=fr.telecomlobby.com"
+			for certpath in $(find "${p12dir}" -name "*.p12"); do
+				certfile=$(basename "${certpath}")
+				peerpublichostname=$(echo "${certfile}" |  sed "s|.p12/||")
+				certdir=$(dirname "${certpath}")
+				peerlocalhostname=$(echo "${certdir}" | sed "s|${p12dir}/||")
+				tmpdir=$(mktemp -d)
+				openssl pkcs12 -nodes -in "${certpath}" -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "$tmpdir/$peerlocalhostname.crt"
+				eval "${scpcmd} $tmpdir/$peerlocalhostname.crt ${userna}@${chr}:/"
+				eval "${sshcmd} ${userna}@${chr} /certficate import file-name=$peerlocalhostname.crt name=${peerpublichostname}"
+			done
 		fi
 	;;
 	*)
