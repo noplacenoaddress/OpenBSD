@@ -10,4 +10,4 @@ add action=accept chain=ospf-out comment=insert NET 172.16.16.0/22" prefix=172.1
 add action=accept chain=ospf-out comment=insert NET 10.0.0.0/8" prefix=10.0.0.0/8 prefix-length=8
 /OSPFINCONNECTED/
 /OSPFINCLIENTS/
-add action=discard chain=ospf-out comment=Discard
+add action=discard chain=ospf-out comment="discard ALL"
