@@ -26,6 +26,22 @@ function capa3 () {
 	esac
 }
 
+function mkrtfilter () {
+	local tmpdir=$(mktemp -d)
+    cp "src/mikrotik/routing_filters.rsc" "${tmpdir}"
+	randomop=$(dig TXT openbsd.telecom.lobby +short | sed "s|\"||g" | tr ";" "\n" | awk NF | shuf -n 1)
+	ospfin=""
+	for host in $(ssh "${randomop}.telecom.lobby" cat /etc/pf.conf.table.{clientes,ipsec} | grep -v \# | awk NF | uniq); do
+		ospfin+=$(printf '%s \n' 'add action=accept chain=ospf-in comment="insert HOST '"${host}"'" prefix='"${host}"' prefix-length=32')
+	done
+	sed -i "s|/OSPFIN/|${osfpin}|" "${tmpdir}/routing_filters.rsc"
+	ospfout=""
+	for host in $(ssh "${randomop}.telecom.lobby" cat /etc/pf.conf.table.{clientes,ipsec} | grep -v \# | awk NF | uniq); do
+		ospfout+=$(printf '%s \n' 'add action=accept chain=ospf-out comment="insert HOST '"${host}"'" prefix='"${host}"' prefix-length=32')
+	done
+	sed -i "s|/OSPFOUT/|${ospfout}|" "${tmpdir}/routing_filters.rsc"
+}
+
 if [[ $uid -ne 1000 ]]; then
 	echo -e $0 "you've got to run $0 as UID=1000 \n"
 	exit 1
@@ -789,6 +805,27 @@ case $3 in
 		eval "${scpcmd} ${grepeers} ${userna}@${chr}:/interface_gre.rsc"
 		eval "${sshcmd} ${userna}@${chr} :execute \{/import interface_gre.rsc\}"
 		srm "${grepeers}"
+		echo "configuring routing OSPF filters"
+		rtfilter=$(mktemp)
+		echo "/routing filter" > "${rtfilter}"
+		echo "add action=accept chain=ospf-in comment=\"insert HOST 192.168.13.0/24\" prefix=192.168.13.0/24 prefix-length=32" >> "${rtfilter}"
+		echo "add action=accept chain=ospf-in comment=\"insert NET 172.16.16.0/22\" prefix=172.16.16.0/22 prefix-length=24" >> "${rtfilter}"
+		echo "add action=accept chain=ospf-in comment=\"insert NET 10.0.0.0/8\" prefix=10.0.0.0/8 prefix-length=8" >> "${rtfilter}"
+		randomop=$(dig TXT openbsd.telecom.lobby +short | sed "s|\"||g" | tr ";" "\n" | awk NF | shuf -n 1)
+		for host in $(ssh "${randomop}.telecom.lobby" cat /etc/pf.conf.table.{clientes,ipsec} | grep -v \# | awk NF | uniq); do
+			echo "add action=accept chain=ospf-in comment=\"insert HOST ${host}\" prefix=${host} prefix-length=32" >> "${rtfilter}"
+		done
+		echo "add action=discard chain=ospf-in comment=\"discard ALL\"" >> "${rtfilter}"
+		echo "add action=accept chain=ospf-out comment=\"insert HOST 192.168.13.0/24\" prefix=192.168.13.0/24 prefix-length=32" >> "${rtfilter}"
+		echo "add action=accept chain=ospf-out comment=\"insert NET 172.16.16.0/22\" prefix=172.16.16.0/22 prefix-length=24" >> "${rtfilter}"
+		echo "add action=accept chain=ospf-out comment=\"insert NET 10.0.0.0/8\" prefix=10.0.0.0/8 prefix-length=8" >> "${rtfilter}"
+		for host in $(ssh "${randomop}.telecom.lobby" cat /etc/pf.conf.table.{clientes,ipsec} | grep -v \# | awk NF | uniq); do
+			echo "add action=accept chain=ospf-out comment=\"insert HOST ${host}\" prefix=${host} prefix-length=32" >> "${rtfilter}"
+		done
+		echo "add action=discard chain=ospf-out comment=\"discard ALL\"" >> "${rtfilter}"
+		eval "${scpcmd} ${rtfilter} ${userna}@${chr}:/rtfilter.rsc"
+		eval "${sshcmd} ${userna}@${chr} :execute \{/import rtfilter.rsc\}"
+		srm "${rtfilter}"
 	;;
 	*)
 	;;
