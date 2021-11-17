@@ -9,5 +9,6 @@
 /ip ipsec profile remove [find where name!=default]
 /certificate remove [find]
 /file remove [find type="script"]
+/ip address remove [find interface!=ether1]
 /interface gre remove [find]
 /routing filter remove [find]

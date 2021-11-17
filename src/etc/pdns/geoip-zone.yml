@@ -3,10 +3,7 @@ domains:
   ttl: 30
   records:
     /NSDDOMAIN/:
-      - soa:  /FIRST/ dns-admin./NSDDOMAIN/ /SERIAL/ 28800 7200 864000 86400
-      - ns: /FIRST/
-      - ns: /SECOND/
-      - ns: /THIRD/
+
       - mx: 10 mx.example.com
     fin.eu.service.geo.example.com:
       - a: 192.0.2.2

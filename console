@@ -830,9 +830,9 @@ case $3 in
 		eval "${sshcmd} ${userna}@${chr} /routing ospf instance set [ find default=yes ] redistribute-connected=as-type-2 redistribute-other-ospf=as-type-1 redistribute-static=as-type-2 router-id=${chrid}"
 		let lastnetwork=$(dig TXT gre7058."${domainname}" +short | sed "s|\"||g")+0
 		for chrgre in $(ssh "${userna}@${chr}" :foreach i in=[/interface gre find] do=\{:put [/interface gre get \$i name]\; \}); do
-			(( lastnetwork = lastnetwork-4 ))
-			eval "${sshcmd} ${userna}@${chr} /ip addr add address=10.10.10.$((lastnetwork++))/30 interface=${chrgre}"
-
+			lastnetwork=$(expr $lastnetwork - 4)
+			firstip=$(expr $lastnetwork + 1)
+			eval "${sshcmd} ${userna}@${chr} /ip addr add address=10.10.10.${firstip}/30 interface=${chrgre}"
 		done
 	;;
 	*)
