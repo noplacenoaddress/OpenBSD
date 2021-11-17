@@ -42,6 +42,29 @@ function mkrtfilter () {
 	sed -i "s|/OSPFOUT/|${ospfout}|" "${tmpdir}/routing_filters.rsc"
 }
 
+function custom {
+	[[ $(ifconfig egress | grep inet6 | grep -v fe80) != "" ]] && \
+		ipv6egress=$(ifconfig egress | grep inet6 | grep -v fe80 | awk '{print $2}')
+	for file in $(find $1 -type f -maxdepth $2); do
+		(: "${hostname?}") 2>/dev/null && sed -i "s/\/HOSTNAME\//$hostname/g" $file
+		(: "${landomainname?}") 2>/dev/null && sed -i "s/\/LANDOMAINNAME\//$landomainname/g" $file
+		(: "${routerid?}") 2>/dev/null && sed -i "s/\/ROUTERID\//$routerid/g" $file
+		(: "${publichost?}") 2>/dev/null && sed -i "s/\/PUBLICHOST\//$publichost/g" $file
+		(: "${domainname?}") 2>/dev/null && sed -i "s/\/DOMAINNAME\//$domainname/g" $file
+		(: "${srcid?}") 2>/dev/null && sed -i "s/\/SRCID\//$srcid/g" $file
+		(: "${publichostname?}") 2>/dev/null && sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" $file
+		(: "${publicip?}") 2>/dev/null && sed -i "s/\/PUBLICIP\//$publicip/g" $file
+		(: "${dyndns?}") 2>/dev/null && sed -i "s/\/DYNDNS\//$dyndns/g" $file
+		(: "${publicnetmask?}") 2>/dev/null && sed -i "s/\/PUBLICNETMASK\//$publicnetmask/g" $file
+		(: "${publicbcast?}") 2>/dev/null && sed -i "s/\/PUBLICBCAST\//$publicbcast/g" $file
+		(: "${ipv6egress?}") 2>/dev/null && sed -i "s/\/PUBV6\//${ipv6egress}/g" $file
+		(: "${ipv6prefix?}") 2>/dev/null && sed -i "s/\/PREFIX\//${ipv6prefix}/g" $file
+		(: "${defaultv4router?}") 2>/dev/null && sed -i "s/\/ROUTEV4\//${defaultv4router}/g" $file
+		(: "${ipv6defrouter?}") 2>/dev/null && sed -i "s/\/ROUTEV6\//${ipv6defrouter}/g" $file
+		(: "${longdate?}") 2>/dev/null && sed -i "s/\/LONGDATE\//${longdate}/g" $file
+	done
+}
+
 if [[ $uid -ne 1000 ]]; then
 	echo -e $0 "you've got to run $0 as UID=1000 \n"
 	exit 1
@@ -860,6 +883,9 @@ case $3 in
 			greip="10.10.10."${a}
 			b=$(expr $a + 1)
 			popgreip="10.10.10."${b}
+			mkdir "/tmp/${poplocalhostname}"
+			cp "src/mikrotik/openbsd/"{iked.conf,hostname.enc,hostname.gre,ospfd.conf} "/tmp/${poplocalhostname}"
+
 		done
 	;;
 	*)
