@@ -10,5 +10,8 @@
 /certificate remove [find]
 /file remove [find type="script"]
 /ip address remove [find interface!=ether1]
+/routing ospf network remove [find]
 /interface gre remove [find]
+/interface bridge remove [find]
 /routing filter remove [find]
+/ip service set www address=""

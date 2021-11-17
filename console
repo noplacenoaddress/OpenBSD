@@ -747,7 +747,7 @@ case $3 in
 			scpcmd="scp -o StrictHostKeyChecking=no -o ConnectTimeout=5"
 			echo "adding ${chr} common IPSEC settings"
 			eval "${sshcmd} ${userna}@${chr} /ip ipsec policy group add name=group_ikev2_cert"
-			eval "${sshcmd} ${userna}@${chr} /ip ipsec profile add dh-group=ecp384,modp3072 dpd-interval=15s dpd-maximum-failures=1 enc-algorithm=aes-256 hash-algorithm=sha256 name=NSA-RECOMMENDED nat-traversal=no"
+			eval "${sshcmd} ${userna}@${chr} /ip ipsec profile add dh-group=ecp384,modp3072 dpd-interval=30s dpd-maximum-failures=1 enc-algorithm=aes-256 hash-algorithm=sha256 name=NSA-RECOMMENDED nat-traversal=no"
 			eval "${sshcmd} ${userna}@${chr} /ip ipsec proposal add auth-algorithms=sha256 enc-algorithms=aes-256-cbc lifetime=1h name=NSA pfs-group=none"
 			ipsecpeers=$(mktemp)
 			echo ":foreach P in=[/ip ipsec peer find] do={ /ip ipsec peer remove \$P }" > ${ipsecpeers}
@@ -827,12 +827,39 @@ case $3 in
 		eval "${sshcmd} ${userna}@${chr} :execute \{/import rtfilter.rsc\}"
 		srm "${rtfilter}"
 		read -p "Type the CHR routerid: " chrid
+		echo "configuring OSPF daemon"
 		eval "${sshcmd} ${userna}@${chr} /routing ospf instance set [ find default=yes ] redistribute-connected=as-type-2 redistribute-other-ospf=as-type-1 redistribute-static=as-type-2 router-id=${chrid}"
+		eval "${sshcmd} ${userna}@${chr} /int bri add name=lo1 comment=\"router-id\" protocol-mode=none"
+		eval "${sshcmd} ${userna}@${chr} /ip addr add address=${chrid}/32 interface=lo1"
+		eval "${sshcmd} ${userna}@${chr} /routing ospf interface add authentication-key-id=100 cost=1 interface=lo1 network-type=broadcast passive=yes"
 		let lastnetwork=$(dig TXT gre7058."${domainname}" +short | sed "s|\"||g")+0
+		ospfinterface=$(mktemp)
 		for chrgre in $(ssh "${userna}@${chr}" :foreach i in=[/interface gre find] do=\{:put [/interface gre get \$i name]\; \}); do
 			lastnetwork=$(expr $lastnetwork - 4)
 			firstip=$(expr $lastnetwork + 1)
 			eval "${sshcmd} ${userna}@${chr} /ip addr add address=10.10.10.${firstip}/30 interface=${chrgre}"
+			eval "${sshcmd} ${userna}@${chr} /routing ospf network add area=backbone network=10.10.10.${lastnetwork}/30"
+			ospfmd5=$(tr -cd '[:alnum:],.' < /dev/urandom | fold -w 15 | head -n 1)
+			eval "${sshcmd} ${userna}@${chr} routing ospf interface add authentication=md5 authentication-key=${ospfmd5} network-type=point-to-point interface=${chrgre}"
+		done
+		echo "configuring RouterOS web server access list for remote install"
+		randomop=$(dig TXT openbsd.telecom.lobby +short | sed "s|\"||g" | tr ";" "\n" | awk NF | shuf -n 1)
+		acweb=""
+		for host in $(ssh "${randomop}.telecom.lobby" cat /etc/pf.conf.table.ipsec | grep -v \# | awk NF | uniq); do
+		 	acweb+="${host},"
+		done
+		acweb=${acweb::-1}
+		eval "${sshcmd} ${userna}@${chr} /ip service set www address=${acweb}"
+		echo "starting remote install"
+		for poplocalhostname in $(dig TXT openbsd.telecom.lobby +short | sed "s|\"||g" | tr ";" "\n" | awk NF); do
+			pophost=$(dig ipsec20591."${domainname}" TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d' | grep "${poplocalhostname}" | cut -d : -f1)".${domainname}"
+			popip=$(dig A "${pophost}" +short)
+			x="7"
+			popgre=$(ssh ${userna}@${chr} int gre print where comment="${poplocalhostname}" | grep -E "gre-tunnel[0-9]{1,2}" | awk '{print $1}' | sed -e "s|name=||" -e "s|\"||g")
+			let a=$(ssh ${userna}@${chr} ip addr print where interface="${popgre}" | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | head -n 1 | cut -d . -f4)+0
+			greip="10.10.10."${a}
+			b=$(expr $a + 1)
+			popgreip="10.10.10."${b}
 		done
 	;;
 	*)
