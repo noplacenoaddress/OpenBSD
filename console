@@ -854,6 +854,7 @@ case $3 in
 		eval "${sshcmd} ${userna}@${chr} /int bri add name=lo1 comment=\"router-id\" protocol-mode=none"
 		eval "${sshcmd} ${userna}@${chr} /ip addr add address=${chrid}/32 interface=lo1"
 		eval "${sshcmd} ${userna}@${chr} /routing ospf interface add authentication-key-id=100 cost=1 interface=lo1 network-type=broadcast passive=yes"
+		eval "${sshcmd} ${userna}@${chr} /interface list add name=GRE"
 		let lastnetwork=$(dig TXT gre7058."${domainname}" +short | sed "s|\"||g")+0
 		ospfinterface=$(mktemp)
 		for chrgre in $(ssh "${userna}@${chr}" :foreach i in=[/interface gre find] do=\{:put [/interface gre get \$i name]\; \}); do
@@ -863,6 +864,7 @@ case $3 in
 			eval "${sshcmd} ${userna}@${chr} /routing ospf network add area=backbone network=10.10.10.${lastnetwork}/30"
 			ospfmd5=$(tr -cd '[:alnum:],.' < /dev/urandom | fold -w 15 | head -n 1)
 			eval "${sshcmd} ${userna}@${chr} routing ospf interface add authentication=md5 authentication-key=${ospfmd5} network-type=point-to-point interface=${chrgre}"
+			eval "${sshcmd} ${userna}@${chr} /interface list member add list=GRE interface=${chrgre}"
 		done
 		echo "configuring RouterOS web server access list for remote install"
 		randomop=$(dig TXT openbsd.telecom.lobby +short | sed "s|\"||g" | tr ";" "\n" | awk NF | shuf -n 1)
