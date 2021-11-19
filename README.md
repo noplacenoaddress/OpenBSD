@@ -626,7 +626,7 @@ taglio@trimurti:~/Work/telecom.lobby/OpenBSD$
 
 [![asciicast](https://asciinema.org/a/450247.svg)](https://asciinema.org/a/450247)
 
-This is the video of the complete routine. 
+This is the video of the complete routine about the OpenBSD peers. Next we've got to add the new Cloud Hosted Router to the other Mikrotik instances and EdgeOS.
 
 #### Routine maintenance
 
