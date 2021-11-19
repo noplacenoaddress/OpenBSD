@@ -18,3 +18,7 @@
 /ip service set www address=""
 /interface list member remove [find]
 /interface list remove [find]
+/ip firewall filter remove [find]
+/ip firewall mangle remove [find]
+/ip firewall nat remove [find]
+/ip firewall address-list remove [find]

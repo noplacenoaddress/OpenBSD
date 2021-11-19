@@ -866,17 +866,31 @@ case $3 in
 			eval "${sshcmd} ${userna}@${chr} routing ospf interface add authentication=md5 authentication-key=${ospfmd5} network-type=point-to-point interface=${chrgre}"
 			eval "${sshcmd} ${userna}@${chr} /interface list member add list=GRE interface=${chrgre}"
 		done
-		echo "configuring RouterOS web server access list for remote install"
+		echo "configuring RouterOS web server access list and firewall address list"
 		randomop=$(dig TXT openbsd.telecom.lobby +short | sed "s|\"||g" | tr ";" "\n" | awk NF | shuf -n 1)
 		acweb=""
 		for host in $(ssh "${randomop}.telecom.lobby" cat /etc/pf.conf.table.ipsec | grep -v \# | awk NF | uniq); do
 		 	acweb+="${host},"
+			eval "${sshcmd} ${userna}@${chr} /ip firewall address-list add list=servers address=${host}"
+		done
+		for host in $(ssh "${randomop}.telecom.lobby" cat /etc/pf.conf.table.clientes | grep -v \# | awk NF | uniq); do
+			eval "${sshcmd} ${userna}@${chr} /ip firewall address-list add list=otherswan address=${host}"
 		done
 		acweb=${acweb::-1}
 		eval "${sshcmd} ${userna}@${chr} /ip service set www address=${acweb}"
+		eval "${sshcmd} ${userna}@${chr} /ip firewall address-list add list=lan address=196.168.13.0/24"
+		eval "${sshcmd} ${userna}@${chr} /ip firewall address-list add list=lan address=172.16.17.0/24"
+		eval "${sshcmd} ${userna}@${chr} /ip firewall address-list add list=lan address=172.16.18.0/24"
+		eval "${sshcmd} ${userna}@${chr} /ip firewall address-list add list=lan address=172.16.19.0/24"
+		eval "${sshcmd} ${userna}@${chr} /ip firewall address-list add list=lan address=10.10.10.0/24"
+		cp src/mikrotik/filter.rsc /tmp
+		sed -i "s|/PUBLICIP/|${chrpubip}|g" /tmp/filter.rsc
+		eval "${scpcmd} /tmp/filter.rsc ${userna}@${chr}:/filter.rsc"
+		eval "${sshcmd} ${userna}@${chr} :execute \{/import filter.rsc\}"
+		srm /tmp/filter.rsc
 		echo "starting remote install"
 		for poplocalhostname in $(dig TXT openbsd.telecom.lobby +short | sed "s|\"||g" | tr ";" "\n" | awk NF); do
-			ssh "${poplocalhostname}".telecom.lobby install -o root -g wheel -m 0755 src/mikrotik/openbsd/newchr.sh /usr/local/sbin
+			ssh "${poplocalhostname}".telecom.lobby install -o root -g wheel -m 0755 "${HOME}/Sources/Git/OpenBSD/src/mikrotik/openbsd/newchr.sh /usr/local/sbin"
 			[[ "${poplocalhostname}" == "varuna" ]] && poplocalhostname="neo"
 			pophost=$(dig ipsec20591.${domainname} TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d' | grep "${poplocalhostname}" | cut -d : -f1)".${domainname}"
 			popip=$(dig A "${pophost}" +short)
@@ -905,6 +919,7 @@ case $3 in
 				sed -i "s|/X/|${x}|g" $file
 				sed -i "s|/MD5/|${md5}|g" $file
 			done
+
 			tar -cvf /tmp/calli.tar -C /tmp "/tmp/${poplocalhostname}/"
 			srm -r "/tmp/${poplocalhostname}"
 			echo "uploading to ${poplocalhostname}..."
