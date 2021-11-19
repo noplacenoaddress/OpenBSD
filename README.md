@@ -624,6 +624,10 @@ taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console
 taglio@trimurti:~/Work/telecom.lobby/OpenBSD$  
 ```
 
+[![asciicast](https://asciinema.org/a/450247.svg)](https://asciinema.org/a/450247)
+
+This is the video of the complete routine. 
+
 #### Routine maintenance
 
 ![](https://thumbs.dreamstime.com/b/routine-maintenance-mechanism-golden-metallic-cogwheels-glow-effect-d-rendering-concept-gears-illustration-114332777.jpg)

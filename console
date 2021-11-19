@@ -862,8 +862,8 @@ case $3 in
 			firstip=$(expr $lastnetwork + 1)
 			eval "${sshcmd} ${userna}@${chr} /ip addr add address=10.10.10.${firstip}/30 interface=${chrgre}"
 			eval "${sshcmd} ${userna}@${chr} /routing ospf network add area=backbone network=10.10.10.${lastnetwork}/30"
-			ospfmd5=$(tr -cd '[:alnum:],.' < /dev/urandom | fold -w 15 | head -n 1)
-			eval "${sshcmd} ${userna}@${chr} routing ospf interface add authentication=md5 authentication-key=${ospfmd5} network-type=point-to-point interface=${chrgre}"
+			ospfmd5=$(tr -cd '[:alnum:],.' < /dev/random | fold -w 15 | head -n 1)
+			ssh ${userna}@${chr} routing ospf interface add authentication=md5 authentication-key=${ospfmd5} network-type=point-to-point interface="${chrgre}"
 			eval "${sshcmd} ${userna}@${chr} /interface list member add list=GRE interface=${chrgre}"
 		done
 		echo "configuring RouterOS web server access list and firewall address list"
