@@ -10,6 +10,7 @@
 /certificate remove [find]
 /file remove [find type="script"]
 /ip address remove [find interface!=ether1]
+/routing ospf interface remove [find]
 /routing ospf network remove [find]
 /interface gre remove [find]
 /interface bridge remove [find]
