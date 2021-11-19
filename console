@@ -43,10 +43,9 @@ function mkrtfilter () {
 }
 
 function custom {
-	[[ $(ifconfig egress | grep inet6 | grep -v fe80) != "" ]] && \
-		ipv6egress=$(ifconfig egress | grep inet6 | grep -v fe80 | awk '{print $2}')
 	for file in $(find $1 -type f -maxdepth $2); do
 		(: "${hostname?}") 2>/dev/null && sed -i "s/\/HOSTNAME\//$hostname/g" $file
+
 		(: "${landomainname?}") 2>/dev/null && sed -i "s/\/LANDOMAINNAME\//$landomainname/g" $file
 		(: "${routerid?}") 2>/dev/null && sed -i "s/\/ROUTERID\//$routerid/g" $file
 		(: "${publichost?}") 2>/dev/null && sed -i "s/\/PUBLICHOST\//$publichost/g" $file
@@ -730,7 +729,7 @@ case $3 in
 		publichostname=$(echo "${chr}" | cut -d . -f1)
 		chrpubip=$(dig A "${chr}" +short)
 		domainname=$(echo "${chr}" | sed "s|${publichostname}.||")
-		for a in $(dig ipsec20591.$domainname TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+			for a in $(dig ipsec20591.$domainname TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 			b=$(echo $a | cut -d : -f1)
 			if [[ "$b" -eq "$publichostname" ]]; then
 				srcid=$(echo $a | cut -d : -f2)
@@ -875,17 +874,39 @@ case $3 in
 		eval "${sshcmd} ${userna}@${chr} /ip service set www address=${acweb}"
 		echo "starting remote install"
 		for poplocalhostname in $(dig TXT openbsd.telecom.lobby +short | sed "s|\"||g" | tr ";" "\n" | awk NF); do
-			pophost=$(dig ipsec20591."${domainname}" TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d' | grep "${poplocalhostname}" | cut -d : -f1)".${domainname}"
+			[[ "${poplocalhostname}" == "varuna" ]] && poplocalhostname="neo"
+			pophost=$(dig ipsec20591.${domainname} TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d' | grep "${poplocalhostname}" | cut -d : -f1)".${domainname}"
 			popip=$(dig A "${pophost}" +short)
 			x="7"
+			[[ "${poplocalhostname}" == "neo" ]] && poplocalhostname="varuna"
+			[[ "${poplocalhostname}" == "bhagavati" ]] && x="8"
 			popgre=$(ssh ${userna}@${chr} int gre print where comment="${poplocalhostname}" | grep -E "gre-tunnel[0-9]{1,2}" | awk '{print $1}' | sed -e "s|name=||" -e "s|\"||g")
 			let a=$(ssh ${userna}@${chr} ip addr print where interface="${popgre}" | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | head -n 1 | cut -d . -f4)+0
+			md5=$(ssh ${userna}@${chr} routing ospf interface pr where interface="${popgre}" | awk '{print $7}' | grep -E '^.{15}$')
 			greip="10.10.10."${a}
 			b=$(expr $a + 1)
 			popgreip="10.10.10."${b}
 			mkdir "/tmp/${poplocalhostname}"
 			cp "src/mikrotik/openbsd/"{iked.conf,hostname.enc,hostname.gre,ospfd.conf} "/tmp/${poplocalhostname}"
-
+			mv "/tmp/${poplocalhostname}/hostname.gre" "/tmp/${poplocalhostname}/hostname.gre${x}"
+			mv "/tmp/${poplocalhostname}/hostname.enc" "/tmp/${poplocalhostname}/hostname.enc${x}"
+			for file in $(find "/tmp/${poplocalhostname}" -maxdepth 1 -type f); do
+				sed -i "s|/PUBLICHOST/|${chr}|g" $file
+				sed -i "s|/POPIP/|${popip}|g" $file
+				sed -i "s|/PUBLICIP/|${chrpubip}|g" $file
+				sed -i "s|/POPHOST/|${pophost}|g" $file
+				sed -i "s|/POPLOCALHOSTNAME/|${poplocalhostname}|g" $file
+				sed -i "s|/HOSTNAME/|${srcid}|g" $file
+				sed -i "s|/POPGREIP/|${popgreip}|g" $file
+				sed -i "s|/GREIP/|${greip}|g" $file
+				sed -i "s|/X/|${x}|g" $file
+				sed -i "s|/MD5/|${md5}|g" $file
+			done
+			tar -cvf /tmp/calli.tar -C /tmp "/tmp/${poplocalhostname}/"
+			srm -r "/tmp/${poplocalhostname}"
+			echo "uploading to ${poplocalhostname}..."
+			scp /tmp/calli.tar "${poplocalhostname}.${localdomainname}:/tmp"
+			srm "/tmp/calli.tar"
 		done
 	;;
 	*)
