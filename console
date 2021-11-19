@@ -874,6 +874,7 @@ case $3 in
 		eval "${sshcmd} ${userna}@${chr} /ip service set www address=${acweb}"
 		echo "starting remote install"
 		for poplocalhostname in $(dig TXT openbsd.telecom.lobby +short | sed "s|\"||g" | tr ";" "\n" | awk NF); do
+			ssh "${poplocalhostname}".telecom.lobby install -o root -g wheel -m 0755 src/mikrotik/openbsd/newchr.sh /usr/local/sbin
 			[[ "${poplocalhostname}" == "varuna" ]] && poplocalhostname="neo"
 			pophost=$(dig ipsec20591.${domainname} TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d' | grep "${poplocalhostname}" | cut -d : -f1)".${domainname}"
 			popip=$(dig A "${pophost}" +short)
@@ -907,6 +908,7 @@ case $3 in
 			echo "uploading to ${poplocalhostname}..."
 			scp /tmp/calli.tar "${poplocalhostname}.${localdomainname}:/tmp"
 			srm "/tmp/calli.tar"
+
 		done
 	;;
 	*)

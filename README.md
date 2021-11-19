@@ -949,8 +949,6 @@ CREATE TABLE domains (
 );
 ```
 
-
-
 Another important feature is that our tool give us information withing the [whois database](https://en.wikipedia.org/wiki/WHOIS) if the suite of extensions [DNSSEC](https://en.wikipedia.org/wiki/Domain_Name_System_Security_Extensions) is enable from the registrant. 	
 
 #### DNSSEC
