@@ -890,7 +890,7 @@ case $3 in
 		srm /tmp/filter.rsc
 		echo "starting remote install"
 		for poplocalhostname in $(dig TXT openbsd.telecom.lobby +short | sed "s|\"||g" | tr ";" "\n" | awk NF); do
-			ssh "${poplocalhostname}".telecom.lobby install -o root -g wheel -m 0755 "${HOME}/Sources/Git/OpenBSD/src/mikrotik/openbsd/newchr.sh /usr/local/sbin"
+			ssh "${poplocalhostname}".telecom.lobby install -o root -g wheel -m 0755 "${HOME}/Sources/Git/OpenBSD/src/mikrotik/openbsd/newchr.sh ${HOME}/Bin/"
 			[[ "${poplocalhostname}" == "varuna" ]] && poplocalhostname="neo"
 			pophost=$(dig ipsec20591.${domainname} TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d' | grep "${poplocalhostname}" | cut -d : -f1)".${domainname}"
 			popip=$(dig A "${pophost}" +short)
