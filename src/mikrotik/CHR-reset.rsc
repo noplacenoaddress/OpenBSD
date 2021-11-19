@@ -16,3 +16,5 @@
 /interface bridge remove [find]
 /routing filter remove [find]
 /ip service set www address=""
+/interface list member remove [find]
+/interface list remove [find]
