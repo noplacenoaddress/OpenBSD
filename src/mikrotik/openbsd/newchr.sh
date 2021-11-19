@@ -19,5 +19,5 @@ cat ospfd.conf >> /etc/ospfd.conf
 echo "include \"/etc/iked.conf.${chrpublichostname}\"" >> /etc/iked.conf
 sh /etc/netstart "gre${x}"
 sh /etc/netstart "enc${x}"
-nohup "rcctl restart iked && rcctl restart ospfd" &
+#nohup "rcctl restart iked && rcctl restart ospfd" &
 exit
