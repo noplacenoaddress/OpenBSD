@@ -925,7 +925,7 @@ case $3 in
 			echo "uploading to ${poplocalhostname}..."
 			scp /tmp/calli.tar "${poplocalhostname}.${localdomainname}:/tmp"
 			srm "/tmp/calli.tar"
-
+			ssh "${poplocalhostname}.${localdomainname}" doas sh /home/taglio/Bin/newchr.sh
 		done
 	;;
 	*)
