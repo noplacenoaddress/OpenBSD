@@ -17,7 +17,7 @@
 /routing filter remove [find]
 /ip service set www address=""
 /interface list member remove [find]
-/interface list remove [find]
+/interface list remove [find where name=GRE]
 /ip firewall filter remove [find]
 /ip firewall mangle remove [find]
 /ip firewall nat remove [find]
