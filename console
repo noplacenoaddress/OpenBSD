@@ -885,9 +885,21 @@ case $3 in
 		eval "${sshcmd} ${userna}@${chr} /ip firewall address-list add list=lan address=10.10.10.0/24"
 		cp src/mikrotik/filter.rsc /tmp
 		sed -i "s|/PUBLICIP/|${chrpubip}|g" /tmp/filter.rsc
+
 		eval "${scpcmd} /tmp/filter.rsc ${userna}@${chr}:/filter.rsc"
 		eval "${sshcmd} ${userna}@${chr} :execute \{/import filter.rsc\}"
 		srm /tmp/filter.rsc
+		echo "configuring routing domains"
+		for chrgre in $(ssh "${userna}@${chr}" :foreach i in=[/interface gre find] do=\{:put [/interface gre get \$i name]\; \}); do
+			com=$(ssh ixp.telecomlobby.com /int gre print where name="$a");
+			poplocalhostname=$(echo "${com}" | awk 'NR==2' | sed "s|^.*;;; ||")
+			cp src/mikrotik/rtdomains.rsc /tmp/rtdomains.rsc
+			sed -i "s|/POPLOCALHOSTNAME/|${poplocalhostname}|g" /tmp/rtdomains.rsc
+			sed -i "s|/GRE/|${chrgre}|g" /tmp/rtdomains.rsc
+			eval "${scpcmd} /tmp/rtdomains.rsc ${userna}@${chr}:/rtdomains.rsc"
+			eval "${sshcmd} ${userna}@${chr} :execute \{/import rtdomains.rsc\}"
+			srm  /tmp/rtdomains.rsc
+		done
 		echo "starting remote install"
 		for poplocalhostname in $(dig TXT openbsd.telecom.lobby +short | sed "s|\"||g" | tr ";" "\n" | awk NF); do
 			ssh "${poplocalhostname}".telecom.lobby install -o "${userna}" -g wheel -m 0750 "${HOME}/Sources/Git/OpenBSD/src/mikrotik/openbsd/newchr.sh ${HOME}/Bin/"
@@ -925,7 +937,7 @@ case $3 in
 			echo "uploading to ${poplocalhostname}..."
 			scp /tmp/calli.tar "${poplocalhostname}.${localdomainname}:/tmp"
 			srm "/tmp/calli.tar"
-			ssh "${poplocalhostname}.${localdomainname}" doas sh /home/taglio/Bin/newchr.sh
+			#ssh "${poplocalhostname}.${localdomainname}" doas sh /home/taglio/Bin/newchr.sh
 		done
 	;;
 	*)
