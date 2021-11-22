@@ -22,3 +22,5 @@
 /ip firewall mangle remove [find]
 /ip firewall nat remove [find]
 /ip firewall address-list remove [find]
+/ip route rule remove [find]
+/ip route remove [find where !routing-mark=""]
