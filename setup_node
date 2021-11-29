@@ -1014,6 +1014,10 @@ function admin {
 					mv "$tmpdir" "/var/www/htdocs/$(hostname)/${vpnc_host}/"
 					mv "/tmp/$vpnc_host.tar" "/var/www/htdocs/$(hostname)/"
 					rm -rf  "$tmpdir"
+					#ipsec update
+					#ipsec up telecomlobby?
+					#clear ip ospf process
+					#systemctl restart ospfd.service
 				fi
 			done
 

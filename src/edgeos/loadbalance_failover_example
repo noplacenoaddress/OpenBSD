@@ -1,0 +1,259 @@
+firewall {
+  all-ping enable
+  broadcast-ping disable
+  group {
+    network-group LAN_IPs {
+      description ""
+      network 192.168.1.0/24
+      network 192.168.2.0/24
+    }
+  }
+  ipv6-receive-redirects disable
+  ipv6-src-route disable
+  ip-src-route disable
+  log-martians enable
+  modify WAN_POLICY {
+    rule 10 {
+      action modify
+      modify {
+        lb-group WAN_FAILOVER
+      }
+    }
+  }
+  name GUEST_IN {
+    default-action accept
+    description ""
+    rule 10 {
+      action accept
+      description "Allow related"
+      destination {
+        group {
+          network-group LAN_IPs
+        }
+      }
+      log disable
+      protocol all
+      state {
+        established enable
+        invalid disable
+        new disable
+        related disable
+      }
+    }
+    rule 20 {
+      action drop
+      description "Block LANs"
+      destination {
+        group {
+          network-group LAN_IPs
+        }
+      }
+      log disable
+      protocol all
+    }
+  }
+  name GUEST_LOCAL {
+    default-action drop
+    description ""
+    rule 1 {
+      action accept
+      description "Accept DNS"
+      destination {
+        port 53
+      }
+      log disable
+      protocol udp
+    }
+    rule 2 {
+      action accept
+      description "Accept DHCP"
+      destination {
+        port 67
+      }
+      log disable
+      protocol udp
+    }
+  }
+  name WAN_IN {
+    default-action drop
+    description "WAN to internal"
+    rule 10 {
+      action accept
+      description "Allow established/related"
+      state {
+        established enable
+        related enable
+      }
+    }
+    rule 60 {
+      action drop
+      description "Drop invalid state"
+      state {
+        invalid enable
+      }
+    }
+  }
+  name WAN_LOCAL {
+    default-action drop
+    description "WAN to router"
+    rule 10 {
+      action accept
+      description "Allow established/related"
+      state {
+        established enable
+        related enable
+      }
+    }
+    rule 40 {
+      action accept
+      description Ping
+      log disable
+      protocol icmp
+    }
+    rule 50 {
+      action drop
+      description "Drop invalid state"
+      state {
+        invalid enable
+      }
+    }
+  }
+  receive-redirects disable
+  send-redirects enable
+  source-validation disable
+  syn-cookies enable
+}
+interfaces {
+  ethernet eth0 {
+    address xxx.xxx.xxx.xxx/31
+    description "Internet - Pri - Voda"
+    duplex full
+    firewall {
+      in {
+        name WAN_IN
+      }
+      local {
+        name WAN_LOCAL
+      }
+    }
+    speed 100
+  }
+  ethernet eth1 {
+    address 192.168.1.1/24
+    description Local
+    dhcp-options {
+      default-route update
+      default-route-distance 210
+      name-server update
+    }
+    duplex auto
+    firewall {
+      in {
+        modify WAN_POLICY
+      }
+    }
+    speed auto
+    vif 1010 {
+      address 192.168.2.1/24
+      description PhoneVLAN
+      mtu 1500
+    }
+    vif 1020 {
+      address 192.168.3.1/24
+      description GuestWiFiVLAN
+      firewall {
+        in {
+          name GUEST_IN
+        }
+        local {
+          name GUEST_LOCAL
+        }
+      }
+      mtu 1500
+    }
+  }
+  ethernet eth2 {
+    address yyy.yyy.yyy.yyy/30
+    description "Internet - Bak - TTB"
+    duplex auto
+    firewall {
+      in {
+        name WAN_IN
+      }
+      local {
+        name WAN_LOCAL
+      }
+    }
+    speed auto
+  }
+  loopback lo {
+  }
+}
+load-balance {
+  group WAN_FAILOVER {
+    exclude-local-dns disable
+    flush-on-active enable
+    gateway-update-interval 20
+    interface eth0 {
+      route-test {
+        initial-delay 60
+        interval 10
+        type {
+          script /config/scripts/pinger.sh
+        }
+      }
+    }
+    interface eth2 {
+      failover-only
+      route-test {
+        initial-delay 60
+        interval 10
+        type {
+          ping {
+            target 8.8.8.8
+          }
+        }
+      }
+    }
+    lb-local enable
+    lb-local-metric-change disable
+  }
+}
+port-forward {
+  auto-firewall enable
+  hairpin-nat disable
+  wan-interface eth0
+}
+protocols {
+  static {
+    route 0.0.0.0/0 {
+      next-hop xxx.xxx.xxx.gw {
+        description "DGW - TTB"
+      }
+      next-hop yyy.yyy.yyy.gw {
+        description "DGW - Voda"
+      }
+    }
+  }
+}
+traffic-control {
+  smart-queue VodaLL {
+    download {
+      ecn enable
+      flows 1024
+      fq-quantum 1514
+      limit 10240
+      rate 95mbit
+    }
+    upload {
+      ecn enable
+      flows 1024
+      fq-quantum 1514
+      limit 10240
+      rate 95mbit
+    }
+    wan-interface eth0
+  }
+}
+vpn {
+}
