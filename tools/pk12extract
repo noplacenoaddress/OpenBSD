@@ -1,0 +1,22 @@
+#!/bin/bash
+
+if [ -z $1 ]; then
+        echo "type $0 more the directory to operate"
+        exit 1
+fi
+
+
+if [ ! -d "$1/private" ]; then
+	mkdir "$1/private"
+fi
+
+if [ ! -d "$1/certs" ]; then
+        mkdir "$1/certs"
+fi
+
+for filename in $(find $1 -maxdepth 1 -name "*.p12"); do
+	file=$(basename $filename)
+	openssl pkcs12 -nodes -in "$1/$file" -nocerts -passin pass:123456789 -passout pass:123456789 -out "$1/private/local.key"
+	openssl pkcs12 -nodes -in "$1/$file" -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "$1/certs/$1.crt"
+	openssl x509 -pubkey -noout -passin pass:123456789 -in "$1/certs/$1.crt"  > "$1/local.pub"
+done

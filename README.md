@@ -243,6 +243,8 @@ tate="New South Wales" locality=Sidney common-name=au.telecomlobby.com subject-a
 [admin@uma.telecom.lobby] >
 ```
 
+Then sign it with the CA certificate and trust it.
+
 Download the [p12](https://en.wikipedia.org/wiki/PKCS_12) combined certificate and private key and upload into the new host `/tmp` directory.
 
 ``` shell
@@ -256,7 +258,7 @@ de.telecomlobby.com.p12        100% 3880   106.4KB/s   00:00
 riccardo@trimurti:~/Work/redama/durpa$ 
 ```
 
-The p12 file have to be protected by the password `123456789`.
+Use the `tools/pk12extract` script to manipulate the `pk12` archive and obtain different formats.
 
 Next use the script `ipsec_newpubkey` to add the new public IPSec key to the `src/etc/iked/pubkeys/ufqdn` directory update the repository and use the console script in the right way:
 
