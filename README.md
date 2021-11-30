@@ -212,9 +212,27 @@ If in our constellation we've got more than one RouterOS or EdgeOS instance plea
 
 Now start to configure the `CA server` about the `IPsec` public and private key.
 
-In my network layout I've got a [Mikrotik](https://mikrotik.com/) `VPS` that administrate the `IPsec` certificate repositories.
+In my network layout I've got a [Mikrotik](https://mikrotik.com/) `VPS` that administrate the `IPsec` certificate repositories, it is called `uma`. Use [ipinfo](https://ipinfo.io/) to obtain data about the `SSL` variables to fill, we can query the database using IPv4 or IPv6 like I've done in this example:
+
+```bash
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ curl http:/ipinfo.io/2001:19f0:b400:1655:5400:03ff:fea7:c37b      
+{
+  "ip": "2001:19f0:b400:1655:5400:03ff:fea7:c37b",
+  "city": "El Colorado",
+  "region": "Querétaro",
+  "country": "MX",
+  "loc": "20.5618,-100.2452",
+  "org": "AS20473 The Constant Company, LLC",
+  "postal": "76246",
+  "timezone": "America/Mexico_City",
+  "readme": "https://ipinfo.io/missingauth"
+}
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ 
+```
 
 [![Mikrotik CA certificate](https://img.youtube.com/vi/A7O_Pe91a6Y/0.jpg)](https://youtu.be/A7O_Pe91a6Y "Mikrotik CA certificate")
+
+
 
 You can use also the RouterOS console:
 
