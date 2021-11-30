@@ -520,6 +520,8 @@ And here you a video:
 
 [![OpenBSD MESH IPSec guerrila host](https://asciinema.org/a/421957.png)](https://asciinema.org/a/421957)
 
+At least one cheat: if you want to reinstall the OpenBSD VPS simply reboot from `ssh` and the using the web [noVNC](https://novnc.com/info.html) virtual terminal at the boot loader prompt type `boot bsd.rd`.
+
 #### Add a new Mikrotik Cloud Hosted Router 
 
 As you can add a new OpenBSD VPS to the network, it's possible also to add a new Mikrotik VPS. Normally I use RouterOS as my WISP client endpoint IPSEC. Connection is a little bit more stable and fluid than with OpenBSD, remember that I've got an EdgeOS in my physic installation. 
