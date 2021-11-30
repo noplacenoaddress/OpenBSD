@@ -67,6 +67,12 @@ Open the `KVM` web console and the installation process of OpenBSD will start. I
 # reboot
 ```
 
+From [release 7.0](https://www.openbsd.org/70.html) command to obtain dynamic IPv4 configuration will be:
+
+```bash
+# ifconfig vio0 autoconf
+```
+
 The default `root` password in our `install.conf` file is `123456789`. But it is encrypted as `$2b$10$4tPKeRmxVyffVkrQMve70.CiPmE28khH9UXiuSYpzAKbZrOfQq0Pm`.
 
 The default `uid 1000` user is `taglio`, my nickname and unix user. You can update `installation/install-vps` file with your. I also specify my `ed25519` ssh key that I've got generated with `ssh-keygen -t ed25519 -C "taglio@telecom.lobby"`as you can appreciate in the configuration file:
