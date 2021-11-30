@@ -245,43 +245,37 @@ tate="New South Wales" locality=Sidney common-name=au.telecomlobby.com subject-a
 
 Then sign it with the CA certificate and trust it.
 
-Download the [p12](https://en.wikipedia.org/wiki/PKCS_12) combined certificate and private key and upload into the new host `/tmp` directory.
+Download the [p12](https://en.wikipedia.org/wiki/PKCS_12) archive from the Mikrotik CA server:
 
 ``` shell
-sftp> get cert_export_de.telecomlobby.com.p12
-Fetching /cert_export_de.telecomlobby.com.p12 to cert_export_de.telecomlobby.com.p12
+sftp> get cert_export_de.telecomlobby.com.p12 de.telecomlobby.com.p12
+Fetching /cert_export_de.telecomlobby.com.p12 to de.telecomlobby.com.p12
 /cert_export_de.telecomlobby.c 100% 3880    74.6KB/s   00:00    
 sftp> ^D
-riccardo@trimurti:~/Work/redama$ mv cert_export_de.telecomlobby.com.p12 de.telecomlobby.com.p12
-riccardo@trimurti:~/Work/redama/durpa$ scp de.telecomlobby.com.p12 taglio@de.telecomlobby.com:/tmp
-de.telecomlobby.com.p12        100% 3880   106.4KB/s   00:00    
 riccardo@trimurti:~/Work/redama/durpa$ 
 ```
 
-Use the `tools/pk12extract` script to manipulate the `pk12` archive and obtain different formats.
+You can use the `tools/pk12extract` script to manipulate the `pk12` archive and obtain different formats.
 
-Next use the script `ipsec_newpubkey` to add the new public IPSec key to the `src/etc/iked/pubkeys/ufqdn` directory update the repository and use the console script in the right way:
+Next use the script `console` to add the new public IPSec key to the `src/etc/iked/pubkeys/ufqdn` directory update the repository and use the console script in the right way (this time I'll use `mx.telecomlobby.com` because thinks are changed at 11/2021). Script will also upload archive to the new OpenBSD VPS into the `/tmp` directory:
 
 ```shell
-riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ./ipsec_newpubkey /home/riccardo/Work/redama/varuna/bg.telecomlobby.com.p12 
-neo@ca.telecomlobby.com created please update repository and all the others Openbsd hosts
-riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ sh git_openbsd.sh 
-git add, commit, sign and push
-check branch
-[taglio-15062021 48dc7f5]  Please enter the commit message for your changes. Lines starting  with '' will be ignored, and an empty message aborts the commit.
- 1 file changed, 9 insertions(+)
- create mode 100644 src/etc/iked/pubkeys/ufqdn/neo@ca.telecomlobby.com
-Enumerating objects: 14, done.
-Counting objects: 100% (14/14), done.
-Delta compression using up to 8 threads
-Compressing objects: 100% (7/7), done.
-Writing objects: 100% (8/8), 1.73 KiB | 886.00 KiB/s, done.
-Total 8 (delta 4), reused 3 (delta 0), pack-reused 0
-remote: Resolving deltas: 100% (4/4), completed with 4 local objects.
-To github.com:redeltaglio/OpenBSD.git
-   c773e1e..48dc7f5  taglio-15062021 -> taglio-15062021
-riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -G
-riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -N
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -K
+Type the PATH to the new iked PK12 file 
+/home/taglio/Work/redama/ipsec/xolotl/mx.telecomlobby.com.p12
+# Host mx.telecomlobby.com found: line 170
+/home/taglio/.ssh/known_hosts updated.
+Original contents retained as /home/taglio/.ssh/known_hosts.old
+The authenticity of host 'mx.telecomlobby.com (216.238.69.44)' can't be established.
+ECDSA key fingerprint is SHA256:D9BLMj/rAp0UfZ/PgY/woXUh+v4wJBK0DFkeCXRLUMg.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added 'mx.telecomlobby.com' (ECDSA) to the list of known hosts.
+Warning: the ECDSA host key for 'mx.telecomlobby.com' differs from the key for the IP address '216.238.69.44'
+Offending key for IP in /home/taglio/.ssh/known_hosts:166
+Are you sure you want to continue connecting (yes/no)? yes
+mx.telecomlobby.com.p12                                                                                                                                                                                                                                 100% 3880    16.3KB/s   00:00    
+xolotl@ca.telecomlobby.com created please update repository and all the others Openbsd hosts
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$
 
 ```
 
