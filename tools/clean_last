@@ -1,0 +1,58 @@
+#!/bin/ksh
+
+set -o errexit
+set -o nounset
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin:/root/Bin
+BACKUPS="/root/Backups"
+
+uid=$(id -u)
+datarelease=$(date +"%d%m%Y%H%m%S")
+
+
+
+
+function backup {
+	CURRENTBACKUP="$BACKUPS/$datarelease"
+	mkdir -p "$CURRENTBACKUP/$1/"
+	case $1 in
+		"etc")
+			tar -cvf "$CURRENTBACKUP/$1/etc.tar" /etc
+		;;
+	esac
+}
+
+
+if [[ $uid -ne 0 ]]; then
+	print $0 "you've got to run $0 as UID=0 \n"
+	exit 1
+fi
+nohup backup "etc" & > /tmp/nohup
+last=$(basename $(cat /etc/iked.conf | grep "iked.conf." | tail -n 1 | awk '{print $2}' | sed 's/"//g' | sed 's/iked.conf.//'))
+publichostname=$(echo $last | cut -d . -f1)
+domainname=$(echo $last | sed "s/$publichostname.//")
+
+for a in $(dig ipsec20591.$domainname TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+	b=$(echo $a | cut -d : -f1)
+	if [[ "$b" -eq "$publichostname" ]]; then
+		srcid=$(echo $a | cut -d : -f2)
+	fi
+done
+
+filename=$(find /etc -name "*$last" -maxdepth 1 -type f)
+sed -i "/$last/d" /etc/iked.conf
+/bin/rm -r "$filename"
+rcctl restart iked
+for file in $(grep "$last" /etc/* | grep hostname | cut -d : -f1); do
+	interface=$(echo $file | cut -d . -f2)
+	if [[ $interface == gre? ]]; then
+		ospfinterface=$interface
+	fi
+	ifconfig $interface destroy
+	/bin/rm -r $file
+done
+pubkey="$srcid@ca.$domainname"
+sed -i "/interface $ospfinterface/,/}/d" /etc/ospfd.conf
+/bin/rm -r "/etc/iked/pubkeys/ufqdn/${pubkey}"
+nohup rcctl restart ospfd & > /tmp/nohup
+exit
