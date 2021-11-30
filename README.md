@@ -257,7 +257,7 @@ riccardo@trimurti:~/Work/redama/durpa$
 
 You can use the `tools/pk12extract` script to manipulate the `pk12` archive and obtain different formats.
 
-Next use the script `console` to add the new public IPSec key to the `src/etc/iked/pubkeys/ufqdn` directory update the repository and use the console script in the right way (this time I'll use `mx.telecomlobby.com` because thinks are changed at 11/2021). Script will also upload archive to the new OpenBSD VPS into the `/tmp` directory:
+Next use the script `console` to add the new public IPSec key to the `src/etc/iked/pubkeys/ufqdn` directory update the repository (this time I'll use `mx.telecomlobby.com` because thinks are changed at 11/2021). Script will also upload archive to the new OpenBSD VPS into the `/tmp` directory:
 
 ```shell
 taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -K
@@ -275,7 +275,8 @@ Offending key for IP in /home/taglio/.ssh/known_hosts:166
 Are you sure you want to continue connecting (yes/no)? yes
 mx.telecomlobby.com.p12                                                                                                                                                                                                                                 100% 3880    16.3KB/s   00:00    
 xolotl@ca.telecomlobby.com created please update repository and all the others Openbsd hosts
-taglio@trimurti:~/Work/telecom.lobby/OpenBSD$
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -G
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -N
 
 ```
 
