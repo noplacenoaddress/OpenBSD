@@ -188,7 +188,7 @@ riccardo@trimurti:~$
 In my configuration I've got also a dynamic IPv4 [EdgeOS](https://dl.ubnt.com/guides/edgemax/EdgeOS_UG.pdf) endpoint and another with fixed IPv4 [RouterOS](https://es.wikipedia.org/wiki/MikroTik) one. In EdgeOS I've got to update the black hole routing table excluding the new ip:
 
 ```shell
-taglio@indra# set protocols static interface-route 45.63.116.141/32 next-hop-interface pppoe0
+taglio@indra# set protocols static interface-route 45.63.116.141/32 next-hop-interface pppoe0 description durga
 [edit]
 taglio@indra# commit
 [edit]
@@ -205,6 +205,8 @@ In the RouterOS one I've got to update the address list relative to the host pre
 [admin@uma.telecom.lobby] /ip firewall address-list> add list=servers comment=durpa address=45.63.116.141/32
 [admin@uma.telecom.lobby] /ip firewall address-list> 
 ```
+
+If in our constellation we've got more than one RouterOS or EdgeOS instance please do the same in every one.
 
 #### Update the IPSec CA server 
 
