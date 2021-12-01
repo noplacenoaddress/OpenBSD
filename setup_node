@@ -1133,9 +1133,12 @@ function configuration {
 			fi
 		;;
 		"users")
-			echo "vmail, dsync, _iperfd, wwwuser"
+			echo "vmail, dsync, _iperfd, wwwuser, tor"
 			if ! getent passwd vmail 1>&-; then
 				useradd -m -u 2000 -g =uid -c "Virtual Mail" -d /var/vmail -s /sbin/nologin vmail
+			fi
+			if ! getent passwd _tor 1>&-; then
+				useradd -m -u 566 -g =uid -c "tor" -d /nonexistent -s /sbin/nologin _tor
 			fi
 			if ! getent passwd dsync  1>&-; then
 				useradd -m -u 2001 -g =uid -c "Dsync Replication" -d /home/dsync -s /bin/ksh dsync
@@ -1151,8 +1154,6 @@ function configuration {
 					install -o taglio -g wheel -m 0750  $file /home/taglio/Bin/
 				fi
 			done
-
-
 		;;
 		"scripts")
 			for file in "$basedir/src/root/Bin/*.sh"; do
@@ -2040,7 +2041,6 @@ case $1 in
 			;;
 			"basic")
 				pkg "shell"
-				pkg "tor"
 				backup "basic"
 				configuration "basic"
 			;;
