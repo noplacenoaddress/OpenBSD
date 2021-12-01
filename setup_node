@@ -59,7 +59,7 @@ domainname=$(print $publichost | sed 's/^[^.]*.//')
 typeset -u publichostname=$(echo $publichost | sed "s/.$domainname//")
 defaultv4router=$(route -n show | awk '/default/{print $2}' | head -n 1)
 macdefaultv4router=$(arp -an | grep -w $defaultv4router |  awk '{print $2}')
-dyndns=$(host -t a cat-01.hopto.org | cut -d ' ' -f4)
+#dyndns=$(host -t a cat-01.hopto.org | cut -d ' ' -f4)
 basedir="/home/taglio/Sources/Git/OpenBSD"
 tmpdir=$(mktemp -d)
 datarelease=$(date +"%d%m%Y%H%m%S")
@@ -1035,6 +1035,7 @@ function configuration {
 			ifconfig $egressinterface -inet6
 			install -o root -g wheel -m 0640  $basedir/src/etc/hostname.egress "/etc/hostname.$egressinterface"
 			install -o root -g wheel -m 0640 $basedir/src/etc/mygate /etc/
+			echo "${ipv6ctrl}"
 			if [[ "$ipv6ctrl" -eq "static" ]]; then
 				rcctl stop slaacd
 				rcctl disable slaacd
