@@ -155,7 +155,7 @@ function cleanold {
 
 function custom {
 	[[ $(ifconfig egress | grep inet6 | grep -v fe80 | grep -v temporary) != "" ]] && \
-		ipv6egress=$(ifconfig egress | grep inet6 | grep -v fe80 | awk '{print $2}')
+		ipv6egress=$(ifconfig egress | grep inet6 | grep -v fe80 | grep -v temporary | awk '{print $2}')
 	for file in $(find $1 -type f -maxdepth $2); do
 		(: "${hostname?}") 2>/dev/null && sed -i "s/\/HOSTNAME\//$hostname/g" $file
 		(: "${landomainname?}") 2>/dev/null && sed -i "s/\/LANDOMAINNAME\//$landomainname/g" $file
