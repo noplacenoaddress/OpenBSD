@@ -107,11 +107,11 @@ function pkg {
 	case $phase in
 		"shell")
 			pkg_add colorls nano wget fping iperf uptimed oidentd sqlite3 \
-				nmap ipcalc gnupg-- rspamd-- arpd
+				nmap ipcalc arpd
 		;;
 		"smtpd")
 			pkg_add opensmtpd-filter-rspamd \
-				dovecot dovecot-pigeonhole
+				dovecot dovecot-pigeonhole gnupg-- rspamd--
 		;;
 		"pdns")
 			pkg_add ldns-utils drill validns libyaml yaml-cpp luajit libmaxminddb
@@ -2040,6 +2040,7 @@ case $1 in
 			;;
 			"basic")
 				pkg "shell"
+				pkg "tor"
 				backup "basic"
 				configuration "basic"
 			;;
