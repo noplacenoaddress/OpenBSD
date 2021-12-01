@@ -301,7 +301,7 @@ function config_pdns {
 
 }
 
-function edgeos_scripts {
+function edgeos_script {
 	sed -i "s/\/TUN\//tun$1/g" "/tmp/$pophost/ES-$publichostname-updown.sh"
 	sed -i "s/\/ROUTERIDLAST\//$2/g" "/tmp/$pophost/ES-$publichostname-updown.sh"
 	i=0
