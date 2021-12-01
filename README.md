@@ -29,6 +29,8 @@ Some that I use or I've used:
 - [VPS Hosting in Europe and USA. Join VPS2DAY now!](https://www.vps2day.com/)
 - [Liveinhost Web Services &#8211; The Best Web Hosting | Fast Professional Website Hosting Services](https://www.liveinhost.com/)
 - [Scaleway Dedibox | The Reference for Dedicated Servers  | Scaleway](https://www.scaleway.com/en/dedibox/)
+- [CreeperHost](https://www.creeperhost.net/)
+- [GINERNET, your Hosting and Server provider in Spain](https://ginernet.com/en/)
 
 Try to understand that we've got to build a network of VPS interconnected site to site between everyone with IPsec and every host is plug and play, I mean that we can add or remove VPS just running the software in this repository. First of all it is important to understand that we can use this design in two different application, one will use registered domains the other will use free dns services. Goal for everyone is security trough simplicity, open source design and the correct use and implementation of robust compliance protocols and daemons. The system operative is [OpenBSD](https://www.openbsd.org/) but later we will use also [Alpine Linux](https://alpinelinux.org/). At that point the goal will be interoperability and the search of near perfect TCP/IP throughput. Another goal will be the use of ARM64 mobile devices also based up Alpine, my favorite one is:
 
@@ -307,15 +309,7 @@ root@neo:/home/taglio/Sources/Git/OpenBSD# sh setup_node                        
 Go ahead type 1 
 ```
 
-After some points the program give us the root ssh `ed25519` key of the new host. That is [EdDSA](https://en.wikipedia.org/wiki/EdDSA) in [public key cryptography](https://en.wikipedia.org/wiki/Public-key_cryptography).  Update the repository:
-
-``` shell
-riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ sed -i '/durga.telecom.lobby/d' src/etc/ssh/remote_install/authorized_keys 
-riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHfCxPKwUqEG9JaEaK6uqFDfDMFYFTblLEWPekGh8CAn root@durga.telecom.lobby" >> src/etc/ssh/remote_install/authorized_keys 
-riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$
-```
-
-To do this operation you can use also the `console` script in the forked repository root:
+After some points the program give us the root ssh `ed25519` key of the new host. That is [EdDSA](https://en.wikipedia.org/wiki/EdDSA) in [public key cryptography](https://en.wikipedia.org/wiki/Public-key_cryptography).  Update the repository using the `console` script:
 
 ```shell
 riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -RS
