@@ -1363,6 +1363,7 @@ function configuration {
 					sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" "/tmp/$pophost/ES-${publichostname}_netwatch.sh"
 					sed -i "s/\/TUN\//tun$lasttun/g" "/tmp/$pophost/ES-${publichostname}_netwatch.sh"
 					sed -i "s/\/TUN\//tun$lasttun/g" "/tmp/$pophost/gre.sh"
+					sed -i "s/\/TUN\//tun$lasttun/g" "/tmp/$pophost/ES-$publichostname-updown.sh"
 					sed -i "s/\/PUBLICHOST\//$publichost/g" "/tmp/$pophost/gre.sh"
 					sed -i "s/\/PUBLICIP\//$publicip/g" "/tmp/$pophost/gre.sh"
 					sed -i "s/\/ROUTERIDLAST\//$routeridlast/g" "/tmp/$pophost/gre.sh"
