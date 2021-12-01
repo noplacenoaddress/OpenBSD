@@ -1385,7 +1385,8 @@ function configuration {
 			lastnet=$lastnet-4
 			echo "update gre7058.$domainname TXT to $lastnet \
 			      \n gre18994.$domainname TXT to $lasttun \n"
-		      	custom "/etc" "1"
+	      	custom "/etc" "1"
+			sleep 2
 			for file in /etc/hostname.gre? ; do
 				sh /etc/netstart $(echo $file | awk -F. '{print $2}')
 			done
