@@ -1056,8 +1056,7 @@ function configuration {
 			rcctl stop resolvd
 			rcctl disable dhcpleased
 			rcctl disable resolvd
-			sh /etc/netstart $egressinterface 
-			cd $basedir
+			sh /etc/netstart $egressinterface
 		;;
 		"basic")
 			hostname "$hostname.$landomainname"
