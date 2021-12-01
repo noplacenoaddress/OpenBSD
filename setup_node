@@ -1032,11 +1032,11 @@ function configuration {
 	fi
 	case $phase in
 		"static")
-			ifconfig $egressinterface -inet6
+			#ifconfig $egressinterface -inet6
 			install -o root -g wheel -m 0640  $basedir/src/etc/hostname.egress "/etc/hostname.$egressinterface"
 			install -o root -g wheel -m 0640 $basedir/src/etc/mygate /etc/
 			echo "${ipv6ctrl}"
-			if [[ "$ipv6ctrl" -eq "static" ]]; then
+			if [[ "${ipv6ctrl}" == "static" ]]; then
 				rcctl stop slaacd
 				rcctl disable slaacd
 				tmphostname=$(mktemp)
@@ -1051,8 +1051,12 @@ function configuration {
 			echo "arp -s $defaultv4router $macdefaultv4router" > /etc/rc.local
 			arp -s $defaultv4router $macdefaultv4router
 			custom "/etc" "1"
-			cd /tmp
-			nohup sh /etc/netstart &
+			echo "nameserver 8.8.8.8" > /etc/resolv.conf
+			rcctl stop dhcpleased
+			rcctl stop resolvd
+			rcctl disable dhcpleased
+			rcctl disable resolvd
+			sh /etc/netstart $egressinterface 
 			cd $basedir
 		;;
 		"basic")
