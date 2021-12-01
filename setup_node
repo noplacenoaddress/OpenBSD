@@ -1407,6 +1407,10 @@ function configuration {
 					echo "$vpnc_ip/32" >> /etc/pf.conf.table.ipsec
 				fi
 			done
+			[[ -e "/etc/pf.conf.macro.gre.tag.in" ]] && rm -rf /etc/pf.conf.macro.gre.tag.in
+			for greint in $(ifconfig | grep gre[[:digit:]] | sed "s|:.*$||g"); do
+				echo "pass in quick on ${greint} to vether0 tagged PERMITTED reply-to ${greint}" >> /etc/pf.conf.macro.gre.tag.in
+			done
  			for file in $(find /tmp -name "*.rsc"); do
 				cat $basedir/src/mikrotik/firewall.rsc >> "$file"
 				sed -i "s/\/HOSTNAME\//${hostname}/g" $file
@@ -1593,35 +1597,6 @@ function configuration {
 			pkg "smtpd"
 		;;
 		"powerdns")
-
-<<END_OF_COMMENT
-			[[ $(pidof "nsd") == "" ]] && \
-				rcctl enable nsd && \
-				rcctl set nsd flags "-c /var/nsd/etc/nsd.conf" \
-				|| \
-				rcctl stop nsd && \
-				backup "nsd" && \
-				rm -rf /var/nsd && \
-				mkdir -p /var/nsd/{db,etc,etc/dnssec,run,run/xfr,zones,zones/master,zones/slave} && \
-				chmod 775 /var/nsd/{db,run,zones/slave} && \
-				chmod 750 /var/nsd/etc && \
-				chmod 755 /var/nsd/{zones,zones/master} && \
-				chmod 640 /var/nsd/etc/dnssec
-				chown -R root:_nsd /var/nsd/{db,etc,run,zones/slave}
-			case $subphase in
-				"local")
-				;;
-				"distributed")
-					[[ $(wc -l /tmp/powernsd_distributed | awk '{print $1}') -eq 4 ]] && \
-						config_nsd "basic" "master" "$(awk 'FNR == 1' /tmp/powernsd_distributed)" "$(awk 'FNR == 2' /tmp/powernsd_distributed)" \
-							"$(awk 'FNR == 3' /tmp/powernsd_distributed)" "$(awk 'FNR == 4' /tmp/powernsd_distributed)" \
-						|| \
-						config_nsd "basic" "slave" "$(awk 'FNR == 1' /tmp/powernsd_distributed)"  "$(awk 'FNR == 2' /tmp/powernsd_distributed)" \
-							"$(awk 'FNR == 3' /tmp/powernsd_distributed)"
-				;;
-			esac
-END_OF_COMMENT
-
 			[[ $(pidof "pdns") == "" ]] && \
 				config_pdns || \
 					echo "PowerDNS is running..." ; exit 1
