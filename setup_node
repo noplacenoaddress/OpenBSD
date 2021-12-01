@@ -1138,7 +1138,7 @@ function configuration {
 				useradd -m -u 2000 -g =uid -c "Virtual Mail" -d /var/vmail -s /sbin/nologin vmail
 			fi
 			if ! getent passwd _tor 1>&-; then
-				useradd -m -u 566 -g =uid -c "tor" -d /nonexistent -s /sbin/nologin _tor
+				[[ -e "/nonexistent" ]] && useradd -m -u 566 -g =uid -c "tor" -d /unknown -s /sbin/nologin _tor || useradd -u 566 -g =uid -c "tor" -d /unknown -s /sbin/nologin _tor
 			fi
 			if ! getent passwd dsync  1>&-; then
 				useradd -m -u 2001 -g =uid -c "Dsync Replication" -d /home/dsync -s /bin/ksh dsync
