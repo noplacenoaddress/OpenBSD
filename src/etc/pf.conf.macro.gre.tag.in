@@ -1,9 +1,1 @@
-pass in quick on gre0 to vether0 tagged PERMITTED reply-to gre0
-pass in quick on gre1 to vether0 tagged PERMITTED reply-to gre1
-pass in quick on gre2 to vether0 tagged PERMITTED reply-to gre2
-pass in quick on gre3 to vether0 tagged PERMITTED reply-to gre3
-pass in quick on gre4 to vether0 tagged PERMITTED reply-to gre4
-pass in quick on gre5 to vether0 tagged PERMITTED reply-to gre5
-pass in quick on gre6 to vether0 tagged PERMITTED reply-to gre6
-pass in quick on gre7 to vether0 tagged PERMITTED reply-to gre7
-pass in quick on gre8 to vether0 tagged PERMITTED reply-to gre8
+#if link broken reply on the same interface
