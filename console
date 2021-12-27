@@ -71,27 +71,29 @@ fi
 
 if [[ $# -eq 0 ]]; then
 	echo -e $0 "have to be used with the following options \
-			\n-I  -> local domain name [x]\
-			\n-N  -> newhost [o]\
-			\n-G  -> git pull [o]\
-			\n-S  -> scripts [o] \
-			\n-D  -> dyndnspop [o] \
-			\n-F  -> single file update [o] \
-			\n-C  -> cleanlast [o] \
-			\n-RS -> repository ssh update [o] \
-			\n-K  -> new IKED pk12 archive [o] \
-			\n-T  -> tmux and SSH to all openbsd MESH hosts [o] \
-			\n-M  -> Mikrotik RouterOS add new OpenBSD [o] \
-			\n-E  -> Ubiquiti EdgeOS add new OpenBSD [o] \
-			\n-P  -> Mass syspatch OpenBSD hosts [o] \
-			\n-Z  -> Global network domains setup [o] \
-			\n-OM -> Mikrotik RouterOS ospf-in/out filter [o] \
-			\n-OE -> EdgeOS ospf-in/out filter [o] \
-			\n-OO -> OpenBSD ospf filter [o] \
-			\n-U  -> update the workstation's user EdDSA certificate [o] \
-			\n-NO -> newospf configuration [o] \
-			\n-PF -> new firewall configuration [o] \
+			\n \
+			\n-I   -> local domain name [x]\
+			\n-N   -> newhost [o]\
+			\n-G   -> git pull [o]\
+			\n-S   -> scripts [o] \
+			\n-D   -> dyndnspop [o] \
+			\n-F   -> single file update [o] \
+			\n-C   -> cleanlast [o] \
+			\n-RS  -> repository ssh update [o] \
+			\n-K   -> new IKED pk12 archive [o] \
+			\n-T   -> tmux and SSH to all openbsd MESH hosts [o] \
+			\n-M   -> Mikrotik RouterOS add new OpenBSD [o] \
+			\n-E   -> Ubiquiti EdgeOS add new OpenBSD [o] \
+			\n-P   -> Mass syspatch OpenBSD hosts [o] \
+			\n-Z   -> Global network domains setup [o] \
+			\n-OM  -> Mikrotik RouterOS ospf-in/out filter [o] \
+			\n-OE  -> EdgeOS ospf-in/out filter [o] \
+			\n-OO  -> OpenBSD ospf filter [o] \
+			\n-U   -> update the workstation's user EdDSA certificate [o] \
+			\n-NO  -> newospf configuration [o] \
+			\n-PF  -> new firewall configuration [o] \
 			\n-CHR -> new RouterOS Cloud Hosted Router istance [o] \
+			\n-7   -> changes to 7.0 release [o] \
 			\n"
 
 	exit 1
