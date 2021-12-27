@@ -1,3 +1,19 @@
 #!/bin/ksh
 
 # 7 RELENG info https://www.openbsd.org/70.html
+
+egressinterface=$(ifconfig egress | cut -d  : -f1 | head -n1)
+
+function pidof {
+	ps axc -o pid,command | awk "\$2~/^`echo $1`\$/ {print \$1}"
+}
+
+[ ! -z $(pidof dhcpleased) ] && rcctl stop dhcpleased ; rcctl disable dhcpleased
+[ ! -z $(pidof resolvd) ] && rcctl stop resolvd ; rcctl disable rcctl disable resolvd
+[[ $(cat /etc/hostname."${egressinterface}" | grep -c "\-soii") -eq 1 ]] && sed -i "s|-||g" /etc/hostname."${egressinterface}" ; sh /etc/netstart "${egressinterface}"
+[ ! -z $(pidof tor) ] && rcctl stop tor ; rcctl disable tor
+[ ! -z $(pidof ifstated) ] && rcctl stop ifstated ; rcctl disable ifstated
+[ ! -z $(pidof redis) ] && rcctl stop redis ; rcctl disable redis
+[ ! -z $(pidof rspamd) ] && rcctl stop rspamd ; rcctl disable rspamd
+[ ! -z $(pidof dkimproxy_out) ] && rcctl stop dkimproxy_out ; rcctl disable dkimproxy_out
+[[ $(hostname -s) != "ganesha" ]] && [ ! -z $(pidof dovecot) ] && rcctl stop dovecot ; rcctl disable dovecot
