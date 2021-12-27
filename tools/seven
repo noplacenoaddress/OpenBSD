@@ -8,12 +8,13 @@ function pidof {
 	ps axc -o pid,command | awk "\$2~/^`echo $1`\$/ {print \$1}"
 }
 
-[ ! -z $(pidof dhcpleased) ] && rcctl stop dhcpleased ; rcctl disable dhcpleased
-[ ! -z $(pidof resolvd) ] && rcctl stop resolvd ; rcctl disable rcctl disable resolvd
-[[ $(cat /etc/hostname."${egressinterface}" | grep -c "\-soii") -eq 1 ]] && sed -i "s|-||g" /etc/hostname."${egressinterface}" ; sh /etc/netstart "${egressinterface}"
-[ ! -z $(pidof tor) ] && rcctl stop tor ; rcctl disable tor
-[ ! -z $(pidof ifstated) ] && rcctl stop ifstated ; rcctl disable ifstated
-[ ! -z $(pidof redis) ] && rcctl stop redis ; rcctl disable redis
-[ ! -z $(pidof rspamd) ] && rcctl stop rspamd ; rcctl disable rspamd
-[ ! -z $(pidof dkimproxy_out) ] && rcctl stop dkimproxy_out ; rcctl disable dkimproxy_out
-[[ $(hostname -s) != "ganesha" ]] && [ ! -z $(pidof dovecot) ] && rcctl stop dovecot ; rcctl disable dovecot
+[[ -z $(pidof dhcpleased) ]] || rcctl stop dhcpleased > /dev/null 2>&1 && rcctl disable dhcpleased > /dev/null 2>&1
+[[ -z $(pidof resolvd) ]] ||  rcctl stop resolvd > /dev/null 2>&1 && rcctl disable resolvd > /dev/null 2>&1
+[[ $(hostname -s) != "varuna" ]] && [[ $(cat /etc/hostname."${egressinterface}" | grep -c "\-soii") -eq 1 ]] && sed -i "s|-||g" /etc/hostname."${egressinterface}" && sh /etc/netstart "${egressinterface}"
+[[ -z $(pidof tor) ]] ||  rcctl stop tor > /dev/null 2>&1 && rcctl disable tor > /dev/null 2>&1
+[[ -z $(pidof ifstated) ]] ||  rcctl stop ifstated > /dev/null 2>&1 && rcctl disable ifstated > /dev/null 2>&1
+[[ -z $(pidof redis) ]] ||  rcctl stop redis > /dev/null 2>&1 && rcctl disable redis > /dev/null 2>&1
+[[ -z $(pidof rspamd) ]] ||  rcctl stop rspamd > /dev/null 2>&1 && rcctl disable rspamd > /dev/null 2>&1
+[[ -z $(pidof dkimproxy_out) ]] ||  rcctl stop dkimproxy_out > /dev/null 2>&1 && rcctl disable dkimproxy_out > /dev/null 2>&1
+[[ $(hostname -s) != "ganesha" ]] && [[ ! -z $(pidof dovecot) ]] && rcctl stop dovecot > /dev/null 2>&1 && rcctl disable dovecot > /dev/null 2>&1
+exit
