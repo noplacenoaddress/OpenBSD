@@ -154,6 +154,12 @@ case $3 in
 			ssh -o StrictHostKeyChecking=no -o ConnectTimeout=1  -o ConnectionAttempts=1 -t $vpnc_host.$localdomainname doas syspatch
 		done
 	;;
+	"-7")
+		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+			echo -e "Connecting to $vpnc_host"
+			ssh -o StrictHostKeyChecking=no -o ConnectTimeout=1  -o ConnectionAttempts=1 -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/tools/seven"
+		done
+	;;
 	"-RS")
 		lanhost=
 		while [ -z $lanhost ]
