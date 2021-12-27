@@ -734,6 +734,58 @@ If the VPS provider got the option to install OpenBSD, a custom ISO or hasn't th
 
 The upgrade our git repository and launch the `upgrade.sh` script. Remember to wait a couple of days after the [release announce](https://www.openbsd.org/69.html) is published by [Theo de Raddt](https://www.theos.com/deraadt/).
 
+Under `tools/` directory you can find different scripts useful to adapt configuration between releases. Always keep in mind to carefully read what the OpenBSD crew have to explain to us, power users, about changes. For example here you are the one about the `7 RELENG`:
+
+- [OpenBSD 7.0](https://www.openbsd.org/70.html)
+
+Next you can call them in a massive way as usual using the `console` script from the workstation:
+
+```bash
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console 
+./console have to be used with the following options 			
+ 			
+-I   -> local domain name [x]			
+-N   -> newhost [o]			
+-G   -> git pull [o]			
+-S   -> scripts [o] 			
+-D   -> dyndnspop [o] 			
+-F   -> single file update [o] 			
+-C   -> cleanlast [o] 			
+-RS  -> repository ssh update [o] 			
+-K   -> new IKED pk12 archive [o] 			
+-T   -> tmux and SSH to all openbsd MESH hosts [o] 			
+-M   -> Mikrotik RouterOS add new OpenBSD [o] 			
+-E   -> Ubiquiti EdgeOS add new OpenBSD [o] 			
+-P   -> Mass syspatch OpenBSD hosts [o] 			
+-Z   -> Global network domains setup [o] 			
+-OM  -> Mikrotik RouterOS ospf-in/out filter [o] 			
+-OE  -> EdgeOS ospf-in/out filter [o] 			
+-OO  -> OpenBSD ospf filter [o] 			
+-U   -> update the workstation's user EdDSA certificate [o] 			
+-NO  -> newospf configuration [o] 			
+-PF  -> new firewall configuration [o] 			
+-CHR -> new RouterOS Cloud Hosted Router istance [o] 			
+-7   -> changes to 7.0 release [o] 			
+
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -7
+Connecting to ganesha
+Connection to ganesha.telecom.lobby closed.
+Connecting to saraswati
+Connection to saraswati.telecom.lobby closed.
+Connecting to shiva
+Connection to shiva.telecom.lobby closed.
+Connecting to varuna
+Connection to varuna.telecom.lobby closed.
+Connecting to durga
+Connection to durga.telecom.lobby closed.
+Connecting to vishnu
+Connection to vishnu.telecom.lobby closed.
+Connecting to bhagavati
+Connection to bhagavati.telecom.lobby closed.
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$
+
+```
+
 #### Possible applications
 
 Let's start discussing how we can boost our presence in Internet using that guerrilla MESH system that guaranty our privacy and security on the web. My first project is regarding a website replicated over different countries in all the languages over the world. Something very important to obtain maximum results about clients, about web goods sell, about be recognized over it and about whatever we want to obtain searching for visibility.
