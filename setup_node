@@ -2,6 +2,8 @@
 
 #	$Telecomlobby: setup_node,v 0.1 11/3/2021 21:01:04 taglio$
 #
+
+#ipv6 stateless: https://en.wikipedia.org/wiki/IPv6_address#Stateless_address_autoconfiguration
 #unbound: https://blog.c6h12o6.org/post/unbound-dnssec-dns-over-tls/
 #sshd: https:/github.com/vedetta-com/vedetta/blob/master/$basedir/src/usr/local/share/doc/vedetta/OpenSSH_Principals.md
 #smptd: https://github.com/vedetta-com/caesonia
