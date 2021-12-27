@@ -1,5 +1,3 @@
 pub="/PUBLICIP/"
 pub_v6="/PUBV6///PREFIX/"
-
-
-
+tmp_v6="/TMPV6///PREFIX/"
