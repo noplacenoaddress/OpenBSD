@@ -282,27 +282,7 @@ taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -N
 
 ```
 
-#### Login and start the connection process
-
-Install the git package:
-
-```shell
-neo# pkg_add git
-neo$ mkdir -p Sources/Git && cd Sources/Git
-neo$ git clone https://github.com/redeltaglio/OpenBSD.git
-```
-
-Next let's start to configure the system with our script `setup_node`, you've got to go ahead to every point pressing `1` or to type different variables:
-
-- the type of IPv6 address:
-  - `static`: 
-    - [IPv6 address](https://en.wikipedia.org/wiki/IPv6) without prefixlen.
-    - The [prefixlen](https://www.ciscopress.com/articles/article.asp?p=2803866&seqNum=2).
-    - The [IPv6 default route](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/iproute_pi/configuration/xe-16-10/iri-xe-16-10-book/ip6-route-static-xe.pdf).
-  - `dynamic`, using [slaacd (8)](https://www.openbsd.org/papers/florian_slaacd_bsdcan2018.pdf)
-- `hostname`, the name of the machine.
-- `landomainname`, the interior domain name that in my case is `telecom.lobby`
-- `routerid`, the OSPFD router id and the IP of the `vether0` interface.
+#### Inet6
 
 Ipv6 need special attention in case of dynamic address configuration. Look at our template:
 
@@ -375,6 +355,30 @@ vio0:
                 updated: 2021-12-28 10:13:39; 88s ago, timeout:       3497s
 taglio@ganesha:/home/taglio/Work/telecomlobby.com/bin$ 
 ```
+
+
+
+#### Login and start the connection process
+
+Install the git package:
+
+```shell
+neo# pkg_add git
+neo$ mkdir -p Sources/Git && cd Sources/Git
+neo$ git clone https://github.com/redeltaglio/OpenBSD.git
+```
+
+Next let's start to configure the system with our script `setup_node`, you've got to go ahead to every point pressing `1` or to type different variables:
+
+- the type of IPv6 address:
+  - `static`: 
+    - [IPv6 address](https://en.wikipedia.org/wiki/IPv6) without prefixlen.
+    - The [prefixlen](https://www.ciscopress.com/articles/article.asp?p=2803866&seqNum=2).
+    - The [IPv6 default route](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/iproute_pi/configuration/xe-16-10/iri-xe-16-10-book/ip6-route-static-xe.pdf).
+  - `dynamic`, using [slaacd (8)](https://www.openbsd.org/papers/florian_slaacd_bsdcan2018.pdf)
+- `hostname`, the name of the machine.
+- `landomainname`, the interior domain name that in my case is `telecom.lobby`
+- `routerid`, the OSPFD router id and the IP of the `vether0` interface.
 
 
 
