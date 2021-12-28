@@ -584,7 +584,10 @@ function upgrade {
 			if [[ -e "/etc/pf.conf.macro.public" ]]; then
 			echo "pf.conf.macro.public upgrade"
 				custom "$tmpdir" "1"
-				install -o root -g wheel -m 0640  "$tmpdir/pf.conf.macro.public" /etc/
+				sha256compare "/etc/pf.conf.macro.public" "$tmpdir/pf.conf.macro.public" || sha256ctrl=1
+				if [[ $sha256ctrl -eq 1 ]]; then
+					install -o root -g wheel -m 0640  "$tmpdir/pf.conf.macro.public" /etc/
+				fi
 			fi
 			[[ -e "/etc/pf.conf.table.ipsec" ]] && sha256compare "/etc/pf.conf.table.ipsec" "$tmpdir/pf.conf.table.ipsec" || sha256ctrl=1
 			if [[ $sha256ctrl -eq 1 ]]; then
