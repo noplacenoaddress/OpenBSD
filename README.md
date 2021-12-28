@@ -304,8 +304,26 @@ Next let's start to configure the system with our script `setup_node`, you've go
 - `landomainname`, the interior domain name that in my case is `telecom.lobby`
 - `routerid`, the OSPFD router id and the IP of the `vether0` interface.
 
+Ipv6 need special attention in case of dynamic address configuration. Look at our template:
+
+```bash
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ cat src/etc/hostname.egress | grep inet6 | grep -v \-
+inet6 autoconf temporary soii
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ 
+```
+
+We've got three options to the [inet6](https://en.wikipedia.org/wiki/IPv6) family for the `egress` interface:
+
+- `autoconf`,  [slaacd(8)](https://man.openbsd.org/slaacd) automatically configures IPv6 addresses for interfaces with AUTOCONF6  set.
+- `temporary`,  enable temporary address extensions for stateless IPv6 address autoconfiguration [RFC 8981](https://datatracker.ietf.org/doc/html/rfc8981) on the interface. The purpose of these extensions is to prevent tracking of individual devices which connect to the IPv6  internet from different networks using stateless autoconfiguration. 
+- `soii` , enable persistent Semantically Opaque Interface Identifier , as per [RFC 7217](https://datatracker.ietf.org/doc/html/rfc7217), for SLAAC addresses on the interface.
+
+As you can understand the last twos are security extensions to guarantee more privacy upon the inet6 configuration, next we will apply even more security using [pf](https://www.openbsd.org/faq/pf/) .
+
+Start with the configuration:
+
 ```shell
-root@neo:/home/taglio/Sources/Git/OpenBSD# sh setup_node                                                                                                                                                                                          changing installurl
+root@neo:/home/taglio/Sources/Git/OpenBSD# sh setup_node                                                                                                                                 changing installurl
 Go ahead type 1 
 ```
 
