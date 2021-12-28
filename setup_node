@@ -581,6 +581,11 @@ function upgrade {
 					echo "$vpnc_ip/32" >> "$tmpdir/pf.conf.table.ipsec"
 				fi
 			done
+			if [[ -e "/etc/pf.conf.macro.public" ]]; then
+			echo "pf.conf.macro.public upgrade"
+				custom "$tmpdir" "1"
+				install -o root -g wheel -m 0640  "$tmpdir/pf.conf.macro.public" /etc/
+			fi
 			[[ -e "/etc/pf.conf.table.ipsec" ]] && sha256compare "/etc/pf.conf.table.ipsec" "$tmpdir/pf.conf.table.ipsec" || sha256ctrl=1
 			if [[ $sha256ctrl -eq 1 ]]; then
 				echo "pf.conf.table.ipsec upgrade"
@@ -609,6 +614,7 @@ function upgrade {
 				pfctl -nf /etc/pf.conf
 				pfctl -f /etc/pf.conf
 			fi
+
 			for file in $(find /etc -maxdepth 1 -name "iked.conf.*") ; do
 				tagged=$(echo $file | sed "s/\/etc\/iked.conf.//")
 				count=$(dig $tagged A +short @8.8.8.8 | wc -l)
