@@ -318,7 +318,65 @@ We've got three options to the [inet6](https://en.wikipedia.org/wiki/IPv6) famil
 - `temporary`,  enable temporary address extensions for stateless IPv6 address autoconfiguration [RFC 8981](https://datatracker.ietf.org/doc/html/rfc8981) on the interface. The purpose of these extensions is to prevent tracking of individual devices which connect to the IPv6  internet from different networks using stateless autoconfiguration. 
 - `soii` , enable persistent Semantically Opaque Interface Identifier , as per [RFC 7217](https://datatracker.ietf.org/doc/html/rfc7217), for SLAAC addresses on the interface.
 
-As you can understand the last twos are security extensions to guarantee more privacy upon the inet6 configuration, next we will apply even more security using [pf](https://www.openbsd.org/faq/pf/) .
+As you can understand the last twos are security extensions to guarantee more privacy upon the inet6 configuration, next we will apply even more security using [pf](https://www.openbsd.org/faq/pf/) . We can retry more information using [ifconfig(8)](https://man.openbsd.org/ifconfig.8) and [slaacctl(8)](https://man.openbsd.org/slaacctl.8).
+
+```bash
+taglio@ganesha:/home/taglio/Work/telecomlobby.com/bin$ ifconfig egress inet6
+vio0: flags=248843<UP,BROADCAST,RUNNING,SIMPLEX,MULTICAST,AUTOCONF6TEMP,AUTOCONF6> mtu 1500
+        lladdr 56:00:02:79:3b:4d
+        index 1 priority 0 llprio 3
+        groups: egress
+        media: Ethernet autoselect
+        status: active
+        inet6 fe80::5400:2ff:fe79:3b4d%vio0 prefixlen 64 scopeid 0x1
+        inet6 2001:19f0:7401:8c01:25f9:5be9:8daa:f2d5 prefixlen 64 autoconf pltime 604554 vltime 2591754
+        inet6 2001:19f0:7401:8c01:8b1f:e3eb:c78d:77f4 prefixlen 64 deprecated autoconf temporary pltime 0 vltime 86385
+        inet6 2001:19f0:7401:8c01:739b:2a15:122e:6f6b prefixlen 64 autoconf temporary pltime 48768 vltime 156889
+taglio@ganesha:/home/taglio/Work/telecomlobby.com/bin$ slaacctl show interface  
+vio0:
+         index:   1 running: yes temporary: yes
+        lladdr: 56:00:02:79:3b:4d
+         inet6: fe80::5400:2ff:fe79:3b4d%vio0
+        Router Advertisement from fe80::fc00:2ff:fe79:3b4d%vio0
+                received: 2021-12-28 10:13:39; 88s ago
+                Cur Hop Limit:  64, M: 0, O: 0, Router Lifetime:  1800s
+                Default Router Preference: Medium
+                Reachable Time:         0ms, Retrans Timer:         0ms
+                MTU: 1500 bytes
+                prefix: 2001:19f0:7401:8c01::/64
+                        On-link: 1, Autonomous address-configuration: 1
+                        vltime:    2592000, pltime:     604800
+                rdns: 2001:19f0:300:1704::6, lifetime: 3600
+        Address proposals
+                id:    8, state:      CONFIGURED, temporary: y
+                vltime:     156879, pltime:      48758, timeout:      48655s
+                updated: 2021-12-28 10:13:39; 88s ago
+                2001:19f0:7401:8c01:739b:2a15:122e:6f6b, 2001:19f0:7401:8c01::/64
+                id:    6, state:      CONFIGURED, temporary: y
+                vltime:      86375, pltime:          0, timeout:      86272s
+                updated: 2021-12-28 10:13:39; 88s ago
+                2001:19f0:7401:8c01:8b1f:e3eb:c78d:77f4, 2001:19f0:7401:8c01::/64
+                id:    5, state:      CONFIGURED, temporary: n
+                vltime:    2592000, pltime:     604800, timeout:     604697s
+                updated: 2021-12-28 10:13:39; 88s ago
+                2001:19f0:7401:8c01:25f9:5be9:8daa:f2d5, 2001:19f0:7401:8c01::/64
+        Default router proposals
+                id:    4, state:      CONFIGURED
+                router: fe80::fc00:2ff:fe79:3b4d%vio0
+                router lifetime:       1800
+                Preference: Medium
+                updated: 2021-12-28 10:13:39; 88s ago, timeout:       1697s
+        rDNS proposals
+                id:    7, state:            SENT
+                router: fe80::fc00:2ff:fe79:3b4d%vio0
+                rdns lifetime:       3600
+                rdns:
+                        2001:19f0:300:1704::6
+                updated: 2021-12-28 10:13:39; 88s ago, timeout:       3497s
+taglio@ganesha:/home/taglio/Work/telecomlobby.com/bin$ 
+```
+
+
 
 Start with the configuration:
 
