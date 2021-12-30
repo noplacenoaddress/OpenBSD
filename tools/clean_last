@@ -53,6 +53,6 @@ for file in $(grep "$last" /etc/* | grep hostname | cut -d : -f1); do
 done
 pubkey="$srcid@ca.$domainname"
 sed -i "/interface $ospfinterface/,/}/d" /etc/ospfd.conf
-/bin/rm -r "/etc/iked/pubkeys/ufqdn/${pubkey}"
 nohup rcctl restart ospfd & > /tmp/nohup
+/bin/rm -r "/etc/iked/pubkeys/ufqdn/${pubkey}"
 exit
