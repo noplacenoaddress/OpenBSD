@@ -1978,6 +1978,7 @@ case $1 in
 				fi
 			done
 		fi
+		pfctl -f /etc/pf.conf
 		echo "configuring sshd for IPSec MESH network with certificates\n"
 		if [[ $configini -eq 1 ]]; then
 			upgrade "ssh"
@@ -1995,7 +1996,6 @@ case $1 in
 				fi
 			done
 		fi
-		pfctl -f /etc/pf.conf
 		rcctl restart syslogd
 		echo "configuring basic httpd for IPSec MESH network operations\n"
 		if [[ $configini -eq 1 ]]; then
