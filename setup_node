@@ -881,7 +881,7 @@ function upgrade {
 function admin {
 	case $1 in
 		"cleanlast")
-			sh  $basedir/clean_last
+			sh  $basedir/tools/clean_last
 		;;
 		"sslcareq")
 			cd /etc/ssl
