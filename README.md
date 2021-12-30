@@ -356,8 +356,6 @@ vio0:
 taglio@ganesha:/home/taglio/Work/telecomlobby.com/bin$ 
 ```
 
-
-
 #### Login and start the connection process
 
 Install the git package:
@@ -380,9 +378,7 @@ Next let's start to configure the system with our script `setup_node`, you've go
 - `landomainname`, the interior domain name that in my case is `telecom.lobby`
 - `routerid`, the OSPFD router id and the IP of the `vether0` interface.
 
-
-
-Start with the configuration:
+Start with the configuration and <u>remember to put your route to 0.0.0.0 outside the OpenBSD MESH network!</u>
 
 ```shell
 root@neo:/home/taglio/Sources/Git/OpenBSD# sh setup_node                                                                                                                                 changing installurl
