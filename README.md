@@ -187,21 +187,25 @@ riccardo@trimurti:~$ dig @8.8.8.8 vpncN.telecomlobby.com A +short
 riccardo@trimurti:~$ 
 ```
 
-In my configuration I've got also a dynamic IPv4 [EdgeOS](https://dl.ubnt.com/guides/edgemax/EdgeOS_UG.pdf) endpoint and another with fixed IPv4 [RouterOS](https://es.wikipedia.org/wiki/MikroTik) one. In EdgeOS I've got to update the black hole routing table excluding the new ip and add to the firewall group list OPENBSD:
+In my configuration I've got also a dynamic IPv4 [EdgeOS](https://dl.ubnt.com/guides/edgemax/EdgeOS_UG.pdf) endpoint and another with fixed IPv4 [RouterOS](https://es.wikipedia.org/wiki/MikroTik) one. In EdgeOS I've got to update the black hole routing table excluding the new ip and add to the firewall group list `OPENBSD`, and also add the `ROUTERID` of the new OpenBSD mesh host to the relative address-group and to the policy access list 10 using the correct rule number.
 
 ```shell
 root@indra# set firewall group address-group OPENBSD address 216.238.100.26
 [edit]
 root@indra# 
-taglio@indra# set protocols static interface-route 216.238.100.26/32 next-hop-interface pppoe0 description xolotl
+root@indra# set firewall group address-group ROUTERID address 192.168.13.55
 [edit]
-taglio@indra# commit
+root@indra# set policy access-list 10 rule 15 source host 192.168.13.55
 [edit]
-taglio@indra# save
+root@indra# set protocols static interface-route 216.238.100.26/32 next-hop-interface pppoe0 description xolotl
+[edit]
+root@indra# commit
+[edit]
+root@indra# save
 Saving configuration to '/config/config.boot'...
 Done
 [edit]
-taglio@indra# exit
+root@indra# exit
 ```
 
 In the RouterOS one I've got to update the address list relative to the host presents in my IPSec network:
