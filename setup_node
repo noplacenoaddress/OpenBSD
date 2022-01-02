@@ -929,7 +929,7 @@ function admin {
 					if [[ -d "/tmp/$vpnc_host" ]]; then
 						echo "Download Mikrotik Routeros script from http://$(hostname)/$vpnc_host/$vpnc_host.rsc"
 						custom "/tmp/$vpnc_host" 1
-						mv "/tmp/$vpnc_host" "/var/www/htdocs/$(hostname)/"
+						mv "/tmp/$vpnc_host/" "/var/www/htdocs/$(hostname)/"
 					else
 						mkdir "/tmp/$vpnc_host"
 						cp $basedir/src/mikrotik/ipsec.rsc "/tmp/$vpnc_host/$vpnc_host.rsc"
@@ -958,7 +958,7 @@ function admin {
 						 "/tmp/$vpnc_host" "1"
 						custom "/tmp/$vpnc_host" 1
 						echo "Download Mikrotik Routeros script from http://$(hostname)/$vpnc_host/$vpnc_host.rsc"
-						mv "/tmp/$vpnc_host" "/var/www/htdocs/$(hostname)/"
+						mv "/tmp/$vpnc_host/" "/var/www/htdocs/$(hostname)/"
 					fi
 				fi
 			done
