@@ -928,8 +928,8 @@ function admin {
 					fi
 					if [[ -d "/tmp/$vpnc_host" ]]; then
 						echo "Download Mikrotik Routeros script from http://$(hostname)/$vpnc_host/$vpnc_host.rsc"
+						custom "/tmp/$vpnc_host" 1
 						mv "/tmp/$vpnc_host" "/var/www/htdocs/$(hostname)/"
-						rm -rf "/tmp/$vpnc_host"
 					else
 						mkdir "/tmp/$vpnc_host"
 						cp $basedir/src/mikrotik/ipsec.rsc "/tmp/$vpnc_host/$vpnc_host.rsc"
@@ -956,6 +956,7 @@ function admin {
 						grenetwork=$(ipcalc -c $greip / 30 | grep network | awk '{ print $3 }')
 						sed -i "s/\/GRENETWORK\//$grenetwork/" "/tmp/$vpnc_host/$vpnc_host.rsc"
 						 "/tmp/$vpnc_host" "1"
+						custom "/tmp/$vpnc_host" 1
 						echo "Download Mikrotik Routeros script from http://$(hostname)/$vpnc_host/$vpnc_host.rsc"
 						mv "/tmp/$vpnc_host" "/var/www/htdocs/$(hostname)/"
 					fi
