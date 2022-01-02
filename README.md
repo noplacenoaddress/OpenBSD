@@ -187,10 +187,13 @@ riccardo@trimurti:~$ dig @8.8.8.8 vpncN.telecomlobby.com A +short
 riccardo@trimurti:~$ 
 ```
 
-In my configuration I've got also a dynamic IPv4 [EdgeOS](https://dl.ubnt.com/guides/edgemax/EdgeOS_UG.pdf) endpoint and another with fixed IPv4 [RouterOS](https://es.wikipedia.org/wiki/MikroTik) one. In EdgeOS I've got to update the black hole routing table excluding the new ip:
+In my configuration I've got also a dynamic IPv4 [EdgeOS](https://dl.ubnt.com/guides/edgemax/EdgeOS_UG.pdf) endpoint and another with fixed IPv4 [RouterOS](https://es.wikipedia.org/wiki/MikroTik) one. In EdgeOS I've got to update the black hole routing table excluding the new ip and add to the firewall group list OPENBSD:
 
 ```shell
-taglio@indra# set protocols static interface-route 45.63.116.141/32 next-hop-interface pppoe0 description durga
+root@indra# set firewall group address-group OPENBSD address 216.238.100.26
+[edit]
+root@indra# 
+taglio@indra# set protocols static interface-route 216.238.100.26/32 next-hop-interface pppoe0 description xolotl
 [edit]
 taglio@indra# commit
 [edit]
@@ -288,7 +291,7 @@ Ipv6 need special attention in case of dynamic address configuration. Look at ou
 
 ```bash
 taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ cat src/etc/hostname.egress | grep inet6 | grep -v \-
-inet6 autoconf temporary soii
+inet6 autoconf temporary -soii
 taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ 
 ```
 
