@@ -253,7 +253,7 @@ case $3 in
 			echo 'Type the new OpenBSD internal hostname '
 			read openbsd
 		done
-		mkaddr=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q $mkhost.$2 /ip addr pr where dynamic | awk '{print $3}' | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b")
+		mkaddr=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q $mkhost.$2 /ip addr pr where interface=ether1 | awk '{print $2}' | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b")
 		mkpublichost=$(dig -x $mkaddr +short @8.8.8.8 | sed 's/.$//')
 		wget "http://$openbsd.$2/$mkpublichost/$mkpublichost.rsc" -O "/tmp/$mkpublichost.rsc"
 		scp "/tmp/$mkpublichost.rsc" "$mkhost.$2:/$mkpublichost.rsc"
