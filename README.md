@@ -589,7 +589,27 @@ Download Mikrotik Routeros script from http://varuna.telecom.lobby/fr.telecomlob
 root@varuna:/home/taglio/Sources/Git/OpenBSD# 
 ```
 
- And do that from the workstation:
+From the workstation first of all upload the p12 certificate into the other Mikrotik CHR istances:
+
+```bash
+taglio@trimurti:~/Work/redama/ipsec/xolotl$ sftp calli.telecom.lobby
+Connected to calli.telecom.lobby.
+sftp> put br.telecomlobby.com.p12 
+Uploading br.telecomlobby.com.p12 to /br.telecomlobby.com.p12
+br.telecomlobby.com.p12                                                                                                                                                                                                                                 100% 3880   267.0KB/s   00:00    
+sftp> 
+taglio@trimurti:~/Work/redama/ipsec/xolotl$ ssh calli.telecom.lobby
+[taglio@calli.telecom.lobby] > /certificate import file-name=br.telecomlobby.com.p12 name=br.telecomlobby.com passphrase=123456789
+     certificates-imported: 1
+     private-keys-imported: 1
+            files-imported: 1
+       decryption-failures: 0
+  keys-with-no-certificate: 0
+
+[taglio@calli.telecom.lobby] > 
+```
+
+Next for every CHR:
 
 ```shell
 riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -M
