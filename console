@@ -253,13 +253,13 @@ case $3 in
 			echo 'Type the new OpenBSD internal hostname '
 			read openbsd
 		done
-		mkaddr=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q admin@$mkhost /ip addr pr where dynamic | awk '{print $3}' | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b")
+		mkaddr=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q $mkhost.$2 /ip addr pr where dynamic | awk '{print $3}' | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b")
 		mkpublichost=$(dig -x $mkaddr +short @8.8.8.8 | sed 's/.$//')
 		wget "http://$openbsd.$2/$mkpublichost/$mkpublichost.rsc" -O "/tmp/$mkpublichost.rsc"
-		scp "/tmp/$mkpublichost.rsc" "admin@$mkhost:/$mkpublichost.rsc"
-		ssh admin@$mkhost /import file-name=$mkpublichost.rsc
+		scp "/tmp/$mkpublichost.rsc" "$mkhost.$2:/$mkpublichost.rsc"
+		ssh $mkhost.$2 /import file-name=$mkpublichost.rsc
 		echo -e "Host $openbsd.$2 configured into Mikrotik $mkhost.$2"
-		ssh admin@$mkhost /sys package update check-for-updates
+		ssh $mkhost.$2 /sys package update check-for-updates
 	;;
 	"-E")
 		edgehost=
