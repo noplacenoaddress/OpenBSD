@@ -274,7 +274,7 @@ case $3 in
 			echo 'Type the new OpenBSD internal hostname '
 			read openbsd
 		done
-		publicip=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q $openbsd.$localdomainname ifconfig egress | awk 'FNR == 7' | awk '{print $2}')
+		publicip=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q $openbsd.$2 ifconfig egress | awk 'FNR == 7' | awk '{print $2}')
 		publichost=$(dig -x $publicip +short |  sed 's/.$//' | cut -d . -f1)
 		publicdomainname=$(dig -x $publicip +short | sed "s/$publichost.//" | sed 's/.$//')
 		publichostname=$(echo $edgehost | sed "s/.$publicdomainname//")
@@ -319,13 +319,13 @@ case $3 in
 		ctrl=
 		while [ -z $ctrl ]
 		do
-			echo "Do you want to restart ipsec into $edgeos "
+			echo "Do you want to reread ipsec "
 			read ctrl
 		done
 		rm -rf "/tmp/$edgehost"
 		case $ctrl in
 			"yes")
-				ssh -q $edgeos restart vpn
+				ssh -q $edgeos ipsec rereadall
 			;;
 			"no")
 			;;
