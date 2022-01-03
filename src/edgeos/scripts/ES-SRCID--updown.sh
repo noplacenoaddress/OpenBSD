@@ -15,7 +15,7 @@ case "${PLUTO_VERB}" in
 		/usr/bin/logger "Accepting gre keepalive"
 		/sbin/sysctl -w "net.ipv4.conf.${TUN_IFACE}.accept_local=1"
 		/sbin/ip route add table $PREFIX scope link default nexthop dev "${TUN_IFACE}"
-		/OTHERS/
+/OTHERS/
 		;;
 	down-host|down-client)
 		logger "${TUN_IFACE} down"
