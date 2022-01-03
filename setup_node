@@ -1012,7 +1012,7 @@ function admin {
 					sed -i "s/\/TUN\//tun$lasttun/g" "$tmpdir/ES-$publichostname-updown.sh"
 					sed -i "s/\/TUN\//tun$lasttun/g" "$tmpdir/gre.sh"
 					sed -i "s/\/ROUTERIDLAST\//$routeridlast/g" "$tmpdir/gre.sh"
-					sed -i "s/\/ROUTERIDLAST\//$routeridlast/g" "/tmp/$pophost/ES-$publichostname-updown.sh"
+					sed -i "s/\/ROUTERIDLAST\//$routeridlast/g" "$tmpdir/ES-$publichostname-updown.sh"
 					sed -i "s/\/PUBLICHOST\//$publichost/g" "$tmpdir/gre.sh"
 					sed -i "s/\/PUBLICIP\//$publicip/g" "$tmpdir/gre.sh"
 					sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g"  "$tmpdir/ipsec.sh"
