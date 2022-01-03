@@ -397,6 +397,7 @@ Next let's start to configure the system with our script `setup_node`, you've go
     - [IPv6 address](https://en.wikipedia.org/wiki/IPv6) without prefixlen.
     - The [prefixlen](https://www.ciscopress.com/articles/article.asp?p=2803866&seqNum=2).
     - The [IPv6 default route](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/iproute_pi/configuration/xe-16-10/iri-xe-16-10-book/ip6-route-static-xe.pdf).
+  - `static over gif tunnel`: see above.
   - `dynamic`, using [slaacd (8)](https://www.openbsd.org/papers/florian_slaacd_bsdcan2018.pdf)
 - `hostname`, the name of the machine.
 - `landomainname`, the interior domain name that in my case is `telecom.lobby`
