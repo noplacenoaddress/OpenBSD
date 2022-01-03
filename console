@@ -298,6 +298,12 @@ case $3 in
 				a=$(echo $file | sed "s/-updown.sh//")
 				c=$(echo $a | sed "s/-//")
 				v=$(echo $file | sed "s/$a/$c/")
+				metric=$(ssh -q $edgeos /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show protocols static | grep table | awk '{print $2}' | wc -l)
+				others=""
+				for prefix in $(ssh -q $edgeos /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show protocols static | grep table | awk '{print $2}'); do
+					others+=$(printf '%s \n' '/sbin/ip route add table '"${prefix}"' metric '"${metric}"' scope link default nexthop dev "${TUN_IFACE}"')
+				done
+				sed -i "s|/OTHERS/|${others}|" $file
 				scp -q $file "$edgeos:/tmp"
 				ssh -q $edgeos "sudo mv /tmp/$file /config/ipsec/$v ; chmod +x /config/ipsec/$v"
 			elif [[ $file = *_netwatch.sh ]]; then
