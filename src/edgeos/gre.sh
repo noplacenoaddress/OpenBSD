@@ -15,5 +15,6 @@
 /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set protocols static table /ROUTERIDLAST/
 /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set protocols static table /ROUTERIDLAST/ description /PUBLICHOST/
 /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set protocols static table /ROUTERIDLAST/ interface-route 0.0.0.0/0 next-hop-interface /TUN/
+/OTHERSSTATIC/
 /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper commit
 /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper save
