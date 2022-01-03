@@ -31,6 +31,7 @@ Some that I use or I've used:
 - [Scaleway Dedibox | The Reference for Dedicated Servers  | Scaleway](https://www.scaleway.com/en/dedibox/)
 - [CreeperHost](https://www.creeperhost.net/)
 - [GINERNET, your Hosting and Server provider in Spain](https://ginernet.com/en/)
+- [Hostafrica](https://hostafrica.com)
 
 Try to understand that we've got to build a network of VPS interconnected site to site between everyone with IPsec and every host is plug and play, I mean that we can add or remove VPS just running the software in this repository. First of all it is important to understand that we can use this design in two different application, one will use registered domains the other will use free dns services. Goal for everyone is security trough simplicity, open source design and the correct use and implementation of robust compliance protocols and daemons. The system operative is [OpenBSD](https://www.openbsd.org/) but later we will use also [Alpine Linux](https://alpinelinux.org/). At that point the goal will be interoperability and the search of near perfect TCP/IP throughput. Another goal will be the use of ARM64 mobile devices also based up Alpine, my favorite one is:
 
@@ -44,11 +45,11 @@ Another interesting end device based upon open hardware that use [LoRa](https://
 
 Many times we've got to resolve problems like the one where OpenBSD isn't listed as a default system operative in our remote KVM administration web console. This isn't our death.
 
-First of all install a classic Linux, like Debian for example. Next ssh to the new machine with the credentials provided. Next download the latest stable `miniroot` image into the root and write it to the start of our virtual disk, in linux normally  it will be `vda`.
+First of all install a classic Linux, like Debian for example. Next ssh to the new machine with the credentials provided. Next download the latest stable `miniroot` image into the root and write it to the start of our virtual disk, in linux normally  it will be `vda`. Or if it is not find it with `fdisk -l`.
 
 ```sh
-# wget https://cdn.openbsd.org/pub/OpenBSD/6.9/amd64/miniroot69.img
-# dd if=miniroot69.img of=/dev/vda bs=4M
+# wget https://cdn.openbsd.org/pub/OpenBSD/7.0/amd64/miniroot70.img
+# dd if=miniroot70.img of=/dev/vda bs=4M
 ```
 
  After the successful write to the virtual disk we've got to reboot the machine but we will do it in a particular way using the `proc` filesystem:
