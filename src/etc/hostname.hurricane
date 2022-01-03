@@ -1,3 +1,2 @@
 tunnel /PUBLICIP/ /HUEP/
 !ifconfig gif0 inet6 alias /PUBLICV6HU/ /HUEPV6/ prefixlen 128
-!route -n add -inet6 default /HUEPV6/
