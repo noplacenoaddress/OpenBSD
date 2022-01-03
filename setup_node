@@ -1385,6 +1385,7 @@ function configuration {
 					sed -i "s/\/PUBLICHOST\//$publichost/g" "/tmp/$pophost/gre.sh"
 					sed -i "s/\/PUBLICIP\//$publicip/g" "/tmp/$pophost/gre.sh"
 					sed -i "s/\/ROUTERIDLAST\//$routeridlast/g" "/tmp/$pophost/gre.sh"
+					sed -i "s/\/ROUTERIDLAST\//$routeridlast/g" "/tmp/$pophost/ES-$publichostname-updown.sh"
 				else
 					cp $basedir/src/openbsd/hostname.gre.openbsd "/tmp/$pophost/hostname.gre$lasttun"
 					cp $basedir/src/openbsd/hostname.enc.openbsd "/tmp/$pophost/hostname.enc$lasttun"
