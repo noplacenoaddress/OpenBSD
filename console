@@ -301,7 +301,7 @@ case $3 in
 				metric=$(ssh -q $edgeos /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show protocols static | grep table | awk '{print $2}' | wc -l)
 				others=""
 				for prefix in $(ssh -q $edgeos /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show protocols static | grep table | awk '{print $2}'); do
-					others+=$(printf '%s \n' '/sbin/ip route add table '"${prefix}"' metric '"${metric}"' scope link default nexthop dev "${TUN_IFACE}"')
+					others+=$(printf '\t\t%s\\n' '/sbin/ip route add table '"${prefix}"' metric '"${metric}"' scope link default nexthop dev "${TUN_IFACE}"')
 				done
 				sed -i "s|/OTHERS/|${others}|" $file
 				scp -q $file "$edgeos:/tmp"
