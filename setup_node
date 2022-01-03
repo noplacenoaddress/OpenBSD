@@ -1691,7 +1691,7 @@ case $1 in
 										echo -n 'Type the prefixlen '
 										read ipv6prefix
 									fi
-									if [[ ! -z "${ipv6defrouter}" ]]; then
+									if [[ -z "${ipv6defrouter}" ]]; then
 										echo -n 'Type the IPv6 default route '
 										read ipv6defrouter
 									fi
