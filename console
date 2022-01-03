@@ -278,7 +278,7 @@ case $3 in
 		publichost=$(dig -x $publicip +short |  sed 's/.$//' | cut -d . -f1)
 		publicdomainname=$(dig -x $publicip +short | sed "s/$publichost.//" | sed 's/.$//')
 		publichostname=$(echo $edgehost | sed "s/.$publicdomainname//")
-		for edge_host in $(dig edgeos.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+		for edge_host in $(dig edgeos.$2 TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 			publicedgehost=$(echo $edge_host | cut -d : -f2)
 			if [[ $publichostname = $publicedgehost ]]; then
 				edgeos=$(echo $edge_host | cut -d : -f1)
@@ -292,13 +292,14 @@ case $3 in
 		tar xvf "/tmp/$edgehost.tar" -C "/tmp/$edgehost"
 		cd $edgehost
 		for file in $(ls .); do
-			if [[ $file = "gre.sh" || $file = "ospf.sh" || $file = "ipsec.sh" ]]; then
+			if [[ $file = "gre.sh" || $file = "ospf.sh" ]]; then
 				cat $file | ssh -q $edgeos
 			elif [[ $file = *updown.sh ]]; then
 				a=$(echo $file | sed "s/-updown.sh//")
 				c=$(echo $a | sed "s/-//")
 				v=$(echo $file | sed "s/$a/$c/")
 				metric=$(ssh -q $edgeos /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show protocols static | grep table | awk '{print $2}' | wc -l)
+				let metric+=1
 				others=""
 				for prefix in $(ssh -q $edgeos /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show protocols static | grep table | awk '{print $2}'); do
 					others+=$(printf '\t\t%s\\n' '/sbin/ip route add table '"${prefix}"' metric '"${metric}"' scope link default nexthop dev "${TUN_IFACE}"')
@@ -332,6 +333,7 @@ case $3 in
 		case $ctrl in
 			"yes")
 				ssh -q $edgeos ipsec rereadall
+				ssh -q $edgeos ipsec reload
 			;;
 			"no")
 			;;
