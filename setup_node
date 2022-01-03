@@ -1675,8 +1675,16 @@ case $1 in
 										read publicv6hu
 										echo -n 'Type the IPv6 /128 of the Hurricane Electric endpoint '
 										read ipv6defrouter
+										echo -n 'Type the IPv6 endpoint from the /64 routed from the Hurricane Electric tunnel '
+										read ipv6egress
+										ipv6prefix="64"
 										install -o root -g wheel -m 0640 src/etc/hostname.hurricane /etc/hostname.gif0
-										
+										sed -i "s|/PUBLICIP/|${publicip}|" /etc/hostname.gif0
+										sed -i "s|/HUEP/|${huep}|" /etc/hostname.gif0
+										sed -i "s|/PUBLICV6HU/|${publicv6hu}|" /etc/hostname.gif0
+										sed -i "s|/PUBLICV6HU/|${publicv6hu}|" /etc/hostname.gif0
+										sed -i "s|/HUEPV6/|${ipv6defrouter}|" /etc/hostname.gif0
+										sh /etc/netstart gif0
 									else
 										echo -n 'Type the IPv6 address without prefixlen '
 										read ipv6egress
