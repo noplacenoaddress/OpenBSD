@@ -1666,12 +1666,27 @@ case $1 in
 							echo "ipv6ctrl#$ipv6ctrl" >> /tmp/config.ini
 							case $ipv6ctrl in
 								"static")
-									echo -n 'Type the IPv6 address without prefixlen '
-									read ipv6egress
-									echo -n 'Type the prefixlen '
-									read ipv6prefix
-									echo -n 'Type the IPv6 default route '
-									read ipv6defrouter
+									echo -n 'Is IPv6 tunneled through Hurricane Electric? yes/no '
+									read huctrl
+									if [[ "${huctrl}" == "yes" ]]; then
+										echo -n 'Type the IPv4 of the Hurricane Electric endpoint '
+										read huep
+										echo -n 'Type the IPv6 /128 of the  local gif interface '
+										read publicv6hu
+										echo -n 'Type the IPv6 /128 of the Hurricane Electric endpoint '
+										read ipv6defrouter
+										install -o root -g wheel -m 0640 src/etc/hostname.hurricane /etc/hostname.gif0
+										
+									else
+										echo -n 'Type the IPv6 address without prefixlen '
+										read ipv6egress
+										echo -n 'Type the prefixlen '
+										read ipv6prefix
+									fi
+									if [[ ! -z "${ipv6defrouter}" ]]; then
+										echo -n 'Type the IPv6 default route '
+										read ipv6defrouter
+									fi
 									echo "ipv6egress#$ipv6egress" >> /tmp/config.ini
 									echo "ipv6prefix#$ipv6prefix" >> /tmp/config.ini
 									echo "ipv6defrouter#$ipv6defrouter" >> /tmp/config.ini
