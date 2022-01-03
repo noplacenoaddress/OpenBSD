@@ -1684,7 +1684,10 @@ case $1 in
 										sed -i "s|/PUBLICV6HU/|${publicv6hu}|" /etc/hostname.gif0
 										sed -i "s|/PUBLICV6HU/|${publicv6hu}|" /etc/hostname.gif0
 										sed -i "s|/HUEPV6/|${ipv6defrouter}|" /etc/hostname.gif0
+										ifconfig gif0 > /dev/null 2>&1
+										[[ $? -eq 0 ]] && ifconfig gif0 destroy
 										sh /etc/netstart gif0
+										ifconfig gif0 -group egress
 									else
 										echo -n 'Type the IPv6 address without prefixlen '
 										read ipv6egress
