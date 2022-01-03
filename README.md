@@ -76,6 +76,14 @@ From [release 7.0](https://www.openbsd.org/70.html) command to obtain dynamic IP
 # ifconfig vio0 autoconf
 ```
 
+If there is no dhcp or slaac server active in the network you can manual configure networking:
+
+```bash
+# ifconfig vio0 160.119.248.111/24
+# route add 0.0.0.0/0 160.119.248.1
+# echo nameserver 8.8.8.8 > /etc/resolv.conf
+```
+
 The default `root` password in our `install.conf` file is `123456789`. But it is encrypted as `$2b$10$4tPKeRmxVyffVkrQMve70.CiPmE28khH9UXiuSYpzAKbZrOfQq0Pm`.
 
 The default `uid 1000` user is `taglio`, my nickname and unix user. You can update `installation/install-vps` file with your. I also specify my `ed25519` ssh key that I've got generated with `ssh-keygen -t ed25519 -C "taglio@telecom.lobby"`as you can appreciate in the configuration file:
@@ -188,7 +196,7 @@ riccardo@trimurti:~$ dig @8.8.8.8 vpncN.telecomlobby.com A +short
 riccardo@trimurti:~$ 
 ```
 
-In my configuration I've got also a dynamic IPv4 [EdgeOS](https://dl.ubnt.com/guides/edgemax/EdgeOS_UG.pdf) endpoint and another with fixed IPv4 [RouterOS](https://es.wikipedia.org/wiki/MikroTik) one. In EdgeOS I've got to update the black hole routing table excluding the new ip and add to the firewall group list `OPENBSD`, and also add the `ROUTERID` of the new OpenBSD mesh host to the relative address-group and to the policy access list 10 using the correct rule number.
+In my configuration I've got also a dynamic IPv4 [EdgeOS](https://dl.ubnt.com/guides/edgemax/EdgeOS_UG.pdf) endpoint and another with fixed IPv4 [RouterOS](https://es.wikipedia.org/wiki/MikroTik) one. In EdgeOS I've got to  add the `ROUTERID` of the new OpenBSD mesh host to the relative address-group and to the policy access list 10 using the correct rule number.
 
 ```shell
 root@indra# set firewall group address-group OPENBSD address 216.238.100.26
