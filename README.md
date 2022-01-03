@@ -372,6 +372,14 @@ vio0:
 taglio@ganesha:/home/taglio/Work/telecomlobby.com/bin$ 
 ```
 
+#### Hurricane Electric 
+
+![](https://www.capacitymedia.com/Image/ServeImage?id=46707&w=780&h=442&cr=true)
+
+In the case of `static` configuration of the `inet6` stack upon our `egress` interface and if our `VPS` provider doesn't bind IPv6 services to the customers it's possible to configure a tunnel [6to4](https://datatracker.ietf.org/doc/html/rfc3056) from [Hurricane Electric](https://en.wikipedia.org/wiki/Hurricane_Electric) and route traffic over it. The tunnel will use the [gif(4)](https://man.openbsd.org/gif.4) pseudo device and our `setup_node` will configure it in a few commands:
+
+
+
 #### Login and start the connection process
 
 Install the git package:
