@@ -836,7 +836,16 @@ taglio@trimurti:~/Work/telecom.lobby/OpenBSD$
 
 ```
 
-As 4 of January 2022 both setup_node and console scripts question to the user what is the subnet to use.
+As `4 of January 2022` both setup_node and console scripts question to the user what is the subnet to use:
+
+```bash
+umnyama# sh setup_node -I                                                                Type 1 to use /tmp/config.ini 
+0
+Type the current gre subnet 
+10.10.9
+```
+
+
 
 #### New OSPFD concept.
 
