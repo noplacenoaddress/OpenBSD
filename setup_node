@@ -178,6 +178,7 @@ function custom {
 		(: "${defaultv4router?}") 2>/dev/null && sed -i "s/\/ROUTEV4\//${defaultv4router}/g" $file
 		(: "${ipv6defrouter?}") 2>/dev/null && sed -i "s/\/ROUTEV6\//${ipv6defrouter}/g" $file
 		(: "${longdate?}") 2>/dev/null && sed -i "s/\/LONGDATE\//${longdate}/g" $file
+		(: "${egressinterface?}") 2>/dev/null && sed -i "s/\/EGRESS\//${egressinterface}/g" $file
 	done
 }
 
