@@ -820,6 +820,24 @@ Another simple maintenance process is add another host to one table of `pf`. For
 
 [![OpenBSD MESH IPSec network: PF manteinance](https://asciinema.org/a/426193.png)](https://asciinema.org/a/426193)
 
+Another maintenance that we've got to do is add another [gre(4)](https://man.openbsd.org/gre.4) subnet in case ip addressing is going to finish. For example let's add `10.10.9.0/24` to the existing `10.10.10.0/24`:
+
+Reset `gre7058` into the `telecomlobby.com.zone` onto the master domain name server and reload it:
+
+```bash
+root@ganesha:/var/nsd/zones/master# sed -i "s|gre7058.*|gre7058 IN TXT \"255\"|" telecomlobby.com.zone
+```
+
+Add the new prefix into the [pf(4)](https://man.openbsd.org/pf.4) table `src/etc/pf.conf.table.locals` from the workstation and upload to the repository, the use the `console` script to update all the systems and reload firewall globally.
+
+```bash
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ echo 10.10.9.0/24 >> src/etc/pf.conf.table.locals
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ 
+
+```
+
+
+
 #### New OSPFD concept.
 
 ![](https://gihyo.jp/assets/images/ICON/2015/1384_bsd-yomoyama.jpg)
