@@ -52,9 +52,9 @@ app=$(basename $0)
 wheeluser=
 ver=$(uname -a | awk '{print $3}')
 egressinterface=$(ifconfig egress | cut -d  : -f1 | head -n1)
-publicip=$(ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
-publicnetmask=$(ifconfig egress | grep inet | grep -v inet6 | awk '{print $4}')
-publicbcast=$(ifconfig egress | grep inet | grep -v inet6 | awk '{print $6}')
+publicip=$(ifconfig "${egressinterface}" | grep inet |grep -v inet6 | cut -d ' ' -f2)
+publicnetmask=$(ifconfig "${egressinterface}" | grep inet | grep -v inet6 | awk '{print $4}')
+publicbcast=$(ifconfig "${egressinterface}" | grep inet | grep -v inet6 | awk '{print $6}')
 publichost=$(dig -x $publicip +short @8.8.8.8 | sed 's/.$//')
 domainname=$(print $publichost | sed 's/^[^.]*.//')
 typeset -u publichostname=$(echo $publichost | sed "s/.$domainname//")
@@ -70,8 +70,8 @@ ipv6ctrl=
 ipv6egress=
 ipv6prefix=
 ipv6defrouter=
-localipv6=$(ifconfig egress | grep inet6 | grep % | awk '{print $2}' | sed "s|%.*||")
-localprefix=$(ifconfig egress | grep inet6 | grep % | awk '{print $4}')
+localipv6=$(ifconfig "${egressinterface}" | grep inet6 | grep % | awk '{print $2}' | sed "s|%.*||")
+localprefix=$(ifconfig "${egressinterface}" | grep inet6 | grep % | awk '{print $4}')
 sha256ctrl=0
 [[ -e /etc/hostname.vether0 ]] && \
 	routerid=$(cat /etc/hostname.vether0 | grep inet | awk '{print $2}' | sed "s/\/32//" | sed '/^$/d') && \
@@ -157,8 +157,8 @@ function cleanold {
 }
 
 function custom {
-	[[ $(ifconfig egress | grep inet6 | grep -v fe80 | grep -v temporary) != "" ]] && \
-		ipv6egress=$(ifconfig egress | grep inet6 | grep -v fe80 | grep -v temporary| awk '{print $2}')
+	[[ $(ifconfig "${egressinterface}" | grep inet6 | grep -v fe80 | grep -v temporary) != "" ]] && \
+		ipv6egress=$(ifconfig "${egressinterface}" | grep inet6 | grep -v fe80 | grep -v temporary| awk '{print $2}')
 	for file in $(find $1 -type f -maxdepth $2); do
 		(: "${hostname?}") 2>/dev/null && sed -i "s/\/HOSTNAME\//$hostname/g" $file
 		(: "${landomainname?}") 2>/dev/null && sed -i "s/\/LANDOMAINNAME\//$landomainname/g" $file
