@@ -108,6 +108,8 @@ gre18994		IN TXT "3"
 root@ganesha:/var/nsd/zones/master#
 ```
 
+> Remember that is important also take care about the subnet range in the case that the number interfaces multiplied by four give a number inferior that the last ip or we've got to add another subnet as we discuss below in "routine maintenance" section.
+
 We use the [TXT record](https://en.wikipedia.org/wiki/TXT_record) to add some more information to the process of automatically add the new host to our MESH network. Hostname are:
 
 ```shell
@@ -438,10 +440,10 @@ Use the script `git_openbsd.sh` using values depending in your forked repository
 
 Next update every host using `git pull` using the `console` script and launch the `newhost` option using the same script:
 
- ``` shell
+``` shell
 riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -G
 riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -N
- ```
+```
 
 The `console` script depend on a `TXT` record in the master `nsd` for the LAN domain name:
 
@@ -696,9 +698,9 @@ Next we've got to prepare the domain name zone with the propers values to indica
 
 Next create the `p12` compressed and encrypted certificate as we've done with OpenBSD. Download it locally onto the workstation and use another time the `console` script with `-K` option. Remember to have an IPv4 running stack configured and to change the default `admin` user into your user, in my case `taglio`. Do it adding the new one allowing only your public address, rejoin winbox or ssh and then delete `admin`.
 
- ```bash
+```bash
  [admin@MikroTik] > /user add name=taglio group=full address=94.72.143.163/32 password=
- ```
+```
 
 Add a password, I generate it with a password administration tool.
 
