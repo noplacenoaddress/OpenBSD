@@ -836,7 +836,7 @@ taglio@trimurti:~/Work/telecom.lobby/OpenBSD$
 
 ```
 
-
+As 4 of January 2022 both setup_node and console scripts question to the user what is the subnet to use.
 
 #### New OSPFD concept.
 

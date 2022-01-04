@@ -1641,7 +1641,8 @@ case $1 in
 			echo "Type 1 to use /tmp/config.ini "
 			read configini
 		fi
-
+		echo 'Type the current gre subnet '
+		read grecursubnet
 		echo "changing IPv4 from dynamic to static on $egressinterface and do a perfect IPv6"
 		if [[ $configini -eq 1 ]]; then
 			ipv6ctrl=$(cat /tmp/config.ini  | grep ipv6ctrl |cut -d \# -f2)
