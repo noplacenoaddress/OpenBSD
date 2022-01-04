@@ -1370,13 +1370,13 @@ function configuration {
 				fi
 				typeset -i grepopip
 				grepopip=$lastnet-2
-				sed -i "s/\/GREPOPIP\//10.10.10.$grepopip/g" "/etc/hostname.gre$index"
+				sed -i "s/\/GREPOPIP\//"${grecursubnet}".$grepopip/g" "/etc/hostname.gre$index"
 				typeset -i  grelocalip
 				grelocalip=$lastnet-3
-				sed -i "s/\/GRELOCALIP\//10.10.10.$grelocalip/g" "/etc/hostname.gre$index"
+				sed -i "s/\/GRELOCALIP\//"${grecursubnet}".$grelocalip/g" "/etc/hostname.gre$index"
 				if grep -q "ecp384" $file; then
 					cat $basedir/src/mikrotik/gre.rsc >> "/tmp/$pophost/$pophost.rsc"
-					sed -i "s/\/GREPOPIP\//10.10.10.$grepopip/g" "/tmp/$pophost/$pophost.rsc"
+					sed -i "s/\/GREPOPIP\//"${grecursubnet}".$grepopip/g" "/tmp/$pophost/$pophost.rsc"
 					sed -i "s/\/HOSTNAME\//$hostname/g" "/tmp/$pophost/$pophost.rsc"
 					sed -i "s/\/PUBLICIP\//$publicip/g" "/tmp/$pophost/$pophost.rsc"
 				elif grep -q "ecp256" $file; then
@@ -1384,8 +1384,8 @@ function configuration {
 					cp $basedir/src/edgeos/scripts/ES-SRCID--updown.sh "/tmp/$pophost/ES-$publichostname-updown.sh"
 					#edgeos_script "${lasttun}" "${routeridlast}"
 					cp $basedir/src/edgeos/gre.sh "/tmp/$pophost/"
-					sed -i "s/\/GREPOPIP\//10.10.10.$grepopip/g" "/tmp/$pophost/ES-${publichostname}_netwatch.sh"
-					sed -i "s/\/GREPOPIP\//10.10.10.$grepopip/g" "/tmp/$pophost/gre.sh"
+					sed -i "s/\/GREPOPIP\//"${grecursubnet}".$grepopip/g" "/tmp/$pophost/ES-${publichostname}_netwatch.sh"
+					sed -i "s/\/GREPOPIP\//"${grecursubnet}".$grepopip/g" "/tmp/$pophost/gre.sh"
 					sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" "/tmp/$pophost/ES-${publichostname}_netwatch.sh"
 					sed -i "s/\/TUN\//tun$lasttun/g" "/tmp/$pophost/ES-${publichostname}_netwatch.sh"
 					sed -i "s/\/TUN\//tun$lasttun/g" "/tmp/$pophost/gre.sh"
@@ -1403,8 +1403,8 @@ function configuration {
 					sed -i "s/\/X\//$lasttun/g" "/tmp/$pophost/iked.conf.$publichost"
 					sed -i "s/\/POPIP\//$popip/g" "/tmp/$pophost/hostname.gre$lasttun"
 					sed -i "s/\/PUBLICIP\//$publicip/g" "/tmp/$pophost/hostname.gre$lasttun"
-					sed -i "s/\/GREPOPIP\//10.10.10.$grepopip/g" "/tmp/$pophost/hostname.gre$lasttun"
-					sed -i "s/\/GRELOCALIP\//10.10.10.$grelocalip/g" "/tmp/$pophost/hostname.gre$lasttun"
+					sed -i "s/\/GREPOPIP\//"${grecursubnet}".$grepopip/g" "/tmp/$pophost/hostname.gre$lasttun"
+					sed -i "s/\/GRELOCALIP\//"${grecursubnet}".$grelocalip/g" "/tmp/$pophost/hostname.gre$lasttun"
 				fi
 				i=$i+1
 			done
