@@ -13,17 +13,17 @@ macdefaultv4router=$(arp -an | grep $defaultv4router |  awk '{print $2}')
 tmpdir=$(mktemp -d)
 
 cd $tmpdir
-wget "http://$hostconnected/$publichost.tar" 
-wget "http://$hostconnected/$publichost.sha256" 
+wget "http://$hostconnected/$publichost.tar"
+wget "http://$hostconnected/$publichost.sha256"
 logger "$0: update downloaded from $hostconnected"
 tarsha256=$(sha256 "$publichost.tar" | awk '{print $4}')
 if [ "$tarsha256" == $(cat "$publichost.sha256") ]; then
 	tar xvf "$publichost.tar"
 	cd "$publichost"
-	install -o root -g wheel -m 0640 hostname.gre? /etc/
-	install -o root -g wheel -m 0640 hostname.enc? /etc/
+	install -o root -g wheel -m 0640 hostname.gre?[?] /etc/
+	install -o root -g wheel -m 0640 hostname.enc?[?] /etc/
 	srcid=$(cat iked.conf.$hostconnected | grep srcid | awk '{print $2}' | sed 's/"//g' | cut -d @ -f1)
-	sed -i "s/$srcid/$(hostname -s)/" iked.conf.*	
+	sed -i "s/$srcid/$(hostname -s)/" iked.conf.*
 	vpnc_host=$(ls iked.conf.* | sed 's/iked.conf.//')
 	if [[ $(grep -c $vpnc_host /etc/iked.conf) -eq 0 ]]; then
 		echo include \"/etc/iked.conf.$vpnc_host\" >> /etc/iked.conf
@@ -33,11 +33,11 @@ if [ "$tarsha256" == $(cat "$publichost.sha256") ]; then
 	#	pfctl -f /etc/pf.conf
 	#fi
 	#if [[ $(grep -c $vpnc_host /etc/pf.conf.macro.enc.out) -eq 0 ]]; then
-	#	echo "pass out quick on enc proto gre from \$pub to $ipconnected tagged $vpnc_host" >> /etc/pf.conf.macro.enc.out 
+	#	echo "pass out quick on enc proto gre from \$pub to $ipconnected tagged $vpnc_host" >> /etc/pf.conf.macro.enc.out
 	#	pfctl -f /etc/pf.conf
 	#fi
-	greinterface=$(ls hostname.gre? | sed 's/hostname.//')
-	encinterface=$(ls hostname.enc? | sed 's/hostname.//')
+	greinterface=$(ls hostname.gre?[?] | sed 's/hostname.//')
+	encinterface=$(ls hostname.enc?[?] | sed 's/hostname.//')
 	sh /etc/netstart $greinterface
 	sh /etc/netstart $encinterface
 	if [[ $(grep -c $greinterface /etc/ospfd.conf) -ne 1 ]]; then
@@ -51,10 +51,7 @@ if [ "$tarsha256" == $(cat "$publichost.sha256") ]; then
 	iked -n
 	rcctl restart iked
 	rcctl restart ospfd
-	
+
 else
 	logger "$0: sha256 failed from $publichost.tar"
 fi
-
-
-
