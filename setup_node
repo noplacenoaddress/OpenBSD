@@ -99,6 +99,9 @@ function error_exit {
     exit 1
 }
 
+function handler {
+
+}
 
 function pidof {
 	ps axc -o pid,command | awk "\$2~/^`echo $1`\$/ {print \$1}"
@@ -833,7 +836,7 @@ function upgrade {
 			printf "%s\n" "router-id \"$routerid\"" >> $ospfdtmp
 			printf "%s\n" "# areas" >> $ospfdtmp
 			printf "%s\n" "area $ospfarea {" >>  $ospfdtmp
-			for grefile in $(ls /etc/hostname.gre?); do
+			for grefile in $(ls /etc/hostname.gre*[0-9]); do
 				greinterface=$(echo $grefile | cut -d . -f2)
 				greppublicip=$(cat $grefile | grep tunnel | awk '{print $5}')
 				remoteloc=$(curl -s "http://ipinfo.io/$greppublicip" | grep loc | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g")
@@ -942,7 +945,7 @@ function admin {
 						mkdir "/tmp/$vpnc_host"
 						cp $basedir/src/mikrotik/ipsec.rsc "/tmp/$vpnc_host/$vpnc_host.rsc"
 
-						for file in $(ls /etc/hostname.gre?); do
+						for file in $(ls /etc/hostname.gre*[0-9]); do
 							if [[ $(grep -c "$vpnc_host" $file) -eq 1 ]]; then
 								greinterface=$(echo $file | cut -d . -f2)
 								grepopip=$(cat $file | awk 'FNR == 5 {print}' | awk '{print $4}')
@@ -986,7 +989,7 @@ function admin {
 					cp $basedir/src/edgeos/scripts/ES-SRCID-_netwatch.sh "$tmpdir/ES-${publichostname}_netwatch.sh"
 					cp $basedir/src/edgeos/scripts/ES-SRCID--updown.sh "$tmpdir/ES-$publichostname-updown.sh"
 					cp $basedir/src/edgeos/gre.sh "$tmpdir"
-					for file in $(ls /etc/hostname.gre?); do
+					for file in $(ls /etc/hostname.gre*[0-9]); do
 						if [[ $(grep -c "$vpnc_host" $file) -eq 1 ]]; then
 							greinterface=$(echo $file | cut -d . -f2)
 							grepopip=$(cat $file | awk 'FNR == 5 {print}' | awk '{print $4}')
@@ -996,7 +999,7 @@ function admin {
 							sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" "$tmpdir/ES-${publichostname}_netwatch.sh"
 						fi
 					done
-					lasttun=$(ls -l /etc/hostname.gre? | tail -n 1 |awk '{print $9}' | sed "s/\/etc\/hostname.gre//")
+					lasttun=$(ls -l /etc/hostname.gre*[0-9] | tail -n 1 |awk '{print $9}' | sed "s/\/etc\/hostname.gre//")
 					lasttunctrl=
 					while [ -z $lasttunctrl ]
 					do
@@ -1336,7 +1339,7 @@ function configuration {
 		;;
 		"gre")
 			if [[ -e "/etc/hostname.gre0" ]]; then
-				rm -rf /etc/hostname.gre?
+				rm -rf /etc/hostname.gre*[0-9]
 			fi
 			(: "${routeridlast?}") 2>/dev/null || routeridlast=$(echo $routerid | cut -d . -f4)
 			typeset -i i
@@ -1414,7 +1417,7 @@ function configuration {
 			      \n gre18994.$domainname TXT to $lasttun \n"
 	      	custom "/etc" "1"
 			sleep 2
-			for file in /etc/hostname.gre? ; do
+			for file in /etc/hostname.gre*[0-9] ; do
 				sh /etc/netstart $(echo $file | awk -F. '{print $2}')
 			done
 		;;
@@ -1469,7 +1472,7 @@ function configuration {
 			rcctl enable ospfd
 			install -o root -g wheel -m 0600  $basedir/src/etc/ospfd.conf /etc/
 			sed -i "s/\/ROUTERID\//$routerid/g" /etc/ospfd.conf
-			for file in $(find /etc/ -name "hostname.gre?" -maxdepth 1); do
+			for file in $(find /etc/ -name "hostname.gre*[0-9]" -maxdepth 1); do
 				x=$(basename $file | cut -d . -f2 | sed "s/gre//g")
 				sed -i "s/\/X\//$x/g" /etc/ospfd.conf
 				ospfmd5=$(tr -cd '[:alnum:],.' < /dev/urandom | fold -w 15 | head -n 1)
