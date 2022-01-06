@@ -814,6 +814,8 @@ Type the mounted FAT32 pen drive directory:/media/riccardo/0903-C8DC
 Ready? type 1
 ```
 
+This action will change also the public key specified in the `installation/install-vps.conf` used in the system operative installation process.
+
 Next take the pen drive to the CA server physic station and run the setup_ca script with the correct option `setup_ca upuser`. Return it to the workstation and type `1`. 
 
 Another simple maintenance process is add another host to one table of `pf`. For example:

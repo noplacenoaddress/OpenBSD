@@ -632,7 +632,7 @@ case $3 in
 		fi
 		ssh-keygen -t ed25519 -C "taglio@$localdomainname"
 		cat "$HOME/.ssh/id_ed25519.pub" > "${proghome}/src/authorized_keys"
-		sed -i "s|^Public.*lobby$|Public ssh key for user = "$(cat "$HOME/.ssh/id_ed25519.pub")"|" installation/install-vps.conf
+		sed -i "s|^Public.*|Public ssh key for user = $(cat $HOME/.ssh/id_ed25519.pub)|" installation/install-vps.conf
 		pwdfile=$(mktemp)
 		# Read Password
 		password=$(systemd-ask-password "Enter CA password: ")
