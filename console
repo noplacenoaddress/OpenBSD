@@ -986,7 +986,7 @@ case $3 in
 			sed -i "s|/ROOT/|${root}|" "${template}"
 			mv "${template}" installation/customdisklabel
 		fi
-		echo -e "Files added, please update the repository..."
+		echo -e "Files added, please update the repository and remember to use https://bit.ly/3HD0Wne"
 	;;
 	*)
 	;;

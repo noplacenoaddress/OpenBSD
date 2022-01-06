@@ -955,34 +955,31 @@ taglio@trimurti:~/Work/telecom.lobby/OpenBSD$
 Sometimes it would be interesting that end user generate files in the `installation/` because of different `VPS` provider specifications.  `console` script got `-CI` as the correct option to do it in a simple way:
 
 ```bash
-taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console 
-./console have to be used with the following options 
- 
--I   -> local domain name [x]
--N   -> newhost [o]
--G   -> git pull [o]
--S   -> scripts [o] 
--D   -> dyndnspop [o] 
--F   -> single file update [o] 
--C   -> cleanlast [o] 
--RS  -> repository ssh update [o] 
--K   -> new IKED pk12 archive [o] 
--T   -> tmux and SSH to all openbsd MESH hosts [o] 
--M   -> Mikrotik RouterOS add new OpenBSD [o] 
--E   -> Ubiquiti EdgeOS add new OpenBSD [o] 
--P   -> Mass syspatch OpenBSD hosts [o] 
--Z   -> Global network domains setup [o] 
--OM  -> Mikrotik RouterOS ospf-in/out filter [o] 
--OE  -> EdgeOS ospf-in/out filter [o] 
--OO  -> OpenBSD ospf filter [o] 
--U   -> update the workstation's user EdDSA certificate [o] 
--NO  -> newospf configuration [o] 
--PF  -> new firewall configuration [o] 
--CHR -> new RouterOS Cloud Hosted Router istance [o] 
--7   -> changes to 7.0 release [o] 
--CI  -> custom installation templates [o] 
-
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -CI
+Build IPv4 static custom installation template? yes/no: yes
+Type IPv4 address for vio0: 160.119.248.111
+Type netmask for vio0: 255.255.255.0
+Type default IPv4 route: 160.119.248.1  
+Build custom size disklabel? yes/no: yes
+Type size in GB: 20
+Files added, please update the repository and remember to use https://bit.ly/3HD0Wne
 taglio@trimurti:~/Work/telecom.lobby/OpenBSD$
+```
+
+In this case remember that in the remote `VNC` web console you've got to configure the same static IPv4 and DNS in order to obtain connectivity to Internet:
+
+```bash
+# ifconfig vio0 160.119.248.111 netmask 255.255.255.0 up
+# route add 0.0.0.0/0 via 160.119.248.1
+# echo nameserver 8.8.8.8 > /etc/resolv.conf
+```
+
+Next to start the installation process as usual:
+
+```bash
+# cd /tmp
+# ftp -o install.conf https://bit.ly/3HD0Wne
+# install -af /tmp/install.conf
 ```
 
 
