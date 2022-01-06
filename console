@@ -94,6 +94,7 @@ if [[ $# -eq 0 ]]; then
 			\n-PF  -> new firewall configuration [o] \
 			\n-CHR -> new RouterOS Cloud Hosted Router istance [o] \
 			\n-7   -> changes to 7.0 release [o] \
+			\n-CI  -> custom installation templates [o] \
 			\n"
 
 	exit 1
