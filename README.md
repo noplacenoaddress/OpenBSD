@@ -487,7 +487,7 @@ Use `newhost` and `transfer` options.
 #### Automatic install
 
 ```shell
-taglio@varuna:/home/taglio$ cat /tmp/config.ini                                                                                                                                                                                                       static#1
+taglio@varuna:/home/taglio$ cat /tmp/config.ini                                                                                                                                         static#1
 ipv6ctrl#static
 ipv6egress#2a01:8740:1:ff48::64a8
 ipv6prefix#48
