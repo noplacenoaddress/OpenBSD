@@ -962,6 +962,20 @@ case $3 in
 			#ssh "${poplocalhostname}.${localdomainname}" doas sh /home/taglio/Bin/newchr.sh
 		done
 	;;
+	"-CI")
+		read -p "Build IPv4 static custom installation template? yes/no: " ctrl
+		if [[ "${ctrl}" == "yes" ]]; then
+			template=$(mktemp)
+			read -p "Type IPv4 address for vio0: " ip
+			cat installation/install-static.conf > "${template}"
+			sed -i "s|/IP/|${ip}|" "${template}"
+			read -p "Type netmask for vio0: " netmask
+			sed -i "s|/NETMASK/|${netmask}|" "${template}"
+			read -p "Type default IPv4 route: " router
+			sed -i "s|/ROUTER/|${router}|" "${template}"
+			sed -i "s|/EDDSA/|$(cat $HOME/.ssh/id_ed25519.pub)|" "${template}"
+		fi
+	;;
 	*)
 	;;
 esac
