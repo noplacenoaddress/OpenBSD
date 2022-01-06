@@ -1,6 +1,6 @@
 
 
-# OpenBSD on demand mesh host
+# OpenBSD guerrilla network
 
 ![Puffy rules](https://www.openbsd.org/art/puffy/ppuf800X725.gif)
 
@@ -514,7 +514,7 @@ This is the configuration file obtained by the semi automatic installation proce
 
 [![OpenBSD MESH IPSec guerrila host](https://asciinema.org/a/421061.png)](https://asciinema.org/a/421061)
 
-#### You successfully installed and connected a new OpenBSD MESH guerrilla host
+##### You successfully installed and connected a new OpenBSD MESH guerrilla host
 
 *Ok baby let's rock&roll. We've configured a new IPSec MESH host in a semi automatic way, a lot of work done in a few clicks with our preferred system operative, the secure fish! OpenBSD!*
 
@@ -596,7 +596,7 @@ In this video you can appreciate also a [tmux](https://en.wikipedia.org/wiki/Tmu
 
 ***I'm fighting hard.***
 
-#### Others system operatives 
+### Others system operatives 
 
 ![VyOS](https://www.programmersought.com/images/37/227a77d35c99e18bb4a03c3aeece6045.png)
 
@@ -778,9 +778,11 @@ taglio@trimurti:~/Work/telecom.lobby/OpenBSD$
 
 This is the video of the complete routine about the OpenBSD peers. Next we've got to add the new Cloud Hosted Router to the other Mikrotik instances and EdgeOS.
 
-#### Routine maintenance
+### Routine maintenance
 
 ![](https://thumbs.dreamstime.com/b/routine-maintenance-mechanism-golden-metallic-cogwheels-glow-effect-d-rendering-concept-gears-illustration-114332777.jpg)
+
+#### New monthly EdDSA workstation key
 
 One of the important routine maintenance operation that we shall do in our network is the renew of the `EdDSA` key for the workstation's user authorized by the [CA server](https://github.com/redeltaglio/OpenBSD-private-CA).
 
@@ -814,13 +816,15 @@ Type the mounted FAT32 pen drive directory:/media/riccardo/0903-C8DC
 Ready? type 1
 ```
 
-This action will change also the public key specified in the `installation/install-vps.conf` used in the system operative installation process.
+This action will change also the public key specified in the `installation/install-vps.conf` used in the system operative installation process, so remember to upgrade the repository.
 
 Next take the pen drive to the CA server physic station and run the setup_ca script with the correct option `setup_ca upuser`. Return it to the workstation and type `1`. 
 
 Another simple maintenance process is add another host to one table of `pf`. For example:
 
 [![OpenBSD MESH IPSec network: PF manteinance](https://asciinema.org/a/426193.png)](https://asciinema.org/a/426193)
+
+#### New GRE subnet
 
 Another maintenance that we've got to do is add another [gre(4)](https://man.openbsd.org/gre.4) subnet in case ip addressing is going to finish. For example let's add `10.10.9.0/24` to the existing `10.10.10.0/24`:
 
@@ -946,7 +950,7 @@ taglio@trimurti:~/Work/telecom.lobby/OpenBSD$
 
 ```
 
-#### Possible applications
+## Possible applications
 
 Let's start discussing how we can boost our presence in Internet using that guerrilla MESH system that guaranty our privacy and security on the web. My first project is regarding a website replicated over different countries in all the languages over the world. Something very important to obtain maximum results about clients, about web goods sell, about be recognized over it and about whatever we want to obtain searching for visibility.
 
