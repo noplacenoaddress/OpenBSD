@@ -970,7 +970,7 @@ In this case remember that in the remote `VNC` web console you've got to configu
 
 ```bash
 # ifconfig vio0 160.119.248.111 netmask 255.255.255.0 up
-# route add 0.0.0.0/0 via 160.119.248.1
+# route add 0.0.0.0/0 160.119.248.1
 # echo nameserver 8.8.8.8 > /etc/resolv.conf
 ```
 

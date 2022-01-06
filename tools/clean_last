@@ -45,7 +45,7 @@ sed -i "/$last/d" /etc/iked.conf
 rcctl restart iked
 for file in $(grep "$last" /etc/* | grep hostname | cut -d : -f1); do
 	interface=$(echo $file | cut -d . -f2)
-	if [[ $interface == gre? ]]; then
+	if [[ $interface == gre*[0-9] ]]; then
 		ospfinterface=$interface
 	fi
 	ifconfig $interface destroy
