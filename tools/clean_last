@@ -56,7 +56,7 @@ for file in $(grep "$last" /etc/* | grep hostname | cut -d : -f1); do
 	fi
 	ifconfig $interface destroy  > /dev/null 2>&1 || true
 	ifconfig $interface  > /dev/null 2>&1
-	[[ $? == "0" ]] && echo "you've got to reboot"
+	[[ $? == "0" ]] && ifconfig $interface description ""
 	/bin/rm -r $file
 done
 pubkey="$srcid@ca.$domainname"
