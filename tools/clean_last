@@ -54,7 +54,7 @@ for file in $(grep "$last" /etc/* | grep hostname | cut -d : -f1); do
 	if [[ $interface == gre*[0-9] ]]; then
 		ospfinterface=$interface
 	fi
-	ifconfig $interface destroy  2>/dev/null
+	ifconfig $interface destroy  > /dev/null 2>&1
 	[ $? = 1 ] && echo "you've got to reboot"
 	/bin/rm -r $file
 done

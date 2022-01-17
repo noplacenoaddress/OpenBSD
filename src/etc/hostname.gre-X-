@@ -4,4 +4,4 @@ mtu 1392
 group /GROUP/
 !ifconfig gre/X/ /GRELOCALIP/ /GREPOPIP/ netmask 0xfffffffc up
 !ifconfig gre/X/ tunnel /PUBLICIP/ /POPIP/
-
+#!route -T /ROUTERIDLAST/ add default /GREPOPIP/ 
