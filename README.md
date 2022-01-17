@@ -1405,3 +1405,46 @@ A special list is **roadwarrior** that contains domain names and it used only in
 
 ```
 
+Another kind of list used by OpenBSD and Mikrotik RouterOS is the list of interfaces, them purposes are simplify the rules sets of firewalls.
+
+**gre** interface list in RouterOS, that grown dynamically with out scripts:
+
+```bash
+[taglio@calli.telecom.lobby] /interface list> export
+/interface list
+add name=gre
+/interface list member
+add interface=gre-tunnel1 list=gre
+add interface=gre-tunnel2 list=gre
+add interface=gre-tunnel3 list=gre
+add interface=gre-tunnel4 list=gre
+add interface=gre-tunnel5 list=gre
+add interface=gre-tunnel6 list=gre
+add interface=gre-tunnel7 list=gre
+add interface=gre-tunnel8 list=gre
+add interface=gre-tunnel9 list=gre
+add interface=gre-tunnel10 list=gre
+[taglio@calli.telecom.lobby] /interface list> 
+```
+
+In OpenBSD interfaces lists are created using the `groups` flavor, that could configured in the [hostname.if(5)](https://man.openbsd.org/hostname.if.5) file: 
+
+```bash
+root@ganesha:/var/www/htdocs/es.telecomlobby.com/radio_aficionado# ifconfig gre9
+gre9: flags=8051<UP,POINTOPOINT,RUNNING,MULTICAST> mtu 1392
+        description: br.telecomlobby.com
+        index 24 priority 0 llprio 6
+        keepalive: timeout 5 count 2
+        encap: vnetid none txprio payload rxprio packet
+        groups: gre
+        status: active
+        tunnel: inet 78.141.201.0 --> 216.238.100.26 ttl 64 nodf ecn
+        inet 10.10.10.62 --> 10.10.10.61 netmask 0xfffffffc
+root@ganesha:/var/www/htdocs/es.telecomlobby.com/radio_aficionado# 
+```
+
+
+
+#### LTE customers
+
+Two types, one are end users the other transport to our network.
