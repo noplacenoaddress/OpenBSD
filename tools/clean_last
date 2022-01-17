@@ -54,8 +54,9 @@ for file in $(grep "$last" /etc/* | grep hostname | cut -d : -f1); do
 	if [[ $interface == gre*[0-9] ]]; then
 		ospfinterface=$interface
 	fi
-	ifconfig $interface destroy  || true
-	[ $? = 1 ] && echo "you've got to reboot"
+	ifconfig $interface destroy  > /dev/null 2>&1 || true
+	ifconfig $interface  > /dev/null 2>&1
+	[[ $? == "0" ]] && echo "you've got to reboot"
 	/bin/rm -r $file
 done
 pubkey="$srcid@ca.$domainname"
