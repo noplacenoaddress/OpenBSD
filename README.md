@@ -1329,7 +1329,7 @@ root@ganesha:/var/nsd/etc#
 
 ## Annexed
 
-#### OpenBSD, Mikrotik and EdgeOS firewall
+### OpenBSD, Mikrotik and EdgeOS firewall
 
 Let's explain how firewall does it works in our network. We shall start with address lists, that takes different names depending what system operative does implement them:
 
