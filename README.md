@@ -945,43 +945,9 @@ Next to start the installation process as usual:
 
 #### Delete a VPS instance
 
-First of all eliminate the entries about in the public and local DNS daemon.
+Use `tools/clean_last` in every OpenBSD VPS, better from the web VNC console, adding the correct `gre` interface as first and only argument.
 
-Next use the correct option in the console script, `-RM`:
-
-```bash
-taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console 
-./console have to be used with the following options 			
- 			
--I   -> local domain name [x]			
--N   -> newhost [o]			
--G   -> git pull [o]			
--S   -> scripts [o] 			
--D   -> dyndnspop [o] 			
--F   -> single file update [o] 			
--C   -> cleanlast [o] 			
--RS  -> repository ssh update [o] 			
--K   -> new IKED pk12 archive [o] 			
--T   -> tmux and SSH to all openbsd MESH hosts [o] 			
--M   -> Mikrotik RouterOS add new OpenBSD [o] 			
--E   -> Ubiquiti EdgeOS add new OpenBSD [o] 			
--P   -> Mass syspatch OpenBSD hosts [o] 			
--Z   -> Global network domains setup [o] 			
--OM  -> Mikrotik RouterOS ospf-in/out filter [o] 			
--OE  -> EdgeOS ospf-in/out filter [o] 			
--OO  -> OpenBSD ospf filter [o] 			
--U   -> update the workstation's user EdDSA certificate [o] 			
--NO  -> newospf configuration [o] 			
--PF  -> new firewall configuration [o] 			
--CHR -> new RouterOS Cloud Hosted Router istance [o] 			
--7   -> changes to 7.0 release [o] 			
--CI  -> custom installation templates [o] 			
--RM  -> remove a VPS from the network [o] 			
-
-taglio@trimurti:~/Work/telecom.lobby/OpenBSD$
-```
-
-
+Next eliminate the entries about in the public and local DNS daemon.
 
 ## Possible applications
 
