@@ -62,4 +62,4 @@ sed -i "/interface $ospfinterface/,/}/d" /etc/ospfd.conf
 nohup rcctl restart ospfd & > /tmp/nohup
 /bin/rm -r "/etc/iked/pubkeys/ufqdn/${pubkey}"
 
-exit
+exit	
