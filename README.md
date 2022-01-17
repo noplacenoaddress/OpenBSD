@@ -1337,7 +1337,27 @@ Let's explain how firewall does it works in our network. We shall start with add
 - Mikrotik RouterOS, [ip firewall](https://help.mikrotik.com/docs/display/ROS/Firewall), [address-list](https://wiki.mikrotik.com/wiki/Manual:IP/Firewall/Address_list). Remember that Mikrotik use [netfilter iptables](https://www.netfilter.org/).
 - Ubiquiti EdgeOS, [firewall group](https://help.ui.com/hc/en-us/articles/218889067-EdgeRouter-How-to-Create-a-Guest-LAN-Firewall-Rule). EdgeOS is a modified version of [VyOS](https://vyos.io/), better saying is also based upon [iptables(8)](https://manpages.debian.org/jessie/iptables/iptables.8.en.html).
 
-```
+Those are the address lists that we use:
 
+**clientes** where we add the public IPv4 assigned to our customers of the WISP service:
+
+```bash
+188.213.5.220/32
+188.213.5.221/32
+188.213.5.222/32
+188.213.5.223/32
+188.213.5.240/32
+188.213.5.241/32
+188.213.5.242/32
+188.213.5.243/32
+188.213.5.244/32
+188.213.5.245/32
+188.213.5.246/32
+188.213.5.247/32
+188.213.5.236/32
+188.213.5.237/32
+188.213.5.238/32
+188.213.5.239/32
+5.134.119.165/32
 ```
 
