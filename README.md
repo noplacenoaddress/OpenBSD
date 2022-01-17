@@ -14,7 +14,7 @@ Applications are multiples, from bypass the European [ECHELON](https://en.wikipe
 
 I'm an addicted of privacy and security and I'm very tired about the modern slavery network transmitted by weapons from the European elite. 
 
-*Vatican, a big part of Aristocracy and a lot of leafs, and some corrupted secret services are totally guilty about the recent destroy of democracy. They are owners of an exploitation camp transmitted by electromagnetic weapons and elaborated by artificial intelligence from the Collserola tower in Barcelona above all the Mediterranean area. Electronic slavery, the modern slavery that United Nation is investigating is my goal.*
+*Vatican, a big part of Aristocracy and a lot of leafs, and some corrupted secret services are totally guilty about the recent destroy of democracy. They are owners of an exploitation camp transmitted by electromagnetic weapons, radio that modulates hided behind FM broadcast official transmissions, and elaborated by artificial intelligence from the Collserola tower in Barcelona above all the Mediterranean area. Electronic slavery, the modern slavery that United Nation is investigating is my goal. With the same technology but with other type of use some nobles administrate Mafia, terrorism, manipulation, mental domination, corruption, fiscal frauds and so on. But in this case modulation is transmitted by many others towers.*
 
 #### VPS election
 
@@ -941,11 +941,11 @@ Next to start the installation process as usual:
 # install -af /tmp/install.conf
 ```
 
-#### Delete a VPS instance
+#### Delete a VPS instance that you own
 
-Use `tools/clean_last` in every OpenBSD VPS, better from the web VNC console, adding the correct `gre` interface as first and only argument.
-
-Next eliminate the entries about in the public and local DNS daemon.
+1. Delete the VPS instance from the provider console.
+2. Use `tools/clean_last` in every OpenBSD VPS, better from the web VNC console, adding the correct `gre` interface as first and only argument.
+3. Eliminate the entries about in the public and local DNS daemon.
 
 ## Possible applications
 
