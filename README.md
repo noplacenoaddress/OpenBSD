@@ -388,8 +388,6 @@ Type the IPv6 /128 of the Hurricane Electric endpoint 2001:470:1f22:486::1
 Type the IPv6 endpoint from the /64 routed from the Hurricane Electric tunnel 2001:470:1f23:486::1 
 ```
 
-
-
 #### Login and start the connection process
 
 Install the git package:
