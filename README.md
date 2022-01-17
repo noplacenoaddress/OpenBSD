@@ -222,7 +222,7 @@ root@indra# exit
 In the RouterOS one I've got to update the address list relative to the host presents in my IPSec network:
 
 ```shell
-[admin@uma.telecom.lobby] /ip firewall address-list> add list=servers comment=durpa address=45.63.116.141/32
+[admin@uma.telecom.lobby] /ip firewall address-list> add list=ipsec comment=durga address=45.63.116.141/32
 [admin@uma.telecom.lobby] /ip firewall address-list> 
 ```
 
@@ -851,45 +851,6 @@ Type the current gre subnet
 10.10.9
 ```
 
-
-
-#### New OSPFD concept.
-
-![](https://gihyo.jp/assets/images/ICON/2015/1384_bsd-yomoyama.jpg)
-
-I've got some problems with the old concept of [Ospfd](https://github.com/redeltaglio/GNS3-OpenBSD-OpenOSPFD), so I've studied better the protocol and decide to implement in a different way in my network. To migrate from the old configuration, *versions anteriors to July 2021*, to the new one use our tool `console` as usual:
-
-```shell
-riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console 
-./console have to be used with the following options 
--I  -> local domain name [x]
--N  -> newhost [o]
--G  -> git pull [o]
--S  -> scripts [o] 
--D  -> dyndnspop [o] 
--F  -> single file update [o] 
--C  -> cleanlast [o] 
--RS -> repository ssh update [o] 
--K  -> new IKED pk12 archive [o] 
--T  -> tmux and SSH to all openbsd MESH hosts [o] 
--M  -> Mikrotik RouterOS add new OpenBSD [o] 
--E  -> Ubiquiti EdgeOS add new OpenBSD [o] 
--P  -> Mass syspatch OpenBSD hosts [o] 
--Z  -> Global network domains setup [o] 
--OM -> Mikrotik RouterOS ospf-in/out filter [o] 
--OE -> EdgeOS ospf-in/out filter [o] 
--OO -> OpenBSD ospf filter [o] 
--U  -> update the workstation's user EdDSA certificate [o] 
--NO -> newospf configuration [o] 
-
-riccardo@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -NO
-
-```
-
-The new configuration follow the same concept of division in quadrants of the planet earth. Got a backbone area and the other that pertain in where is physically the server.
-
-[![OpenBSD MESH IPSec network: new OSPFD configuration](https://asciinema.org/a/425997.png)](https://asciinema.org/a/425997)
-
 #### Remote upgrade
 
 ![](https://redama.es/Imagenes/varuna_shell.png)
@@ -980,6 +941,44 @@ Next to start the installation process as usual:
 # cd /tmp
 # ftp -o install.conf https://bit.ly/3HD0Wne
 # install -af /tmp/install.conf
+```
+
+#### Delete a VPS instance
+
+First of all eliminate the entries about in the public and local DNS daemon.
+
+Next use the correct option in the console script, `-RM`:
+
+```bash
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console 
+./console have to be used with the following options 			
+ 			
+-I   -> local domain name [x]			
+-N   -> newhost [o]			
+-G   -> git pull [o]			
+-S   -> scripts [o] 			
+-D   -> dyndnspop [o] 			
+-F   -> single file update [o] 			
+-C   -> cleanlast [o] 			
+-RS  -> repository ssh update [o] 			
+-K   -> new IKED pk12 archive [o] 			
+-T   -> tmux and SSH to all openbsd MESH hosts [o] 			
+-M   -> Mikrotik RouterOS add new OpenBSD [o] 			
+-E   -> Ubiquiti EdgeOS add new OpenBSD [o] 			
+-P   -> Mass syspatch OpenBSD hosts [o] 			
+-Z   -> Global network domains setup [o] 			
+-OM  -> Mikrotik RouterOS ospf-in/out filter [o] 			
+-OE  -> EdgeOS ospf-in/out filter [o] 			
+-OO  -> OpenBSD ospf filter [o] 			
+-U   -> update the workstation's user EdDSA certificate [o] 			
+-NO  -> newospf configuration [o] 			
+-PF  -> new firewall configuration [o] 			
+-CHR -> new RouterOS Cloud Hosted Router istance [o] 			
+-7   -> changes to 7.0 release [o] 			
+-CI  -> custom installation templates [o] 			
+-RM  -> remove a VPS from the network [o] 			
+
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$
 ```
 
 
@@ -1376,7 +1375,6 @@ Those are the address lists that we use:
 ```bash
 2.139.174.201
 5.134.119.135
-45.32.144.15
 45.63.116.141
 78.141.201.0
 94.72.143.163
@@ -1447,4 +1445,4 @@ root@ganesha:/var/www/htdocs/es.telecomlobby.com/radio_aficionado#
 
 #### LTE customers
 
-Two types, one are end users the other transport to our network.
+Two types, one are end users the other transport to our network. First of let say that 

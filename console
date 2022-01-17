@@ -95,6 +95,7 @@ if [[ $# -eq 0 ]]; then
 			\n-CHR -> new RouterOS Cloud Hosted Router istance [o] \
 			\n-7   -> changes to 7.0 release [o] \
 			\n-CI  -> custom installation templates [o] \
+			\n-RM  -> remove a VPS from the network [o] \
 			\n"
 
 	exit 1
@@ -987,6 +988,9 @@ case $3 in
 			mv "${template}" installation/customdisklabel
 		fi
 		echo -e "Files added, please update the repository and remember to use https://bit.ly/3HD0Wne"
+	;;
+	"-RM")
+		read -p "Have you removed entry from local and public DNS daemons? yes/no: " ctrl
 	;;
 	*)
 	;;
