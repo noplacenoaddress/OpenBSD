@@ -1388,5 +1388,20 @@ Those are the address lists that we use:
 216.238.100.26
 ```
 
+A special list is **roadwarrior** that contains domain names and it used only in CHR instances. In customers we use [ip cloud](https://help.mikrotik.com/docs/display/ROS/Cloud) to update the dynamic dns entrance. 
 
+```bash
+[admin@cornus-LHG] /ip cloud> export
+/ip cloud set ddns-enabled=yes ddns-update-interval=1m
+[admin@cornus-LHG] /ip cloud> pr
+          ddns-enabled: yes
+  ddns-update-interval: 1m
+           update-time: yes
+        public-address: 79.116.87.98
+              dns-name: d6af0ec1ec8d.sn.mynetname.net
+                status: updated
+               warning: Router is behind a NAT. Remote connection might not work.
+[admin@cornus-LHG] /ip cloud> 
+
+```
 
