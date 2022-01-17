@@ -1327,7 +1327,17 @@ root@ganesha:/var/nsd/etc#
 
 ![](https://github.com/redeltaglio/OpenBSD/raw/master/img/dnskey_dnssec.png)
 
-Nice Regards,
+## Annexed
 
-Riccardo `<taglio>` Giuntoli.
+#### OpenBSD, Mikrotik and EdgeOS firewall
+
+Let's explain how firewall does it works in our network. We shall start with address lists, that takes different names depending what system operative does implement them:
+
+- OpenBSD, [pf(4)](https://man.openbsd.org/pf), [tables](https://www.openbsd.org/faq/pf/tables.html)
+- Mikrotik RouterOS, [ip firewall](https://help.mikrotik.com/docs/display/ROS/Firewall), [address-list](https://wiki.mikrotik.com/wiki/Manual:IP/Firewall/Address_list). Remember that Mikrotik use [netfilter iptables](https://www.netfilter.org/).
+- Ubiquiti EdgeOS, [firewall group](https://help.ui.com/hc/en-us/articles/218889067-EdgeRouter-How-to-Create-a-Guest-LAN-Firewall-Rule). EdgeOS is a modified version of [VyOS](https://vyos.io/), better saying is also based upon [iptables(8)](https://manpages.debian.org/jessie/iptables/iptables.8.en.html).
+
+```
+
+```
 
