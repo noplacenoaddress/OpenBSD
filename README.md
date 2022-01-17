@@ -1339,7 +1339,7 @@ Let's explain how firewall does it works in our network. We shall start with add
 
 Those are the address lists that we use:
 
-**clientes** where we add the public IPv4 assigned to our customers of the WISP service:
+**clientes** where we add the public IPv4 assigned to our customers of the WISP service, customers could served with [pppoe](https://en.wikipedia.org/wiki/Point-to-Point_Protocol_over_Ethernet) daemon or [l2tp](https://en.wikipedia.org/wiki/Layer_2_Tunneling_Protocol):
 
 ```bash
 188.213.5.220/32
@@ -1370,4 +1370,23 @@ Those are the address lists that we use:
 172.16.19.0/24
 172.16.23.0/24
 ```
+
+**ipsec** that are the public IPv4 of others machines connected to our network with IPsec, it grow automatically with our program:
+
+```bash
+2.139.174.201
+5.134.119.135
+45.32.144.15
+45.63.116.141
+78.141.201.0
+94.72.143.163
+139.180.165.223
+139.180.206.19
+155.138.247.27
+160.119.248.111
+188.213.5.62
+216.238.100.26
+```
+
+
 
