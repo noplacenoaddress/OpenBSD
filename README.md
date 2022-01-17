@@ -1361,3 +1361,13 @@ Those are the address lists that we use:
 5.134.119.165/32
 ```
 
+**users** where we add local private subnet that could be translated with nat to go outside in the Internet:
+
+```bash
+172.16.16.0/24
+172.16.17.106
+172.16.18.0/24
+172.16.19.0/24
+172.16.23.0/24
+```
+
