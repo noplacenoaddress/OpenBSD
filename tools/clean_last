@@ -54,10 +54,10 @@ for file in $(grep "$last" /etc/* | grep hostname | cut -d : -f1); do
 	interface=$(echo $file | cut -d . -f2)
 	if [[ $interface == gre*[0-9] ]]; then
 		ospfinterface=$interface
+		ifconfig $interface destroy
+	elif [[ $interface == enc*[0-9] ]]; then
+		ifconfig $interface description ""
 	fi
-	sh -c "ifconfig $interface destroy  > /dev/null 2>&1" || true
-	ifconfig $interface  > /dev/null 2>&1
-	[[ $? == "0" ]] && ifconfig $interface description ""
 	/bin/rm -r $file
 done
 pubkey="$srcid@ca.$domainname"
