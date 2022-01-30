@@ -633,7 +633,7 @@ case $3 in
 			mv $HOME/.ssh/{id_ed25519,id_ed25519.pub,id_ed25519-cert.pub} "$HOME/.ssh/Backup$daterelease"
 		fi
 		ssh-keygen -t ed25519 -C "taglio@$localdomainname"
-		cat "$HOME/.ssh/id_ed25519.pub" > "${proghome}/src/etc/ssh/authorized_keys"
+		cat "$HOME/.ssh/id_ed25519.pub" > "$HOME/Work/telecom.lobby/OpenBSD/src/etc/sshauthorized_keys"
 		sed -i "s|^Public.*|Public ssh key for user = $(cat $HOME/.ssh/id_ed25519.pub)|" installation/install-vps.conf
 		pwdfile=$(mktemp)
 		# Read Password
