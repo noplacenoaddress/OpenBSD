@@ -1006,6 +1006,16 @@ case $3 in
 				echo "$vpnc_host IPsec SSL certificate has to be upgraded"
 			fi
 		done
+		for vpnc_host in $(dig mikrotik.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+			deadline=$(ssh -o LogLevel=QUIET $vpnc_host.$localdomainname /cert pr det where subject-alt-name=\"email:$vpnc_host@ca.telecomlobby.com\" | grep invalid-after | sed -e "s|[^.*]expires.*$||" -e "s|[[:space:]]* invalid-after=||")
+			echo "IPsec SSL certificate deadline of $vpnc_host is: $deadline"
+			echo "IPsec SSL certificate epoch deadline of $vpnc_host is: $(date --date "${deadline}" "+%s")"
+			deadlineepoch=$(date --date "${deadline}" "+%s")
+			if [ "$deadlineepoch" -lt "$currrentepoch" ]; then
+				echo "$vpnc_host IPsec SSL certificate has to be upgraded"
+			fi
+		done
+
 	;;
 	*)
 	;;
