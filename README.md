@@ -820,19 +820,30 @@ Next take the pen drive to the CA server physic station and run the setup_ca scr
 
 #### New yearly IPsec certificate to hosts and management
 
-First of all remember that certificate of the IPsec network got a deadline. They are created from the CA server with a life span of 365 days. One option of our `console` script simply printout the creation and deadline date with a comparison with the current date time in [GMT](https://en.wikipedia.org/wiki/Greenwich_Mean_Time).
+First of all remember that certificate of the IPsec network got a deadline. They are created from the CA server with a life span of 365 days. One option of our `console` script simply printout the creation and deadline date with a comparison with the current date time in [GMT](https://en.wikipedia.org/wiki/Greenwich_Mean_Time) and in [Unix epoch](https://en.wikipedia.org/wiki/Unix_time).
 
 ```bash
 taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -KD
-Current GMT time is: Feb 13 18:47:48 2022 GMT
-IPSec SSL certificate deadline of ganesha: Feb 11 23:52:24 2023 GMT
-IPSec SSL certificate deadline of saraswati: Feb 12 09:19:45 2022 GMT
-IPSec SSL certificate deadline of shiva: Feb 10 18:14:23 2022 GMT
-IPSec SSL certificate deadline of varuna: Apr 12 15:46:57 2022 GMT
-IPSec SSL certificate deadline of vishnu: Jun 20 13:03:23 2022 GMT
-IPSec SSL certificate deadline of bhagavati: Aug 25 14:58:55 2022 GMT
-IPSec SSL certificate deadline of xolotl: Jan  2 13:50:38 2023 GMT
-IPSec SSL certificate deadline of umnyama: Jan  3 08:05:22 2023 GMT
+Current GMT time is: Feb 13 19:44:36 2022 GMT
+Current epoch time is: 1644781476
+IPsec SSL certificate deadline of ganesha is: Feb 11 23:52:24 2023 GMT
+IPsec SSL certificate epoch deadline of ganesha is: 1676159544
+IPsec SSL certificate deadline of saraswati is: Feb 12 09:19:45 2022 GMT
+IPsec SSL certificate epoch deadline of saraswati is: 1644657585
+saraswati IPsec SSL certificate has to be upgraded
+IPsec SSL certificate deadline of shiva is: Feb 10 18:14:23 2022 GMT
+IPsec SSL certificate epoch deadline of shiva is: 1644516863
+shiva IPsec SSL certificate has to be upgraded
+IPsec SSL certificate deadline of varuna is: Apr 12 15:46:57 2022 GMT
+IPsec SSL certificate epoch deadline of varuna is: 1649778417
+IPsec SSL certificate deadline of vishnu is: Jun 20 13:03:23 2022 GMT
+IPsec SSL certificate epoch deadline of vishnu is: 1655730203
+IPsec SSL certificate deadline of bhagavati is: Aug 25 14:58:55 2022 GMT
+IPsec SSL certificate epoch deadline of bhagavati is: 1661439535
+IPsec SSL certificate deadline of xolotl is: Jan  2 13:50:38 2023 GMT
+IPsec SSL certificate epoch deadline of xolotl is: 1672667438
+IPsec SSL certificate deadline of umnyama is: Jan  3 08:05:22 2023 GMT
+IPsec SSL certificate epoch deadline of umnyama is: 1672733122
 taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ 
 ```
 
