@@ -96,6 +96,7 @@ if [[ $# -eq 0 ]]; then
 			\n-7   -> changes to 7.0 release [o] \
 			\n-CI  -> custom installation templates [o] \
 			\n-RM  -> remove a VPS from the network [o] \
+			\n-KD  -> print all IPsec certificates deadlines [o] \
 			\n"
 
 	exit 1
@@ -991,6 +992,12 @@ case $3 in
 	;;
 	"-RM")
 		read -p "Have you removed entry from local and public DNS daemons? yes/no: " ctrl
+	;;
+	"-KD")
+		echo "Current GMT time is: $(LANG=uk_UK date -u '+%b %d %H:%M:%S %Y GMT')"
+		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+			echo "IPSec SSL certificate deadline of $vpnc_host: $(ssh -o LogLevel=QUIET -t $vpnc_host.$localdomainname openssl x509 -in "/etc/iked/certs/*.crt" -noout -enddate | sed "s|^notAfter=||")"
+		done
 	;;
 	*)
 	;;

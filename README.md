@@ -818,6 +818,28 @@ This action will change also the public key specified in the `installation/insta
 
 Next take the pen drive to the CA server physic station and run the setup_ca script with the correct option `setup_ca upuser`. Return it to the workstation and type `1`. 
 
+#### New yearly IPsec certificate to hosts and management
+
+First of all remember that certificate of the IPsec network got a deadline. They are created from the CA server with a life span of 365 days. One option of our `console` script simply printout the creation and deadline date with a comparison with the current date time in [GMT](https://en.wikipedia.org/wiki/Greenwich_Mean_Time).
+
+```bash
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -KD
+Current GMT time is: Feb 13 18:47:48 2022 GMT
+IPSec SSL certificate deadline of ganesha: Feb 11 23:52:24 2023 GMT
+IPSec SSL certificate deadline of saraswati: Feb 12 09:19:45 2022 GMT
+IPSec SSL certificate deadline of shiva: Feb 10 18:14:23 2022 GMT
+IPSec SSL certificate deadline of varuna: Apr 12 15:46:57 2022 GMT
+IPSec SSL certificate deadline of vishnu: Jun 20 13:03:23 2022 GMT
+IPSec SSL certificate deadline of bhagavati: Aug 25 14:58:55 2022 GMT
+IPSec SSL certificate deadline of xolotl: Jan  2 13:50:38 2023 GMT
+IPSec SSL certificate deadline of umnyama: Jan  3 08:05:22 2023 GMT
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ 
+```
+
+Once you find some certificates expired fired up the CA server instance change the name to the old one, revoke it and create a new one has you have done to create it.
+
+#### Add new host to PF
+
 Another simple maintenance process is add another host to one table of `pf`. For example:
 
 [![OpenBSD MESH IPSec network: PF manteinance](https://asciinema.org/a/426193.png)](https://asciinema.org/a/426193)
