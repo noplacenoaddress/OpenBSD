@@ -820,6 +820,8 @@ Next take the pen drive to the CA server physic station and run the setup_ca scr
 
 #### New yearly IPsec certificate to hosts and management
 
+![](https://github.com/redeltaglio/OpenBSD/raw/master/img/1_UytIyLrrKVK9q9hVkuRNyA.gif)
+
 First of all remember that certificate of the IPsec network got a deadline. They are created from the CA server with a life span of 365 days. One option of our `console` script simply printout the creation and deadline date with a comparison with the current date time in [GMT](https://en.wikipedia.org/wiki/Greenwich_Mean_Time) and in [Unix epoch](https://en.wikipedia.org/wiki/Unix_time).
 
 ```bash
