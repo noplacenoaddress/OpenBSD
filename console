@@ -996,6 +996,7 @@ case $3 in
 	"-KD")
 		echo "Current GMT time is: $(LANG=uk_UK date -u '+%b %d %H:%M:%S %Y GMT')"
 		echo "Current epoch time is: $(date +"%s")"
+		echo "Looking at OpenBSD hosts..."
 		currrentepoch=$(date +"%s")
 		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 			deadline=$(ssh -o LogLevel=QUIET -t $vpnc_host.$localdomainname openssl x509 -in "/etc/iked/certs/*.crt" -noout -enddate | sed "s|^notAfter=||")
@@ -1003,19 +1004,76 @@ case $3 in
 			echo "IPsec SSL certificate epoch deadline of $vpnc_host is: $(date --date "${deadline}" "+%s")"
 			deadlineepoch=$(date --date "${deadline}" "+%s")
 			if [ "$deadlineepoch" -lt "$currrentepoch" ]; then
+				openbsdiked+=("$vpnc_host")
 				echo "$vpnc_host IPsec SSL certificate has to be upgraded"
 			fi
 		done
+		echo "Looking at Mikrotik RouterOS hosts..."
 		for vpnc_host in $(dig mikrotik.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
-			deadline=$(ssh -o LogLevel=QUIET $vpnc_host.$localdomainname /cert pr det where subject-alt-name=\"email:$vpnc_host@ca.telecomlobby.com\" | grep invalid-after | sed -e "s|[^.*]expires.*$||" -e "s|[[:space:]]* invalid-after=||")
+			deadlinemk=$(ssh -o LogLevel=QUIET $vpnc_host.$localdomainname /cert pr det where subject-alt-name=\"email:$vpnc_host@ca.telecomlobby.com\" | grep invalid-after | sed -e "s|[^.*]expires.*$||" -e "s|[[:space:]]* invalid-after=||")
+			deadline="$(echo $deadlinemk | cut -d / -f1) $(echo $deadlinemk | cut -d / -f2) $(echo $deadlinemk | cut -d " " -f2) $(echo $deadlinemk| cut -d / -f3 | cut -d " " -f1)"
 			echo "IPsec SSL certificate deadline of $vpnc_host is: $deadline"
 			echo "IPsec SSL certificate epoch deadline of $vpnc_host is: $(date --date "${deadline}" "+%s")"
 			deadlineepoch=$(date --date "${deadline}" "+%s")
 			if [ "$deadlineepoch" -lt "$currrentepoch" ]; then
+				mikrotikiked+=("$vpnc_host")
 				echo "$vpnc_host IPsec SSL certificate has to be upgraded"
 			fi
 		done
-
+		echo "Looking at Ubiquiti EdgeOS hosts..."
+		for vpnc_host in $(dig edgeos.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d' | cut -d : -f1); do
+			deadline=$(ssh -o LogLevel=QUIET -t $vpnc_host.$localdomainname openssl x509 -in "/config/auth/local/*.crt" -noout -enddate | sed "s|^notAfter=||")
+			echo "IPsec SSL certificate deadline of $vpnc_host is: $deadline"
+			echo "IPsec SSL certificate epoch deadline of $vpnc_host is: $(date --date "${deadline}" "+%s")"
+			deadlineepoch=$(date --date "${deadline}" "+%s")
+			if [ "$deadlineepoch" -lt "$currrentepoch" ]; then
+				edgeosiked+=("$vpnc_host")
+				echo "$vpnc_host IPsec SSL certificate has to be upgraded"
+			fi
+		done
+		if [ ${#edgeosiked[@]} -gt 1 ]; then
+			echo "edgeos"
+		fi
+		if [ ${#openbsdiked[@]} -gt 1 ]; then
+			echo "openbsd"
+			for i in "${openbsdiked[@]}"; do
+				echo "Working into $i Ipsec SSL certificate upgrade"
+				ikedpub=
+				while [ -z $ikedpub ]
+				do
+					echo "Type the PATH to the upgraded iked PK12 file for $i "
+					read ikedpub
+				done
+				tmpdir=$(mktemp -d)
+				pk12=$(basename $ikedpub)
+				publichost=$(echo $pk12 | sed 's/.p12//')
+				publichostname=$(echo $publichost | cut -d . -f1)
+				domainname=$(echo $publichost | sed "s/$publichostname.//")
+				for a in $(dig ipsec20591.$domainname TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+					b=$(echo $a | cut -d : -f1)
+					if [[ "$b" -eq "$publichostname" ]]; then
+					srcid=$(echo $a | cut -d : -f2)
+					fi
+				done
+				echo "uploading P12 to /tmp onto $i"
+				scp $ikedpub "${userna}@$publichost:/tmp"
+				echo "uploading P12 to Mikrotik hosts"
+				for vpnc_host in $(dig mikrotik.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+					scp $ikedpub "${vpnc_host}"
+				done
+				openssl pkcs12 -nodes -in $ikedpub -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "$tmpdir/$publichost.crt"
+				echo "uploading .crt to EdgeOS hosts"
+				for vpnc_host in $(dig edgeos.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d' | cut -d : -f1); do
+					scp "$tmpdir/$publichost.crt" "${vpnc_host}:/config/auth"
+				done
+				openssl x509 -pubkey -noout -passin pass:123456789 -in "$tmpdir/$publichost.crt"  > src/etc/iked/pubkeys/ufqdn/"$srcid@ca.$domainname"
+				srm "${tmpdir}"
+				echo -e "$srcid@ca.$domainname created please update repository and all the others Openbsd hosts"
+			done
+		fi
+		if [ ${#mikrotikiked[@]} -gt 1 ]; then
+			echo "mikrotik"
+		fi
 	;;
 	*)
 	;;
