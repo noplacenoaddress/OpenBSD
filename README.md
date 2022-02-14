@@ -826,8 +826,8 @@ First of all remember that certificate of the IPsec network got a deadline. They
 
 ```bash
 taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -KD
-Current GMT time is: Feb 13 19:44:36 2022 GMT
-Current epoch time is: 1644781476
+Current GMT time is: Feb 13 21:54:15 2022 GMT
+Current epoch time is: 1644789255
 IPsec SSL certificate deadline of ganesha is: Feb 11 23:52:24 2023 GMT
 IPsec SSL certificate epoch deadline of ganesha is: 1676159544
 IPsec SSL certificate deadline of saraswati is: Feb 12 09:19:45 2022 GMT
@@ -846,10 +846,15 @@ IPsec SSL certificate deadline of xolotl is: Jan  2 13:50:38 2023 GMT
 IPsec SSL certificate epoch deadline of xolotl is: 1672667438
 IPsec SSL certificate deadline of umnyama is: Jan  3 08:05:22 2023 GMT
 IPsec SSL certificate epoch deadline of umnyama is: 1672733122
+IPsec SSL certificate deadline of calli is: nov 15 17:47:04 2022
+IPsec SSL certificate epoch deadline of calli is: 1668530824
+IPsec SSL certificate deadline of indra is: Feb 11 22:22:52 2023 GMT
+IPsec SSL certificate epoch deadline of indra is: 1676154172
 taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ 
+
 ```
 
-Once you find some certificates expired fired up the CA server instance change the name to the old one, revoke it and create a new one has you have done to create it.
+Once you find some certificates expired fired up the CA server instance change the name to the old one, revoke it and create a new one has you have done to create it. Remember that this control operation has been done upon OpenBSD, RouterOS and EdgeOS hosts connected in our network.
 
 #### Add new host to PF
 
