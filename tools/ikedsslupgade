@@ -1,6 +1,7 @@
 #!/bin/ksh
 
-publichost="${1}"
+publicip=$(ifconfig "${egressinterface}" | grep inet |grep -v inet6 | cut -d ' ' -f2)
+publichost=$(dig -x $publicip +short @8.8.8.8 | sed 's/.$//')
 tmpdir=$(mktemp -d)
 
 function sha256compare {
