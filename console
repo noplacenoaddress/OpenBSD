@@ -1061,8 +1061,13 @@ case $3 in
 				echo "uploading P12 to Mikrotik hosts"
 				for vpnc_host in $(dig mikrotik.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 					scp $ikedpub "${vpnc_host}.$localdomainname"
-				 	ssh "${vpnc_host}.$localdomainname" "/certificate import passphrase=123456789 file-name=$ikedpub"
-					ssh "${vpnc_host}.$localdomainname" "/ip ipsec identity set [/ip ipsec identity find where certificate=${publichost}] certificate=${publichost}"
+					echo "/certificate remove [/certificate find where name=${publichost}]" > /tmp/i.rsc
+				 	echo "/certificate import passphrase=123456789 file-name=$pk12 name=${publichost}" >> /tmp/i.rsc
+					echo "/ip ipsec identity set [/ip ipsec identity find where certificate=${publichost}] certificate=${publichost}" >> /tmp/i.rsc
+					scp /tmp/i.rsc "${vpnc_host}.$localdomainname"
+					cat  /tmp/i.rsc
+					sleep 40
+					#eval "ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 ${vpnc_host}.$localdomainname :execute \{/import i.rsc\}"
 				done
 				openssl pkcs12 -nodes -in $ikedpub -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "$tmpdir/$publichost.crt"
 				echo "uploading .crt to EdgeOS hosts"
