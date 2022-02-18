@@ -1057,7 +1057,7 @@ case $3 in
 				done
 				echo "uploading P12 to /tmp onto $i"
 				scp $ikedpub "$i.$localdomainname:/tmp"
-				ssh -t $i.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U ipsec
+				ssh -t $i.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/tools/ikedsslupgade"
 				echo "uploading P12 to Mikrotik hosts"
 				for vpnc_host in $(dig mikrotik.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 					scp $ikedpub "${vpnc_host}.$localdomainname"
