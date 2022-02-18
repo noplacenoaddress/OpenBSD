@@ -1,0 +1,29 @@
+#!/bin/ksh
+
+publichost="${1}"
+tmpdir=$(mktemp -d)
+
+function sha256compare {
+	if [[ -e $1 ]]; then
+		oldsha256=$(sha256 $1 | awk '{print $4}')
+	else
+		oldsha256=""
+	fi
+	newsha256=$(sha256 $2 | awk '{print $4}')
+	if [ "$oldsha256" != "$newsha256" ]; then
+		sha256ctrl=1
+	else
+		sha256ctrl=0
+	fi
+}
+
+openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -nocerts -passin pass:123456789 -passout pass:123456789 -out "$tmpdir/local.key"
+openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "$tmpdir/$publichost.crt"
+openssl x509 -pubkey -noout -passin pass:123456789 -in "/etc/iked/certs/$publichost.crt"  > "$tmpdir/local.pub"
+sha256compare "/etc/iked/private/local.key" "$tmpdir/local.key"
+if [[ $sha256ctrl -eq 1 ]]; then
+    echo "local.key upgrade"
+    openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -nocerts -passin pass:123456789 -passout pass:123456789 -out /etc/iked/private/local.key
+    openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "/etc/iked/certs/$publichost.crt"
+    openssl x509 -pubkey -noout -passin pass:123456789 -in "/etc/iked/certs/$publichost.crt"  > /etc/iked/local.pub
+fi
