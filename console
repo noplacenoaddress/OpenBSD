@@ -97,6 +97,7 @@ if [[ $# -eq 0 ]]; then
 			\n-CI  -> custom installation templates [o] \
 			\n-RM  -> remove a VPS from the network [o] \
 			\n-KD  -> print all IPsec certificates deadlines [o] \
+			\n-CMD -> mass OpenBSD command [o] \
 			\n"
 
 	exit 1
