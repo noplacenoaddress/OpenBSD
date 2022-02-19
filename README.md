@@ -880,8 +880,6 @@ Onto EdgeOS it will copy the new X509 certificate and perform those [commands](h
 
 
 
-
-
 #### Add new host to PF
 
 Another simple maintenance process is add another host to one table of `pf`. For example:
