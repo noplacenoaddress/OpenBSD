@@ -1469,8 +1469,8 @@ gre9: flags=8051<UP,POINTOPOINT,RUNNING,MULTICAST> mtu 1392
 root@ganesha:/var/www/htdocs/es.telecomlobby.com/radio_aficionado# 
 ```
 
+#### Mikrotik LTE routers and customers
 
+Two types, one are end users the other routers to our network that create WISP point of presence, one appliance of my network the other one LTE rural customer. 
 
-#### LTE customers
-
-Two types, one are end users the other transport to our network. First of let say that 
+In the two cases CPE is a [Mikrotik LHG LTE kit](https://mikrotik.com/product/lhg_lte_kit).
