@@ -1011,7 +1011,7 @@ Next to start the installation process as usual:
 2. Use `tools/clean_last` in every OpenBSD VPS, better from the web VNC console, adding the correct `gre` interface as first and only argument.
 3. Eliminate the entries about in the public and local DNS daemon.
 
-## Possible applications
+## Possible appliances
 
 Let's start discussing how we can boost our presence in Internet using that guerrilla MESH system that guaranty our privacy and security on the web. My first project is regarding a website replicated over different countries in all the languages over the world. Something very important to obtain maximum results about clients, about web goods sell, about be recognized over it and about whatever we want to obtain searching for visibility.
 
@@ -1022,6 +1022,8 @@ Next some daemons that we've got to configure to start a new world of applicatio
 - a distributed spider to search for clients for my business and to catalog emails, fax numbers and contacts of United Nations personal that work fighting the modern slavery. I'm a private investigator and I've got to massively denunciate the remote neural control and interference to the brain facility.
 - a multi language web site, one for my work the other for my page of public compliant. 
 - a massive system of alert by www, smtpd and SIP.
+
+### Content delivery network
 
 #### PowerDNS
 
@@ -1354,6 +1356,20 @@ root@ganesha:/var/nsd/etc#
 
 ![](https://github.com/redeltaglio/OpenBSD/raw/master/img/dnskey_dnssec.png)
 
+### Wireless Internet Service Provider
+
+#### Mikrotik LTE routers and customers
+
+![](https://github.com/redeltaglio/OpenBSD/raw/master/img/3fe10498-bb07-4ca3-972f-bd62b53026b0.jpeg)
+
+Two types, one are end users the other routers to our network that create WISP point of presence, one appliance of my network the other one LTE rural customer. 
+
+In the two cases CPE is a [Mikrotik LHG LTE kit](https://mikrotik.com/product/lhg_lte_kit).
+
+### Hamradio passive and active point of presence
+
+#### Linux Rasberry and HackRF
+
 ## Annexed
 
 ### OpenBSD, Mikrotik and EdgeOS firewall
@@ -1469,8 +1485,4 @@ gre9: flags=8051<UP,POINTOPOINT,RUNNING,MULTICAST> mtu 1392
 root@ganesha:/var/www/htdocs/es.telecomlobby.com/radio_aficionado# 
 ```
 
-#### Mikrotik LTE routers and customers
-
-Two types, one are end users the other routers to our network that create WISP point of presence, one appliance of my network the other one LTE rural customer. 
-
-In the two cases CPE is a [Mikrotik LHG LTE kit](https://mikrotik.com/product/lhg_lte_kit).
+### Add a new service to the network
