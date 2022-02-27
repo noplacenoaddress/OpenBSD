@@ -1,0 +1,6 @@
+# /sbin/pfctl -t lte -T kill -f /etc/pf.conf.table.lte
+# /sbin/pfctl -t ltelte -T add -f /etc/pf.conf.table.lte
+# /sbin/pfctl -t lte -T show
+#
+
+d6af0e9e2591.sn.mynetname.net
