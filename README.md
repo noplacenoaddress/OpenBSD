@@ -1366,6 +1366,11 @@ Two types, one are end users the other routers to our network that create WISP p
 
 In the two cases CPE is a [Mikrotik LHG LTE kit](https://mikrotik.com/product/lhg_lte_kit).
 
+First of all I want to underline that lines of routers connected to our network to form a little POP in the WISP appliance are connected to the Internet using a provider that give access to it using NAT. Taking this in consideration will perform in different steps:
+
+- `/ip cloud set ddns-enable=yes` means enable a dynamic host using a Mikrotik service that point to external IP address of the connection. For example `d6af0e9e2591.sn.mynetname.net`.
+- IPSec connection will use [NAT traversal](https://en.wikipedia.org/wiki/NAT_traversal) feature because its bare nature, router is behind NAT! Others have to accept incoming connection to the `4500 UDP` port from the dynamic host that we've just configured.
+
 ### Hamradio passive and active point of presence
 
 #### Linux Rasberry and HackRF

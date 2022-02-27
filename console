@@ -795,7 +795,7 @@ case $3 in
 			eval "${sshcmd} ${userna}@${chr} /ip ipsec proposal add auth-algorithms=sha256 enc-algorithms=aes-256-cbc lifetime=1h name=NSA pfs-group=none"
 			ipsecpeers=$(mktemp)
 			echo ":foreach P in=[/ip ipsec peer find] do={ /ip ipsec peer remove \$P }" > ${ipsecpeers}
-			eval "${sshcmd} ${userna}@uma.telecom.lobby /ip ipsec peer export >> ${ipsecpeers}"
+			eval "${sshcmd} ${userna}@calli.telecom.lobby /ip ipsec peer export >> ${ipsecpeers}"
 			sed -i "s|45.32.144.15|${chrpubip}|g" "${ipsecpeers}"
 			echo "/ip ipsec peer add name=uma_ikev2_cert address=45.32.144.15 local-address=${chrpubip} exchange-mode=ike2 profile=NSA-RECOMMENDED" >> ${ipsecpeers}
 			eval "${scpcmd} ${ipsecpeers} ${userna}@${chr}:/ipsec_peers.rsc"
