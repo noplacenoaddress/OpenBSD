@@ -98,6 +98,7 @@ if [[ $# -eq 0 ]]; then
 			\n-RM  -> remove a VPS from the network [o] \
 			\n-KD  -> print all IPsec certificates deadlines [o] \
 			\n-CMD -> mass OpenBSD command [o] \
+			\n-LTE -> new RouterOS LTE Router istance [o] \
 			\n"
 
 	exit 1
@@ -747,7 +748,7 @@ case $3 in
 		cat $edgescript
 	;;
 	"-CHR")
-		read -p "Type CHR public hostname: " chr
+		read -p "Type LTE public hostname: " chr
 		publichostname=$(echo "${chr}" | cut -d . -f1)
 		chrpubip=$(dig A "${chr}" +short)
 		domainname=$(echo "${chr}" | sed "s|${publichostname}.||")
@@ -1086,6 +1087,103 @@ case $3 in
 		if [ ${#mikrotikiked[@]} -gt 1 ]; then
 			echo "mikrotik"
 		fi
+	;;
+	"-LTE")
+		read -p "Type LTE router public hostname: " lte
+		publichostname=$(echo "${lte}" | cut -d . -f1)
+		ltepubip=$(dig A "${lte}" +short)
+		domainname=$(echo "${lte}" | sed "s|${publichostname}.||")
+			for a in $(dig ipsec20591.$domainname TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+			b=$(echo $a | cut -d : -f1)
+			if [[ "$b" -eq "$publichostname" ]]; then
+				srcid=$(echo $a | cut -d : -f2)
+			fi
+		done
+		let counter=0
+		counter=$(expr $counter + $(capa3 "${lte}" "wan"))
+		if (( counter = 1 )); then
+			echo "Layer three test passed..."
+			pwd=$(passcheck "${lte}")
+			ssh-keygen -f "$HOME/.ssh/known_hosts" -R "${lte}"
+			if [[ $pwd = "0" ]]; then
+				echo "no password present"
+				echo "follow README.md of github" ; exit 1
+			elif [[ $pwd = "143" ]]; then
+				echo "with password"
+				password=$(systemd-ask-password "Enter ${lte} ${userna} password: ")
+				sshcmd="sshpass -p ${password} ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5"
+				scpcmd="sshpass -p ${password} scp -o StrictHostKeyChecking=no -o ConnectTimeout=5"
+			fi
+		fi
+		echo "configuring hostname, timezone, date, time"
+		eval "${sshcmd} ${userna}@${lte} /sys id set name=${srcid}.$localdomainname"
+		eval "${sshcmd} ${userna}@${lte} /sys clock set time-zone-name=Europe/Madrid"
+		ltedate=$(date +%b/%d/%Y)
+		eval "${sshcmd} ${userna}@${lte} /system clock set date=${ltedate}"
+		ltetime=$(TZ="Europe/Madrid" date | awk '{print $5}')
+		eval "${sshcmd} ${userna}@${lte} /system clock set time=${ltetime}"
+		echo "adding ${userna} RSA ssh key"
+		[[ -e "$HOME/.ssh/id_rsa.pub" ]] || ssh-keygen -t rsa -C "${userna}@${localdomainname}"
+		eval "${scpcmd} $HOME/.ssh/id_rsa.pub ${userna}@${lte}:/"
+		eval "${sshcmd} ${userna}@${lte} /user ssh-keys remove [find user=${userna}] \; /user ssh-keys import user=${userna} public-key-file=id_rsa.pub"
+		sshcmd="ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5"
+		scpcmd="scp -o StrictHostKeyChecking=no -o ConnectTimeout=5"
+		echo "adding ${lte} common IPSEC settings"
+		eval "${sshcmd} ${userna}@${lte} /ip ipsec policy group add name=group_ikev2_cert"
+		eval "${sshcmd} ${userna}@${lte} /ip ipsec profile add dh-group=ecp384,modp3072 dpd-interval=30s dpd-maximum-failures=1 enc-algorithm=aes-256 hash-algorithm=sha256 name=LTE nat-traversal=yes"
+		eval "${sshcmd} ${userna}@${lte} /ip ipsec proposal add auth-algorithms=sha256 enc-algorithms=aes-256-cbc lifetime=1h name=NSA pfs-group=none"
+		ipsecpeers=$(mktemp)
+		echo ":foreach P in=[/ip ipsec peer find where dynamic=no] do={ /ip ipsec peer remove \$P }" > ${ipsecpeers}
+		eval "${sshcmd} ${userna}@calli.telecom.lobby /ip ipsec peer export >> ${ipsecpeers}"
+		sed -i "s|local-address=5.134.119.135||g" "${ipsecpeers}"
+		sed -i "s|NSA-RECOMMENDED|LTE|g" "${ipsecpeers}"
+		#echo "/ip ipsec peer add name=calli_ikev2_cert address=5.134.119.135 local-address=${ltepubip} exchange-mode=ike2 profile=NSA-RECOMMENDED" >> ${ipsecpeers}
+		eval "${scpcmd} ${ipsecpeers} ${userna}@${lte}:/ipsec_peers.rsc"
+		srm "${ipsecpeers}"
+		eval "${sshcmd} ${userna}@${lte} /import file-name=ipsec_peers.rsc"
+		echo "installing local private and public key and peers public keys"
+		read -p "Type local directory with p12 exported IPsec certificates: " p12dir
+		ssh "${userna}@${lte}" ":foreach C in=[/certificate find] do={/certificate remove \$C}"
+		eval "${scpcmd} ${p12dir}/${srcid}/${lte}.p12 ${userna}@${lte}:/"
+		eval "${sshcmd} ${userna}@${lte} /certificate import file-name=${lte}.p12 name=${lte} passphrase=123456789"
+		eval "${sshcmd} ${userna}@${lte} /certificate set [find name=${lte}_1] name=ca.telecomlobby.com"
+		for certpath in $(find "${p12dir}" -name "*.p12"); do
+			certfile=$(basename "${certpath}")
+			peerpublichostname=$(echo "${certfile}" |  sed "s|.p12||")
+			certdir=$(dirname "${certpath}")
+			peerlocalhostname=$(echo "${certdir}" | sed "s|${p12dir}/||")
+			tmpdir=$(mktemp -d)
+			openssl pkcs12 -nodes -in "${certpath}" -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "$tmpdir/$peerlocalhostname.crt"
+			eval "${scpcmd} $tmpdir/$peerlocalhostname.crt ${userna}@${lte}:/"
+			eval "${sshcmd} ${userna}@${lte} /certificate import file-name=$peerlocalhostname.crt name=${peerpublichostname} passphrase=123456789"
+			srm -r "${tmpdir}"
+		done
+		ipsecpeers=$(mktemp)
+		echo ":foreach P in=[/ip ipsec identity find where dynamic=no] do={ /ip ipsec identity remove \$P }" > ${ipsecpeers}
+		eval "${sshcmd} ${userna}@calli.telecom.lobby /ip ipsec identity export >> ${ipsecpeers}"
+		sed -i "s|ixp.telecomlobby.com|${lte}|g" "${ipsecpeers}"
+		sed -i "s|.p12_[0-9]||" "${ipsecpeers}"
+		eval "${scpcmd} ${ipsecpeers} ${userna}@${lte}:/ipsec_identity.rsc"
+		eval "${sshcmd} ${userna}@${lte} /import file-name=ipsec_identity.rsc"
+		#eval "${sshcmd} ${userna}@${lte} /ip ipsec identity add peer=calli_ikev2_cert auth-method=digital-signature remote-id=user-fqdn:calli@ca.telecomlobby.com match-by=certificate certificate="${lte}"remote-certificate=ixp.telecomlobby.com generate-policy=no policy-template-group=group_ikev2_cert"
+		srm "${ipsecpeers}"
+		ipsecpolicy=$(mktemp)
+		eval "${sshcmd} ${userna}@calli.telecom.lobby /ip ipsec policy export > ${ipsecpolicy}"
+		sed -i '/set/d' "${ipsecpolicy}"
+		sed -i '/policy\ group/d' "${ipsecpolicy}"
+		sed -i '/group_ikev2_cert/d' "${ipsecpolicy}"
+
+		sed -i "s|src-address=5.134.119.135/32||g" "${ipsecpolicy}"
+		#echo "/ip ipsec policy add dst-address=5.134.119.135/32 peer=calli_ikev2_cert proposal=NSA protocol=gre src-address=${ltepubip}" >> "${ipsecpolicy}"
+		eval "${scpcmd} ${ipsecpolicy} ${userna}@${lte}:/ipsec_policy.rsc"
+		eval "${sshcmd} ${userna}@${lte} /import file-name=ipsec_policy.rsc"
+		echo "IPSec configured, going ahead..."
+		srm "${ipsecpolicy}"
+		#echo "Cleaning files"
+		#eval "${scpcmd} src/mikrotik/file_clean.rsc ${userna}@${lte}:/"
+		#eval "${sshcmd} ${userna}@${lte} :execute \{/import file_clean.rsc\}"
+
+
 	;;
 	*)
 	;;
