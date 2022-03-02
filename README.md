@@ -4,7 +4,7 @@
 
 ![](https://github.com/redeltaglio/OpenBSD/raw/master/img/puffy/puflogv1000X650.gif)
 
-The final goal is to add a full configured, secure by default, encrypted mesh node to an existing network. 
+A full configured, secure by default, encrypted services network called "Redama", my business name.
 
 It will replicate all the services on the network, and it can be deleted without loosing any data.
 
