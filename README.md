@@ -1,8 +1,8 @@
 
 
-# OpenBSD guerrilla network
+# OpenBSD "Redama" guerrilla services network
 
-![Puffy rules](https://www.openbsd.org/art/puffy/ppuf800X725.gif)
+![](https://github.com/redeltaglio/OpenBSD/raw/master/img/puffy/puflogv1000X650.gif)
 
 The final goal is to add a full configured, secure by default, encrypted mesh node to an existing network. 
 
