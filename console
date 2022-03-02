@@ -1129,9 +1129,25 @@ case $3 in
 		sshcmd="ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5"
 		scpcmd="scp -o StrictHostKeyChecking=no -o ConnectTimeout=5"
 		echo "adding ${lte} common IPSEC settings"
+		eval "${sshcmd} ${userna}@${lte} /ip ipsec policy group remove [find name=group_ikev2_cert]"
 		eval "${sshcmd} ${userna}@${lte} /ip ipsec policy group add name=group_ikev2_cert"
+		eval "${sshcmd} ${userna}@${lte} /ip ipsec profile remove [find name=LTE]"
 		eval "${sshcmd} ${userna}@${lte} /ip ipsec profile add dh-group=ecp384,modp3072 dpd-interval=30s dpd-maximum-failures=1 enc-algorithm=aes-256 hash-algorithm=sha256 name=LTE nat-traversal=yes"
-		eval "${sshcmd} ${userna}@${lte} /ip ipsec proposal add auth-algorithms=sha256 enc-algorithms=aes-256-cbc lifetime=1h name=NSA pfs-group=none"
+		eval "${sshcmd} ${userna}@${lte} /ip ipsec proposal remove [find name=NSA]"
+		eval "${sshcmd} ${userna}@${lte} /ip ipsec proposal remove add auth-algorithms=sha256 enc-algorithms=aes-256-cbc lifetime=1h name=NSA pfs-group=none"
+		rtdomain=$(mktemp)
+		echo ":foreach I in=[/ip firewall address-list find where list=ipsec] do={/ip firewall address-list remove \$I}" > "${rtdomain}"
+		for ipipsec in $(ssh ${userna}@calli.telecom.lobby /ip fire addr pr where list=ipsec | sed -e "s|^.*5.134.119.135.*$||" | awk '{print $3}' |  sed -e "/^$/d" | tail -n +3); do
+			echo "/ip fire address-list add list=ipsec address=${ipipsec}" >> "${rtdomain}"
+		done
+		echo "/ip firewall mangle remove [find dst-address-list=ipsec]" >> "${rtdomain}"
+		echo "/ip firewall mangle add action=mark-routing chain=output dst-address-list=ipsec new-routing-mark=ipsec passthrough=yes" >> "${rtdomain}"
+		echo "/ip route remove [find routing-mark=ipsec]" >> "${rtdomain}"
+		echo "/ip route rule remove [find routing-mark=ipsec]" >> "${rtdomain}"
+		echo "/ip route rule add action=lookup-only-in-table routing-mark=ipsec table=ipsec" >> "${rtdomain}"
+		echo "/ip route add comment=ipsec distance=1 gateway=lte1 routing-mark=ipsec" >> "${rtdomain}"
+		eval "${scpcmd} ${ipsecpolicy} ${userna}@${lte}:/rtdomains.rsc"
+		eval "${sshcmd} ${userna}@${lte} /import file-name=rtdomains.rsc"
 		ipsecpeers=$(mktemp)
 		echo ":foreach P in=[/ip ipsec peer find where dynamic=no] do={ /ip ipsec peer remove \$P }" > ${ipsecpeers}
 		eval "${sshcmd} ${userna}@calli.telecom.lobby /ip ipsec peer export >> ${ipsecpeers}"

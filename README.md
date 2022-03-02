@@ -1371,7 +1371,7 @@ First of all I want to underline that lines of routers connected to our network 
 - `/ip cloud set ddns-enable=yes` means enable a dynamic host using a Mikrotik service that point to external IP address of the connection. For example `d6af0e9e2591.sn.mynetname.net`.
 - IPSec connection will use [NAT traversal](https://en.wikipedia.org/wiki/NAT_traversal) feature because its bare nature, router is behind NAT! Others have to accept incoming connection to the `4500 UDP` port from the dynamic host that we've just configured.
 - Use `src/etc/pf.conf.table.lte` to add the new LTE WISP point of presence.
-- Because its nature behind NAT use [l2tp](https://en.wikipedia.org/wiki/Layer_2_Tunneling_Protocol) to add a public IPv4 address to it. But you can ever do it in IPv6 to not consume an IPv4 from your pool.
+- Because its nature behind NAT use [l2tp](https://en.wikipedia.org/wiki/Layer_2_Tunneling_Protocol) to add a public IPv4 address to it. But you can ever do it in IPv6 to not consume an IPv4 from your pool. Remember that this IPSec and L2TP tunnel will be created using one of our Mikrotik endpoints. Be careful to use as the Internet gateway for the workstation LAN the same endpoint. This machine will be not configured in the automatic IPSec configuration process until the end when it will be.
 
 Next start to configure the new LTE last mile Internet access router, in my case public host is `mir.telecomlobby.com`, internal host is `thangka.telecom.lobby` and router id is `192.168.13.10`:
 
