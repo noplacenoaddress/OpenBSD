@@ -1115,6 +1115,8 @@ case $3 in
 				scpcmd="sshpass -p ${password} scp -o StrictHostKeyChecking=no -o ConnectTimeout=5"
 			fi
 		fi
+		eval "${scpcmd} src/mikrotik/LTE-reset.rsc ${userna}@${lte}:/LTEreset.rsc"
+		eval "${sshcmd} ${userna}@${lte} /import file-name=LTEreset.rsc"
 		echo "configuring hostname, timezone, date, time"
 		eval "${sshcmd} ${userna}@${lte} /sys id set name=${srcid}.$localdomainname"
 		eval "${sshcmd} ${userna}@${lte} /sys clock set time-zone-name=Europe/Madrid"
@@ -1129,24 +1131,17 @@ case $3 in
 		sshcmd="ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5"
 		scpcmd="scp -o StrictHostKeyChecking=no -o ConnectTimeout=5"
 		echo "adding ${lte} common IPSEC settings"
-		eval "${sshcmd} ${userna}@${lte} /ip ipsec policy group remove [find name=group_ikev2_cert]"
 		eval "${sshcmd} ${userna}@${lte} /ip ipsec policy group add name=group_ikev2_cert"
-		eval "${sshcmd} ${userna}@${lte} /ip ipsec profile remove [find name=LTE]"
 		eval "${sshcmd} ${userna}@${lte} /ip ipsec profile add dh-group=ecp384,modp3072 dpd-interval=30s dpd-maximum-failures=1 enc-algorithm=aes-256 hash-algorithm=sha256 name=LTE nat-traversal=yes"
-		eval "${sshcmd} ${userna}@${lte} /ip ipsec proposal remove [find name=NSA]"
-		eval "${sshcmd} ${userna}@${lte} /ip ipsec proposal remove add auth-algorithms=sha256 enc-algorithms=aes-256-cbc lifetime=1h name=NSA pfs-group=none"
+		eval "${sshcmd} ${userna}@${lte} /ip ipsec proposal add auth-algorithms=sha256 enc-algorithms=aes-256-cbc lifetime=1h name=NSA pfs-group=none"
 		rtdomain=$(mktemp)
-		echo ":foreach I in=[/ip firewall address-list find where list=ipsec] do={/ip firewall address-list remove \$I}" > "${rtdomain}"
 		for ipipsec in $(ssh ${userna}@calli.telecom.lobby /ip fire addr pr where list=ipsec | sed -e "s|^.*5.134.119.135.*$||" | awk '{print $3}' |  sed -e "/^$/d" | tail -n +3); do
 			echo "/ip fire address-list add list=ipsec address=${ipipsec}" >> "${rtdomain}"
 		done
-		echo "/ip firewall mangle remove [find dst-address-list=ipsec]" >> "${rtdomain}"
 		echo "/ip firewall mangle add action=mark-routing chain=output dst-address-list=ipsec new-routing-mark=ipsec passthrough=yes" >> "${rtdomain}"
-		echo "/ip route remove [find routing-mark=ipsec]" >> "${rtdomain}"
-		echo "/ip route rule remove [find routing-mark=ipsec]" >> "${rtdomain}"
 		echo "/ip route rule add action=lookup-only-in-table routing-mark=ipsec table=ipsec" >> "${rtdomain}"
 		echo "/ip route add comment=ipsec distance=1 gateway=lte1 routing-mark=ipsec" >> "${rtdomain}"
-		eval "${scpcmd} ${ipsecpolicy} ${userna}@${lte}:/rtdomains.rsc"
+		eval "${scpcmd} ${rtdomain} ${userna}@${lte}:/rtdomains.rsc"
 		eval "${sshcmd} ${userna}@${lte} /import file-name=rtdomains.rsc"
 		ipsecpeers=$(mktemp)
 		echo ":foreach P in=[/ip ipsec peer find where dynamic=no] do={ /ip ipsec peer remove \$P }" > ${ipsecpeers}
@@ -1198,7 +1193,58 @@ case $3 in
 		#echo "Cleaning files"
 		#eval "${scpcmd} src/mikrotik/file_clean.rsc ${userna}@${lte}:/"
 		#eval "${sshcmd} ${userna}@${lte} :execute \{/import file_clean.rsc\}"
-
+		echo "start to configure GRE interfaces"
+		grepeers=$(mktemp)
+		eval "${sshcmd} ${userna}@calli.telecom.lobby /interface gre export >> ${grepeers}"
+		sed -i "s|local-address=5.134.119.135||g" "${grepeers}"
+		eval "${scpcmd} ${grepeers} ${userna}@${lte}:/interface_gre.rsc"
+		eval "${sshcmd} ${userna}@${lte} :execute \{/import interface_gre.rsc\}"
+		srm "${grepeers}"
+		echo "configuring routing OSPF filters"
+		rtfilter=$(mktemp)
+		echo "/routing filter" > "${rtfilter}"
+		echo "add action=accept chain=ospf-in comment=\"insert HOST 192.168.13.0/24\" prefix=192.168.13.0/24 prefix-length=32" >> "${rtfilter}"
+		echo "add action=accept chain=ospf-in comment=\"insert NET 172.16.16.0/22\" prefix=172.16.16.0/22 prefix-length=24" >> "${rtfilter}"
+		echo "add action=accept chain=ospf-in comment=\"insert NET 10.0.0.0/8\" prefix=10.0.0.0/8 prefix-length=8" >> "${rtfilter}"
+		randomop=$(dig TXT openbsd.telecom.lobby +short | sed "s|\"||g" | tr ";" "\n" | awk NF | shuf -n 1)
+		for host in $(ssh "${randomop}.telecom.lobby" cat /etc/pf.conf.table.{clientes,ipsec} | grep -v \# | awk NF | uniq | sed "s|5.134.119.135/32||" | sed "/^$/d"); do
+			echo "add action=accept chain=ospf-in comment=\"insert HOST ${host}\" prefix=${host} prefix-length=32" >> "${rtfilter}"
+		done
+		echo "add action=discard chain=ospf-in comment=\"discard ALL\"" >> "${rtfilter}"
+		echo "add action=accept chain=ospf-out comment=\"insert HOST 192.168.13.0/24\" prefix=192.168.13.0/24 prefix-length=32" >> "${rtfilter}"
+		echo "add action=accept chain=ospf-out comment=\"insert NET 172.16.16.0/22\" prefix=172.16.16.0/22 prefix-length=24" >> "${rtfilter}"
+		echo "add action=accept chain=ospf-out comment=\"insert NET 10.0.0.0/8\" prefix=10.0.0.0/8 prefix-length=8" >> "${rtfilter}"
+		for host in $(ssh "${randomop}.telecom.lobby" cat /etc/pf.conf.table.{clientes,ipsec} | grep -v \# | awk NF | uniq | sed "s|5.134.119.135/32||" | sed "/^$/d"); do
+			echo "add action=accept chain=ospf-out comment=\"insert HOST ${host}\" prefix=${host} prefix-length=32" >> "${rtfilter}"
+		done
+		echo "add action=discard chain=ospf-out comment=\"discard ALL\"" >> "${rtfilter}"
+		eval "${scpcmd} ${rtfilter} ${userna}@${lte}:/rtfilter.rsc"
+		eval "${sshcmd} ${userna}@${lte} :execute \{/import rtfilter.rsc\}"
+		srm "${rtfilter}"
+		read -p "Type the 100 vlan network prefix: " lteadm
+		read -p "Type the 111 vlan network prefix: " ltedata
+		read -p "Type the 43 vlan network prefix: " lteham
+		echo "configuring layer 2 VLANs (router will be .254)"
+		lteadmip=$(printf '%s' $(echo $lteadm | sed "s|0/24||")'254')
+		ltedataip=$(printf '%s' $(echo $ltedata | sed "s|0/24||")'254')
+		ltehamip=$(printf '%s' $(echo $lteham | sed "s|0/24||")'254')
+		eval "${sshcmd} ${userna}@${lte} /int vlan add interface=ether1 vlan-id=100 comment=ADM"
+		eval "${sshcmd} ${userna}@${lte}  /ip addr add interface=[/interface get [/interface vlan find where comment=\"ADM\"] name] address=${lteadmip} comment=ADM"
+		eval "${sshcmd} ${userna}@${lte} /int vlan add interface=ether1 vlan-id=111 comment=DATA"
+		eval "${sshcmd} ${userna}@${lte}  /ip addr add interface=[/interface get [/interface vlan find where comment=\"DATA\"] name] address=${ltedataip} comment=DATA"
+		eval "${sshcmd} ${userna}@${lte} /int vlan add interface=ether1 vlan-id=43 comment=HAM"
+		eval "${sshcmd} ${userna}@${lte}  /ip addr add interface=[/interface get [/interface vlan find where comment=\"HAM\"] name] address=${ltehamip} comment=HAM"
+		eval "${sshcmd} ${userna}@${lte} /int vlan add interface=ether1 vlan-id=131 comment=PPPOE"
+		read -p "Type the LTE routerid: " lteid
+		echo "configuring OSPF daemon"
+		eval "${sshcmd} ${userna}@${lte} /routing ospf instance set [ find default=yes ] redistribute-connected=as-type-2 redistribute-other-ospf=as-type-1 redistribute-static=as-type-2 router-id=${lteid}"
+		eval "${sshcmd} ${userna}@${lte} /int bri add name=lo1 comment=\"router-id\" protocol-mode=none"
+		eval "${sshcmd} ${userna}@${lte} /ip addr add address=${lteid}/32 interface=lo1"
+		eval "${sshcmd} ${userna}@${lte} /routing ospf interface add authentication-key-id=100 cost=1 interface=lo1 network-type=broadcast passive=yes"
+		eval "${sshcmd} ${userna}@${lte}  /routing ospf network add area=backbone network=${lteadm}"
+		eval "${sshcmd} ${userna}@${lte}  /routing ospf network add area=backbone network=${ltedata}"
+		eval "${sshcmd} ${userna}@${lte}  /routing ospf network add area=backbone network=${lteham}"
+		eval "${sshcmd} ${userna}@${lte} /interface list add name=GRE"
 
 	;;
 	*)
