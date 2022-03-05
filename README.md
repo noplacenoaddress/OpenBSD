@@ -1009,6 +1009,8 @@ Next to start the installation process as usual:
 
 1. Delete the VPS instance from the provider console.
 2. Use `tools/clean_last` in every OpenBSD VPS, better from the web VNC console, adding the correct `gre` interface as first and only argument.
+2. Use `./console -I telecom.lobby -CMK` adding the internal hostname without the domain as argument. The tool will delete it from every Mikrotik RouterOS host.
+2. Use `./console -I telecom.lobby -CEO` adding the internal hostname without the domain as argument. The tool will delete it from every Ubiquiti EdgeOS host.
 3. Eliminate the entries about in the public and local DNS daemon.
 
 ## Possible appliances
