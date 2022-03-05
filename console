@@ -168,14 +168,40 @@ case $3 in
 	;;
 	"-CEO")
 		read -p "Type the internal hostname: " ihn
-		for vpnc_host in $(dig mikrotik.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
-			echo -e "Connecting to $vpnc_host"
-			cleanmk=$(mktemp)
-			cat src/mikrotik/tools/clean_last.rsc > "${cleanmk}"
-			sed -i "s|/HOSTNAME/|${ihn}|g" "${cleanmk}"
-			scp  "${cleanmk}" "${vpnc_host}"."${localdomainname}":/clean.rsc
-			eval "ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 ${userna}@${lte} :execute \{/import clean.rsc\}"
+		edgescript=$(mktemp)
+		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper begin" > $edgescript
+		phn=$(dig ipsec20591.telecomlobby.com TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d' | grep "${ihn}" | cut -d : -f1)
+		typeset -u upphn="${phn}"
+		pip=$(dig A "${phn}.telecomlobby.com" +short)
+		irid=$(dig A "${ihn}".$localdomainname +short)
+		for i in $(ssh -q indra.telecom.lobby /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show firewall group | grep address-group | awk '{print $2}'); do
+			ssh -q indra.telecom.lobby sudo ipset list "${i}" | grep "${pip}"  &> /dev/null
+			if [ $? -eq 0 ]; then
+				echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete firewall group address-group ${i} address ${pip}" >> $edgescript
+			fi
 		done
+		ssh -q indra.telecom.lobby sudo ipset list ROUTERID | grep "${irid}" &> /dev/null
+		if [ $? -eq 0 ]; then
+			echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete firewall group address-group ROUTERID address ${irid}" >> $edgescript
+		fi
+		if [ $(ssh -q indra.telecom.lobby /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show firewall modify DMZMARK-"${upphn}" | wc -l) -gt 1 ]; then
+			echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete firewall modify DMZMARK-${upphn}" >> $edgescript
+		fi
+		ssh -q indra.telecom.lobby /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show policy access-list 10 | grep -wB 3 "${irid}" &> /dev/null
+		if [ $? -eq 0 ]; then
+			ruleid=$(ssh -q indra.telecom.lobby /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show policy access-list 10 | grep -wB 3 "${irid}" | head -n 1 | awk '{print $2}')
+			echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete policy access-list 10 rule ${ruleid}" >> $edgescript
+		fi
+		greint=$(ssh -q indra.telecom.lobby ip link show | grep -wB 2 "${phn}.telecomlobby.com" | head -n 1 | awk '{print $2}' | cut -d @ -f1)
+		if [[ "${greint}" == tun*[0-9] ]]; then
+			echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete interface tunnel ${greint}" >> $edgescript
+			grenet=$(ssh -q indra.telecom.lobby ip route | grep -w  ${greint} | head -n 1 | awk '{print $1}')
+			echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete protocols ospf area 0.0.0.0 network ${grenet}" >> $edgescript
+			echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete protocols ospf passive-interface-exclude ${greint}" >> $edgescript
+		fi
+
+		cat "${edgescript}"
+
 	;;
 	"-P")
 		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
