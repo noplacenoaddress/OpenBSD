@@ -79,6 +79,8 @@ if [[ $# -eq 0 ]]; then
 			\n-D   -> dyndnspop [o] \
 			\n-F   -> single file update [o] \
 			\n-C   -> cleanlast [o] \
+			\n-CMK -> clean VPS from Mikrotiks [o] \
+			\n-CEO -> clean VPS from Mikrotiks [o] \
 			\n-RS  -> repository ssh update [o] \
 			\n-K   -> new IKED pk12 archive [o] \
 			\n-T   -> tmux and SSH to all openbsd MESH hosts [o] \
@@ -151,6 +153,28 @@ case $3 in
 		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 			echo -e "Connecting to $vpnc_host"
 			ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -A cleanlast
+		done
+	;;
+	"-CMK")
+		read -p "Type the internal hostname: " ihn
+		for vpnc_host in $(dig mikrotik.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+			echo -e "Connecting to $vpnc_host"
+			cleanmk=$(mktemp)
+			cat src/mikrotik/tools/clean_last.rsc > "${cleanmk}"
+			sed -i "s|/HOSTNAME/|${ihn}|g" "${cleanmk}"
+			scp  "${cleanmk}" "${vpnc_host}"."${localdomainname}":/clean.rsc
+			eval "ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 ${userna}@${lte} :execute \{/import clean.rsc\}"
+		done
+	;;
+	"-CEO")
+		read -p "Type the internal hostname: " ihn
+		for vpnc_host in $(dig mikrotik.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+			echo -e "Connecting to $vpnc_host"
+			cleanmk=$(mktemp)
+			cat src/mikrotik/tools/clean_last.rsc > "${cleanmk}"
+			sed -i "s|/HOSTNAME/|${ihn}|g" "${cleanmk}"
+			scp  "${cleanmk}" "${vpnc_host}"."${localdomainname}":/clean.rsc
+			eval "ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 ${userna}@${lte} :execute \{/import clean.rsc\}"
 		done
 	;;
 	"-P")
