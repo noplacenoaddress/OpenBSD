@@ -1,6 +1,14 @@
 if [ -x /usr/local/sbin/oidentd ]; then
-        echo -n ' oidentd';	/usr/local/sbin/oidentd -m 
+        echo -n ' oidentd';	/usr/local/sbin/oidentd -m
 fi
 #doas -u _iperfd /usr/local/bin/iperf \
 #	-s -B /ROUTERID/ \
 #	-D -N
+
+if [ -e /etc/ssh/remote_install/remote_install.conf ]; then
+	echo -n 'sshd remote install'; /usr/sbin/sshd -f /etc/ssh/remote_install/remote_install.conf
+fi
+
+if [ -e /var/privoxy/etc/privoxy/config ]; then
+        echo -n 'privoxy'; /usr/local/sbin/privoxy --user _privoxy --chroot --no-daemon --pre-chroot-nslookup www.google.com /etc/privoxy/config &
+fi
