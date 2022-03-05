@@ -13,6 +13,8 @@
 :foreach I in=[/ip firewall address-list find where list=ipsec] do={/ip firewall address-list remove $I}
 /ip route remove [find routing-mark=ipsec]
 /ip route rule remove [find routing-mark=ipsec]
+/routing ospf network remove [find]
+/routing ospf interface remove [find]
 /interface gre remove [find]
 /ip addr remove [find comment=ADM]
 /ip addr remove [find comment=DATA]
@@ -22,3 +24,4 @@
 /int vlan remove [find comment=PPPOE]
 /int bri remove [find]
 /routing filter remove [find]
+/interface list remove [find where name=GRE]

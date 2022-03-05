@@ -41,7 +41,7 @@ domainname=$(echo $last | sed "s/$publichostname.//")
 
 for a in $(dig ipsec20591.$domainname TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 	b=$(echo $a | cut -d : -f1)
-	if [[ "$b" -eq "$publichostname" ]]; then
+	if [[ "${b}" == "${publichostname}" ]]; then
 		srcid=$(echo $a | cut -d : -f2)
 	fi
 done
