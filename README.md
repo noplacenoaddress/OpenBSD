@@ -219,6 +219,40 @@ Done
 root@indra# exit
 ```
 
+Also use the `console` script to populate the correct geoip address-list in the EdgeOS WISP endpoint:
+
+```bash
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -GEO
+Type public IP: 79.116.90.131
+{
+  "ip": "79.116.90.131",
+  "hostname": "79-116-90-131.digimobil.es",
+  "city": "Girona",
+  "region": "Catalonia",
+  "country": "ES",
+  "loc": "41.9831,2.8249",
+  "org": "AS57269 DIGI SPAIN TELECOM S.L.U.",
+  "postal": "17001",
+  "timezone": "Europe/Madrid",
+}
+LAT --> 41
+LONG --> 2
+GROUP --> 34
+Do you want to add it to correct firewall address-group into EdgeOS: yes/no yes
+/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper begin
+/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set firewall group address-group 34 address 79.116.90.131
+/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper commit
+/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper save
+OK? yes/no yes
+Linux indra 4.9.79-UBNT #1 SMP Wed Oct 28 16:51:13 UTC 2020 mips64
+Welcome to EdgeOS
+Saving configuration to '/config/config.boot'...
+Done
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ 
+```
+
+
+
 In the RouterOS one I've got to update the address list relative to the host presents in my IPSec network:
 
 ```shell
