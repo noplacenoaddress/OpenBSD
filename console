@@ -80,7 +80,7 @@ if [[ $# -eq 0 ]]; then
 			\n-F   -> single file update [o] \
 			\n-C   -> cleanlast [o] \
 			\n-CMK -> clean VPS from Mikrotiks [o] \
-			\n-CEO -> clean VPS from Mikrotiks [o] \
+			\n-CEO -> clean VPS from EdgeOS [o] \
 			\n-RS  -> repository ssh update [o] \
 			\n-K   -> new IKED pk12 archive [o] \
 			\n-T   -> tmux and SSH to all openbsd MESH hosts [o] \
@@ -171,13 +171,17 @@ case $3 in
 		edgescript=$(mktemp)
 		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper begin" > $edgescript
 		phn=$(dig ipsec20591.telecomlobby.com TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d' | grep "${ihn}" | cut -d : -f1)
+		[[ "${phn}" == "" ]] && read -p "Type the external hostname because was deleted: " phn
 		typeset -u upphn="${phn}"
 		pip=$(dig A "${phn}.telecomlobby.com" +short)
+		[[ "${pip}" == "" ]] && read -p "Type the external ip address because was deleted: " pip
 		irid=$(dig A "${ihn}".$localdomainname +short)
+		[[ "${irid}" == "" ]] && read -p "Type the router id because was deleted: " irid
 		for i in $(ssh -q indra.telecom.lobby /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show firewall group | grep address-group | awk '{print $2}'); do
 			ssh -q indra.telecom.lobby sudo ipset list "${i}" | grep "${pip}"  &> /dev/null
 			if [ $? -eq 0 ]; then
 				echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete firewall group address-group ${i} address ${pip}" >> $edgescript
+				type="${i}"
 			fi
 		done
 		ssh -q indra.telecom.lobby sudo ipset list ROUTERID | grep "${irid}" &> /dev/null
@@ -194,14 +198,61 @@ case $3 in
 		fi
 		greint=$(ssh -q indra.telecom.lobby ip link show | grep -wB 2 "${phn}.telecomlobby.com" | head -n 1 | awk '{print $2}' | cut -d @ -f1)
 		if [[ "${greint}" == tun*[0-9] ]]; then
-			echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete interface tunnel ${greint}" >> $edgescript
-			grenet=$(ssh -q indra.telecom.lobby ip route | grep -w  ${greint} | head -n 1 | awk '{print $1}')
+			grenet=$(ssh -q indra.telecom.lobby ip route | grep -w "dev ${greint} proto kernel"| awk '{print $1}')
+			if [[ "${grenet}" == "" ]]; then
+				IFS=. read -r i1 i2 i3 i4 <<< $(ssh -q indra.telecom.lobby /sbin/ifconfig -a tun5 | grep inet | awk '{print $2}')
+				IFS=. read -r m1 m2 m3 m4 <<< "255.255.255.252"
+				grenet=$(printf "%d.%d.%d.%d\n" "$((i1 & m1))" "$((i2 & m2))" "$((i3 & m3))" "$((i4 & m4))")"/30"
+			fi
 			echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete protocols ospf area 0.0.0.0 network ${grenet}" >> $edgescript
 			echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete protocols ospf passive-interface-exclude ${greint}" >> $edgescript
+			echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete interfaces tunnel ${greint}" >> $edgescript
 		fi
-
+		ssh -q indra.telecom.lobby ip route | grep -w "${pip}" &> /dev/null
+		if [ $? -eq 0 ]; then
+			echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete protocols static interface-route ${pip}/32" >> $edgescript
+		fi
+		if [ $(ssh -q indra.telecom.lobby /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show system task-scheduler task ES${upphn} | wc -l) -gt 1 ]; then
+			echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete system task-scheduler task ES${upphn}" >> $edgescript
+		fi
+		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper commit" >> $edgescript
+		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper save" >> $edgescript
 		cat "${edgescript}"
-
+		read -p "OK? yes/no " ctrl
+		case "${ctrl}" in
+			"yes")
+				cat "${edgescript}" | ssh -q indra.telecom.lobby
+			;;
+			"no")
+				exit 1
+			;;
+			*)
+				exit 1
+			;;
+		esac
+		case "${type}" in
+			"OPENBSD")
+				ssh -q indra.telecom.lobby sudo sed -i -e "/telecomlobby-${upphn}/,+13d" /config/ipsec.conf
+			;;
+			"MIKROTIK")
+				ssh -q indra.telecom.lobby sudo sed -i -e "/telecomlobby-${upphn}/,+11d" /config/ipsec.conf
+			;;
+		esac
+		ssh -q indra.telecom.lobby sudo cp /config/ipsec.conf /etc
+		if [ $(ssh -q indra.telecom.lobby sudo ipsec status telecomlobby-${upphn} | grep -v Security | grep -c ESTABLISHED) -gt 0 ]; then
+			ssh -q indra.telecom.lobby sudo ipsec down telecomlobby-${upphn}
+		fi
+		ssh -q indra.telecom.lobby [[ -e "/config/ipsec/ES${upphn}-updown.sh" ]] && rm -rf "/config/ipsec/ES${upphn}-updown.sh"
+		ssh -q indra.telecom.lobby [[ -e "/config/auth/${phn}.telecomlobby.com.crt" ]] && rm -rf "/config/auth/${phn}.telecomlobby.com.crt"
+		ssh -q indra.telecom.lobby [[ -e "/etc/ipsec.d/certs/${phn}.telecomlobby.com.crt" ]]
+		if [ $? -eq 0 ]; then
+			ssh -q indra.telecom.lobby sudo rm -rf "/etc/ipsec.d/certs/${phn}.telecomlobby.com.crt"
+		fi
+		if [ $(ssh -q indra.telecom.lobby grep -wc ${phn}.telecomlobby.com /config/scripts/post-config.d/files.sh) -gt 0 ]; then
+			ssh -q indra.telecom.lobby sudo sed -i "/${phn}.telecomlobby.com.crt/d" /config/scripts/post-config.d/files.sh
+		fi
+		ssh -q indra.telecom.lobby sudo ipsec rereadall
+		ssh -q indra.telecom.lobby sudo ipsec reload
 	;;
 	"-P")
 		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
