@@ -25,4 +25,3 @@ case "${PLUTO_VERB}" in
 		/sbin/ifconfig $TUN_IFACE down
 ;;
 esac
-

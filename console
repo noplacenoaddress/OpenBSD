@@ -101,6 +101,7 @@ if [[ $# -eq 0 ]]; then
 			\n-KD  -> print all IPsec certificates deadlines [o] \
 			\n-CMD -> mass OpenBSD command [o] \
 			\n-LTE -> new RouterOS LTE Router istance [o] \
+			\n-GEO -> get IP address geo group [o] \
 			\n"
 
 	exit 1
@@ -191,6 +192,12 @@ case $3 in
 		if [ $(ssh -q indra.telecom.lobby /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show firewall modify DMZMARK-"${upphn}" | wc -l) -gt 1 ]; then
 			echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete firewall modify DMZMARK-${upphn}" >> $edgescript
 		fi
+		ssh -q indra.telecom.lobby /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show firewall modify PBR | grep -wB 3 "${upphn}" &> /dev/null
+		if [ $? -eq 0 ]; then
+			ruleid=$(ssh -q indra.telecom.lobby /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show firewall modify PBR | grep -wB 3 "${upphn}" | head -n 1 | awk '{print $2}')
+			tableid=$(ssh -q indra.telecom.lobby /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show firewall modify PBR | grep -wB 1 "${upphn}" | grep -v "${upphn}" | awk '{print $2}')
+			echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete firewall modify PBR rule ${ruleid}" >> $edgescript
+		fi
 		ssh -q indra.telecom.lobby /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show policy access-list 10 | grep -wB 3 "${irid}" &> /dev/null
 		if [ $? -eq 0 ]; then
 			ruleid=$(ssh -q indra.telecom.lobby /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show policy access-list 10 | grep -wB 3 "${irid}" | head -n 1 | awk '{print $2}')
@@ -211,6 +218,9 @@ case $3 in
 		ssh -q indra.telecom.lobby ip route | grep -w "${pip}" &> /dev/null
 		if [ $? -eq 0 ]; then
 			echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete protocols static interface-route ${pip}/32" >> $edgescript
+		fi
+		if [ $(ssh -q indra.telecom.lobby show protocols static table "${tableid}" | wc -l) -gt 1 ]; then
+			echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete protocols static table ${tableid}" >> $edgescript
 		fi
 		if [ $(ssh -q indra.telecom.lobby /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show system task-scheduler task ES${upphn} | wc -l) -gt 1 ]; then
 			echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete system task-scheduler task ES${upphn}" >> $edgescript
@@ -1347,6 +1357,58 @@ case $3 in
 		eval "${sshcmd} ${userna}@${lte}  /routing ospf network add area=backbone network=${lteham}"
 		eval "${sshcmd} ${userna}@${lte} /interface list add name=GRE"
 
+	;;
+	"-GEO")
+		read -p "Type public IP: " geoip
+		curl -s "http://ipinfo.io/$geoip" | sed '/readme/d'
+		loc=$(curl -s "http://ipinfo.io/$geoip" | grep loc | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g")
+		long=$(echo $loc | cut -d , -f2 | cut -d . -f1)
+		lat=$(echo $loc | cut -d , -f1 | cut -d . -f1)
+		country=$(curl -s "http://ipinfo.io/$geoip" | grep country | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g")
+		continent=$(grep "${country}" cndb/* | cut -d / -f2 | cut -d : -f1)
+		echo -e "\nLAT --> $lat"
+		echo -e "LONG --> $long\n"
+		[[ $long -ge -180 && $long -le -60 && $lat -ge 0 ]] && group=12
+		[[ $long -ge -60 && $long -le 60 && $lat -ge 0 ]] && group=34
+		[[ $long -ge 60 && $long -le 180 && $lat -ge 0 ]] && group=56
+		[[ $long -ge -180 && $long -le -60 && $lat -le 0 ]] && group=12
+		[[ $long -ge -60 && $long -le 60 && $lat -le 0 ]] && group=34
+		[[ $long -ge 60 && $long -le 180 && $lat -le 0 ]] && group=56
+		echo -e "GROUP --> $group"
+		read -p "Do you want to add it to correct firewall address-group into EdgeOS: yes/no " ctrl
+		case "${ctrl}" in
+			"yes")
+				edgescript=$(mktemp)
+				echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper begin" > "${edgescript}"
+				ssh -q indra.telecom.lobby sudo ipset list "${group}" | grep "${geoip}"  &> /dev/null
+				if [ $? -eq 0 ]; then
+					echo "already present"
+					exit 0
+				fi
+				echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set firewall group address-group ${group} address ${geoip}" >> $edgescript
+				echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper commit" >> $edgescript
+				echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper save" >> $edgescript
+				cat "${edgescript}"
+				read -p "OK? yes/no " c
+				case "${c}" in
+					"yes")
+						cat "${edgescript}" | ssh -q indra.telecom.lobby
+					;;
+					"no")
+						exit 1
+					;;
+					*)
+						exit 1
+					;;
+				esac
+			;;
+			"no")
+				exit 0
+			;;
+			*)
+				exit 1
+			;;
+		esac
 	;;
 	*)
 	;;
