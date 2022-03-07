@@ -1013,6 +1013,10 @@ Next to start the installation process as usual:
 2. Use `./console -I telecom.lobby -CEO` adding the internal hostname without the domain as argument. The tool will delete it from every Ubiquiti EdgeOS host.
 3. Eliminate the entries about in the public and local DNS daemon.
 
+Look at the cleaning of a host in the EdgeOS WISP edge:
+
+[![asciicast](https://asciinema.org/a/ti03G2xk7lkK5XjQ4QPifrxex.svg)](https://asciinema.org/a/ti03G2xk7lkK5XjQ4QPifrxex)
+
 ## Possible appliances
 
 Let's start discussing how we can boost our presence in Internet using that guerrilla MESH system that guaranty our privacy and security on the web. My first project is regarding a website replicated over different countries in all the languages over the world. Something very important to obtain maximum results about clients, about web goods sell, about be recognized over it and about whatever we want to obtain searching for visibility.
