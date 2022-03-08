@@ -1550,6 +1550,66 @@ gre9: flags=8051<UP,POINTOPOINT,RUNNING,MULTICAST> mtu 1392
 root@ganesha:/var/www/htdocs/es.telecomlobby.com/radio_aficionado# 
 ```
 
+### EdgeOS wireless internet service provider route table management.
+
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Pluto-01_Stern_03_Pluto_Color_TXT.jpg/640px-Pluto-01_Stern_03_Pluto_Color_TXT.jpg)
+
+Always based upon geoip concept, we administrate routing tables for the WISP service using four ids:
+
+```bash
+#!/bin/bash
+
+#VyOS route ctrl
+
+declare -a groups=("12" "34" "43" "56")
+```
+
+Tool is present in  `src/edgeos/config/routectrl/route_ctrl.sh` and got various options:
+
+```bash
+root@indra:/config/routectrl# ./route_ctrl.sh 
+./route_ctrl.sh have to be used with the following options 
+ 
+-B                      -> boot geoip routing table populate [o]
+-T [tunnel]     -> tunnel periodic check [o]
+-P [tunnel]     -> pluto up/down [o]
+-L                      -> loop to check tunnels are alive [o]
+
+root@indra:/config/routectrl# 
+```
+
+`-B` is called by `crontab` and detached in the background after a reboot:
+
+```bash
+root@indra:/config/routectrl# cat /etc/cron.d/vyatta-crontab
+### Added by /opt/vyatta/sbin/vyatta-update-crontab.pl ###
+@reboot root /config/routectrl/route_ctrl.sh -L </dev/null &>/dev/null &
+@reboot root /config/routectrl/route_ctrl.sh -B </dev/null &>/dev/null &
+root@indra:/config/routectrl# 
+```
+
+`-L` continuously check services looping around tun devices and calling `fping` to prove if tunnel is alive. Meanwhile it call `-T` with the correct tunnel device name.
+
+`-P` is called by `strongswan`, by `pluto` daemon:
+
+```bash
+conn telecomlobby-AU
+        left=%defaultroute
+        leftauth=pubkey
+        leftid=%indra@ca.telecomlobby.com
+        leftprotoport=gre
+        leftupdown="/config/routectrl/route_ctrl.sh -P tun6"
+        ike=aes256-sha2_256-ecp256!
+        esp=aes256-sha2_256-ecp256!
+        right=139.180.165.223
+        rightauth=pubkey
+        rightid=%vishnu@ca.telecomlobby.com
+        rightcert=/etc/ipsec.d/certs/au.telecomlobby.com.crt
+        rightprotoport=gre
+```
+
+
+
 ### Add a new service to the network
 
 ​	
