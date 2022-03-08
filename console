@@ -64,6 +64,20 @@ function custom {
 	done
 }
 
+mac_to_ipv6() {
+    local HWADDR="$1" IFACE="$2"
+    local -a OCTETS
+        local IPV6ADDR
+
+        if [[ -z "$IFACE" ]]; then
+            IFACE=$(ip route | grep ^default | sed 's/^.* dev //')
+        fi
+        OCTETS=( ${HWADDR//:/\ } )
+    OCTETS[0]=$(printf %02x $((16#${OCTETS[0]}+0x02)))
+    IPV6ADDR="fe80::${OCTETS[0]}${OCTETS[1]}:${OCTETS[2]}ff:fe${OCTETS[3]}:${OCTETS[4]}${OCTETS[5]}%$IFACE"
+    echo "$IPV6ADDR"
+}
+
 if [[ $uid -ne 1000 ]]; then
 	echo -e $0 "you've got to run $0 as UID=1000 \n"
 	exit 1

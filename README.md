@@ -1570,10 +1570,10 @@ Tool is present in  `src/edgeos/config/routectrl/route_ctrl.sh` and got various 
 root@indra:/config/routectrl# ./route_ctrl.sh 
 ./route_ctrl.sh have to be used with the following options 
  
--B                      -> boot geoip routing table populate [o]
+-B              -> boot geoip routing table populate [o]
 -T [tunnel]     -> tunnel periodic check [o]
 -P [tunnel]     -> pluto up/down [o]
--L                      -> loop to check tunnels are alive [o]
+-L              -> loop to check tunnels are alive [o]
 
 root@indra:/config/routectrl# 
 ```
