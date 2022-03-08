@@ -1,9 +1,3 @@
-#!/bin/bash
-
-#VyOS route ctrl
-
-declare -a groups=("12" "34" "43" "56")
-
 if [[ $# -eq 0 ]]; then
 	echo -e $0 "have to be used with the following options \
 			\n \
