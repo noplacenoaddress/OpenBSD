@@ -10,6 +10,7 @@ if [[ $# -eq 0 ]]; then
 			\n-B   			-> boot geoip routing table populate [o]\
 			\n-T [tunnel]	-> tunnel periodic check [o]\
 			\n-P [tunnel]	-> pluto up/down [o]\
+			\n-L 			-> loop to check tunnels are alive [o]\
 			\n"
 	exit 1
 fi
@@ -88,7 +89,14 @@ case "$1" in
 		                ;;
 		esac
 	;;
-
+	"-L")
+		while true
+		do
+			for tun in $(/sbin/ip link | grep tun | awk '{print $2}' | sed "s|@.*||g"); do
+				./$0 -T "${tun}"
+			done
+		done
+	;;
 	*)
 		./$0
 	;;
