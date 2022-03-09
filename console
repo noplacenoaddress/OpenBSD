@@ -1,6 +1,7 @@
 #!/usr/bin/bash
 
 #GLOBAL VAR
+# IPv6 ULA fc00::/7 
 
 uid=$(id -u)
 userna=$(id -nu $uid)
