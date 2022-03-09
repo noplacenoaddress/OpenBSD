@@ -1,3 +1,8 @@
+#!/bin/bash
+
+
+declare -a groups=("12" "34" "43" "56")
+
 if [[ $# -eq 0 ]]; then
 	echo -e $0 "have to be used with the following options \
 			\n \
@@ -53,6 +58,7 @@ case "$1" in
 		alive="alive"
 		status=$(/usr/sbin/ipsec status $tunnelid)
 		established="INSTALLED"
+		tunep=$(/sbin/ip link list dev "${2}" | awk 'FNR == 2' | awk '{print $4}')
 
 		if [[ "$ping_result" != *"$alive"* ]]; then
 				/bin/ps axu | grep "$tunnelid\|CRON\|netwatch" | grep -v grep | grep -v $$ | awk '{print $2}' | xargs kill -9
@@ -60,6 +66,24 @@ case "$1" in
 				/usr/sbin/ipsec down $tunnelid
 				/usr/sbin/ipsec up $tunnelid
 				sleep 60s
+		else
+			for group in "${groups[@]}"; do
+				/sbin/ipset list "${group}" | grep "${tunep}" &> /dev/null
+				if [ $? -eq 0 ]; then
+					if [[ $(/sbin/ip route ls table "${group}" | grep "${2}") == "" ]]; then
+						metric=$(/bin/cat /config/routectrl/metric | grep "${peer}" | awk '{print $4}')
+						if [[ "${metric}" -eq 0 && "${group}" -ne 43 ]]; then
+							/sbin/ip route add table ${group} default nexthop dev ${2}
+						elif [[ "${metric}" -eq 0 && "${group}" -eq 43 ]]; then
+							/sbin/ip route add table ${group} default dev ${2} metric 1
+						elif [[ "${metric}" -eq 1 && "${group}" -eq 43 ]]; then
+							/sbin/ip route add table ${group} default nexthop dev ${2}
+						else
+							/sbin/ip route add table ${group} default dev ${2} metric ${metric}
+						fi
+					fi
+				fi
+			done
 		fi
 	;;
 	"-P")
