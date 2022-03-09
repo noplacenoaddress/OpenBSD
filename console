@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 #GLOBAL VAR
-# IPv6 ULA fc00::/7 
+# IPv6 ULA fc00::/7
 
 uid=$(id -u)
 userna=$(id -nu $uid)
@@ -25,6 +25,18 @@ function capa3 () {
 			[[ $(sshpass -p "${3}" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 admin@${3} :put \([/ping count=1 address="${1}"]=1\) | tail -n 1) == *"true"* ]] && echo 1 || echo 0
 		;;
 	esac
+}
+
+function strip_ansi() {
+    declare tmp esc tpa re
+    tmp="${1}"
+    esc=$(printf "\x1b")
+    tpa=$(printf "\x28")
+    re="(.*)${esc}[\[${tpa}][0-9]*;*[mKB](.*)"
+    while [[ "${tmp}" =~ $re ]]; do
+        tmp="${BASH_REMATCH[1]}${BASH_REMATCH[2]}"
+    done
+    printf "%s" "${tmp}"
 }
 
 function mkrtfilter () {
