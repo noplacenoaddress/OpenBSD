@@ -1608,9 +1608,27 @@ conn telecomlobby-AU
         rightprotoport=gre
 ```
 
+#### SSH client multiplexing 
+
+```bash
+srw-------  1 taglio taglio     0 mar 11 10:10 master-taglio@bhagavati.telecom.lobby:22.socket
+srw-------  1 taglio taglio     0 mar 11 10:10 master-taglio@ca.telecom.lobby:22.socket
+srw-------  1 taglio taglio     0 mar 11 10:10 master-taglio@ganesha.telecom.lobby:22.socket
+srw-------  1 taglio taglio     0 mar 11 10:10 master-taglio@saraswati.telecom.lobby:22.socket
+srw-------  1 taglio taglio     0 mar 11 10:10 master-taglio@shiva.telecom.lobby:22.socket
+srw-------  1 taglio taglio     0 mar 11 10:10 master-taglio@varuna.telecom.lobby:22.socket
+srw-------  1 taglio taglio     0 mar 11 10:10 master-taglio@xolotl.telecom.lobby:22.socket
+```
+
+SSH multiplexing let us open a control socket at the first connection to one host and reuse the tunnel for every following attempt to connect to the same host and let reduce overhead to execute the login process. As usual is a standard feature for the state of art remote terminal connection from the OpenBSD folks: [OpenSSH](https://www.openssh.com/).	
+
+Our console central control tool use that feature simply adding those lines to the standard [ssh_config(5)](https://man.openbsd.org/ssh_config):
+
+```bash
+Host *.telecom.lobby
+        ControlMaster auto
+        ControlPath ~/.ssh/master-%r@%h:%p.socket
+```
 
 
-### Add a new service to the network
-
-​	
 

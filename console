@@ -2,6 +2,7 @@
 
 #GLOBAL VAR
 # IPv6 ULA fc00::/7
+# https://howto.lintel.in/speed-ssh-multiplexing/
 
 uid=$(id -u)
 userna=$(id -nu $uid)
@@ -129,6 +130,7 @@ if [[ $# -eq 0 ]]; then
 			\n-CMD -> mass OpenBSD command [o] \
 			\n-LTE -> new RouterOS LTE Router istance [o] \
 			\n-GEO -> get IP address geo group [o] \
+			\n-GR6 -> add IPv6 ULA to gre tunnel interfaces
 			\n"
 
 	exit 1
@@ -1436,6 +1438,58 @@ case $3 in
 				exit 1
 			;;
 		esac
+	;;
+	"-GR6")
+		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+			ssh $vpnc_host.$localdomainname  [[ -e /tmp/ipv6 ]]
+			[ $? -eq 1 ] && ssh  $vpnc_host.$localdomainname touch /tmp/ipv6
+			echo -e "Calculating IPv6 RouterID of $vpnc_host"
+			echo "fd13:$(printf "%x\n" $(ssh $vpnc_host.$localdomainname ifconfig vether0 | grep -w inet | awk '{print $2}' | cut -d . -f4))::/128"
+			routeridv6=$(echo "fd13:$(printf "%x\n" $(ssh $vpnc_host.$localdomainname ifconfig vether0 | grep -w inet | awk '{print $2}' | cut -d . -f4))::/128")
+			[[ $(ssh $vpnc_host.$localdomainname grep -c vether0 /tmp/ipv6) -eq 0 ]] && ssh $vpnc_host.$localdomainname "echo vether0 ${routeridv6} >> /tmp/ipv6"
+			for gre in $(ssh $vpnc_host.$localdomainname ls /etc/hostname.gre? | cut -d . -f2); do
+				if [ $(ssh $vpnc_host.$localdomainname grep -c inet6 /etc/hostname."${gre}") -eq 0 ]; then
+					id=$(echo "${gre}" | sed "s|gre||")
+					endpoint=$(ssh $vpnc_host.$localdomainname cat /etc/hostname."${gre}" | grep description | sed -e "s|description ||" -e 's|"||g')
+					echo -e "ULA for ${gre} on $vpnc_host for tunnel with ${endpoint} is $(echo "${routeridv6}" | sed "s|::/128||"):$(printf "%x\n" "${id}")::/127"
+					[[ $(ssh $vpnc_host.$localdomainname grep -c ${gre} /tmp/ipv6) -eq 0 ]] && ssh $vpnc_host.$localdomainname "echo ${gre} $(echo "${routeridv6}" | sed "s|::/128||"):$(printf "%x\n" "${id}")::/127 >> /tmp/ipv6"
+					ephm=$(echo "${endpoint}" | sed "s|.telecomlobby.com||")
+					for phn in $(dig ipsec20591.telecomlobby.com TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d' |  cut -d : -f1); do
+							if [[ "${ephm}" == "${phn}" ]]; then
+							lhm=$(dig ipsec20591.telecomlobby.com TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d' |  grep "${phn}" | cut -d : -f2)
+							[[ "${lhm}" == "neo" ]] && lhm="varuna"
+							os=$(nc -w1 $lhm.$localdomainname 22)
+							echo -e "Is ULA ptp for $vpnc_host on $lhm is $(echo "${routeridv6}" | sed "s|::/128||"):$(printf "%x\n" "${id}")::1/127"
+							case "${os}" in
+								*Debian*)
+									edgescript=$(mktemp)
+									echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper begin" > $edgescript
+									tun=$(ssh -q $lhm.$localdomainname /sbin/ip link | grep -wB2 "${phn}.telecomlobby.com" | head -n 1 | awk '{print $2}' | sed "s|@NONE:||")
+									echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set interfaces tunnel "${tun}" address $(echo "${routeridv6}" | sed "s|::/128||"):$(printf "%x\n" "${id}")::1/127" >> $edgescript
+									echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper commit" >> $edgescript
+									echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper save" >> $edgescript
+									cat $edgescript
+								;;
+								*ROS*)
+									mkscript=$(mktemp)
+									gretun=$(ssh -q $lhm.$localdomainname ":put [/int gre get [find comment=$vpnc_host] name;]")
+									echo "/ipv6 address add interface=${gretun::-1} address="$(echo "${routeridv6}" | sed "s|::/128||"):$(printf "%x\n" "${id}")"::1/127 advertise=no no-dad=yes" > $mkscript
+									srm $mkscript
+								;;
+								*)
+									g=$(dig ipsec20591.telecomlobby.com TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d' |  grep "${vpnc_host}" | cut -d : -f1)
+									rgre=$(ssh $lhm.$localdomainname grep -w "${g}.telecomlobby.com" /etc/hostname.gre? | cut -d : -f1 | sed "s|/etc/hostname.||")
+									ssh $lhm.$localdomainname  [[ -e /tmp/ipv6 ]]
+									[ $? -eq 1 ] && ssh $lhm.$localdomainname touch /tmp/ipv6
+									[[ $(ssh $lhm.$localdomainname grep -c ${rgre} /tmp/ipv6) -eq 0 ]] && ssh $lhm.$localdomainname "echo ${rgre} $(echo "${routeridv6}" | sed "s|::/128||"):$(printf "%x\n" "${id}")::1/127 > /tmp/ipv6"
+								;;
+							esac
+
+						fi
+					done
+				fi
+			done
+		done
 	;;
 	*)
 	;;
