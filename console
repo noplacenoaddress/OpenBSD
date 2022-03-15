@@ -1510,19 +1510,19 @@ case $3 in
 			read ikedpub
 		done
 		tmpdir=$(mktemp -d)
-		pk12=$(basename $ikedpub)
-		publichost=$(echo $pk12 | sed 's/.p12//')
-		publichostname=$(echo $publichost | cut -d . -f1)
-		domainname=$(echo $publichost | sed "s/$publichostname.//")
+			pk12=$(basename $ikedpub)
+			publichost=$(echo $pk12 | sed 's/.p12//')
+			publichostname=$(echo $publichost | cut -d . -f1)
+			domainname=$(echo $publichost | sed "s/$publichostname.//")
 		for a in $(dig ipsec20591.$domainname TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 			b=$(echo $a | cut -d : -f1)
-			if [[ "$b" -eq "$publichostname" ]]; then
-			srcid=$(echo $a | cut -d : -f2)
+			if [[ "$b" == "$publichostname" ]]; then
+			 srcid=$(echo $a | cut -d : -f2)
 			fi
 		done
-		echo "uploading P12 to /tmp onto $i"
-		scp $ikedpub "$i.$localdomainname:/tmp"
-		ssh -t $i.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/tools/ikedsslupgade"
+		echo "uploading P12 to /tmp onto $srcid"
+		scp $ikedpub "$srcid.$localdomainname:/tmp"
+		ssh -t $srcid.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/tools/ikedsslupgade"
 		echo "uploading P12 to Mikrotik hosts"
 		for vpnc_host in $(dig mikrotik.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 			scp $ikedpub "${vpnc_host}.$localdomainname"
@@ -1544,7 +1544,7 @@ case $3 in
 		done
 		openssl x509 -pubkey -noout -passin pass:123456789 -in "$tmpdir/$publichost.crt"  > src/etc/iked/pubkeys/ufqdn/"$srcid@ca.$domainname"
 		srm -r "${tmpdir}"
-	echo -e "$srcid@ca.$domainname created please update repository and all the others Openbsd hosts"
+		echo -e "$srcid@ca.$domainname created please update repository and all the others Openbsd hosts"
 	;;
 	*)
 	;;
