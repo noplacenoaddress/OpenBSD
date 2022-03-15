@@ -130,7 +130,8 @@ if [[ $# -eq 0 ]]; then
 			\n-CMD -> mass OpenBSD command [o] \
 			\n-LTE -> new RouterOS LTE Router istance [o] \
 			\n-GEO -> get IP address geo group [o] \
-			\n-GR6 -> add IPv6 ULA to gre tunnel interfaces
+			\n-GR6 -> add IPv6 ULA to gre tunnel interfaces [o] \
+			\n-CU  -> single certificate upgrade / change [o] \
 			\n"
 
 	exit 1
