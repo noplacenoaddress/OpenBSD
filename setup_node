@@ -496,9 +496,9 @@ function upgrade {
 			else
 				srcid=$(hostname -s)
 			fi
-			if [[ "$srcid" == "varuna" ]]; then
-				srcid="neo"
-			fi
+			#if [[ "$srcid" == "varuna" ]]; then
+			#	srcid="neo"
+			#fi
 			for vpnc_ip in $(dig vpnc.$domainname A +short @8.8.8.8); do
 				vpnc_host=$(dig -x $vpnc_ip +short @8.8.8.8 | sed 's/.$//')
 				if [[ -e "/etc/iked.conf.$vpnc_host" ]]; then
@@ -1302,9 +1302,9 @@ function configuration {
 					sed -i "s/\/POPIP\//$vpnc_ip/g" "/tmp/$vpnc_host/iked.conf.$publichost"
 					sed -i "s/\/POP\//$vpnc_host/g" "/tmp/$vpnc_host/iked.conf.$publichost"
 					srcid=$(hostname -s)
-					if [[ "$srcid" == "varuna" ]]; then
-						srcid="neo"
-					fi
+					#if [[ "$srcid" == "varuna" ]]; then
+					#	srcid="neo"
+					#fi
 					sed -i "s/\/POPID\//$srcid/g" "/tmp/$vpnc_host/iked.conf.$publichost"
 				fi
 				sed -i "s/\/POPIP\//$vpnc_ip/g" "/etc/iked.conf.$vpnc_host"
