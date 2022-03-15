@@ -1437,7 +1437,7 @@ Next start to configure the new LTE last mile Internet access router, in my case
 
 ## Annexed
 
-### OpenBSD, Mikrotik and EdgeOS firewall
+#### OpenBSD, Mikrotik and EdgeOS firewall
 
 Let's explain how firewall does it works in our network. We shall start with address lists, that takes different names depending what system operative does implement them:
 
@@ -1550,7 +1550,7 @@ gre9: flags=8051<UP,POINTOPOINT,RUNNING,MULTICAST> mtu 1392
 root@ganesha:/var/www/htdocs/es.telecomlobby.com/radio_aficionado# 
 ```
 
-### EdgeOS wireless internet service provider route table management.
+#### EdgeOS wireless internet service provider route table management.
 
 ![](https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Pluto-01_Stern_03_Pluto_Color_TXT.jpg/640px-Pluto-01_Stern_03_Pluto_Color_TXT.jpg)
 
