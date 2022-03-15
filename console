@@ -1069,11 +1069,11 @@ case $3 in
 		echo "starting remote install"
 		for poplocalhostname in $(dig TXT openbsd.telecom.lobby +short | sed "s|\"||g" | tr ";" "\n" | awk NF); do
 			ssh "${poplocalhostname}".telecom.lobby install -o "${userna}" -g wheel -m 0750 "${HOME}/Sources/Git/OpenBSD/src/mikrotik/openbsd/newchr.sh ${HOME}/Bin/"
-			[[ "${poplocalhostname}" == "varuna" ]] && poplocalhostname="neo"
+			#[[ "${poplocalhostname}" == "varuna" ]] && poplocalhostname="neo"
 			pophost=$(dig ipsec20591.${domainname} TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d' | grep "${poplocalhostname}" | cut -d : -f1)".${domainname}"
 			popip=$(dig A "${pophost}" +short)
 			x="7"
-			[[ "${poplocalhostname}" == "neo" ]] && poplocalhostname="varuna"
+			#[[ "${poplocalhostname}" == "neo" ]] && poplocalhostname="varuna"
 			[[ "${poplocalhostname}" == "bhagavati" ]] && x="8"
 			popgre=$(ssh ${userna}@${chr} int gre print where comment="${poplocalhostname}" | grep -E "gre-tunnel[0-9]{1,2}" | awk '{print $1}' | sed -e "s|name=||" -e "s|\"||g")
 			let a=$(ssh ${userna}@${chr} ip addr print where interface="${popgre}" | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | head -n 1 | cut -d . -f4)+0
@@ -1463,7 +1463,7 @@ case $3 in
 						for phn in $(dig ipsec20591.telecomlobby.com TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d' |  cut -d : -f1); do
 								if [[ "${ephm}" == "${phn}" ]]; then
 								lhm=$(dig ipsec20591.telecomlobby.com TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d' |  grep "${phn}" | cut -d : -f2)
-								[[ "${lhm}" == "neo" ]] && lhm="varuna"
+							#	[[ "${lhm}" == "neo" ]] && lhm="varuna"
 								os=$(nc -w1 $lhm.$localdomainname 22)
 								echo -e "ULA ptp for $vpnc_host on $lhm is $(echo "${routeridv6}" | sed "s|::/128||"):$(printf "%x\n" "${id}")::1/127"
 								case "${os}" in
@@ -1483,13 +1483,13 @@ case $3 in
 										cat $mkscript
 									;;
 									*)
-										[[ "${vpnc_host}" == "varuna" ]] && vpnc_host="neo"
+										#[[ "${vpnc_host}" == "varuna" ]] && vpnc_host="neo"
 										g=$(dig ipsec20591.telecomlobby.com TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d' |  grep "${vpnc_host}" | cut -d : -f1)
 										rgre=$(ssh $lhm.$localdomainname grep -w "${g}.telecomlobby.com" /etc/hostname.gre? | cut -d : -f1 | sed "s|/etc/hostname.||")
 										ssh $lhm.$localdomainname  [[ -e /tmp/ipv6 ]]
 										[ $? -eq 1 ] && ssh $lhm.$localdomainname touch /tmp/ipv6
 										[[ $(ssh $lhm.$localdomainname grep -c ${rgre} /tmp/ipv6) -eq 0 ]] && ssh $lhm.$localdomainname "echo ${rgre} $(echo "${routeridv6}" | sed "s|::/128||"):$(printf "%x\n" "${id}")::1/127 >> /tmp/ipv6"
-										[[ "${vpnc_host}" == "neo" ]] && vpnc_host="varuna"
+										#[[ "${vpnc_host}" == "neo" ]] && vpnc_host="varuna"
 									;;
 								esac
 
