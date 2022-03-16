@@ -150,11 +150,13 @@ case "$1" in
 		esac
 	;;
 	"-L")
-		sleep 60s
+		#sleep 60s
+		n=3
+		open_sem $n
 		while true
 		do
 			for tun in $(/sbin/ip link | grep tun | awk '{print $2}' | sed "s|@.*||g"); do
-				/config/routectrl/route_ctrl.sh -T "${tun}"
+				run_with_lock /config/routectrl/route_ctrl.sh -T "${tun}"
 			done
 		done
 	;;
