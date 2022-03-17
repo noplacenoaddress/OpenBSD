@@ -3,6 +3,7 @@
 # GLOBAL VAR
 # IPv6 ULA fc00::/7
 # https://howto.lintel.in/speed-ssh-multiplexing/
+# curl -s -X GET "https://fw-update.ubnt.com/api/firmware-latest?filter=eq~~platform~~edgerouter&filter=eq~~channel~~release&filter=eq~~product~~e300"
 
 # menu
 
@@ -17,19 +18,21 @@ function menu () {
 		;;
 		1)
             echo
-            echo -e $0 "-I ${LDN} -SO [openbsd|mikrotik|edgeos|ALL] [o]"
+            echo -e $0 "-I ${LDN} -SO [openbsd|mikrotik|edgeos|raspi|ALL] [o]"
             echo -e $0 "-I ${LDN} -W [o] -> tools on the workstation"
             echo
 		;;
 		2)
 			echo
-			echo -e $0 "-I ${LDN} -SO openbsd -N -> newhost [o]"
-            echo -e $0 "-I ${LDN} -SO openbsd -G -> git pull [o]"
-            echo -e $0 "-I ${LDN} -SO openbsd -S -> scripts [o]"
-            echo -e $0 "-I ${LDN} -SO openbsd -D -> dyndnspop [o]"
-            echo -e $0 "-I ${LDN} -SO openbsd -F -> single file update [o]"
-            echo -e $0 "-I ${LDN} -SO openbsd -C -> cleanlast [o]"
-            echo -e $0 "-I ${LDN} -SO openbsd -P -> cleanlast [o]"
+			echo -e $0 "-I ${LDN} -SO [openbsd|mikrotik|edgeos|raspi|ALL] -T -> tmux and SSH to hosts [o]"
+			echo -e $0 "-I ${LDN} -SO [openbsd|mikrotik|edgeos|raspi|ALL]  -P -> syspatch [o]"
+			echo -e $0 "-I ${LDN} -SO [openbsd|mikrotik|edgeos|ALL] -N -> newhost OpenBSD host [o]"
+			echo -e $0 "-I ${LDN} -SO [openbsd|mikrotik|edgeos|ALL] -C -> cleanlast [o]"
+			echo -e $0 "-I ${LDN} -SO [openbsd|mikrotik|edgeos|ALL] -P -> syspatch [o]"
+			echo -e $0 "-I ${LDN} -SO [openbsd|edgeos] -F -> single file update [o]"
+            echo -e $0 "-I ${LDN} -SO [openbsd] -G -> git pull [o]"
+            echo -e $0 "-I ${LDN} -SO [openbsd] -S -> scripts [o]"
+            echo -e $0 "-I ${LDN} -SO [openbsd] -D -> dyndnspop [o]"
 			echo
 		;;
 	esac
@@ -43,13 +46,18 @@ function menu () {
 (: "${2?}") 2>/dev/null && LDN="${2}"
 PDN=$(dig "${LDN}" TXT +short | sed "s|\"||g") && [[ "${PDN}" ]] || ( echo "internal domain name daemon misconfigured or local domain name error" ; exit 1 )
 (: "${3?}") 2>/dev/null || menu 1
-(: "${3?}") 2>/dev/null &&  [ "${3}" == "-SO" ]  || menu 1 && (: "${4?}") 2>/dev/null &&  [ "${4}" == "openbsd"  -o "mikrotik" -o "edgeos" -o "ALL" ] && SO="${4}" || menu 1
+(: "${3?}") 2>/dev/null &&  [ "${3}" == "-SO" ]  || menu 1 && (: "${4?}") 2>/dev/null &&  [ "${4}" == "openbsd"  -o "${4}" == "mikrotik" -o "${4}" == "edgeos" -o "${4}" == "raspi" -o "${4}" == "ALL" ] && SO="${4}" || menu 1
 (: "${5?}") 2>/dev/null || menu 2
-(: "${5?}") 2>/dev/null &&  [ "${5}" == "-N" -o "-G" -o "-S" -o "-D" -o "-F" -o "-C" -o "-P" ] && OPT="${5}" || menu 2
+(: "${5?}") 2>/dev/null &&  [ "${5}" == "-N" -o "${5}" == "-G" -o "${5}" == "-S" -o "${5}" == "-D" -o "${5}" == "-F" -o "${5}" == "-C" -o "${5}" == "-P" -o "${5}" == "-T" ] && OPT="${5}" || menu 2
 
-# a work array
+# functions
+
+source "lib/foo.sh"
+
+# a work array and string
 
 [[ $(typeofvar wa) == "array" ]] && [[ $(echo ${#wa[@]}) != "0" ]] && ( unset wa && declare -a wa ) || declare -a wa
+[[ $(typeofvar ws) == "string" ]] && [[ $(echo ${#ws}) != "0" ]] && ( unset ws && ws="" ) || ws=""
 
 # variables
 
@@ -67,9 +75,7 @@ for t in $(ls "${RD}"/console-* | grep -v "${TODAY}"); do srm "${t}" ; done
 touch "${RD}"/console-${TODAY}-${RANDOM}
 tf=$(echo $_)
 
-# functions
 
-source "lib/foo.sh"
 
 if [[ "${UID}" -eq 0 ]]; then
 	echo -e $0 "you cannot run $0 as root \n"
@@ -77,30 +83,46 @@ if [[ "${UID}" -eq 0 ]]; then
 fi
 
 
-localdomainname=$2
-
 case "${SO}" in
+	openbsd|edgeos|mikrotik|raspi)
+		dnsquery wa "${SO}"
+	;;
 	"ALL")
-		case "${OPT}" in
-			"-T")
-				echo -e "Launching TMUX"
-				tmux new-session -d -s "LOBBY"
-				dnsquery wa "-FL"
-				for (( j=0; j<${#wa[@]}; j++ )); do
-					echo -e "Creating ${wa[j]} TMUX windows"
-					tmux rename-window "${wa[j]}"
-					tmux send -t "LOBBY:${wa[j]}" ssh SPACE "${wa[j]}.$localdomainname" ENTER
-					tmux new-window
-				done
-				tmux rename-window "CA"
-				tmux send -t "LOBBY:CA" ssh SPACE "ca.$localdomainname" ENTER
-				tmux new-window
-				tmux rename-window $(hostname -s)
-				tmux -2 attach-session -t "LOBBY"
-			;;
-		esac
+		dnsquery wa "-FL"
 	;;
 esac
+case "${OPT}" in
+	"-T")
+		echo -e "Launching TMUX"
+		tmux new-session -d -s "LOBBY"
+		for (( j=0; j<${#wa[@]}; j++ )); do
+			echo -e "Creating ${wa[j]} TMUX windows"
+			tmux rename-window "${wa[j]}"
+			tmux send -t "LOBBY:${wa[j]}" ssh SPACE "${wa[j]}.${LDN}" ENTER
+			tmux new-window
+		done
+		tmux rename-window "CA"
+		tmux send -t "LOBBY:CA" ssh SPACE "ca.${LDN}" ENTER
+		tmux new-window
+		tmux rename-window $(hostname -s)
+		tmux -2 attach-session -t "LOBBY"
+	;;
+	"-G"|"-N"|"-S"|"-D"|"-PF"|"-F"|"-C"|"-P")
+		[[ "${3}" == "-G" ]] && rcmd="git -C "$proghome" pull"
+		[[ "${3}" == "-N" ]] && rcmd="${ws} -U newhost"
+		[[ "${3}" == "-S" ]] && rcmd="${ws} -U scripts"
+		[[ "${3}" == "-D" ]] && rcmd="${ws} -U dyndnspop"
+		[[ "${3}" == "-PF" ]] && rcmd="${ws} -U pf"
+		[[ "${3}" == "-F" ]] && rcmd="${ws} -U file"
+		[[ "${3}" == "-C" ]] && rcmd="${ws} -A cleanlast"
+		[[ "${3}" == "-P" ]] && rcmd="doas syspatch"
+		for (( j=0; j<${#wa[@]}; j++ )); do
+			echo -e "Connecting to ${wa[j]}"
+			ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 ${wa[j]}.${LDN} eval "${rcmd}"
+		done
+	;;
+esac
+
 
 exit 0
 
@@ -147,20 +169,7 @@ case $3 in
 	"-T")
 
 	;;
-	"-G"|"-N"|"-S"|"-D"|"-PF"|"-F"|"-C"|"-P")
-		dnsquery wa "openbsd"
-		[[ "${3}" == "-G" ]] && rcmd="git -C "$proghome" pull"
-		[[ "${3}" == "-N" ]] && rcmd="doas sh /home/taglio/Sources/Git/OpenBSD/setup_node -U newhost"
-		[[ "${3}" == "-S" ]] && rcmd="doas sh /home/taglio/Sources/Git/OpenBSD/setup_node -U scripts"
-		[[ "${3}" == "-D" ]] && rcmd="doas sh /home/taglio/Sources/Git/OpenBSD/setup_node -U dyndnspop"
-		[[ "${3}" == "-PF" ]] && rcmd="doas sh /home/taglio/Sources/Git/OpenBSD/setup_node -U pf"
-		[[ "${3}" == "-F" ]] && rcmd="doas sh /home/taglio/Sources/Git/OpenBSD/setup_node -U file"
-		[[ "${3}" == "-C" ]] && rcmd="doas sh /home/taglio/Sources/Git/OpenBSD/setup_node -A cleanlast"
-		[[ "${3}" == "-P" ]] && rcmd="doas syspatch"
-		for (( j=0; j<${#wa[@]}; j++ )); do
-			echo -e "Connecting to ${wa[j]}"
-			ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 ${wa[j]}.$localdomainname eval "${rcmd}"
-		done
+
 	;;
 	"-CMK")
 		read -p "Type the internal hostname: " ihn
@@ -183,7 +192,7 @@ case $3 in
 		typeset -u upphn="${phn}"
 		pip=$(dig A "${phn}.telecomlobby.com" +short)
 		[[ "${pip}" == "" ]] && read -p "Type the external ip address because was deleted: " pip
-		irid=$(dig A "${ihn}".$localdomainname +short)
+		irid=$(dig A "${ihn}".${LDN} +short)
 		[[ "${irid}" == "" ]] && read -p "Type the router id because was deleted: " irid
 		for i in $(ssh -q indra.telecom.lobby /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show firewall group | grep address-group | awk '{print $2}'); do
 			ssh -q indra.telecom.lobby sudo ipset list "${i}" | grep "${pip}"  &> /dev/null
@@ -272,15 +281,15 @@ case $3 in
 		ssh -q indra.telecom.lobby sudo ipsec reload
 	;;
 	"-P")
-		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+		for vpnc_host in $(dig openbsd.${LDN} TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 			echo -e "Connecting to $vpnc_host"
-			ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -t $vpnc_host.$localdomainname
+			ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -t $vpnc_host.${LDN}
 		done
 	;;
 	"-7")
-		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+		for vpnc_host in $(dig openbsd.${LDN} TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 			echo -e "Connecting to $vpnc_host"
-			ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/tools/seven"
+			ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -t $vpnc_host.${LDN} doas sh "/home/taglio/Sources/Git/OpenBSD/tools/seven"
 		done
 	;;
 	"-RS")
@@ -466,12 +475,12 @@ case $3 in
 			echo "<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>"
 		done
 		echo -e "You've got servers in:\n"
-		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+		for vpnc_host in $(dig openbsd.${LDN} TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 
-			local=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q $vpnc_host.$localdomainname readlink /etc/localtime  | sed "s/\/usr\/share\/zoneinfo\///")
-			zonetab=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q $vpnc_host.$localdomainname cat /usr/share/zoneinfo/zone.tab | grep $local)
+			local=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q $vpnc_host.${LDN} readlink /etc/localtime  | sed "s/\/usr\/share\/zoneinfo\///")
+			zonetab=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q $vpnc_host.${LDN} cat /usr/share/zoneinfo/zone.tab | grep $local)
 			[[ $zonetab ]] && echo -e "\n$zonetab\n" || echo -e "\n$local\n"
-			publicip=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q $vpnc_host.$localdomainname ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
+			publicip=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q $vpnc_host.${LDN} ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
 			curl -s "http://ipinfo.io/$publicip" | sed '/readme/d'
 			loc=$(curl -s "http://ipinfo.io/$publicip" | grep loc | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g")
 			long=$(echo $loc | cut -d , -f2 | cut -d . -f1)
@@ -495,23 +504,23 @@ case $3 in
 		[[ ${#G34[@]} > 1 ]] && rand34p=$[$RANDOM % ${#G34[@]}] || rand34p="${G34[0]}"
 		[[ ${#G56[@]} > 1 ]] && rand56p=$[$RANDOM % ${#G56[@]}] || rand56p="${G56[0]}"
 		echo -e "The master PowerDNS server for $principledomain in the group 34 is ${G34[$rand34p]} in the group 12 is ${G12[$rand12p]} and in the group 56 is ${G56[$rand56p]}"
-		publicip=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q ${G34[$rand34p]}.$localdomainname ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
+		publicip=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q ${G34[$rand34p]}.${LDN} ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
 		nsd34p=$(curl -s "http://ipinfo.io/$publicip" | grep hostname | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g" | sed "s/$principledomain/$secondarydomain/" | tr '[:lower:]' '[:upper:]')
-		routerid34p=$(dig "${G34[$rand34p]}.$localdomainname" A +short)
-		publicip=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q ${G12[$rand12p]}.$localdomainname ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
+		routerid34p=$(dig "${G34[$rand34p]}.${LDN}" A +short)
+		publicip=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q ${G12[$rand12p]}.${LDN} ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
 		nsd12p=$(curl -s "http://ipinfo.io/$publicip" | grep hostname | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g" | sed "s/$principledomain/$secondarydomain/" | tr '[:lower:]' '[:upper:]')
-		routerid12p=$(dig "${G12[$rand12p]}.$localdomainname" A +short)
-		publicip=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q ${G56[$rand56p]}.$localdomainname ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
+		routerid12p=$(dig "${G12[$rand12p]}.${LDN}" A +short)
+		publicip=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q ${G56[$rand56p]}.${LDN} ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
 		nsd56p=$(curl -s "http://ipinfo.io/$publicip" | grep hostname | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g" | sed "s/$principledomain/$secondarydomain/" | tr '[:lower:]' '[:upper:]')
-		routerid56p=$(dig "${G56[$rand56p]}.$localdomainname" A +short)
-		#masterp34slave12=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G34[$rand34p]}.$localdomainname" ospfctl show fib | grep "$routerid12p" | awk '{print $4}')
-		#masterp34gre12=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G34[$rand34p]}.$localdomainname" ifconfig | grep $masterp34slave12 | awk '{print $2}')
-		#masterp34slave56=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G34[$rand34p]}.$localdomainname" ospfctl show fib | grep "$routerid56p" | awk '{print $4}')
-		#masterp34gre56=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G34[$rand34p]}.$localdomainname" ifconfig | grep $masterp34slave56 | awk '{print $2}')
-		#slavep12master34=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G12[$rand12p]}.$localdomainname" ospfctl show fib | grep "$routerid34p" | awk '{print $4}')
-		#slavep12gre34=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G12[$rand12p]}.$localdomainname" ifconfig | grep $slavep12master34 | awk '{print $2}')
-		#slavep56master34=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G56[$rand56p]}.$localdomainname" ospfctl show fib | grep "$routerid34p" | awk '{print $4}')
-		#slavep56gre34=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G56[$rand56p]}.$localdomainname" ifconfig | grep $slavep56master34 | awk '{print $2}')
+		routerid56p=$(dig "${G56[$rand56p]}.${LDN}" A +short)
+		#masterp34slave12=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G34[$rand34p]}.${LDN}" ospfctl show fib | grep "$routerid12p" | awk '{print $4}')
+		#masterp34gre12=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G34[$rand34p]}.${LDN}" ifconfig | grep $masterp34slave12 | awk '{print $2}')
+		#masterp34slave56=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G34[$rand34p]}.${LDN}" ospfctl show fib | grep "$routerid56p" | awk '{print $4}')
+		#masterp34gre56=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G34[$rand34p]}.${LDN}" ifconfig | grep $masterp34slave56 | awk '{print $2}')
+		#slavep12master34=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G12[$rand12p]}.${LDN}" ospfctl show fib | grep "$routerid34p" | awk '{print $4}')
+		#slavep12gre34=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G12[$rand12p]}.${LDN}" ifconfig | grep $slavep12master34 | awk '{print $2}')
+		#slavep56master34=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G56[$rand56p]}.${LDN}" ospfctl show fib | grep "$routerid34p" | awk '{print $4}')
+		#slavep56gre34=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G56[$rand56p]}.${LDN}" ifconfig | grep $slavep56master34 | awk '{print $2}')
 		epoch=$(date +%s)
 		if [[ ! -e "../db/domains.sqlite3" ]]; then
 			echo -e "initialize sqlite3 domains local database"
@@ -539,23 +548,23 @@ case $3 in
 		[[ ${#G34[@]} > 1 ]] && rand34s=$[$RANDOM % ${#G34[@]}] || rand34s="${G34[0]}"
 		[[ ${#G56[@]} > 1 ]] && rand56s=$[$RANDOM % ${#G56[@]}] || rand56s="${G56[0]}"
 		echo -e "The master PowerDNS server for $secondarydomain in the group 34 is ${G34[$rand34s]} slaves are in the group 12 ${G12[$rand12s]} and in the group 56 ${G56[$rand56s]}"
-		publicip=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q ${G34[$rand34s]}.$localdomainname ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
+		publicip=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q ${G34[$rand34s]}.${LDN} ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
 		nsd34s=$(curl -s "http://ipinfo.io/$publicip" | grep hostname | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g" | tr '[:lower:]' '[:upper:]')
-		routerid34s=$(dig "${G34[$rand34s]}.$localdomainname" A +short)
-		publicip=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q ${G12[$rand12s]}.$localdomainname ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
+		routerid34s=$(dig "${G34[$rand34s]}.${LDN}" A +short)
+		publicip=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q ${G12[$rand12s]}.${LDN} ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
 		nsd12s=$(curl -s "http://ipinfo.io/$publicip" | grep hostname | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g" | tr '[:lower:]' '[:upper:]')
-		routerid12s=$(dig "${G12[$rand12s]}.$localdomainname" A +short)
-		publicip=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q ${G56[$rand56s]}.$localdomainname ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
+		routerid12s=$(dig "${G12[$rand12s]}.${LDN}" A +short)
+		publicip=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q ${G56[$rand56s]}.${LDN} ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
 		nsd56s=$(curl -s "http://ipinfo.io/$publicip" | grep hostname | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g" | tr '[:lower:]' '[:upper:]')
-		routerid56s=$(dig "${G56[$rand56s]}.$localdomainname" A +short)
-		#masters34slave12=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G34[$rand34s]}.$localdomainname" ospfctl show fib | grep "$routerid12s" | awk '{print $4}')
-		#masters34gre12=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G34[$rand34s]}.$localdomainname" ifconfig | grep $masters34slave12 | awk '{print $2}')
-		#masters34slave56=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G34[$rand34s]}.$localdomainname" ospfctl show fib | grep "$routerid56s" | awk '{print $4}')
-		#masters34gre56=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G34[$rand34s]}.$localdomainname" ifconfig | grep $masters34slave56 | awk '{print $2}')
-		#slaves12master34=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G12[$rand12s]}.$localdomainname" ospfctl show fib | grep "$routerid34s" | awk '{print $4}')
-		#slaves12gre34=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G12[$rand12s]}.$localdomainname" ifconfig | grep $slaves12master34 | awk '{print $2}')
-		#slaves56master34=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G56[$rand56s]}.$localdomainname" ospfctl show fib | grep "$routerid34s" | awk '{print $4}')
-		#slaves56gre34=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G56[$rand56s]}.$localdomainname" ifconfig | grep $slaves56master34 | awk '{print $2}')
+		routerid56s=$(dig "${G56[$rand56s]}.${LDN}" A +short)
+		#masters34slave12=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G34[$rand34s]}.${LDN}" ospfctl show fib | grep "$routerid12s" | awk '{print $4}')
+		#masters34gre12=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G34[$rand34s]}.${LDN}" ifconfig | grep $masters34slave12 | awk '{print $2}')
+		#masters34slave56=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G34[$rand34s]}.${LDN}" ospfctl show fib | grep "$routerid56s" | awk '{print $4}')
+		#masters34gre56=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G34[$rand34s]}.${LDN}" ifconfig | grep $masters34slave56 | awk '{print $2}')
+		#slaves12master34=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G12[$rand12s]}.${LDN}" ospfctl show fib | grep "$routerid34s" | awk '{print $4}')
+		#slaves12gre34=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G12[$rand12s]}.${LDN}" ifconfig | grep $slaves12master34 | awk '{print $2}')
+		#slaves56master34=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G56[$rand56s]}.${LDN}" ospfctl show fib | grep "$routerid34s" | awk '{print $4}')
+		#slaves56gre34=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G56[$rand56s]}.${LDN}" ifconfig | grep $slaves56master34 | awk '{print $2}')
 		echo -e "Please configure WHOIS server for $secondarydomain with:"
 		printf '%s\n' $nsd34s
 		printf '%s\n' $nsd12s
@@ -572,8 +581,8 @@ case $3 in
 			case $ctrl in
 				[yY]*)
 					echo $routerid12s > $tmpupload && echo $routerid56s >> $tmpupload && echo ${tsig256s} | tr -d ' ' >> $tmpupload && echo $secondarydomain >> $tmpupload
-					scp $tmpupload "${G34[$rand34s]}.$localdomainname:/tmp/powernsd_distributed"
-					ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -t "${G34[$rand34s]}.$localdomainname"  doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -D powerdns #distributed
+					scp $tmpupload "${G34[$rand34s]}.${LDN}:/tmp/powernsd_distributed"
+					ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -t "${G34[$rand34s]}.${LDN}"  doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -D powerdns #distributed
 					break
 				;;
 				[nN]*)
@@ -590,8 +599,8 @@ case $3 in
 			case $ctrl in
 				[yY]*)
 					echo $masters34slave12 > $tmpupload && echo ${tsig256s} | tr -d ' ' >> $tmpupload && echo $secondarydomain >> $tmpupload
-					scp $tmpupload "${G12[$rand12s]}.$localdomainname:/tmp/powerdns_distributed"
-					ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -t "${G12[$rand12s]}.$localdomainname"  doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -D powerdns #distributed
+					scp $tmpupload "${G12[$rand12s]}.${LDN}:/tmp/powerdns_distributed"
+					ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -t "${G12[$rand12s]}.${LDN}"  doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -D powerdns #distributed
 					break
 				;;
 				[nN]*)
@@ -608,8 +617,8 @@ case $3 in
 			case $ctrl in
 				[yY]*)
 					echo $masters34slave56 > $tmpupload && echo ${tsig256s} | tr -d ' ' >> $tmpupload && echo $secondarydomain >> $tmpupload
-					scp $tmpupload "${G56[$rand56s]}.$localdomainname:/tmp/powernsd_distributed"
-					ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -t "${G56[$rand56s]}.$localdomainname"  doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -D powerdns #distributed
+					scp $tmpupload "${G56[$rand56s]}.${LDN}:/tmp/powernsd_distributed"
+					ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -t "${G56[$rand56s]}.${LDN}"  doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -D powerdns #distributed
 					break
 				;;
 				[nN]*)
@@ -739,7 +748,7 @@ case $3 in
 		if [[ -e "$HOME/.ssh/id_ed25519" ]]; then
 			mv $HOME/.ssh/{id_ed25519,id_ed25519.pub,id_ed25519-cert.pub} "$HOME/.ssh/Backup$daterelease"
 		fi
-		ssh-keygen -t ed25519 -C "taglio@$localdomainname"
+		ssh-keygen -t ed25519 -C "taglio@${LDN}"
 		cat "$HOME/.ssh/id_ed25519.pub" > "$HOME/Work/telecom.lobby/OpenBSD/src/etc/sshauthorized_keys"
 		sed -i "s|^Public.*|Public ssh key for user = $(cat $HOME/.ssh/id_ed25519.pub)|" installation/install-vps.conf
 		pwdfile=$(mktemp)
@@ -769,9 +778,9 @@ case $3 in
 		srm "$fat32pen/CA_update/"
 	;;
 	"-NO")
-		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+		for vpnc_host in $(dig openbsd.${LDN} TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 			echo -e "Connecting to $vpnc_host"
-			ssh -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U newospf
+			ssh -t $vpnc_host.${LDN} doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U newospf
 		done
 		mk=
 		echo -e "Type the internal hostname of the Mikrotik: "
@@ -881,7 +890,7 @@ case $3 in
 			eval "${scpcmd} src/mikrotik/CHR-reset.rsc ${userna}@${chr}:/"
 			eval "${sshcmd} ${userna}@${chr} :execute \{/import file-name=CHR-reset.rsc\}"
 			echo "configuring hostname, timezone, date, time"
-			eval "${sshcmd} ${userna}@${chr} /sys id set name=${srcid}.$localdomainname"
+			eval "${sshcmd} ${userna}@${chr} /sys id set name=${srcid}.${LDN}"
 			chrtz=$(curl -s "http://ipinfo.io/${chrpubip}" | sed '/readme/d' | grep timezone | awk '{print $2}' | sed -e "s|\"||g" -e "s|,||")
 			eval "${sshcmd} ${userna}@${chr} /sys clock set time-zone-name=${chrtz}"
 			chrdate=$(date +%b/%d/%Y)
@@ -1104,8 +1113,8 @@ case $3 in
 		echo "Current epoch time is: $(date +"%s")"
 		echo "Looking at OpenBSD hosts..."
 		currrentepoch=$(date +"%s")
-		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
-			deadline=$(ssh -o LogLevel=QUIET -t $vpnc_host.$localdomainname openssl x509 -in "/etc/iked/certs/*.crt" -noout -enddate | sed "s|^notAfter=||")
+		for vpnc_host in $(dig openbsd.${LDN} TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+			deadline=$(ssh -o LogLevel=QUIET -t $vpnc_host.${LDN} openssl x509 -in "/etc/iked/certs/*.crt" -noout -enddate | sed "s|^notAfter=||")
 			echo "IPsec SSL certificate deadline of $vpnc_host is: $deadline"
 			echo "IPsec SSL certificate epoch deadline of $vpnc_host is: $(date --date "${deadline}" "+%s")"
 			deadlineepoch=$(date --date "${deadline}" "+%s")
@@ -1115,8 +1124,8 @@ case $3 in
 			fi
 		done
 		echo "Looking at Mikrotik RouterOS hosts..."
-		for vpnc_host in $(dig mikrotik.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
-			deadlinemk=$(ssh -o LogLevel=QUIET $vpnc_host.$localdomainname /cert pr det where subject-alt-name=\"email:$vpnc_host@ca.telecomlobby.com\" | grep invalid-after | sed -e "s|[^.*]expires.*$||" -e "s|[[:space:]]* invalid-after=||")
+		for vpnc_host in $(dig mikrotik.${LDN} TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+			deadlinemk=$(ssh -o LogLevel=QUIET $vpnc_host.${LDN} /cert pr det where subject-alt-name=\"email:$vpnc_host@ca.telecomlobby.com\" | grep invalid-after | sed -e "s|[^.*]expires.*$||" -e "s|[[:space:]]* invalid-after=||")
 			deadline="$(echo $deadlinemk | cut -d / -f1) $(echo $deadlinemk | cut -d / -f2) $(echo $deadlinemk | cut -d " " -f2) $(echo $deadlinemk| cut -d / -f3 | cut -d " " -f1)"
 			echo "IPsec SSL certificate deadline of $vpnc_host is: $deadline"
 			echo "IPsec SSL certificate epoch deadline of $vpnc_host is: $(date --date "${deadline}" "+%s")"
@@ -1127,8 +1136,8 @@ case $3 in
 			fi
 		done
 		echo "Looking at Ubiquiti EdgeOS hosts..."
-		for vpnc_host in $(dig edgeos.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d' | cut -d : -f1); do
-			deadline=$(ssh -o LogLevel=QUIET -t $vpnc_host.$localdomainname openssl x509 -in "/config/auth/local/*.crt" -noout -enddate | sed "s|^notAfter=||")
+		for vpnc_host in $(dig edgeos.${LDN} TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d' | cut -d : -f1); do
+			deadline=$(ssh -o LogLevel=QUIET -t $vpnc_host.${LDN} openssl x509 -in "/config/auth/local/*.crt" -noout -enddate | sed "s|^notAfter=||")
 			echo "IPsec SSL certificate deadline of $vpnc_host is: $deadline"
 			echo "IPsec SSL certificate epoch deadline of $vpnc_host is: $(date --date "${deadline}" "+%s")"
 			deadlineepoch=$(date --date "${deadline}" "+%s")
@@ -1162,26 +1171,26 @@ case $3 in
 					fi
 				done
 				echo "uploading P12 to /tmp onto $i"
-				scp $ikedpub "$i.$localdomainname:/tmp"
-				ssh -t $i.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/tools/ikedsslupgade"
+				scp $ikedpub "$i.${LDN}:/tmp"
+				ssh -t $i.${LDN} doas sh "/home/taglio/Sources/Git/OpenBSD/tools/ikedsslupgade"
 				echo "uploading P12 to Mikrotik hosts"
-				for vpnc_host in $(dig mikrotik.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
-					scp $ikedpub "${vpnc_host}.$localdomainname"
+				for vpnc_host in $(dig mikrotik.${LDN} TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+					scp $ikedpub "${vpnc_host}.${LDN}"
 					echo "/certificate remove [/certificate find where name=${publichost}]" > /tmp/i.rsc
 				 	echo "/certificate import passphrase=123456789 file-name=$pk12 name=${publichost}" >> /tmp/i.rsc
 					echo "/ip ipsec identity set [/ip ipsec identity find where certificate=${publichost}] certificate=${publichost}" >> /tmp/i.rsc
-					scp /tmp/i.rsc "${vpnc_host}.$localdomainname"
+					scp /tmp/i.rsc "${vpnc_host}.${LDN}"
 					cat  /tmp/i.rsc
 					sleep 40
-					#eval "ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 ${vpnc_host}.$localdomainname :execute \{/import i.rsc\}"
+					#eval "ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 ${vpnc_host}.${LDN} :execute \{/import i.rsc\}"
 				done
 				openssl pkcs12 -nodes -in $ikedpub -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "$tmpdir/$publichost.crt"
 				echo "uploading .crt to EdgeOS hosts"
-				for vpnc_host in $(dig edgeos.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d' | cut -d : -f1); do
-					scp "$tmpdir/$publichost.crt" "$vpnc_host.$localdomainname:/config/auth"
-					ssh $vpnc_host.$localdomainname "sudo cp /config/auth/${publichost}.crt /etc/ipsec.d/certs/"
-					ssh $vpnc_host.$localdomainname "sudo ipsec rereadall"
-					ssh $vpnc_host.$localdomainname "sudo ipsec reload"
+				for vpnc_host in $(dig edgeos.${LDN} TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d' | cut -d : -f1); do
+					scp "$tmpdir/$publichost.crt" "$vpnc_host.${LDN}:/config/auth"
+					ssh $vpnc_host.${LDN} "sudo cp /config/auth/${publichost}.crt /etc/ipsec.d/certs/"
+					ssh $vpnc_host.${LDN} "sudo ipsec rereadall"
+					ssh $vpnc_host.${LDN} "sudo ipsec reload"
 				done
 				openssl x509 -pubkey -noout -passin pass:123456789 -in "$tmpdir/$publichost.crt"  > src/etc/iked/pubkeys/ufqdn/"$srcid@ca.$domainname"
 				srm -r "${tmpdir}"
@@ -1222,7 +1231,7 @@ case $3 in
 		eval "${scpcmd} src/mikrotik/LTE-reset.rsc ${userna}@${lte}:/LTEreset.rsc"
 		eval "${sshcmd} ${userna}@${lte} /import file-name=LTEreset.rsc"
 		echo "configuring hostname, timezone, date, time"
-		eval "${sshcmd} ${userna}@${lte} /sys id set name=${srcid}.$localdomainname"
+		eval "${sshcmd} ${userna}@${lte} /sys id set name=${srcid}.${LDN}"
 		eval "${sshcmd} ${userna}@${lte} /sys clock set time-zone-name=Europe/Madrid"
 		ltedate=$(date +%b/%d/%Y)
 		eval "${sshcmd} ${userna}@${lte} /system clock set date=${ltedate}"
@@ -1404,37 +1413,37 @@ case $3 in
 		esac
 	;;
 	"-GR6")
-		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
-			ssh $vpnc_host.$localdomainname  [[ -e /tmp/ipv6 ]]
-			[ $? -eq 0 ] && ssh  $vpnc_host.$localdomainname rm -rf /tmp/ipv6
+		for vpnc_host in $(dig openbsd.${LDN} TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+			ssh $vpnc_host.${LDN}  [[ -e /tmp/ipv6 ]]
+			[ $? -eq 0 ] && ssh  $vpnc_host.${LDN} rm -rf /tmp/ipv6
 		done
-		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
-			ssh $vpnc_host.$localdomainname  [[ -e /tmp/ipv6 ]]
-			[ $? -eq 1 ] && ssh  $vpnc_host.$localdomainname touch /tmp/ipv6
+		for vpnc_host in $(dig openbsd.${LDN} TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+			ssh $vpnc_host.${LDN}  [[ -e /tmp/ipv6 ]]
+			[ $? -eq 1 ] && ssh  $vpnc_host.${LDN} touch /tmp/ipv6
 			echo -e "Calculating IPv6 RouterID of $vpnc_host"
-			echo "fd13:$(printf "%x\n" $(ssh $vpnc_host.$localdomainname ifconfig vether0 | grep -w inet | awk '{print $2}' | cut -d . -f4))::/128"
-			routeridv6=$(echo "fd13:$(printf "%x\n" $(ssh $vpnc_host.$localdomainname ifconfig vether0 | grep -w inet | awk '{print $2}' | cut -d . -f4))::/128")
-			[[ $(ssh $vpnc_host.$localdomainname grep -c vether0 /tmp/ipv6) -eq 0 ]] && ssh $vpnc_host.$localdomainname "echo vether0 ${routeridv6} >> /tmp/ipv6"
-			for gre in $(ssh $vpnc_host.$localdomainname ls /etc/hostname.gre? | cut -d . -f2); do
-				ssh $vpnc_host.$localdomainname cat /tmp/ipv6 | grep "${gre}" &>/dev/null
+			echo "fd13:$(printf "%x\n" $(ssh $vpnc_host.${LDN} ifconfig vether0 | grep -w inet | awk '{print $2}' | cut -d . -f4))::/128"
+			routeridv6=$(echo "fd13:$(printf "%x\n" $(ssh $vpnc_host.${LDN} ifconfig vether0 | grep -w inet | awk '{print $2}' | cut -d . -f4))::/128")
+			[[ $(ssh $vpnc_host.${LDN} grep -c vether0 /tmp/ipv6) -eq 0 ]] && ssh $vpnc_host.${LDN} "echo vether0 ${routeridv6} >> /tmp/ipv6"
+			for gre in $(ssh $vpnc_host.${LDN} ls /etc/hostname.gre? | cut -d . -f2); do
+				ssh $vpnc_host.${LDN} cat /tmp/ipv6 | grep "${gre}" &>/dev/null
 				if [ $? -eq 1 ]; then
-					if [ $(ssh $vpnc_host.$localdomainname grep -c inet6 /etc/hostname."${gre}") -eq 0 ]; then
+					if [ $(ssh $vpnc_host.${LDN} grep -c inet6 /etc/hostname."${gre}") -eq 0 ]; then
 						id=$(echo "${gre}" | sed "s|gre||")
-						endpoint=$(ssh $vpnc_host.$localdomainname cat /etc/hostname."${gre}" | grep description | sed -e "s|description ||" -e 's|"||g')
+						endpoint=$(ssh $vpnc_host.${LDN} cat /etc/hostname."${gre}" | grep description | sed -e "s|description ||" -e 's|"||g')
 						echo -e "ULA for ${gre} on $vpnc_host for tunnel with ${endpoint} is $(echo "${routeridv6}" | sed "s|::/128||"):$(printf "%x\n" "${id}")::/127"
-						[[ $(ssh $vpnc_host.$localdomainname grep -c ${gre} /tmp/ipv6) -eq 0 ]] && ssh $vpnc_host.$localdomainname "echo ${gre} $(echo "${routeridv6}" | sed "s|::/128||"):$(printf "%x\n" "${id}")::/127 >> /tmp/ipv6"
+						[[ $(ssh $vpnc_host.${LDN} grep -c ${gre} /tmp/ipv6) -eq 0 ]] && ssh $vpnc_host.${LDN} "echo ${gre} $(echo "${routeridv6}" | sed "s|::/128||"):$(printf "%x\n" "${id}")::/127 >> /tmp/ipv6"
 						ephm=$(echo "${endpoint}" | sed "s|.telecomlobby.com||")
 						for phn in $(dig ipsec20591.telecomlobby.com TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d' |  cut -d : -f1); do
 								if [[ "${ephm}" == "${phn}" ]]; then
 								lhm=$(dig ipsec20591.telecomlobby.com TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d' |  grep "${phn}" | cut -d : -f2)
 							#	[[ "${lhm}" == "neo" ]] && lhm="varuna"
-								os=$(nc -w1 $lhm.$localdomainname 22)
+								os=$(nc -w1 $lhm.${LDN} 22)
 								echo -e "ULA ptp for $vpnc_host on $lhm is $(echo "${routeridv6}" | sed "s|::/128||"):$(printf "%x\n" "${id}")::1/127"
 								case "${os}" in
 									*Debian*)
 										edgescript=$(mktemp)
 										echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper begin" > $edgescript
-										tun=$(ssh -q $lhm.$localdomainname /sbin/ip link | grep -wB2 "${phn}.telecomlobby.com" | head -n 1 | awk '{print $2}' | sed "s|@NONE:||")
+										tun=$(ssh -q $lhm.${LDN} /sbin/ip link | grep -wB2 "${phn}.telecomlobby.com" | head -n 1 | awk '{print $2}' | sed "s|@NONE:||")
 										echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set interfaces tunnel "${tun}" address $(echo "${routeridv6}" | sed "s|::/128||"):$(printf "%x\n" "${id}")::1/127" >> $edgescript
 										echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper commit" >> $edgescript
 										echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper save" >> $edgescript
@@ -1442,17 +1451,17 @@ case $3 in
 									;;
 									*ROS*)
 										mkscript=$(mktemp)
-										gretun=$(ssh -q $lhm.$localdomainname ":put [/int gre get [find comment=$vpnc_host] name;]")
+										gretun=$(ssh -q $lhm.${LDN} ":put [/int gre get [find comment=$vpnc_host] name;]")
 										echo "/ipv6 address add interface=${gretun::-1} address="$(echo "${routeridv6}" | sed "s|::/128||"):$(printf "%x\n" "${id}")"::1/127 advertise=no no-dad=yes" > $mkscript
 										cat $mkscript
 									;;
 									*)
 										#[[ "${vpnc_host}" == "varuna" ]] && vpnc_host="neo"
 										g=$(dig ipsec20591.telecomlobby.com TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d' |  grep "${vpnc_host}" | cut -d : -f1)
-										rgre=$(ssh $lhm.$localdomainname grep -w "${g}.telecomlobby.com" /etc/hostname.gre? | cut -d : -f1 | sed "s|/etc/hostname.||")
-										ssh $lhm.$localdomainname  [[ -e /tmp/ipv6 ]]
-										[ $? -eq 1 ] && ssh $lhm.$localdomainname touch /tmp/ipv6
-										[[ $(ssh $lhm.$localdomainname grep -c ${rgre} /tmp/ipv6) -eq 0 ]] && ssh $lhm.$localdomainname "echo ${rgre} $(echo "${routeridv6}" | sed "s|::/128||"):$(printf "%x\n" "${id}")::1/127 >> /tmp/ipv6"
+										rgre=$(ssh $lhm.${LDN} grep -w "${g}.telecomlobby.com" /etc/hostname.gre? | cut -d : -f1 | sed "s|/etc/hostname.||")
+										ssh $lhm.${LDN}  [[ -e /tmp/ipv6 ]]
+										[ $? -eq 1 ] && ssh $lhm.${LDN} touch /tmp/ipv6
+										[[ $(ssh $lhm.${LDN} grep -c ${rgre} /tmp/ipv6) -eq 0 ]] && ssh $lhm.${LDN} "echo ${rgre} $(echo "${routeridv6}" | sed "s|::/128||"):$(printf "%x\n" "${id}")::1/127 >> /tmp/ipv6"
 										#[[ "${vpnc_host}" == "neo" ]] && vpnc_host="varuna"
 									;;
 								esac
@@ -1484,26 +1493,26 @@ case $3 in
 			fi
 		done
 		echo "uploading P12 to /tmp onto $srcid"
-		scp $ikedpub "$srcid.$localdomainname:/tmp"
-		ssh -t $srcid.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/tools/ikedsslupgade"
+		scp $ikedpub "$srcid.${LDN}:/tmp"
+		ssh -t $srcid.${LDN} doas sh "/home/taglio/Sources/Git/OpenBSD/tools/ikedsslupgade"
 		echo "uploading P12 to Mikrotik hosts"
-		for vpnc_host in $(dig mikrotik.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
-			scp $ikedpub "${vpnc_host}.$localdomainname"
+		for vpnc_host in $(dig mikrotik.${LDN} TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+			scp $ikedpub "${vpnc_host}.${LDN}"
 			echo "/certificate remove [/certificate find where name=${publichost}]" > /tmp/i.rsc
 			echo "/certificate import passphrase=123456789 file-name=$pk12 name=${publichost}" >> /tmp/i.rsc
 			echo "/ip ipsec identity set [/ip ipsec identity find where certificate=${publichost}] certificate=${publichost}" >> /tmp/i.rsc
-			scp /tmp/i.rsc "${vpnc_host}.$localdomainname"
+			scp /tmp/i.rsc "${vpnc_host}.${LDN}"
 			cat  /tmp/i.rsc
 			sleep 40
-			#eval "ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 ${vpnc_host}.$localdomainname :execute \{/import i.rsc\}"
+			#eval "ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 ${vpnc_host}.${LDN} :execute \{/import i.rsc\}"
 		done
 		openssl pkcs12 -nodes -in $ikedpub -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "$tmpdir/$publichost.crt"
 		echo "uploading .crt to EdgeOS hosts"
-		for vpnc_host in $(dig edgeos.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d' | cut -d : -f1); do
-			scp "$tmpdir/$publichost.crt" "$vpnc_host.$localdomainname:/config/auth"
-			ssh $vpnc_host.$localdomainname "sudo cp /config/auth/${publichost}.crt /etc/ipsec.d/certs/"
-			ssh $vpnc_host.$localdomainname "sudo ipsec rereadall"
-			ssh $vpnc_host.$localdomainname "sudo ipsec reload"
+		for vpnc_host in $(dig edgeos.${LDN} TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d' | cut -d : -f1); do
+			scp "$tmpdir/$publichost.crt" "$vpnc_host.${LDN}:/config/auth"
+			ssh $vpnc_host.${LDN} "sudo cp /config/auth/${publichost}.crt /etc/ipsec.d/certs/"
+			ssh $vpnc_host.${LDN} "sudo ipsec rereadall"
+			ssh $vpnc_host.${LDN} "sudo ipsec reload"
 		done
 		openssl x509 -pubkey -noout -passin pass:123456789 -in "$tmpdir/$publichost.crt"  > src/etc/iked/pubkeys/ufqdn/"$srcid@ca.$domainname"
 		srm -r "${tmpdir}"

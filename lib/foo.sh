@@ -37,18 +37,16 @@ function typeofvar () {
 
 function dnsquery () {
 
-	local ldm="telecom.lobby"
-	local pdm="telecomlobby.com"
-
 	case $(typeofvar $1) in
 		"array")
 			declare -n arr="${1}"
 			case "${2}" in
 				"-FL")
 					r=$(mktemp)
-					dig openbsd."${ldm}" TXT +short > "${r}"
-					dig mikrotik."${ldm}" TXT +short >> "${r}"
-					dig edgeos."${ldm}" TXT +short >> "${r}"
+					dig openbsd."${LDN}" TXT +short > "${r}"
+                    dig raspi."${LDN}" TXT +short >> "${r}"
+					dig mikrotik."${LDN}" TXT +short >> "${r}"
+					dig edgeos."${LDN}" TXT +short >> "${r}"
 					for lh in $(cat "${r}" | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 						arr+=("${lh}")
 					done
@@ -60,7 +58,7 @@ function dnsquery () {
 					done
 				;;
 				*)
-					for lh in $(dig "${2}"."${ldm}" TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+					for lh in $(dig "${2}"."${LDN}" TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 						arr+=("${lh}")
 					done
 				;;

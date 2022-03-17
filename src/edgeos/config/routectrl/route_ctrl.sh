@@ -1,5 +1,5 @@
 #!/bin/bash
-
+# -L </dev/null &>/dev/null &
 
 declare -a groups=("12" "34" "43" "56")
 
@@ -77,8 +77,7 @@ case "$1" in
 		grebrdiplo=$(/sbin/ip addr show dev "${2}" | grep -w inet | awk '{print $4}' | cut -d . -f4)
 		(( grebrdiplo-greliplo==2 )) && ((peerliplo = grebrdiplo - 1)) || ((peerliplo = grebrdiplo - 2))
 		peerlip=$(echo "${grelip}" | sed "s|${greliplo}|${peerliplo}|")
-		echo "/usr/bin/fping -I${2} $peerlip"
-		ping_result=$(/usr/bin/fping -I${2} $peerlip 2>&1)
+		ping_result=$(nice -n 20 chrt -i 0 ionice -c3 /usr/bin/fping -I${2} $peerlip 2>&1)
 		alive="alive"
 		status=$(/usr/sbin/ipsec status $tunnelid)
 		established="INSTALLED"
@@ -156,7 +155,7 @@ case "$1" in
 		while true
 		do
 			for tun in $(/sbin/ip link | grep tun | awk '{print $2}' | sed "s|@.*||g"); do
-				run_with_lock /config/routectrl/route_ctrl.sh -T "${tun}"
+				run_with_lock nice -n 20 chrt -i 0 ionice -c3 /config/routectrl/route_ctrl.sh -T "${tun}"
 			done
 		done
 	;;
