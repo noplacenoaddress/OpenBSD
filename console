@@ -60,8 +60,8 @@ function dnsquery () {
 				"-FL")
 					r=$(mktemp)
 					dig openbsd."${ldm}" TXT +short > "${r}"
-					dig edgeos."${ldm}" TXT +short >> "${r}"
 					dig mikrotik."${ldm}" TXT +short >> "${r}"
+					dig edgeos."${ldm}" TXT +short >> "${r}"
 					for lh in $(cat "${r}" | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 						arr+=("${lh}")
 					done
@@ -126,7 +126,6 @@ function mkrtfilter () {
 function custom {
 	for file in $(find $1 -type f -maxdepth $2); do
 		(: "${hostname?}") 2>/dev/null && sed -i "s/\/HOSTNAME\//$hostname/g" $file
-
 		(: "${landomainname?}") 2>/dev/null && sed -i "s/\/LANDOMAINNAME\//$landomainname/g" $file
 		(: "${routerid?}") 2>/dev/null && sed -i "s/\/ROUTERID\//$routerid/g" $file
 		(: "${publichost?}") 2>/dev/null && sed -i "s/\/PUBLICHOST\//$publichost/g" $file
@@ -216,7 +215,7 @@ case $3 in
 	"-T")
 		echo -e "Launching TMUX"
 		tmux new-session -d -s "LOBBY"
-		dnsquery wa "openbsd"
+		dnsquery wa "-FL"
 		for (( j=0; j<${#wa[@]}; j++ )); do
 			echo -e "Creating ${wa[j]} TMUX windows"
 			tmux rename-window "${wa[j]}"
