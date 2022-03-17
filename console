@@ -10,6 +10,9 @@ userhome="/home/${userna}"
 proghome="$userhome/Sources/Git/OpenBSD"
 daterelease=$(date +"%d%m%Y%H%m%S")
 
+
+
+
 #FUNCTIONS
 
 function passcheck () {
@@ -27,6 +30,70 @@ function capa3 () {
 		;;
 	esac
 }
+
+function typeofvar () {
+
+    local type_signature=$(declare -p "$1" 2>/dev/null)
+
+    if [[ "$type_signature" =~ "declare --" ]]; then
+        printf "string"
+    elif [[ "$type_signature" =~ "declare -a" ]]; then
+        printf "array"
+    elif [[ "$type_signature" =~ "declare -A" ]]; then
+        printf "map"
+    else
+        printf "none"
+    fi
+
+}
+
+
+function dnsquery () {
+
+	local ldm="telecom.lobby"
+	local pdm="telecomlobby.com"
+
+	case $(typeofvar $1) in
+		"array")
+			declare -n arr="${1}"
+			case "${2}" in
+				"-FL")
+					r=$(mktemp)
+					dig openbsd."${ldm}" TXT +short > "${r}"
+					dig edgeos."${ldm}" TXT +short >> "${r}"
+					dig mikrotik."${ldm}" TXT +short >> "${r}"
+					for lh in $(cat "${r}" | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+						arr+=("${lh}")
+					done
+					srm "${r}"
+				;;
+				"-FP")
+					for ph in $(dig ipsec20591."${pdm}" TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d' | cut -d : -f1); do
+						arr+=("${ph}")
+					done
+				;;
+				*)
+					for lh in $(dig "${2}"."${ldm}" TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+						arr+=("${lh}")
+					done
+				;;
+			esac
+		;;
+		"none")
+			case "${1}" in
+				"-M")
+					for ph in $(dig ipsec20591."${pdm}" TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d' ); do
+						[[ $(echo "${ph}" | cut -d : -f2) == "${2}" ]] && echo "${ph}" | cut -d : -f1
+					done
+				;;
+			esac
+		;;
+		*)
+			exit 1
+		;;
+	esac
+}
+
 
 function strip_ansi() {
     declare tmp esc tpa re
@@ -92,6 +159,11 @@ mac_to_ipv6() {
     echo "$IPV6ADDR"
 }
 
+# a work array
+
+[[ $(typeofvar wa) == "array" ]] && [[ $(echo ${#wa[@]}) != "0" ]] && unset wa && declare -a wa || declare -a wa
+
+
 if [[ $uid -ne 1000 ]]; then
 	echo -e $0 "you've got to run $0 as UID=1000 \n"
 	exit 1
@@ -141,60 +213,47 @@ localdomainname=$2
 
 
 case $3 in
-	"-G")
-		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
-			echo -e "Connecting to $vpnc_host"
-			ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 $vpnc_host.$localdomainname git -C "$proghome" pull
+	"-T")
+		echo -e "Launching TMUX"
+		tmux new-session -d -s "LOBBY"
+		dnsquery wa "openbsd"
+		for (( j=0; j<${#wa[@]}; j++ )); do
+			echo -e "Creating ${wa[j]} TMUX windows"
+			tmux rename-window "${wa[j]}"
+			tmux send -t "LOBBY:${wa[j]}" ssh SPACE "${wa[j]}.$localdomainname" ENTER
+			tmux new-window
 		done
+		tmux rename-window "CA"
+		tmux send -t "LOBBY:CA" ssh SPACE "ca.$localdomainname" ENTER
+		tmux new-window
+		tmux rename-window $(hostname -s)
+		tmux -2 attach-session -t "LOBBY"
 	;;
-	"-N")
-		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
-			echo -e "Connecting to $vpnc_host"
-			ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U newhost
-		done
-	;;
-	"-S")
-		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
-			echo -e "Connecting to $vpnc_host"
-			ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U scripts
-		done
-	;;
-	"-D")
-		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
-			echo -e "Connecting to $vpnc_host"
-			ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U dyndnspop
-			sleep 10
-		done
-	;;
-	"-PF")
-		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
-			echo -e "Connecting to $vpnc_host"
-			ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U pf
-			sleep 10
-		done
-	;;
-	"-F")
-		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
-			echo -e "Connecting to $vpnc_host"
-			ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U file
-			sleep 10
-		done
-	;;
-	"-C")
-		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
-			echo -e "Connecting to $vpnc_host"
-			ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -t $vpnc_host.$localdomainname doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -A cleanlast
+	"-G"|"-N"|"-S"|"-D"|"-PF"|"-F"|"-C"|"-P")
+		dnsquery wa "openbsd"
+		[[ "${3}" == "-G" ]] && rcmd="git -C "$proghome" pull"
+		[[ "${3}" == "-N" ]] && rcmd="doas sh /home/taglio/Sources/Git/OpenBSD/setup_node -U newhost"
+		[[ "${3}" == "-S" ]] && rcmd="doas sh /home/taglio/Sources/Git/OpenBSD/setup_node -U scripts"
+		[[ "${3}" == "-D" ]] && rcmd="doas sh /home/taglio/Sources/Git/OpenBSD/setup_node -U dyndnspop"
+		[[ "${3}" == "-PF" ]] && rcmd="doas sh /home/taglio/Sources/Git/OpenBSD/setup_node -U pf"
+		[[ "${3}" == "-F" ]] && rcmd="doas sh /home/taglio/Sources/Git/OpenBSD/setup_node -U file"
+		[[ "${3}" == "-C" ]] && rcmd="doas sh /home/taglio/Sources/Git/OpenBSD/setup_node -A cleanlast"
+		[[ "${3}" == "-P" ]] && rcmd="doas syspatch"
+		for (( j=0; j<${#wa[@]}; j++ )); do
+			echo -e "Connecting to ${wa[j]}"
+			ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 ${wa[j]}.$localdomainname eval "${rcmd}"
 		done
 	;;
 	"-CMK")
 		read -p "Type the internal hostname: " ihn
-		for vpnc_host in $(dig mikrotik.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
-			echo -e "Connecting to $vpnc_host"
+		dnsquery wa "mikrotik"
+		for (( j=0; j<${#wa[@]}; j++ )); do
+			echo -e "Connecting to ${wa[j]}"
 			cleanmk=$(mktemp)
 			cat src/mikrotik/tools/clean_last.rsc > "${cleanmk}"
 			sed -i "s|/HOSTNAME/|${ihn}|g" "${cleanmk}"
-			scp  "${cleanmk}" "${vpnc_host}"."${localdomainname}":/clean.rsc
-			eval "ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 ${userna}@${lte} :execute \{/import clean.rsc\}"
+			scp  "${cleanmk}" "${wa[j]}"."${localdomainname}":/clean.rsc
+			eval "ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3 -o ConnectionAttempts=1 ${wa[j]} :execute \{/import clean.rsc\}"
 		done
 	;;
 	"-CEO")
@@ -297,7 +356,7 @@ case $3 in
 	"-P")
 		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 			echo -e "Connecting to $vpnc_host"
-			ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -t $vpnc_host.$localdomainname doas syspatch
+			ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -t $vpnc_host.$localdomainname
 		done
 	;;
 	"-7")
@@ -371,21 +430,7 @@ case $3 in
 		rm -rf $tmpdir
 		echo -e "$srcid@ca.$domainname created please update repository and all the others Openbsd hosts"
 	;;
-	"-T")
-		echo -e "Launching TMUX"
-		tmux new-session -d -s "LOBBY"
-		for vpnc_host in $(dig openbsd.$localdomainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
-			echo -e "Creating $vpnc_host TMUX windows"
-			tmux rename-window "$vpnc_host"
-			tmux send -t "LOBBY:$vpnc_host" ssh SPACE "$vpnc_host.$localdomainname" ENTER
-			tmux new-window
-		done
-		tmux rename-window "CA"
-		tmux send -t "LOBBY:CA" ssh SPACE "ca.$localdomainname" ENTER
-		tmux new-window
-		tmux rename-window $(hostname -s)
-		tmux -2 attach-session -t "LOBBY"
-	;;
+
 	"-M")
 		mkhost=
 		while [ -z $mkhost ]
