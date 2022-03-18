@@ -25,7 +25,7 @@ function menu () {
 		2)
 			echo
 			echo -e $0 "-I ${LDN} -SO [openbsd|mikrotik|edgeos|raspi|ALL] -T -> tmux and SSH to hosts [o]"
-			echo -e $0 "-I ${LDN} -SO [openbsd|mikrotik|edgeos|raspi|ALL]  -P -> syspatch [o]"
+			echo -e $0 "-I ${LDN} -SO [openbsd|mikrotik|edgeos|raspi|ALL] -P -> syspatch [o]"
 			echo -e $0 "-I ${LDN} -SO [openbsd|mikrotik|edgeos|ALL] -N -> newhost OpenBSD host [o]"
 			echo -e $0 "-I ${LDN} -SO [openbsd|mikrotik|edgeos|ALL] -C -> cleanlast [o]"
 			echo -e $0 "-I ${LDN} -SO [openbsd|mikrotik|edgeos|ALL] -P -> syspatch [o]"
@@ -54,10 +54,11 @@ PDN=$(dig "${LDN}" TXT +short | sed "s|\"||g") && [[ "${PDN}" ]] || ( echo "inte
 
 source "lib/foo.sh"
 
-# a work array and string
+# a work array and a pair of strings
 
 [[ $(typeofvar wa) == "array" ]] && [[ $(echo ${#wa[@]}) != "0" ]] && ( unset wa && declare -a wa ) || declare -a wa
 [[ $(typeofvar ws) == "string" ]] && [[ $(echo ${#ws}) != "0" ]] && ( unset ws && ws="" ) || ws=""
+[[ $(typeofvar tf) == "string" ]] && [[ $(echo ${#tf}) != "0" ]] && ( unset tf && tf="" ) || tf=""
 
 # variables
 
@@ -68,12 +69,8 @@ daterelease=$(date +"%d%m%Y%H%m%S")
 
 # temp files
 
-TODAY=$(date +"%d%m")
-RD="/run/user/${UID}/guerrilla"
-[[ -e "${RD}" ]] || mkdir "${RD}"
-for t in $(ls "${RD}"/console-* | grep -v "${TODAY}"); do srm "${t}" ; done
-touch "${RD}"/console-${TODAY}-${RANDOM}
-tf=$(echo $_)
+tf=$(tempfile)
+
 
 
 

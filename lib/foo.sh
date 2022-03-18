@@ -34,6 +34,15 @@ function typeofvar () {
 
 }
 
+function tempfile () {
+    local TODAY=$(date +"%d%m")
+    local RD="/run/user/${UID}/guerrilla"
+    local TF="${1}"
+    [[ -e "${RD}" ]] || mkdir "${RD}"
+    for t in $(ls "${RD}"/console-* | grep -v "${TODAY}"); do srm "${t}" ; done
+    touch "${RD}"/console-${TODAY}-${RANDOM}
+    echo $_
+}
 
 function dnsquery () {
 
@@ -42,7 +51,7 @@ function dnsquery () {
 			declare -n arr="${1}"
 			case "${2}" in
 				"-FL")
-					r=$(mktemp)
+					r=$(tempfile)
 					dig openbsd."${LDN}" TXT +short > "${r}"
                     dig raspi."${LDN}" TXT +short >> "${r}"
 					dig mikrotik."${LDN}" TXT +short >> "${r}"
@@ -53,7 +62,7 @@ function dnsquery () {
 					srm "${r}"
 				;;
 				"-FP")
-					for ph in $(dig ipsec20591."${pdm}" TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d' | cut -d : -f1); do
+					for ph in $(dig ipsec20591."${PDN}" TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d' | cut -d : -f1); do
 						arr+=("${ph}")
 					done
 				;;
@@ -67,10 +76,19 @@ function dnsquery () {
 		"none")
 			case "${1}" in
 				"-M")
-					for ph in $(dig ipsec20591."${pdm}" TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d' ); do
+					for ph in $(dig ipsec20591."${PDN}" TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d' ); do
 						[[ $(echo "${ph}" | cut -d : -f2) == "${2}" ]] && echo "${ph}" | cut -d : -f1
 					done
 				;;
+                "-T")
+                    r=$(tempfile)
+                    echo "openbsd "$(dig openbsd."${LDN}" TXT +short| sed "s|;| |g") > "${r}"
+                    echo "raspi "$(dig raspi."${LDN}" TXT +short| sed "s|;| |g") >> "${r}"
+                    echo "mikrotik "$(dig mikrotik."${LDN}" TXT +short| sed "s|;| |g") >> "${r}"
+                    echo "edgeos "$(dig edgeos."${LDN}" TXT +short| sed "s|;| |g") >> "${r}"
+                    sed -i "s| \"$|\"|g" "${r}"
+                    grep "${2}" "${r}" | cut -d " " -f1
+                ;;
 			esac
 		;;
 		*)
