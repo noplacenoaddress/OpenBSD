@@ -35,8 +35,6 @@ function typeofvar () {
 }
 
 function tempfile () {
-    local TODAY=$(date +"%d%m")
-    local RD="/run/user/${UID}/guerrilla"
     local TF="${1}"
     [[ -e "${RD}" ]] || mkdir "${RD}"
     for t in $(ls "${RD}"/console-* | grep -v "${TODAY}"); do srm "${t}" ; done
