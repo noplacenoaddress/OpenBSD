@@ -40,6 +40,14 @@ function menu () {
 	exit 1
 }
 
+# variables
+
+userna=$(id -nu ${UID})
+proghome="${HOME}/Sources/Git/OpenBSD"
+daterelease=$(date +"%d%m%Y%H%m%S")
+TODAY=$(date +"%d%m")
+RD="/run/user/${UID}/guerrilla"
+
 # variables from command lines and consequent processing or quit
 
 (: "${1?}") 2>/dev/null || menu 0
@@ -60,18 +68,10 @@ source "lib/foo.sh"
 [[ $(typeofvar ws) == "string" ]] && [[ $(echo ${#ws}) != "0" ]] && ( unset ws && ws="" ) || ws=""
 [[ $(typeofvar tf) == "string" ]] && [[ $(echo ${#tf}) != "0" ]] && ( unset tf && tf="" ) || tf=""
 
-# variables
-
-userna=$(id -nu ${UID})
-proghome="${HOME}/Sources/Git/OpenBSD"
-daterelease=$(date +"%d%m%Y%H%m%S")
-
 
 # temp files
 
 tf=$(tempfile)
-
-
 
 
 if [[ "${UID}" -eq 0 ]]; then
@@ -103,6 +103,67 @@ case "${OPT}" in
 		tmux new-window
 		tmux rename-window $(hostname -s)
 		tmux -2 attach-session -t "LOBBY"
+	;;
+	"-P")
+		for (( j=0; j<${#wa[@]}; j++ )); do
+			c=$(capa3 ${wa[j]}.${LDN} "wan")
+			[[ "${c}" == 1 ]] && (
+				case $(dnsquery -T ${wa[j]}) in
+					"openbsd")
+						c=$(capa3 ${wa[j]}.${LDN} "wan")
+							li=$(ssh ${wa[j]}.${LDN} syspatch -l | tail -n 1)
+							lw=$(curl -s https://www.openbsd.org/errata70.html | grep patches | tail -n 1)
+							[[ "${lw}" =~ "${li}" ]] || (echo "New ${wa[j]}.${LDN} patches found" ; ssh ${wa[j]}.${LDN} doas syspatch) && echo "No ${wa[j]}.${LDN} patches found"
+					;;
+					"edgeos")
+						li=$(ssh -q ${wa[j]}.${LDN} sudo /usr/bin/ubnt-upgrade --show | grep v[0-9] | awk '{print $1}')
+						lw=$(curl -s -X GET "https://fw-update.ubnt.com/api/firmware-latest?filter=eq~~platform~~edgerouter&filter=eq~~channel~~release&filter=eq~~product~~e300" |  tr \, '\n' | grep -w \"version\": | cut -d : -f2 | sed "s|\"||g")
+						[[ "${lw}" != "${li}" ]] || echo "No EdgeOS patches found" && ( \
+							echo "New EdgeOS patches found"
+							read -p "Download ${lw}?: yes/no " ctrl
+							case "${ctrl}" in
+								"yes")
+									fwuri=$(curl -s -X GET "https://fw-update.ubnt.com/api/firmware-latest?filter=eq~~platform~~edgerouter&filter=eq~~channel~~release&filter=eq~~product~~e300" |  tr \, '\n' | grep -w \"data\": | cut -d : -f4 | sed "s|\"||g" | sed -e "s|^//||" -e "s|}$||")
+									[[ -d "${RD}/download" ]] || mkdir "${RD}/download"
+									[[ -e "${RD}/download/${lw}.tar" ]] || wget "${fwuri}" -O "${RD}/download/${lw}.tar" && echo "${lw}.tar already downloaded"
+									sha256w=$(curl -s -X GET "https://fw-update.ubnt.com/api/firmware-latest?filter=eq~~platform~~edgerouter&filter=eq~~channel~~release&filter=eq~~product~~e300" |  tr \, '\n'| grep -w \"sha256_checksum\": | cut -d : -f2 | sed "s|\"||g")
+									sha256l=$(sha256sum "${RD}/download/${lw}.tar" | awk '{print $1}')
+									[[ "${sha256w}" == "${sha256l}" ]] && echo "SHA256 verified" || (echo "SHA256 incorrect!" ; exit 1)
+									em=$(ssh -q ${wa[j]}.${LDN} df -m | head -n 2 | tail -n 1 | awk '{print $4}')
+									fm=$(du -h "${RD}/download/${lw}.tar" | awk '{print $1}' | sed "s|[^0-9]*||g")
+									(( em > fm )) && (echo "There's sufficient space uploading..." ; scp  "${RD}/download/${lw}.tar" ${wa[j]}.${LDN}:/tmp) || (echo "There's insufficient space aborting!" ; exit 1)
+									#echo "Adding to EdgeOS vyatta subsystem.."
+									#ssh -q ${wa[j]}.${LDN} "sudo /usr/bin/ubnt-upgrade --upgrade /tmp/${lw}.tar"
+								;;
+								"no")
+									echo "Please read https://help.ui.com/hc/en-us/articles/205146110-EdgeRouter-How-to-Upgrade-the-EdgeOS-Firmware on how to upgrade EdgeOS."
+								;;
+							esac
+						)
+					;;
+					"mikrotik")
+						check=$(ssh -q ${wa[j]}.${LDN} system package update check-for-updates  | grep status | tail -n 1 | grep -c "New version is available")
+						[[ "${check}" ]] && (
+							iros=$(ssh -q ${wa[j]}.${LDN} system package update check-for-updates  | grep installed | sed "s|[^0-9.]*||g" | uniq)
+							aros=$(ssh -q ${wa[j]}.${LDN} system package update check-for-updates  | grep latest | sed "s|[^0-9.]*||g" | tail -n 1)
+							echo "new RouterOS version found, installed ${iros}, latest ${aros}"
+							read -p "Download ${aros}?: yes/no " ctrl
+							case "${ctrl}" in
+								"yes")
+									ssh -q ${wa[j]}.${LDN} system package update download
+									echo "Remember to reboot ${wa[j]}.${LDN}"
+								;;
+								"no")
+									echo "Remember to manually upgrade ${wa[j]}.${LDN}"
+								;;
+							esac
+						)
+					;;
+					"raspi")
+					;;
+				esac
+			) || echo "${wa[j]}.${LDN} unreachable"
+		done
 	;;
 	"-G"|"-N"|"-S"|"-D"|"-PF"|"-F"|"-C"|"-P")
 		[[ "${3}" == "-G" ]] && rcmd="git -C "$proghome" pull"
