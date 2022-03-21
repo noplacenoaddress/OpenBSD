@@ -28,11 +28,16 @@ function menu () {
 			echo -e $0 "-I ${LDN} -SO [openbsd|mikrotik|edgeos|raspi|ALL] -P -> syspatch [o]"
 			echo -e $0 "-I ${LDN} -SO [openbsd|mikrotik|edgeos|ALL] -N -> newhost OpenBSD host [o]"
 			echo -e $0 "-I ${LDN} -SO [openbsd|mikrotik|edgeos|ALL] -C -> cleanlast [o]"
-			echo -e $0 "-I ${LDN} -SO [openbsd|mikrotik|edgeos|ALL] -P -> syspatch [o]"
 			echo -e $0 "-I ${LDN} -SO [openbsd|edgeos|ALL] -F -> single file update [o]"
             echo -e $0 "-I ${LDN} -SO [openbsd] -G -> git pull [o]"
             echo -e $0 "-I ${LDN} -SO [openbsd] -S -> scripts [o]"
             echo -e $0 "-I ${LDN} -SO [openbsd] -D -> dyndnspop [o]"
+			echo -e $0 "-I ${LDN} -SO [openbsd] -7 -> changes to 7.0 release [o]"
+			echo
+		;;
+		3)
+			echo
+			echo -e $0 "-I ${LDN} -W -RS -> repository ssh update [o]"
 			echo
 		;;
 	esac
@@ -55,7 +60,7 @@ RD="/run/user/${UID}/guerrilla"
 (: "${2?}") 2>/dev/null && LDN="${2}"
 PDN=$(dig "${LDN}" TXT +short | sed "s|\"||g") && [[ "${PDN}" ]] || ( echo "internal domain name daemon misconfigured or local domain name error" ; exit 1 )
 (: "${3?}") 2>/dev/null || menu 1
-(: "${3?}") 2>/dev/null &&  [ "${3}" == "-SO" ]  || menu 1 && (: "${4?}") 2>/dev/null &&  [ "${4}" == "openbsd"  -o "${4}" == "mikrotik" -o "${4}" == "edgeos" -o "${4}" == "raspi" -o "${4}" == "ALL" ] && SO="${4}" || menu 1
+(: "${3?}") 2>/dev/null && ( [ "${3}" == "-SO" ]  || [ "${3}" == "-W" ] ) || menu 1 && (: "${4?}") 2>/dev/null &&  [ "${4}" == "openbsd"  -o "${4}" == "mikrotik" -o "${4}" == "edgeos" -o "${4}" == "raspi" -o "${4}" == "ALL" ] && SO="${4}" || menu 1
 (: "${5?}") 2>/dev/null || menu 2
 (: "${5?}") 2>/dev/null &&  (
 	[ "${5}" == "-P" -o "${5}" == "-T" ] || \
@@ -355,12 +360,6 @@ case "${OPT}" in
 						echo -e "Host ${wa[j]}.${LDN} configured into Mikrotik  ${wa[j]}.${LDN}"
 					;;
 					"edgeos")
-						edgehost=
-						while [ -z $edgehost ]
-						do
-							echo 'Type the EdgeOS external hostname '
-							read edgehost
-						done
 						openbsd=
 						while [ -z $openbsd ]
 						do
@@ -434,77 +433,35 @@ case "${OPT}" in
 			) || echo "${wa[j]}.${LDN} unreachable"
 		done
 	;;
-	"-G"|"-S"|"-D"|"-PF"|"-F"|"-C"|"-P")
+	"-F")
+		for (( j=0; j<${#wa[@]}; j++ )); do
+			echo -e "Connecting to ${wa[j]}.${LDN}..."
+			c=$(capa3 ${wa[j]}.${LDN} "wan")
+			[[ "${c}" == 1 ]] && (
+			case $(dnsquery -T ${wa[j]}) in
+				"openbsd")
+					ssh ${wa[j]}.${LDN} doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node -U file"
+				;;
+				"edgeos")
+					read -p "Type the src/edgeos/config file to update into ${wa[j]}.${LDN}: " fedge
+					[[ -e "src/edgeos/config/${fedge}" ]] || (echo "file not found" ; exit 1)
+					scp "src/edgeos/config/${fedge}" "${wa[j]}.${LDN}:/tmp/${fedge}"
+					ssh "${wa[j]}.${LDN} sudo mv /tmp/${fedge} /config/${fedge}"
+					echo "Depending on which file you've updated you'll copy to /etc and reload daemons"
+				;;
+			esac
+			) || echo "${wa[j]}.${LDN} unreachable"
+		done
+	;;
+	"-G"|"-S"|"-D"|"-PF"|"-7")
 		[[ "${3}" == "-G" ]] && rcmd="git -C "$proghome" pull"
-		[[ "${3}" == "-N" ]] && rcmd="${ws}"
 		[[ "${3}" == "-S" ]] && rcmd="${ws} -U scripts"
 		[[ "${3}" == "-D" ]] && rcmd="${ws} -U dyndnspop"
 		[[ "${3}" == "-PF" ]] && rcmd="${ws} -U pf"
-		[[ "${3}" == "-F" ]] && rcmd="${ws} -U file"
+		[[ "${3}" == "-7" ]] && rcmd="doas sh /home/taglio/Sources/Git/OpenBSD/tools/seven"
 		for (( j=0; j<${#wa[@]}; j++ )); do
-			echo -e "Connecting to ${wa[j]}"
+			echo -e "Connecting to ${wa[j]}.${LDN}"
 			ssh ${wa[j]}.${LDN} eval "${rcmd}"
-		done
-	;;
-esac
-
-
-exit 0
-
-if [[ $# -eq 0 ]]; then
-
-	echo -e $0 "have to be used with the following options \
-			\n \
-			\n-I   -> local domain name [x]\
-			\n-CMK -> clean VPS from Mikrotiks [o] \
-			\n-CEO -> clean VPS from EdgeOS [o] \
-			\n-RS  -> repository ssh update [o] \
-			\n-K   -> new IKED pk12 archive [o] \
-			\n-T   -> tmux and SSH to all openbsd MESH hosts [o] \
-			\n-M   -> Mikrotik RouterOS add new OpenBSD [o] \
-			\n-E   -> Ubiquiti EdgeOS add new OpenBSD [o] \
-			\n-P   -> Mass syspatch OpenBSD hosts [o] \
-			\n-Z   -> Global network domains setup [o] \
-			\n-OM  -> Mikrotik RouterOS ospf-in/out filter [o] \
-			\n-OE  -> EdgeOS ospf-in/out filter [o] \
-			\n-OO  -> OpenBSD ospf filter [o] \
-			\n-U   -> update the workstation's user EdDSA certificate [o] \
-			\n-NO  -> newospf configuration [o] \
-			\n-PF  -> new firewall configuration [o] \
-			\n-CHR -> new RouterOS Cloud Hosted Router istance [o] \
-			\n-7   -> changes to 7.0 release [o] \
-			\n-CI  -> custom installation templates [o] \
-			\n-RM  -> remove a VPS from the network [o] \
-			\n-KD  -> print all IPsec certificates deadlines [o] \
-			\n-CMD -> mass OpenBSD command [o] \
-			\n-LTE -> new RouterOS LTE Router istance [o] \
-			\n-GEO -> get IP address geo group [o] \
-			\n-GR6 -> add IPv6 ULA to gre tunnel interfaces [o] \
-			\n-CU  -> single certificate upgrade / change [o] \
-			\n"
-
-	exit 1
-fi
-
-
-
-case $3 in
-	"-T")
-
-	;;
-
-	;;
-
-	"-P")
-		for vpnc_host in $(dig openbsd.${LDN} TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
-			echo -e "Connecting to $vpnc_host"
-			ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -t $vpnc_host.${LDN}
-		done
-	;;
-	"-7")
-		for vpnc_host in $(dig openbsd.${LDN} TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
-			echo -e "Connecting to $vpnc_host"
-			ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -t $vpnc_host.${LDN} doas sh "/home/taglio/Sources/Git/OpenBSD/tools/seven"
 		done
 	;;
 	"-RS")
@@ -544,6 +501,49 @@ case $3 in
 		echo -e "remote_install/authorized_keys and ssh_known_hosts UPDATED
 		\n please use git_openbsd.sh to update the public GIT"
 	;;
+esac
+
+exit 0
+
+if [[ $# -eq 0 ]]; then
+
+	echo -e $0 "have to be used with the following options \
+			\n \
+			\n-I   -> local domain name [x]\
+			\n-CMK -> clean VPS from Mikrotiks [o] \
+			\n-CEO -> clean VPS from EdgeOS [o] \
+			\n-RS   \
+			\n-K   -> new IKED pk12 archive [o] \
+			\n-T   -> tmux and SSH to all openbsd MESH hosts [o] \
+			\n-M   -> Mikrotik RouterOS add new OpenBSD [o] \
+			\n-E   -> Ubiquiti EdgeOS add new OpenBSD [o] \
+			\n-P   -> Mass syspatch OpenBSD hosts [o] \
+			\n-Z   -> Global network domains setup [o] \
+			\n-OM  -> Mikrotik RouterOS ospf-in/out filter [o] \
+			\n-OE  -> EdgeOS ospf-in/out filter [o] \
+			\n-OO  -> OpenBSD ospf filter [o] \
+			\n-U   -> update the workstation's user EdDSA certificate [o] \
+			\n-NO  -> newospf configuration [o] \
+			\n-PF  -> new firewall configuration [o] \
+			\n-CHR -> new RouterOS Cloud Hosted Router istance [o] \
+			\n-7   -> changes to 7.0 release [o] \
+			\n-CI  -> custom installation templates [o] \
+			\n-RM  -> remove a VPS from the network [o] \
+			\n-KD  -> print all IPsec certificates deadlines [o] \
+			\n-CMD -> mass OpenBSD command [o] \
+			\n-LTE -> new RouterOS LTE Router istance [o] \
+			\n-GEO -> get IP address geo group [o] \
+			\n-GR6 -> add IPv6 ULA to gre tunnel interfaces [o] \
+			\n-CU  -> single certificate upgrade / change [o] \
+			\n"
+
+	exit 1
+fi
+
+
+
+case $3 in
+
 	"-K")
 		ikedpub=
 		while [ -z $ikedpub ]
