@@ -331,16 +331,119 @@ case "${OPT}" in
 			) || echo "${wa[j]}.${LDN} unreachable"
 		done
 	;;
-	"-G"|"-N"|"-S"|"-D"|"-PF"|"-F"|"-C"|"-P")
+	"-N")
+		for (( j=0; j<${#wa[@]}; j++ )); do
+			echo -e "Connecting to ${wa[j]}.${LDN}..."
+			c=$(capa3 ${wa[j]}.${LDN} "wan")
+			[[ "${c}" == 1 ]] && (
+				case $(dnsquery -T ${wa[j]}) in
+					"openbsd")
+						ssh ${wa[j]}.${LDN} doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node -U newhost"
+					;;
+					"mikrotik")
+						openbsd=
+						while [ -z $openbsd ]
+						do
+							echo 'Type the new OpenBSD internal hostname '
+							read openbsd
+						done
+						mkaddr=$(dig A "$(dnsquery -M ${wa[j]}).${PDN}" +short)
+						mkpublichost="$(dnsquery -M ${wa[j]}).${PDN}"
+						wget "http://$openbsd.${LDN}/$mkpublichost/$mkpublichost.rsc" -O "/tmp/$mkpublichost.rsc"
+						scp "/tmp/$mkpublichost.rsc" " ${wa[j]}.${LDN}:/$mkpublichost.rsc"
+						ssh  ${wa[j]}.${LDN} /import file-name=$mkpublichost.rsc
+						echo -e "Host ${wa[j]}.${LDN} configured into Mikrotik  ${wa[j]}.${LDN}"
+					;;
+					"edgeos")
+						edgehost=
+						while [ -z $edgehost ]
+						do
+							echo 'Type the EdgeOS external hostname '
+							read edgehost
+						done
+						openbsd=
+						while [ -z $openbsd ]
+						do
+							echo 'Type the new OpenBSD internal hostname '
+							read openbsd
+						done
+						publicip=$(dig A "$(dnsquery -M ${openbsd}).${PDN}" +short)
+						publichost=$(dnsquery -M ${openbsd})".${PDN}"
+						#publicdomainname=$(dig -x $publicip +short | sed "s/$publichost.//" | sed 's/.$//')
+						publichostname=$(dnsquery -M "${wa[j]}")
+						phn=$(dnsquery -M "${wa[j]}")
+						wget "http://$openbsd.$2/$edgehost.tar" -O "/tmp/$edgehost.tar"
+						cd /tmp
+						if [[ ! -d "${phn}.${PDN}" ]]; then
+							mkdir "${phn}.${PDN}"
+						fi
+						tar xvf "/tmp/${phn}.${PDN}.tar" -C "/tmp/${phn}.${PDN}"
+						cd ${phn}.${PDN}
+						for file in $(ls .); do
+							if [[ $file = "gre.sh" || $file = "ospf.sh" ]]; then
+								cat $file | ssh -q ${wa[j]}.${LDN}
+							elif [[ $file = *updown.sh ]]; then
+								a=$(echo $file | sed "s/-updown.sh//")
+								c=$(echo $a | sed "s/-//")
+								v=$(echo $file | sed "s/$a/$c/")
+								metric=$(ssh -q ${wa[j]}.${LDN} /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show protocols static | grep table | awk '{print $2}' | wc -l)
+								let metric+=1
+								others=""
+								for prefix in $(ssh -q ${wa[j]}.${LDN} /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show protocols static | grep table | awk '{print $2}'); do
+									others+=$(printf '\t\t%s\\n' '/sbin/ip route add table '"${prefix}"' metric '"${metric}"' scope link default nexthop dev "${TUN_IFACE}"')
+								done
+								sed -i "s|/OTHERS/|${others}|" $file
+								scp -q $file "${wa[j]}.${LDN}:/tmp"
+								ssh -q ${wa[j]}.${LDN} "sudo mv /tmp/$file /config/ipsec/$v ; chmod +x /config/ipsec/$v"
+							elif [[ $file = *_netwatch.sh ]]; then
+								a=$(echo $file | sed "s/_netwatch.sh//")
+								c=$(echo $a | sed "s/-//")
+								v=$(echo $file | sed "s/$a/$c/")
+								scp -q $file "${wa[j]}.${LDN}:/tmp"
+								ssh -q ${wa[j]}.${LDN} "sudo mv /tmp/$file /config/scripts/$v; chmod +x /config/scripts/$v"
+							elif [[ $file = *.crt ]]; then
+								scp -q $file "${wa[j]}.${LDN}:/tmp"
+								ssh -q ${wa[j]}.${LDN} sudo cp "/tmp/$file" /config/auth; sudo mv "/tmp/$file" /etc/ipsec.d/certs/
+							elif [[ $file = *.conf ]]; then
+								if [[ $(ssh -q ${wa[j]}.${LDN} grep -c telecomlobby-$(head -n 1 $file | cut -d \- -f2) /config/ipsec.conf) -eq 0 ]]; then
+									cat $file | ssh -qt ${wa[j]}.${LDN} "cat - >> /config/ipsec.conf"
+								fi
+							fi
+						done
+						ssh -q ${wa[j]}.${LDN} echo "cp /config/auth/$publichostname.crt /etc/ipsec.d/certs/" >> /config/scripts/post-config.d/files.sh
+						ctrl=
+						while [ -z $ctrl ]
+						do
+							echo "Do you want to reread ipsec "
+							read ctrl
+						done
+						rm -rf "/tmp/${phn}.${PDN}"
+						case $ctrl in
+							"yes")
+								ssh -q ${wa[j]}.${LDN} ipsec rereadall
+								ssh -q ${wa[j]}.${LDN} ipsec reload
+							;;
+							"no")
+							;;
+							*)
+								echo 'Reply yes or no'
+							;;
+						esac
+					;;
+				esac
+			) || echo "${wa[j]}.${LDN} unreachable"
+		done
+	;;
+	"-G"|"-S"|"-D"|"-PF"|"-F"|"-C"|"-P")
 		[[ "${3}" == "-G" ]] && rcmd="git -C "$proghome" pull"
-		[[ "${3}" == "-N" ]] && rcmd="${ws} -U newhost"
+		[[ "${3}" == "-N" ]] && rcmd="${ws}"
 		[[ "${3}" == "-S" ]] && rcmd="${ws} -U scripts"
 		[[ "${3}" == "-D" ]] && rcmd="${ws} -U dyndnspop"
 		[[ "${3}" == "-PF" ]] && rcmd="${ws} -U pf"
 		[[ "${3}" == "-F" ]] && rcmd="${ws} -U file"
 		for (( j=0; j<${#wa[@]}; j++ )); do
 			echo -e "Connecting to ${wa[j]}"
-			ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 ${wa[j]}.${LDN} eval "${rcmd}"
+			ssh ${wa[j]}.${LDN} eval "${rcmd}"
 		done
 	;;
 esac
@@ -468,110 +571,6 @@ case $3 in
 		openssl x509 -pubkey -noout -passin pass:123456789 -in "$tmpdir/new.crt"  > src/etc/iked/pubkeys/ufqdn/"$srcid@ca.$domainname"
 		rm -rf $tmpdir
 		echo -e "$srcid@ca.$domainname created please update repository and all the others Openbsd hosts"
-	;;
-
-	"-M")
-		mkhost=
-		while [ -z $mkhost ]
-		do
-			echo 'Type the Mikrotik internal hostname '
-			read mkhost
-		done
-		openbsd=
-		while [ -z $openbsd ]
-		do
-			echo 'Type the new OpenBSD internal hostname '
-			read openbsd
-		done
-		mkaddr=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q $mkhost.$2 /ip addr pr where interface=ether1 | awk '{print $2}' | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b")
-		mkpublichost=$(dig -x $mkaddr +short @8.8.8.8 | sed 's/.$//')
-		wget "http://$openbsd.$2/$mkpublichost/$mkpublichost.rsc" -O "/tmp/$mkpublichost.rsc"
-		scp "/tmp/$mkpublichost.rsc" "$mkhost.$2:/$mkpublichost.rsc"
-		ssh $mkhost.$2 /import file-name=$mkpublichost.rsc
-		echo -e "Host $openbsd.$2 configured into Mikrotik $mkhost.$2"
-		ssh $mkhost.$2 /sys package update check-for-updates
-	;;
-	"-E")
-		edgehost=
-		while [ -z $edgehost ]
-		do
-			echo 'Type the EdgeOS external hostname '
-			read edgehost
-		done
-		openbsd=
-		while [ -z $openbsd ]
-		do
-			echo 'Type the new OpenBSD internal hostname '
-			read openbsd
-		done
-		publicip=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q $openbsd.$2 ifconfig egress | awk 'FNR == 7' | awk '{print $2}')
-		publichost=$(dig -x $publicip +short |  sed 's/.$//' | cut -d . -f1)
-		publicdomainname=$(dig -x $publicip +short | sed "s/$publichost.//" | sed 's/.$//')
-		publichostname=$(echo $edgehost | sed "s/.$publicdomainname//")
-		for edge_host in $(dig edgeos.$2 TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
-			publicedgehost=$(echo $edge_host | cut -d : -f2)
-			if [[ $publichostname = $publicedgehost ]]; then
-				edgeos=$(echo $edge_host | cut -d : -f1)
-			fi
-		done
-		wget "http://$openbsd.$2/$edgehost.tar" -O "/tmp/$edgehost.tar"
-		cd /tmp
-		if [[ ! -d "$edgehost" ]]; then
-			mkdir "$edgehost"
-		fi
-		tar xvf "/tmp/$edgehost.tar" -C "/tmp/$edgehost"
-		cd $edgehost
-		for file in $(ls .); do
-			if [[ $file = "gre.sh" || $file = "ospf.sh" ]]; then
-				cat $file | ssh -q $edgeos
-			elif [[ $file = *updown.sh ]]; then
-				a=$(echo $file | sed "s/-updown.sh//")
-				c=$(echo $a | sed "s/-//")
-				v=$(echo $file | sed "s/$a/$c/")
-				metric=$(ssh -q $edgeos /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show protocols static | grep table | awk '{print $2}' | wc -l)
-				let metric+=1
-				others=""
-				for prefix in $(ssh -q $edgeos /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show protocols static | grep table | awk '{print $2}'); do
-					others+=$(printf '\t\t%s\\n' '/sbin/ip route add table '"${prefix}"' metric '"${metric}"' scope link default nexthop dev "${TUN_IFACE}"')
-				done
-				sed -i "s|/OTHERS/|${others}|" $file
-				scp -q $file "$edgeos:/tmp"
-				ssh -q $edgeos "sudo mv /tmp/$file /config/ipsec/$v ; chmod +x /config/ipsec/$v"
-			elif [[ $file = *_netwatch.sh ]]; then
-				a=$(echo $file | sed "s/_netwatch.sh//")
-				c=$(echo $a | sed "s/-//")
-				v=$(echo $file | sed "s/$a/$c/")
-				scp -q $file "$edgeos:/tmp"
-				ssh -q $edgeos "sudo mv /tmp/$file /config/scripts/$v; chmod +x /config/scripts/$v"
-			elif [[ $file = *.crt ]]; then
-				scp -q $file "$edgeos:/tmp"
-				ssh -q $edgeos sudo cp "/tmp/$file" /config/auth; sudo mv "/tmp/$file" /etc/ipsec.d/certs/
-			elif [[ $file = *.conf ]]; then
-				if [[ $(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q $edgeos grep -c telecomlobby-$(head -n 1 $file | cut -d \- -f2) /config/ipsec.conf) -eq 0 ]]; then
-					cat $file | ssh -qt $edgeos "cat - >> /config/ipsec.conf"
-				fi
-			fi
-		done
-		ssh -q $edgeos echo "cp /config/auth/$publichostname.crt /etc/ipsec.d/certs/" >> /config/scripts/post-config.d/files.sh
-		ctrl=
-		while [ -z $ctrl ]
-		do
-			echo "Do you want to reread ipsec "
-			read ctrl
-		done
-		rm -rf "/tmp/$edgehost"
-		case $ctrl in
-			"yes")
-				ssh -q $edgeos ipsec rereadall
-				ssh -q $edgeos ipsec reload
-			;;
-			"no")
-			;;
-			*)
-				echo 'Reply yes or no'
-			;;
-		esac
-
 	;;
 	"-Z")
 		comdomains=
