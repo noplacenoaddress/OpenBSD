@@ -151,11 +151,12 @@ case "$1" in
 	"-L")
 		#sleep 60s
 		n=3
-		open_sem $n
+		#open_sem $n
 		while true
 		do
 			for tun in $(/sbin/ip link | grep tun | awk '{print $2}' | sed "s|@.*||g"); do
-				run_with_lock ./timeout -s9 240 nice -n 20 chrt -i 0 ionice -c3 /config/routectrl/route_ctrl.sh -T "${tun}"
+                echo "ok"
+				./timeout -s9 240 nice -n 20 chrt -i 0 ionice -c3 /config/routectrl/route_ctrl.sh -T "${tun}"
 			done
 		done
 	;;
