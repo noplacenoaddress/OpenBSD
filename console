@@ -239,7 +239,7 @@ case "${OPT}" in
 						typeset -u uphtc=$(echo "${phtc}" | sed "s|.${PDN}||")
 						pip=$(dig A "${phtc}" +short)
 						[[ "${pip}" == "" ]] && read -p "Type the external ip address because was deleted: " pip
-						irid=$(dig A "${ihn}".${LDN} +short)
+						irid=$(dig A "${ihtc}".${LDN} +short)
 						[[ "${irid}" == "" ]] && read -p "Type the router id because was deleted: " irid
 						for i in $(ssh -q ${wa[j]}.${LDN}  /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show firewall group | grep address-group | awk '{print $2}'); do
 							ssh -q ${wa[j]}.${LDN}  sudo ipset list "${i}" | grep "${pip}"  &> /dev/null
@@ -282,7 +282,7 @@ case "${OPT}" in
 						if [ $? -eq 0 ]; then
 							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete protocols static interface-route ${pip}/32" >> $tf
 						fi
-						if [ $(ssh -q ${wa[j]}.${LDN} show protocols static table "${tableid}" | wc -l) -gt 1 ]; then
+						if [ $(ssh -q ${wa[j]}.${LDN} /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show protocols static table "${tableid}" | wc -l) -gt 1 ]; then
 							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete protocols static table ${tableid}" >> $tf
 						fi
 						if [ $(ssh -q ${wa[j]}.${LDN} /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show system task-scheduler task ES${uphtc} | wc -l) -gt 1 ]; then
@@ -294,7 +294,7 @@ case "${OPT}" in
 						read -p "OK? yes/no " ctrl
 						case "${ctrl}" in
 							"yes")
-								cat "${tf}" | ssh -q indra.telecom.lobby
+								cat "${tf}" | ssh -q ${wa[j]}.${LDN}
 							;;
 							"no")
 								exit 1
@@ -305,27 +305,27 @@ case "${OPT}" in
 						esac
 						case "${type}" in
 							"OPENBSD")
-								ssh -q indra.telecom.lobby sudo sed -i -e "/telecomlobby-${upphn}/,+13d" /config/ipsec.conf
+								ssh -q ${wa[j]}.${LDN} sudo sed -i -e "/telecomlobby-${uphtc}/,+13d" /config/ipsec.conf
 							;;
 							"MIKROTIK")
-								ssh -q indra.telecom.lobby sudo sed -i -e "/telecomlobby-${upphn}/,+11d" /config/ipsec.conf
+								ssh -q ${wa[j]}.${LDN}sudo sed -i -e "/telecomlobby-${uphtc}/,+11d" /config/ipsec.conf
 							;;
 						esac
-						ssh -q indra.telecom.lobby sudo cp /config/ipsec.conf /etc
-						if [ $(ssh -q indra.telecom.lobby sudo ipsec status telecomlobby-${upphn} | grep -v Security | grep -c ESTABLISHED) -gt 0 ]; then
-							ssh -q indra.telecom.lobby sudo ipsec down telecomlobby-${upphn}
+						ssh -q ${wa[j]}.${LDN} sudo cp /config/ipsec.conf /etc
+						if [ $(ssh -q i${wa[j]}.${LDN} sudo ipsec status telecomlobby-${uphtc} | grep -v Security | grep -c ESTABLISHED) -gt 0 ]; then
+							ssh -q ${wa[j]}.${LDN} sudo ipsec down telecomlobby-${uphtc}
 						fi
-						ssh -q indra.telecom.lobby [[ -e "/config/ipsec/ES${upphn}-updown.sh" ]] && rm -rf "/config/ipsec/ES${upphn}-updown.sh"
-						ssh -q indra.telecom.lobby [[ -e "/config/auth/${phn}.telecomlobby.com.crt" ]] && rm -rf "/config/auth/${phn}.telecomlobby.com.crt"
-						ssh -q indra.telecom.lobby [[ -e "/etc/ipsec.d/certs/${phn}.telecomlobby.com.crt" ]]
+						ssh -q ${wa[j]}.${LDN} [[ -e "/config/ipsec/ES${uphtc}-updown.sh" ]] && rm -rf "/config/ipsec/ES${uphtc}-updown.sh"
+						ssh -q ${wa[j]}.${LDN} [[ -e "/config/auth/${phtc}.crt" ]] && rm -rf "/config/auth/${phtc}.crt"
+						ssh -q ${wa[j]}.${LDN} [[ -e "/etc/ipsec.d/certs/${phtc}.crt" ]]
 						if [ $? -eq 0 ]; then
-							ssh -q indra.telecom.lobby sudo rm -rf "/etc/ipsec.d/certs/${phn}.telecomlobby.com.crt"
+							ssh -q ${wa[j]}.${LDN} sudo rm -rf "/etc/ipsec.d/certs/${phtc}.crt"
 						fi
-						if [ $(ssh -q indra.telecom.lobby grep -wc ${phn}.telecomlobby.com /config/scripts/post-config.d/files.sh) -gt 0 ]; then
-							ssh -q indra.telecom.lobby sudo sed -i "/${phn}.telecomlobby.com.crt/d" /config/scripts/post-config.d/files.sh
+						if [ $(ssh -q ${wa[j]}.${LDN} grep -wc ${phtc} /config/scripts/post-config.d/files.sh) -gt 0 ]; then
+							ssh -q ${wa[j]}.${LDN} sudo sed -i "/${phtc}.crt/d" /config/scripts/post-config.d/files.sh
 						fi
-						ssh -q indra.telecom.lobby sudo ipsec rereadall
-						ssh -q indra.telecom.lobby sudo ipsec reload
+						ssh -q ${wa[j]}.${LDN} sudo ipsec rereadall
+						ssh -q ${wa[j]}.${LDN} sudo ipsec reload
 					;;
 				esac
 			) || echo "${wa[j]}.${LDN} unreachable"
