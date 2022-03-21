@@ -79,6 +79,11 @@ function dnsquery () {
 						[[ $(echo "${ph}" | cut -d : -f2) == "${2}" ]] && echo "${ph}" | cut -d : -f1
 					done
 				;;
+				"-MR")
+					for ph in $(dig ipsec20591."${PDN}" TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d' ); do
+						[[ $(echo "${ph}" | cut -d : -f1) == "${2}" ]] && echo "${ph}" | cut -d : -f2
+					done
+				;;
                 "-T")
                     r=$(tempfile)
                     echo "openbsd "$(dig openbsd."${LDN}" TXT +short| sed "s|;| |g") > "${r}"
