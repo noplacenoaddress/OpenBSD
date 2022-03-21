@@ -236,8 +236,8 @@ case "${OPT}" in
 					;;
 					"edgeos")
 						echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper begin" > "${tf}"
-						typeset -u uphtc="${phtc}"
-						pip=$(dig A "${phtc}.telecomlobby.com" +short)
+						typeset -u uphtc=$(echo "${phtc}" | sed "s|.${PDN}||")
+						pip=$(dig A "${phtc}" +short)
 						[[ "${pip}" == "" ]] && read -p "Type the external ip address because was deleted: " pip
 						irid=$(dig A "${ihn}".${LDN} +short)
 						[[ "${irid}" == "" ]] && read -p "Type the router id because was deleted: " irid
@@ -257,8 +257,8 @@ case "${OPT}" in
 						fi
 						ssh -q ${wa[j]}.${LDN} /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show firewall modify PBR | grep -wB 3 "${uphtc}" &> /dev/null
 						if [ $? -eq 0 ]; then
-							ruleid=$(ssh -q ${wa[j]}.${LDN} /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show firewall modify PBR | grep -wB 3 "${upphn}" | head -n 1 | awk '{print $2}')
-							tableid=$(ssh -q ${wa[j]}.${LDN} /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show firewall modify PBR | grep -wB 1 "${upphn}" | grep -v "${upphn}" | awk '{print $2}')
+							ruleid=$(ssh -q ${wa[j]}.${LDN} /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show firewall modify PBR | grep -wB 3 "${uphtc}" | head -n 1 | awk '{print $2}')
+							tableid=$(ssh -q ${wa[j]}.${LDN} /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show firewall modify PBR | grep -wB 1 "${uphtc}" | grep -v "${uphtc}" | awk '{print $2}')
 							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete firewall modify PBR rule ${ruleid}" >> $tf
 						fi
 						ssh -q ${wa[j]}.${LDN} /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show policy access-list 10 | grep -wB 3 "${irid}" &> /dev/null
@@ -266,35 +266,35 @@ case "${OPT}" in
 							ruleid=$(ssh -q ${wa[j]}.${LDN} /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show policy access-list 10 | grep -wB 3 "${irid}" | head -n 1 | awk '{print $2}')
 							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete policy access-list 10 rule ${ruleid}" >> $tf
 						fi
-						greint=$(ssh -q ${wa[j]}.${LDN} ip link show | grep -wB 2 "${phn}.telecomlobby.com" | head -n 1 | awk '{print $2}' | cut -d @ -f1)
+						greint=$(ssh -q ${wa[j]}.${LDN} ip link show | grep -wB 2 "${phtc}" | head -n 1 | awk '{print $2}' | cut -d @ -f1)
 						if [[ "${greint}" == tun*[0-9] ]]; then
-							grenet=$(ssh -q indra.telecom.lobby ip route | grep -w "dev ${greint} proto kernel"| awk '{print $1}')
+							grenet=$(ssh -q ${wa[j]}.${LDN} ip route | grep -w "dev ${greint} proto kernel"| awk '{print $1}')
 							if [[ "${grenet}" == "" ]]; then
-								IFS=. read -r i1 i2 i3 i4 <<< $(ssh -q indra.telecom.lobby /sbin/ifconfig -a tun5 | grep inet | awk '{print $2}')
+								IFS=. read -r i1 i2 i3 i4 <<< $(ssh -q i${wa[j]}.${LDN} /sbin/ifconfig -a tun5 | grep inet | awk '{print $2}')
 								IFS=. read -r m1 m2 m3 m4 <<< "255.255.255.252"
 								grenet=$(printf "%d.%d.%d.%d\n" "$((i1 & m1))" "$((i2 & m2))" "$((i3 & m3))" "$((i4 & m4))")"/30"
 							fi
-							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete protocols ospf area 0.0.0.0 network ${grenet}" >> $edgescript
-							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete protocols ospf passive-interface-exclude ${greint}" >> $edgescript
-							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete interfaces tunnel ${greint}" >> $edgescript
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete protocols ospf area 0.0.0.0 network ${grenet}" >> $tf
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete protocols ospf passive-interface-exclude ${greint}" >> $tf
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete interfaces tunnel ${greint}" >> $tf
 						fi
-						ssh -q indra.telecom.lobby ip route | grep -w "${pip}" &> /dev/null
+						ssh -q ${wa[j]}.${LDN} ip route | grep -w "${pip}" &> /dev/null
 						if [ $? -eq 0 ]; then
-							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete protocols static interface-route ${pip}/32" >> $edgescript
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete protocols static interface-route ${pip}/32" >> $tf
 						fi
-						if [ $(ssh -q indra.telecom.lobby show protocols static table "${tableid}" | wc -l) -gt 1 ]; then
-							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete protocols static table ${tableid}" >> $edgescript
+						if [ $(ssh -q ${wa[j]}.${LDN} show protocols static table "${tableid}" | wc -l) -gt 1 ]; then
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete protocols static table ${tableid}" >> $tf
 						fi
-						if [ $(ssh -q indra.telecom.lobby /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show system task-scheduler task ES${upphn} | wc -l) -gt 1 ]; then
-							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete system task-scheduler task ES${upphn}" >> $edgescript
+						if [ $(ssh -q ${wa[j]}.${LDN} /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show system task-scheduler task ES${uphtc} | wc -l) -gt 1 ]; then
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete system task-scheduler task ES${uphtc}" >> $tf
 						fi
-						echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper commit" >> $edgescript
-						echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper save" >> $edgescript
-						cat "${edgescript}"
+						echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper commit" >> $tf
+						echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper save" >> $tf
+						cat "${tf}"
 						read -p "OK? yes/no " ctrl
 						case "${ctrl}" in
 							"yes")
-								cat "${edgescript}" | ssh -q indra.telecom.lobby
+								cat "${tf}" | ssh -q indra.telecom.lobby
 							;;
 							"no")
 								exit 1
@@ -328,7 +328,7 @@ case "${OPT}" in
 						ssh -q indra.telecom.lobby sudo ipsec reload
 					;;
 				esac
-			) echo "${wa[j]}.${LDN} unreachable"
+			) || echo "${wa[j]}.${LDN} unreachable"
 		done
 	;;
 	"-G"|"-N"|"-S"|"-D"|"-PF"|"-F"|"-C"|"-P")
