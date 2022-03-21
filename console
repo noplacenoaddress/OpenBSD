@@ -29,7 +29,7 @@ function menu () {
 			echo -e $0 "-I ${LDN} -SO [openbsd|mikrotik|edgeos|ALL] -N -> newhost OpenBSD host [o]"
 			echo -e $0 "-I ${LDN} -SO [openbsd|mikrotik|edgeos|ALL] -C -> cleanlast [o]"
 			echo -e $0 "-I ${LDN} -SO [openbsd|mikrotik|edgeos|ALL] -P -> syspatch [o]"
-			echo -e $0 "-I ${LDN} -SO [openbsd|edgeos] -F -> single file update [o]"
+			echo -e $0 "-I ${LDN} -SO [openbsd|edgeos|ALL] -F -> single file update [o]"
             echo -e $0 "-I ${LDN} -SO [openbsd] -G -> git pull [o]"
             echo -e $0 "-I ${LDN} -SO [openbsd] -S -> scripts [o]"
             echo -e $0 "-I ${LDN} -SO [openbsd] -D -> dyndnspop [o]"
@@ -48,6 +48,7 @@ daterelease=$(date +"%d%m%Y%H%m%S")
 TODAY=$(date +"%d%m")
 RD="/run/user/${UID}/guerrilla"
 
+
 # variables from command lines and consequent processing or quit
 
 (: "${1?}") 2>/dev/null || menu 0
@@ -56,11 +57,19 @@ PDN=$(dig "${LDN}" TXT +short | sed "s|\"||g") && [[ "${PDN}" ]] || ( echo "inte
 (: "${3?}") 2>/dev/null || menu 1
 (: "${3?}") 2>/dev/null &&  [ "${3}" == "-SO" ]  || menu 1 && (: "${4?}") 2>/dev/null &&  [ "${4}" == "openbsd"  -o "${4}" == "mikrotik" -o "${4}" == "edgeos" -o "${4}" == "raspi" -o "${4}" == "ALL" ] && SO="${4}" || menu 1
 (: "${5?}") 2>/dev/null || menu 2
-(: "${5?}") 2>/dev/null &&  [ "${5}" == "-N" -o "${5}" == "-G" -o "${5}" == "-S" -o "${5}" == "-D" -o "${5}" == "-F" -o "${5}" == "-C" -o "${5}" == "-P" -o "${5}" == "-T" ] && OPT="${5}" || menu 2
+(: "${5?}") 2>/dev/null &&  (
+	[ "${5}" == "-P" -o "${5}" == "-T" ] || \
+	( [ "${5}" == "-N"  -o "${5}" == "-C" -o "${5}" == "-P" ] && [ "${4}" == "openbsd"  -o "${4}" == "mikrotik" -o "${4}" == "edgeos" -o "${4}" == "ALL" ] ) || \
+	( [ "${5}" == "-F" ] && [ "${4}" == "openbsd"  -o "${4}" == "edgeos" -o "${4}" == "ALL" ] ) || \
+	( [ "${5}" == "-G"  -o "${5}" == "-S" -o "${5}" == "-D" ] && [ "${4}" == "openbsd" ] ) \
+) && OPT="${5}" || menu 2
+
+
 
 # functions
 
 source "lib/foo.sh"
+
 
 # a work array and a pair of strings
 
@@ -72,6 +81,10 @@ source "lib/foo.sh"
 # temp files
 
 tf=$(tempfile)
+
+# add another fd to hack a little bit
+
+exec 5>&1
 
 
 if [[ "${UID}" -eq 0 ]]; then
@@ -90,19 +103,38 @@ case "${SO}" in
 esac
 case "${OPT}" in
 	"-T")
+		TS="${RD}/tmux$RANDOM"
 		echo -e "Launching TMUX"
-		tmux new-session -d -s "LOBBY"
+		tmux -S "${TS}" new-session -d -s "LOBBY"
+		tmux -S "${TS}" set -g status-justify left
+		tmux -S "${TS}" set -g status-left-length 40
+		tmux -S "${TS}" set -g history-limit 5000
+		#tmux -S "${TS}" set -g default-terminal "xterm-256color"
+		tmux -S "${TS}" set-option -g status-left '#[fg=white,bold]⚡️ guerrilla ⚡️ '
+		tmux -S "${TS}" set-option -g status-right 'Europe/Madrid #[fg=agua]%I:%M:%S'
+		#tmux -S "${TS}" set -g mouse on
+		#tmux -S "${TS}" bind -n WheelUpPane if-shell -F -t = "#{mouse_any_flag}" "send-keys -M" "if -Ft= '#{pane_in_mode}' 'send-keys -M' 'copy-mode -e; send-keys -M'"
+		tmux -S "${TS}" bind -n S-Pageup copy-mode -u
+		tmux -S "${TS}" bind -n S-Pagedown send-keys Pagedown
+		# color status bar
+		tmux -S "${TS}" set -g status-bg black
+		tmux -S "${TS}" set -g status-fg cyan
+
+		# highlight current window
+		tmux -S "${TS}" setw -g window-status-current-style bg=black,fg=magenta,bold
+
+
 		for (( j=0; j<${#wa[@]}; j++ )); do
 			echo -e "Creating ${wa[j]} TMUX windows"
-			tmux rename-window "${wa[j]}"
-			tmux send -t "LOBBY:${wa[j]}" ssh SPACE "${wa[j]}.${LDN}" ENTER
-			tmux new-window
+			tmux -S "${TS}" rename-window "${wa[j]}"
+			tmux -S "${TS}" send -t "LOBBY:${wa[j]}" ssh SPACE "${wa[j]}.${LDN}" ENTER
+			tmux -S "${TS}" new-window
 		done
-		tmux rename-window "CA"
-		tmux send -t "LOBBY:CA" ssh SPACE "ca.${LDN}" ENTER
-		tmux new-window
-		tmux rename-window $(hostname -s)
-		tmux -2 attach-session -t "LOBBY"
+		tmux -S "${TS}" rename-window "CA"
+		tmux -S "${TS}" send -t "LOBBY:CA" ssh SPACE "ca.${LDN}" ENTER
+		tmux -S "${TS}" new-window
+		tmux -S "${TS}" rename-window $(hostname -s)
+		tmux -S "${TS}" -2 attach-session -t "LOBBY"
 	;;
 	"-P")
 		for (( j=0; j<${#wa[@]}; j++ )); do
@@ -110,16 +142,16 @@ case "${OPT}" in
 			[[ "${c}" == 1 ]] && (
 				case $(dnsquery -T ${wa[j]}) in
 					"openbsd")
-						c=$(capa3 ${wa[j]}.${LDN} "wan")
 							li=$(ssh ${wa[j]}.${LDN} syspatch -l | tail -n 1)
 							lw=$(curl -s https://www.openbsd.org/errata70.html | grep patches | tail -n 1)
-							[[ "${lw}" =~ "${li}" ]] || (echo "New ${wa[j]}.${LDN} patches found" ; ssh ${wa[j]}.${LDN} doas syspatch) && echo "No ${wa[j]}.${LDN} patches found"
+							[[ "${lw}" =~ "${li}" ]] || (echo "New  OpenBSD patches found to apply for ${wa[j]}.${LDN}" ; ssh ${wa[j]}.${LDN} doas syspatch) && echo "No OpenBSD patches found to apply for ${wa[j]}.${LDN} "
 					;;
 					"edgeos")
+						echo
 						li=$(ssh -q ${wa[j]}.${LDN} sudo /usr/bin/ubnt-upgrade --show | grep v[0-9] | awk '{print $1}')
 						lw=$(curl -s -X GET "https://fw-update.ubnt.com/api/firmware-latest?filter=eq~~platform~~edgerouter&filter=eq~~channel~~release&filter=eq~~product~~e300" |  tr \, '\n' | grep -w \"version\": | cut -d : -f2 | sed "s|\"||g")
 						[[ "${lw}" != "${li}" ]] || echo "No EdgeOS patches found" && ( \
-							echo "New EdgeOS patches found"
+							echo "New EdgeOS patches found for ${wa[j]}.${LDN}"
 							read -p "Download ${lw}?: yes/no " ctrl
 							case "${ctrl}" in
 								"yes")
@@ -142,11 +174,12 @@ case "${OPT}" in
 						)
 					;;
 					"mikrotik")
+						echo
 						check=$(ssh -q ${wa[j]}.${LDN} system package update check-for-updates  | grep status | tail -n 1 | grep -c "New version is available")
 						[[ "${check}" ]] && (
 							iros=$(ssh -q ${wa[j]}.${LDN} system package update check-for-updates  | grep installed | sed "s|[^0-9.]*||g" | uniq)
 							aros=$(ssh -q ${wa[j]}.${LDN} system package update check-for-updates  | grep latest | sed "s|[^0-9.]*||g" | tail -n 1)
-							echo "new RouterOS version found, installed ${iros}, latest ${aros}"
+							echo "new RouterOS version found for ${wa[j]}.${LDN}, installed ${iros}, latest ${aros}"
 							read -p "Download ${aros}?: yes/no " ctrl
 							case "${ctrl}" in
 								"yes")
@@ -160,9 +193,142 @@ case "${OPT}" in
 						)
 					;;
 					"raspi")
+						echo
+						echo "Upgrading Raspbian OS onto ${wa[j]}.${LDN}..."
+						check=$(ssh -q ${wa[j]}.${LDN} sudo apt update 2>/dev/null | grep packages | cut -d '.' -f 1 | tee /dev/fd/5)
+						[[ "upgraded" =~ "${check}" ]] && (
+							read -p "Upgrade?: yes/no " ctrl
+							case "${ctrl}" in
+								"yes")
+									ssh -q ${wa[j]}.${LDN} sudo apt upgrade 2>/dev/null
+									echo "Remember to reboot if necessary"
+								;;
+								"no")
+									echo "Remember to manually upgrade ${wa[j]}.${LDN}"
+								;;
+							esac
+						)
 					;;
 				esac
 			) || echo "${wa[j]}.${LDN} unreachable"
+		done
+	;;
+	"-C")
+		read -p "Type the internal hostname to clean: " ihtc
+		phtc=$(dnsquery -M "${ihtc}")".${PDN}"
+		[[  "${phtc}" == "" ]]  && read -p "Type the external hostname because was deleted: " phtc
+		for (( j=0; j<${#wa[@]}; j++ )); do
+			echo -e "Connecting to ${wa[j]}.${LDN}..."
+			c=$(capa3 ${wa[j]}.${LDN} "wan")
+			[[ "${c}" == 1 ]] && (
+				case $(dnsquery -T ${wa[j]}) in
+					"openbsd")
+						ghtc=$(ssh ${wa[j]}.${LDN} ifconfig gre | grep -wB 1 "${phtc}" | head -n 1 | awk '{print $1}' | sed "s|:$||")
+						ssh ${wa[j]}.${LDN} "echo ${ghtc} > /tmp/cleantmp"
+						ssh ${wa[j]}.${LDN} doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node -A cleanlast"
+					;;
+					"mikrotik")
+						#ghtc=$(ssh ${wa[j]}.${LDN} ":put [/int gre get [find comment=xolotl] name;]" | tr -d '\r\n')
+						cat src/mikrotik/tools/clean_last.rsc > "${tf}"
+						sed -i "s|/HOSTNAME/|${ihtc}|g" "${tf}"
+						scp  "${tf}" "${wa[j]}"."${LDN}":/clean.rsc
+						eval "ssh ${wa[j]}.${LDN} :execute \{/import clean.rsc\}"
+					;;
+					"edgeos")
+						echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper begin" > "${tf}"
+						typeset -u uphtc="${phtc}"
+						pip=$(dig A "${phtc}.telecomlobby.com" +short)
+						[[ "${pip}" == "" ]] && read -p "Type the external ip address because was deleted: " pip
+						irid=$(dig A "${ihn}".${LDN} +short)
+						[[ "${irid}" == "" ]] && read -p "Type the router id because was deleted: " irid
+						for i in $(ssh -q ${wa[j]}.${LDN}  /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show firewall group | grep address-group | awk '{print $2}'); do
+							ssh -q ${wa[j]}.${LDN}  sudo ipset list "${i}" | grep "${pip}"  &> /dev/null
+							if [ $? -eq 0 ]; then
+								echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete firewall group address-group ${i} address ${pip}" >> $tf
+								type="${i}"
+							fi
+						done
+						ssh -q ${wa[j]}.${LDN}  sudo ipset list ROUTERID | grep "${irid}" &> /dev/null
+						if [ $? -eq 0 ]; then
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete firewall group address-group ROUTERID address ${irid}" >> $tf
+						fi
+						if [ $(ssh -q ${wa[j]}.${LDN} /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show firewall modify DMZMARK-"${uphtc}" | wc -l) -gt 1 ]; then
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete firewall modify DMZMARK-${uphtc}" >> $tf
+						fi
+						ssh -q ${wa[j]}.${LDN} /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show firewall modify PBR | grep -wB 3 "${uphtc}" &> /dev/null
+						if [ $? -eq 0 ]; then
+							ruleid=$(ssh -q ${wa[j]}.${LDN} /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show firewall modify PBR | grep -wB 3 "${upphn}" | head -n 1 | awk '{print $2}')
+							tableid=$(ssh -q ${wa[j]}.${LDN} /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show firewall modify PBR | grep -wB 1 "${upphn}" | grep -v "${upphn}" | awk '{print $2}')
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete firewall modify PBR rule ${ruleid}" >> $tf
+						fi
+						ssh -q ${wa[j]}.${LDN} /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show policy access-list 10 | grep -wB 3 "${irid}" &> /dev/null
+						if [ $? -eq 0 ]; then
+							ruleid=$(ssh -q ${wa[j]}.${LDN} /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show policy access-list 10 | grep -wB 3 "${irid}" | head -n 1 | awk '{print $2}')
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete policy access-list 10 rule ${ruleid}" >> $tf
+						fi
+						greint=$(ssh -q ${wa[j]}.${LDN} ip link show | grep -wB 2 "${phn}.telecomlobby.com" | head -n 1 | awk '{print $2}' | cut -d @ -f1)
+						if [[ "${greint}" == tun*[0-9] ]]; then
+							grenet=$(ssh -q indra.telecom.lobby ip route | grep -w "dev ${greint} proto kernel"| awk '{print $1}')
+							if [[ "${grenet}" == "" ]]; then
+								IFS=. read -r i1 i2 i3 i4 <<< $(ssh -q indra.telecom.lobby /sbin/ifconfig -a tun5 | grep inet | awk '{print $2}')
+								IFS=. read -r m1 m2 m3 m4 <<< "255.255.255.252"
+								grenet=$(printf "%d.%d.%d.%d\n" "$((i1 & m1))" "$((i2 & m2))" "$((i3 & m3))" "$((i4 & m4))")"/30"
+							fi
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete protocols ospf area 0.0.0.0 network ${grenet}" >> $edgescript
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete protocols ospf passive-interface-exclude ${greint}" >> $edgescript
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete interfaces tunnel ${greint}" >> $edgescript
+						fi
+						ssh -q indra.telecom.lobby ip route | grep -w "${pip}" &> /dev/null
+						if [ $? -eq 0 ]; then
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete protocols static interface-route ${pip}/32" >> $edgescript
+						fi
+						if [ $(ssh -q indra.telecom.lobby show protocols static table "${tableid}" | wc -l) -gt 1 ]; then
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete protocols static table ${tableid}" >> $edgescript
+						fi
+						if [ $(ssh -q indra.telecom.lobby /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show system task-scheduler task ES${upphn} | wc -l) -gt 1 ]; then
+							echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete system task-scheduler task ES${upphn}" >> $edgescript
+						fi
+						echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper commit" >> $edgescript
+						echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper save" >> $edgescript
+						cat "${edgescript}"
+						read -p "OK? yes/no " ctrl
+						case "${ctrl}" in
+							"yes")
+								cat "${edgescript}" | ssh -q indra.telecom.lobby
+							;;
+							"no")
+								exit 1
+							;;
+							*)
+								exit 1
+							;;
+						esac
+						case "${type}" in
+							"OPENBSD")
+								ssh -q indra.telecom.lobby sudo sed -i -e "/telecomlobby-${upphn}/,+13d" /config/ipsec.conf
+							;;
+							"MIKROTIK")
+								ssh -q indra.telecom.lobby sudo sed -i -e "/telecomlobby-${upphn}/,+11d" /config/ipsec.conf
+							;;
+						esac
+						ssh -q indra.telecom.lobby sudo cp /config/ipsec.conf /etc
+						if [ $(ssh -q indra.telecom.lobby sudo ipsec status telecomlobby-${upphn} | grep -v Security | grep -c ESTABLISHED) -gt 0 ]; then
+							ssh -q indra.telecom.lobby sudo ipsec down telecomlobby-${upphn}
+						fi
+						ssh -q indra.telecom.lobby [[ -e "/config/ipsec/ES${upphn}-updown.sh" ]] && rm -rf "/config/ipsec/ES${upphn}-updown.sh"
+						ssh -q indra.telecom.lobby [[ -e "/config/auth/${phn}.telecomlobby.com.crt" ]] && rm -rf "/config/auth/${phn}.telecomlobby.com.crt"
+						ssh -q indra.telecom.lobby [[ -e "/etc/ipsec.d/certs/${phn}.telecomlobby.com.crt" ]]
+						if [ $? -eq 0 ]; then
+							ssh -q indra.telecom.lobby sudo rm -rf "/etc/ipsec.d/certs/${phn}.telecomlobby.com.crt"
+						fi
+						if [ $(ssh -q indra.telecom.lobby grep -wc ${phn}.telecomlobby.com /config/scripts/post-config.d/files.sh) -gt 0 ]; then
+							ssh -q indra.telecom.lobby sudo sed -i "/${phn}.telecomlobby.com.crt/d" /config/scripts/post-config.d/files.sh
+						fi
+						ssh -q indra.telecom.lobby sudo ipsec rereadall
+						ssh -q indra.telecom.lobby sudo ipsec reload
+					;;
+				esac
+			) echo "${wa[j]}.${LDN} unreachable"
 		done
 	;;
 	"-G"|"-N"|"-S"|"-D"|"-PF"|"-F"|"-C"|"-P")
@@ -172,8 +338,6 @@ case "${OPT}" in
 		[[ "${3}" == "-D" ]] && rcmd="${ws} -U dyndnspop"
 		[[ "${3}" == "-PF" ]] && rcmd="${ws} -U pf"
 		[[ "${3}" == "-F" ]] && rcmd="${ws} -U file"
-		[[ "${3}" == "-C" ]] && rcmd="${ws} -A cleanlast"
-		[[ "${3}" == "-P" ]] && rcmd="doas syspatch"
 		for (( j=0; j<${#wa[@]}; j++ )); do
 			echo -e "Connecting to ${wa[j]}"
 			ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 ${wa[j]}.${LDN} eval "${rcmd}"
@@ -189,8 +353,6 @@ if [[ $# -eq 0 ]]; then
 	echo -e $0 "have to be used with the following options \
 			\n \
 			\n-I   -> local domain name [x]\
-
-
 			\n-CMK -> clean VPS from Mikrotiks [o] \
 			\n-CEO -> clean VPS from EdgeOS [o] \
 			\n-RS  -> repository ssh update [o] \
@@ -229,115 +391,7 @@ case $3 in
 	;;
 
 	;;
-	"-CMK")
-		read -p "Type the internal hostname: " ihn
-		dnsquery wa "mikrotik"
-		for (( j=0; j<${#wa[@]}; j++ )); do
-			echo -e "Connecting to ${wa[j]}"
-			cleanmk=$(mktemp)
-			cat src/mikrotik/tools/clean_last.rsc > "${cleanmk}"
-			sed -i "s|/HOSTNAME/|${ihn}|g" "${cleanmk}"
-			scp  "${cleanmk}" "${wa[j]}"."${localdomainname}":/clean.rsc
-			eval "ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3 -o ConnectionAttempts=1 ${wa[j]} :execute \{/import clean.rsc\}"
-		done
-	;;
-	"-CEO")
-		read -p "Type the internal hostname: " ihn
-		edgescript=$(mktemp)
-		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper begin" > $edgescript
-		phn=$(dig ipsec20591.telecomlobby.com TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d' | grep "${ihn}" | cut -d : -f1)
-		[[ "${phn}" == "" ]] && read -p "Type the external hostname because was deleted: " phn
-		typeset -u upphn="${phn}"
-		pip=$(dig A "${phn}.telecomlobby.com" +short)
-		[[ "${pip}" == "" ]] && read -p "Type the external ip address because was deleted: " pip
-		irid=$(dig A "${ihn}".${LDN} +short)
-		[[ "${irid}" == "" ]] && read -p "Type the router id because was deleted: " irid
-		for i in $(ssh -q indra.telecom.lobby /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show firewall group | grep address-group | awk '{print $2}'); do
-			ssh -q indra.telecom.lobby sudo ipset list "${i}" | grep "${pip}"  &> /dev/null
-			if [ $? -eq 0 ]; then
-				echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete firewall group address-group ${i} address ${pip}" >> $edgescript
-				type="${i}"
-			fi
-		done
-		ssh -q indra.telecom.lobby sudo ipset list ROUTERID | grep "${irid}" &> /dev/null
-		if [ $? -eq 0 ]; then
-			echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete firewall group address-group ROUTERID address ${irid}" >> $edgescript
-		fi
-		if [ $(ssh -q indra.telecom.lobby /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show firewall modify DMZMARK-"${upphn}" | wc -l) -gt 1 ]; then
-			echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete firewall modify DMZMARK-${upphn}" >> $edgescript
-		fi
-		ssh -q indra.telecom.lobby /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show firewall modify PBR | grep -wB 3 "${upphn}" &> /dev/null
-		if [ $? -eq 0 ]; then
-			ruleid=$(ssh -q indra.telecom.lobby /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show firewall modify PBR | grep -wB 3 "${upphn}" | head -n 1 | awk '{print $2}')
-			tableid=$(ssh -q indra.telecom.lobby /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show firewall modify PBR | grep -wB 1 "${upphn}" | grep -v "${upphn}" | awk '{print $2}')
-			echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete firewall modify PBR rule ${ruleid}" >> $edgescript
-		fi
-		ssh -q indra.telecom.lobby /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show policy access-list 10 | grep -wB 3 "${irid}" &> /dev/null
-		if [ $? -eq 0 ]; then
-			ruleid=$(ssh -q indra.telecom.lobby /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show policy access-list 10 | grep -wB 3 "${irid}" | head -n 1 | awk '{print $2}')
-			echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete policy access-list 10 rule ${ruleid}" >> $edgescript
-		fi
-		greint=$(ssh -q indra.telecom.lobby ip link show | grep -wB 2 "${phn}.telecomlobby.com" | head -n 1 | awk '{print $2}' | cut -d @ -f1)
-		if [[ "${greint}" == tun*[0-9] ]]; then
-			grenet=$(ssh -q indra.telecom.lobby ip route | grep -w "dev ${greint} proto kernel"| awk '{print $1}')
-			if [[ "${grenet}" == "" ]]; then
-				IFS=. read -r i1 i2 i3 i4 <<< $(ssh -q indra.telecom.lobby /sbin/ifconfig -a tun5 | grep inet | awk '{print $2}')
-				IFS=. read -r m1 m2 m3 m4 <<< "255.255.255.252"
-				grenet=$(printf "%d.%d.%d.%d\n" "$((i1 & m1))" "$((i2 & m2))" "$((i3 & m3))" "$((i4 & m4))")"/30"
-			fi
-			echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete protocols ospf area 0.0.0.0 network ${grenet}" >> $edgescript
-			echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete protocols ospf passive-interface-exclude ${greint}" >> $edgescript
-			echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete interfaces tunnel ${greint}" >> $edgescript
-		fi
-		ssh -q indra.telecom.lobby ip route | grep -w "${pip}" &> /dev/null
-		if [ $? -eq 0 ]; then
-			echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete protocols static interface-route ${pip}/32" >> $edgescript
-		fi
-		if [ $(ssh -q indra.telecom.lobby show protocols static table "${tableid}" | wc -l) -gt 1 ]; then
-			echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete protocols static table ${tableid}" >> $edgescript
-		fi
-		if [ $(ssh -q indra.telecom.lobby /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show system task-scheduler task ES${upphn} | wc -l) -gt 1 ]; then
-			echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete system task-scheduler task ES${upphn}" >> $edgescript
-		fi
-		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper commit" >> $edgescript
-		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper save" >> $edgescript
-		cat "${edgescript}"
-		read -p "OK? yes/no " ctrl
-		case "${ctrl}" in
-			"yes")
-				cat "${edgescript}" | ssh -q indra.telecom.lobby
-			;;
-			"no")
-				exit 1
-			;;
-			*)
-				exit 1
-			;;
-		esac
-		case "${type}" in
-			"OPENBSD")
-				ssh -q indra.telecom.lobby sudo sed -i -e "/telecomlobby-${upphn}/,+13d" /config/ipsec.conf
-			;;
-			"MIKROTIK")
-				ssh -q indra.telecom.lobby sudo sed -i -e "/telecomlobby-${upphn}/,+11d" /config/ipsec.conf
-			;;
-		esac
-		ssh -q indra.telecom.lobby sudo cp /config/ipsec.conf /etc
-		if [ $(ssh -q indra.telecom.lobby sudo ipsec status telecomlobby-${upphn} | grep -v Security | grep -c ESTABLISHED) -gt 0 ]; then
-			ssh -q indra.telecom.lobby sudo ipsec down telecomlobby-${upphn}
-		fi
-		ssh -q indra.telecom.lobby [[ -e "/config/ipsec/ES${upphn}-updown.sh" ]] && rm -rf "/config/ipsec/ES${upphn}-updown.sh"
-		ssh -q indra.telecom.lobby [[ -e "/config/auth/${phn}.telecomlobby.com.crt" ]] && rm -rf "/config/auth/${phn}.telecomlobby.com.crt"
-		ssh -q indra.telecom.lobby [[ -e "/etc/ipsec.d/certs/${phn}.telecomlobby.com.crt" ]]
-		if [ $? -eq 0 ]; then
-			ssh -q indra.telecom.lobby sudo rm -rf "/etc/ipsec.d/certs/${phn}.telecomlobby.com.crt"
-		fi
-		if [ $(ssh -q indra.telecom.lobby grep -wc ${phn}.telecomlobby.com /config/scripts/post-config.d/files.sh) -gt 0 ]; then
-			ssh -q indra.telecom.lobby sudo sed -i "/${phn}.telecomlobby.com.crt/d" /config/scripts/post-config.d/files.sh
-		fi
-		ssh -q indra.telecom.lobby sudo ipsec rereadall
-		ssh -q indra.telecom.lobby sudo ipsec reload
-	;;
+
 	"-P")
 		for vpnc_host in $(dig openbsd.${LDN} TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 			echo -e "Connecting to $vpnc_host"
@@ -635,7 +689,7 @@ case $3 in
 		tmpupload=$(mktemp)
 		ctrl=
 		while true; do
-			read -p "Start configuring $secondarydomain onto native PowerDNS on ${G34[$rand34s]}? yes/no: " ctrl
+			read -p "Start configuring $secondarydomain onto native PowerDNS for ${G34[$rand34s]}? yes/no: " ctrl
 			case $ctrl in
 				[yY]*)
 					echo $routerid12s > $tmpupload && echo $routerid56s >> $tmpupload && echo ${tsig256s} | tr -d ' ' >> $tmpupload && echo $secondarydomain >> $tmpupload
@@ -653,7 +707,7 @@ case $3 in
 		done
 		ctrl=
 		while true; do
-			read -p "Continue with configuring $secondarydomain onto native PowerDNS on ${G12[$rand12s]}? yes/no: " ctrl
+			read -p "Continue with configuring $secondarydomain onto native PowerDNS for ${G12[$rand12s]}? yes/no: " ctrl
 			case $ctrl in
 				[yY]*)
 					echo $masters34slave12 > $tmpupload && echo ${tsig256s} | tr -d ' ' >> $tmpupload && echo $secondarydomain >> $tmpupload
@@ -671,7 +725,7 @@ case $3 in
 		done
 		ctrl=
 		while true; do
-			read -p "Continue with configuring $secondarydomain onto native PowerDNS on ${G56[$rand56s]}? yes/no: " ctrl
+			read -p "Continue with configuring $secondarydomain onto native PowerDNS for ${G56[$rand56s]}? yes/no: " ctrl
 			case $ctrl in
 				[yY]*)
 					echo $masters34slave56 > $tmpupload && echo ${tsig256s} | tr -d ' ' >> $tmpupload && echo $secondarydomain >> $tmpupload
@@ -1488,7 +1542,7 @@ case $3 in
 					if [ $(ssh $vpnc_host.${LDN} grep -c inet6 /etc/hostname."${gre}") -eq 0 ]; then
 						id=$(echo "${gre}" | sed "s|gre||")
 						endpoint=$(ssh $vpnc_host.${LDN} cat /etc/hostname."${gre}" | grep description | sed -e "s|description ||" -e 's|"||g')
-						echo -e "ULA for ${gre} on $vpnc_host for tunnel with ${endpoint} is $(echo "${routeridv6}" | sed "s|::/128||"):$(printf "%x\n" "${id}")::/127"
+						echo -e "ULA for ${gre} for $vpnc_host for tunnel with ${endpoint} is $(echo "${routeridv6}" | sed "s|::/128||"):$(printf "%x\n" "${id}")::/127"
 						[[ $(ssh $vpnc_host.${LDN} grep -c ${gre} /tmp/ipv6) -eq 0 ]] && ssh $vpnc_host.${LDN} "echo ${gre} $(echo "${routeridv6}" | sed "s|::/128||"):$(printf "%x\n" "${id}")::/127 >> /tmp/ipv6"
 						ephm=$(echo "${endpoint}" | sed "s|.telecomlobby.com||")
 						for phn in $(dig ipsec20591.telecomlobby.com TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d' |  cut -d : -f1); do
@@ -1496,7 +1550,7 @@ case $3 in
 								lhm=$(dig ipsec20591.telecomlobby.com TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d' |  grep "${phn}" | cut -d : -f2)
 							#	[[ "${lhm}" == "neo" ]] && lhm="varuna"
 								os=$(nc -w1 $lhm.${LDN} 22)
-								echo -e "ULA ptp for $vpnc_host on $lhm is $(echo "${routeridv6}" | sed "s|::/128||"):$(printf "%x\n" "${id}")::1/127"
+								echo -e "ULA ptp for $vpnc_host for $lhm is $(echo "${routeridv6}" | sed "s|::/128||"):$(printf "%x\n" "${id}")::1/127"
 								case "${os}" in
 									*Debian*)
 										edgescript=$(mktemp)
