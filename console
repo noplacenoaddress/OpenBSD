@@ -29,6 +29,7 @@ function menu () {
 			echo -e $0 "-I ${LDN} -SO [openbsd|mikrotik|edgeos|ALL] -N -> newhost OpenBSD host [o]"
 			echo -e $0 "-I ${LDN} -SO [openbsd|mikrotik|edgeos|ALL] -C -> cleanlast [o]"
 			echo -e $0 "-I ${LDN} -SO [openbsd|edgeos|ALL] -F -> single file update [o]"
+			echo -e $0 "-I ${LDN} -SO [ALL] -KD  -> print all IPsec certificates deadlines [o]"
             echo -e $0 "-I ${LDN} -SO [openbsd] -G -> git pull [o]"
             echo -e $0 "-I ${LDN} -SO [openbsd] -S -> scripts [o]"
             echo -e $0 "-I ${LDN} -SO [openbsd] -D -> dyndnspop [o]"
@@ -38,7 +39,6 @@ function menu () {
 			echo -e $0 "-I ${LDN} -SO [workstation] -GR6 -> add IPv6 ULA to gre tunnel interfaces [o]"
 			echo -e $0 "-I ${LDN} -SO [workstation] -RS  -> repository ssh update [o]"
 			echo -e $0 "-I ${LDN} -SO [workstation] -Z   -> global network domains setup [o]"
-			echo -e $0 "-I ${LDN} -SO [workstation] -KD  -> print all IPsec certificates deadlines [o]"
 			echo -e $0 "-I ${LDN} -SO [workstation] -GEO -> get IP address geo group [o]"
 			echo -e $0 "-I ${LDN} -SO [workstation] -CU  -> single certificate upgrade / change [o]"
 			echo -e $0 "-I ${LDN} -SO [workstation] -U   -> update the workstation's user EdDSA certificate [o]"
@@ -66,15 +66,16 @@ RD="/run/user/${UID}/guerrilla"
 (: "${2?}") 2>/dev/null && LDN="${2}"
 PDN=$(dig "${LDN}" TXT +short | sed "s|\"||g") && [[ "${PDN}" ]] || ( echo "internal domain name daemon misconfigured or local domain name error" ; exit 1 )
 (: "${3?}") 2>/dev/null || menu 1
-(: "${3?}") 2>/dev/null && ( [ "${3}" == "-SO" ]  || [ "${3}" == "-W" ] ) || menu 1 && (: "${4?}") 2>/dev/null &&  [ "${4}" == "openbsd"  -o "${4}" == "mikrotik" -o "${4}" == "edgeos" -o "${4}" == "raspi" -o "${4}" == "ALL" ] && SO="${4}" || menu 1
+(: "${3?}") 2>/dev/null && ( [ "${3}" == "-SO" ]  || [ "${3}" == "-W" ] ) || menu 1 && (: "${4?}") 2>/dev/null &&  [ "${4}" == "openbsd"  -o "${4}" == "mikrotik" -o "${4}" == "edgeos" -o "${4}" == "raspi" -o "${4}" == "workstation" -o "${4}" == "ALL" ] && SO="${4}" || menu 1
 (: "${5?}") 2>/dev/null || menu 2
 (: "${5?}") 2>/dev/null &&  (
 	[ "${5}" == "-P" -o "${5}" == "-T" ] || \
 	( [ "${5}" == "-N"  -o "${5}" == "-C" -o "${5}" == "-P" ] && [ "${4}" == "openbsd"  -o "${4}" == "mikrotik" -o "${4}" == "edgeos" -o "${4}" == "ALL" ] ) || \
 	( [ "${5}" == "-F" ] && [ "${4}" == "openbsd"  -o "${4}" == "edgeos" -o "${4}" == "ALL" ] ) || \
+	( [ "${5}" == "-KD" ] && [ "${4}" == "ALL" ] ) || \
 	( [ "${5}" == "-G"  -o "${5}" == "-S" -o "${5}" == "-D" ] && [ "${4}" == "openbsd" ] ) || \
 	( [ "${5}" == "-LTE"  -o "${5}" == "-CHR" ] && [ "${4}" == "mikrotik" ] ) || \
-	( [ "${5}" == "-GR6"  -o "${5}" == "-RS" -o "${5}" == "-Z" -o "${5}" == "-KD" -o "${5}" == "-GEO"  -o "${5}" == "-CU" -o "${5}" == "-U" -o "${5}" == "-CI" -o "${5}" == "-K" ] && [ "${4}" == "workstation" ] )
+	( [ "${5}" == "-GR6"  -o "${5}" == "-RS" -o "${5}" == "-Z" -o "${5}" == "-GEO"  -o "${5}" == "-CU" -o "${5}" == "-U" -o "${5}" == "-CI" -o "${5}" == "-K" ] && [ "${4}" == "workstation" ] )
 ) && OPT="${5}" || menu 2
 
 
@@ -115,6 +116,7 @@ case "${SO}" in
 	;;
 esac
 case "${OPT}" in
+	# [openbsd|mikrotik|edgeos|raspi|ALL] #
 	"-T")
 		TS="${RD}/tmux$RANDOM"
 		echo -e "Launching TMUX"
@@ -221,6 +223,104 @@ case "${OPT}" in
 								;;
 							esac
 						)
+					;;
+				esac
+			) || echo "${wa[j]}.${LDN} unreachable"
+		done
+	;;
+	#[openbsd|mikrotik|edgeos|ALL]
+	"-N")
+		for (( j=0; j<${#wa[@]}; j++ )); do
+			echo -e "Connecting to ${wa[j]}.${LDN}..."
+			c=$(capa3 ${wa[j]}.${LDN} "wan")
+			[[ "${c}" == 1 ]] && (
+				case $(dnsquery -T ${wa[j]}) in
+					"openbsd")
+						ssh ${wa[j]}.${LDN} doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node -U newhost"
+					;;
+					"mikrotik")
+						openbsd=
+						while [ -z $openbsd ]
+						do
+							echo 'Type the new OpenBSD internal hostname '
+							read openbsd
+						done
+						mkaddr=$(dig A "$(dnsquery -M ${wa[j]}).${PDN}" +short)
+						mkpublichost="$(dnsquery -M ${wa[j]}).${PDN}"
+						wget "http://$openbsd.${LDN}/$mkpublichost/$mkpublichost.rsc" -O "/tmp/$mkpublichost.rsc"
+						scp "/tmp/$mkpublichost.rsc" " ${wa[j]}.${LDN}:/$mkpublichost.rsc"
+						ssh  ${wa[j]}.${LDN} /import file-name=$mkpublichost.rsc
+						echo -e "Host ${wa[j]}.${LDN} configured into Mikrotik  ${wa[j]}.${LDN}"
+					;;
+					"edgeos")
+						openbsd=
+						while [ -z $openbsd ]
+						do
+							echo 'Type the new OpenBSD internal hostname '
+							read openbsd
+						done
+						publicip=$(dig A "$(dnsquery -M ${openbsd}).${PDN}" +short)
+						publichost=$(dnsquery -M ${openbsd})".${PDN}"
+						#publicdomainname=$(dig -x $publicip +short | sed "s/$publichost.//" | sed 's/.$//')
+						publichostname=$(dnsquery -M "${wa[j]}")
+						phn=$(dnsquery -M "${wa[j]}")
+						wget "http://$openbsd.$2/$edgehost.tar" -O "/tmp/$edgehost.tar"
+						cd /tmp
+						if [[ ! -d "${phn}.${PDN}" ]]; then
+							mkdir "${phn}.${PDN}"
+						fi
+						tar xvf "/tmp/${phn}.${PDN}.tar" -C "/tmp/${phn}.${PDN}"
+						cd ${phn}.${PDN}
+						for file in $(ls .); do
+							if [[ $file = "gre.sh" || $file = "ospf.sh" ]]; then
+								cat $file | ssh -q ${wa[j]}.${LDN}
+							elif [[ $file = *updown.sh ]]; then
+								a=$(echo $file | sed "s/-updown.sh//")
+								c=$(echo $a | sed "s/-//")
+								v=$(echo $file | sed "s/$a/$c/")
+								metric=$(ssh -q ${wa[j]}.${LDN} /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show protocols static | grep table | awk '{print $2}' | wc -l)
+								let metric+=1
+								others=""
+								for prefix in $(ssh -q ${wa[j]}.${LDN} /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show protocols static | grep table | awk '{print $2}'); do
+									others+=$(printf '\t\t%s\\n' '/sbin/ip route add table '"${prefix}"' metric '"${metric}"' scope link default nexthop dev "${TUN_IFACE}"')
+								done
+								sed -i "s|/OTHERS/|${others}|" $file
+								scp -q $file "${wa[j]}.${LDN}:/tmp"
+								ssh -q ${wa[j]}.${LDN} "sudo mv /tmp/$file /config/ipsec/$v ; chmod +x /config/ipsec/$v"
+							elif [[ $file = *_netwatch.sh ]]; then
+								a=$(echo $file | sed "s/_netwatch.sh//")
+								c=$(echo $a | sed "s/-//")
+								v=$(echo $file | sed "s/$a/$c/")
+								scp -q $file "${wa[j]}.${LDN}:/tmp"
+								ssh -q ${wa[j]}.${LDN} "sudo mv /tmp/$file /config/scripts/$v; chmod +x /config/scripts/$v"
+							elif [[ $file = *.crt ]]; then
+								scp -q $file "${wa[j]}.${LDN}:/tmp"
+								ssh -q ${wa[j]}.${LDN} sudo cp "/tmp/$file" /config/auth; sudo mv "/tmp/$file" /etc/ipsec.d/certs/
+							elif [[ $file = *.conf ]]; then
+								if [[ $(ssh -q ${wa[j]}.${LDN} grep -c telecomlobby-$(head -n 1 $file | cut -d \- -f2) /config/ipsec.conf) -eq 0 ]]; then
+									cat $file | ssh -qt ${wa[j]}.${LDN} "cat - >> /config/ipsec.conf"
+								fi
+							fi
+						done
+						ssh -q ${wa[j]}.${LDN} echo "cp /config/auth/$publichostname.crt /etc/ipsec.d/certs/" >> /config/scripts/post-config.d/files.sh
+						ctrl=
+						while [ -z $ctrl ]
+						do
+							echo "Do you want to reread ipsec "
+							read ctrl
+						done
+						rm -rf "/tmp/${phn}.${PDN}"
+						case $ctrl in
+							"yes")
+								ssh -q ${wa[j]}.${LDN} ipsec rereadall
+								ssh -q ${wa[j]}.${LDN} ipsec reload
+							;;
+							"no")
+							;;
+							*)
+								echo 'Reply yes or no'
+							;;
+						esac
 					;;
 				esac
 			) || echo "${wa[j]}.${LDN} unreachable"
@@ -344,103 +444,7 @@ case "${OPT}" in
 			) || echo "${wa[j]}.${LDN} unreachable"
 		done
 	;;
-	"-N")
-		for (( j=0; j<${#wa[@]}; j++ )); do
-			echo -e "Connecting to ${wa[j]}.${LDN}..."
-			c=$(capa3 ${wa[j]}.${LDN} "wan")
-			[[ "${c}" == 1 ]] && (
-				case $(dnsquery -T ${wa[j]}) in
-					"openbsd")
-						ssh ${wa[j]}.${LDN} doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node -U newhost"
-					;;
-					"mikrotik")
-						openbsd=
-						while [ -z $openbsd ]
-						do
-							echo 'Type the new OpenBSD internal hostname '
-							read openbsd
-						done
-						mkaddr=$(dig A "$(dnsquery -M ${wa[j]}).${PDN}" +short)
-						mkpublichost="$(dnsquery -M ${wa[j]}).${PDN}"
-						wget "http://$openbsd.${LDN}/$mkpublichost/$mkpublichost.rsc" -O "/tmp/$mkpublichost.rsc"
-						scp "/tmp/$mkpublichost.rsc" " ${wa[j]}.${LDN}:/$mkpublichost.rsc"
-						ssh  ${wa[j]}.${LDN} /import file-name=$mkpublichost.rsc
-						echo -e "Host ${wa[j]}.${LDN} configured into Mikrotik  ${wa[j]}.${LDN}"
-					;;
-					"edgeos")
-						openbsd=
-						while [ -z $openbsd ]
-						do
-							echo 'Type the new OpenBSD internal hostname '
-							read openbsd
-						done
-						publicip=$(dig A "$(dnsquery -M ${openbsd}).${PDN}" +short)
-						publichost=$(dnsquery -M ${openbsd})".${PDN}"
-						#publicdomainname=$(dig -x $publicip +short | sed "s/$publichost.//" | sed 's/.$//')
-						publichostname=$(dnsquery -M "${wa[j]}")
-						phn=$(dnsquery -M "${wa[j]}")
-						wget "http://$openbsd.$2/$edgehost.tar" -O "/tmp/$edgehost.tar"
-						cd /tmp
-						if [[ ! -d "${phn}.${PDN}" ]]; then
-							mkdir "${phn}.${PDN}"
-						fi
-						tar xvf "/tmp/${phn}.${PDN}.tar" -C "/tmp/${phn}.${PDN}"
-						cd ${phn}.${PDN}
-						for file in $(ls .); do
-							if [[ $file = "gre.sh" || $file = "ospf.sh" ]]; then
-								cat $file | ssh -q ${wa[j]}.${LDN}
-							elif [[ $file = *updown.sh ]]; then
-								a=$(echo $file | sed "s/-updown.sh//")
-								c=$(echo $a | sed "s/-//")
-								v=$(echo $file | sed "s/$a/$c/")
-								metric=$(ssh -q ${wa[j]}.${LDN} /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show protocols static | grep table | awk '{print $2}' | wc -l)
-								let metric+=1
-								others=""
-								for prefix in $(ssh -q ${wa[j]}.${LDN} /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper show protocols static | grep table | awk '{print $2}'); do
-									others+=$(printf '\t\t%s\\n' '/sbin/ip route add table '"${prefix}"' metric '"${metric}"' scope link default nexthop dev "${TUN_IFACE}"')
-								done
-								sed -i "s|/OTHERS/|${others}|" $file
-								scp -q $file "${wa[j]}.${LDN}:/tmp"
-								ssh -q ${wa[j]}.${LDN} "sudo mv /tmp/$file /config/ipsec/$v ; chmod +x /config/ipsec/$v"
-							elif [[ $file = *_netwatch.sh ]]; then
-								a=$(echo $file | sed "s/_netwatch.sh//")
-								c=$(echo $a | sed "s/-//")
-								v=$(echo $file | sed "s/$a/$c/")
-								scp -q $file "${wa[j]}.${LDN}:/tmp"
-								ssh -q ${wa[j]}.${LDN} "sudo mv /tmp/$file /config/scripts/$v; chmod +x /config/scripts/$v"
-							elif [[ $file = *.crt ]]; then
-								scp -q $file "${wa[j]}.${LDN}:/tmp"
-								ssh -q ${wa[j]}.${LDN} sudo cp "/tmp/$file" /config/auth; sudo mv "/tmp/$file" /etc/ipsec.d/certs/
-							elif [[ $file = *.conf ]]; then
-								if [[ $(ssh -q ${wa[j]}.${LDN} grep -c telecomlobby-$(head -n 1 $file | cut -d \- -f2) /config/ipsec.conf) -eq 0 ]]; then
-									cat $file | ssh -qt ${wa[j]}.${LDN} "cat - >> /config/ipsec.conf"
-								fi
-							fi
-						done
-						ssh -q ${wa[j]}.${LDN} echo "cp /config/auth/$publichostname.crt /etc/ipsec.d/certs/" >> /config/scripts/post-config.d/files.sh
-						ctrl=
-						while [ -z $ctrl ]
-						do
-							echo "Do you want to reread ipsec "
-							read ctrl
-						done
-						rm -rf "/tmp/${phn}.${PDN}"
-						case $ctrl in
-							"yes")
-								ssh -q ${wa[j]}.${LDN} ipsec rereadall
-								ssh -q ${wa[j]}.${LDN} ipsec reload
-							;;
-							"no")
-							;;
-							*)
-								echo 'Reply yes or no'
-							;;
-						esac
-					;;
-				esac
-			) || echo "${wa[j]}.${LDN} unreachable"
-		done
-	;;
+	#[openbsd|edgeos|ALL]
 	"-F")
 		for (( j=0; j<${#wa[@]}; j++ )); do
 			echo -e "Connecting to ${wa[j]}.${LDN}..."
@@ -461,6 +465,101 @@ case "${OPT}" in
 			) || echo "${wa[j]}.${LDN} unreachable"
 		done
 	;;
+	#[ALL]
+	"-KD")
+		echo "Current GMT time is: $(LANG=uk_UK date -u '+%b %d %H:%M:%S %Y GMT')"
+		echo "Current epoch time is: $(date +"%s")"
+		echo "Looking at OpenBSD hosts..."
+		currrentepoch=$(date +"%s")
+		for vpnc_host in $(dig openbsd.${LDN} TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+			deadline=$(ssh -o LogLevel=QUIET -t $vpnc_host.${LDN} openssl x509 -in "/etc/iked/certs/*.crt" -noout -enddate | sed "s|^notAfter=||")
+			echo "IPsec SSL certificate deadline of $vpnc_host is: $deadline"
+			echo "IPsec SSL certificate epoch deadline of $vpnc_host is: $(date --date "${deadline}" "+%s")"
+			deadlineepoch=$(date --date "${deadline}" "+%s")
+			if [ "$deadlineepoch" -lt "$currrentepoch" ]; then
+				openbsdiked+=("$vpnc_host")
+				echo "$vpnc_host IPsec SSL certificate has to be upgraded"
+			fi
+		done
+		echo "Looking at Mikrotik RouterOS hosts..."
+		for vpnc_host in $(dig mikrotik.${LDN} TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+			deadlinemk=$(ssh -o LogLevel=QUIET $vpnc_host.${LDN} /cert pr det where subject-alt-name=\"email:$vpnc_host@ca.telecomlobby.com\" | grep invalid-after | sed -e "s|[^.*]expires.*$||" -e "s|[[:space:]]* invalid-after=||")
+			deadline="$(echo $deadlinemk | cut -d / -f1) $(echo $deadlinemk | cut -d / -f2) $(echo $deadlinemk | cut -d " " -f2) $(echo $deadlinemk| cut -d / -f3 | cut -d " " -f1)"
+			echo "IPsec SSL certificate deadline of $vpnc_host is: $deadline"
+			echo "IPsec SSL certificate epoch deadline of $vpnc_host is: $(date --date "${deadline}" "+%s")"
+			deadlineepoch=$(date --date "${deadline}" "+%s")
+			if [ "$deadlineepoch" -lt "$currrentepoch" ]; then
+				mikrotikiked+=("$vpnc_host")
+				echo "$vpnc_host IPsec SSL certificate has to be upgraded"
+			fi
+		done
+		echo "Looking at Ubiquiti EdgeOS hosts..."
+		for vpnc_host in $(dig edgeos.${LDN} TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d' | cut -d : -f1); do
+			deadline=$(ssh -o LogLevel=QUIET -t $vpnc_host.${LDN} openssl x509 -in "/config/auth/local/*.crt" -noout -enddate | sed "s|^notAfter=||")
+			echo "IPsec SSL certificate deadline of $vpnc_host is: $deadline"
+			echo "IPsec SSL certificate epoch deadline of $vpnc_host is: $(date --date "${deadline}" "+%s")"
+			deadlineepoch=$(date --date "${deadline}" "+%s")
+			if [ "$deadlineepoch" -lt "$currrentepoch" ]; then
+				edgeosiked+=("$vpnc_host")
+				echo "$vpnc_host IPsec SSL certificate has to be upgraded"
+			fi
+		done
+		if [ ${#edgeosiked[@]} -gt 1 ]; then
+			echo "edgeos"
+		fi
+		if [ ${#openbsdiked[@]} -gt 1 ]; then
+			echo "openbsd"
+			for i in "${openbsdiked[@]}"; do
+				echo "Working into $i Ipsec SSL certificate upgrade"
+				ikedpub=
+				while [ -z $ikedpub ]
+				do
+					echo "Type the PATH to the upgraded iked PK12 file for $i "
+					read ikedpub
+				done
+				tmpdir=$(mktemp -d)
+				pk12=$(basename $ikedpub)
+				publichost=$(echo $pk12 | sed 's/.p12//')
+				publichostname=$(echo $publichost | cut -d . -f1)
+				domainname=$(echo $publichost | sed "s/$publichostname.//")
+				for a in $(dig ipsec20591.$domainname TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+					b=$(echo $a | cut -d : -f1)
+					if [[ "$b" -eq "$publichostname" ]]; then
+					srcid=$(echo $a | cut -d : -f2)
+					fi
+				done
+				echo "uploading P12 to /tmp onto $i"
+				scp $ikedpub "$i.${LDN}:/tmp"
+				ssh -t $i.${LDN} doas sh "/home/taglio/Sources/Git/OpenBSD/tools/ikedsslupgade"
+				echo "uploading P12 to Mikrotik hosts"
+				for vpnc_host in $(dig mikrotik.${LDN} TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+					scp $ikedpub "${vpnc_host}.${LDN}"
+					echo "/certificate remove [/certificate find where name=${publichost}]" > /tmp/i.rsc
+				 	echo "/certificate import passphrase=123456789 file-name=$pk12 name=${publichost}" >> /tmp/i.rsc
+					echo "/ip ipsec identity set [/ip ipsec identity find where certificate=${publichost}] certificate=${publichost}" >> /tmp/i.rsc
+					scp /tmp/i.rsc "${vpnc_host}.${LDN}"
+					cat  /tmp/i.rsc
+					sleep 40
+					#eval "ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 ${vpnc_host}.${LDN} :execute \{/import i.rsc\}"
+				done
+				openssl pkcs12 -nodes -in $ikedpub -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "$tmpdir/$publichost.crt"
+				echo "uploading .crt to EdgeOS hosts"
+				for vpnc_host in $(dig edgeos.${LDN} TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d' | cut -d : -f1); do
+					scp "$tmpdir/$publichost.crt" "$vpnc_host.${LDN}:/config/auth"
+					ssh $vpnc_host.${LDN} "sudo cp /config/auth/${publichost}.crt /etc/ipsec.d/certs/"
+					ssh $vpnc_host.${LDN} "sudo ipsec rereadall"
+					ssh $vpnc_host.${LDN} "sudo ipsec reload"
+				done
+				openssl x509 -pubkey -noout -passin pass:123456789 -in "$tmpdir/$publichost.crt"  > src/etc/iked/pubkeys/ufqdn/"$srcid@ca.$domainname"
+				srm -r "${tmpdir}"
+				echo -e "$srcid@ca.$domainname created please update repository and all the others Openbsd hosts"
+			done
+		fi
+		if [ ${#mikrotikiked[@]} -gt 1 ]; then
+			echo "mikrotik"
+		fi
+	;;
+	#[openbsd]
 	"-G"|"-S"|"-D"|"-PF"|"-7")
 		[[ "${3}" == "-G" ]] && rcmd="git -C "$proghome" pull"
 		[[ "${3}" == "-S" ]] && rcmd="${ws} -U scripts"
@@ -472,372 +571,7 @@ case "${OPT}" in
 			ssh ${wa[j]}.${LDN} eval "${rcmd}"
 		done
 	;;
-	"-RS")
-		lanhost=
-		while [ -z $lanhost ]
-		do
-			echo 'Type the LAN hostname '
-			read lanhost
-		done
-		pubhost=
-		while [ -z $pubhost ]
-		do
-			echo 'Type the public hostname '
-			read pubhost
-		done
-		hash=
-		while [ -z $hash ]
-		do
-			echo 'Type the ED25519 hash '
-			read hash
-		done
-		if [[ $(grep -c $lanhost src/etc/ssh/remote_install/authorized_keys) -gt 0 ]]; then
-			for linenum in $(grep -n $lanhost src/etc/ssh/remote_install/authorized_keys | cut -d : -f1); do
-				sed -i "$linenum"d src/etc/ssh/remote_install/authorized_keys
-			done
-		fi
-
-		echo "ssh-ed25519 $hash root@$lanhost" >> src/etc/ssh/remote_install/authorized_keys
-		#	if [[ $(grep -c $pubhost src/etc/ssh/ssh_known_hosts) -gt 0 ]]; then
-		#		for linenum in $(grep -n $pubhost src/etc/ssh/ssh_known_hosts | cut -d : -f1); do
-		#			sed -i "$linenum"d src/etc/ssh/ssh_known_hosts
-		#		done
-		#	fi
-		#
-		#	echo "# $pubhost:31137 SSH-2.0-OpenSSH_8.6" >> src/etc/ssh/ssh_known_hosts
-		#	echo "[$pubhost]:31137 ssh-ed25519 $hash" >> src/etc/ssh/ssh_known_hosts
-		echo -e "remote_install/authorized_keys and ssh_known_hosts UPDATED
-		\n please use git_openbsd.sh to update the public GIT"
-	;;
-esac
-
-exit 0
-
-
-
-case $3 in
-
-	"-K")
-		ikedpub=
-		while [ -z $ikedpub ]
-		do
-			echo 'Type the PATH to the new iked PK12 file '
-			read ikedpub
-		done
-		tmpdir=$(mktemp -d)
-		pk12=$(basename $ikedpub)
-		publichost=$(echo $pk12 | sed 's/.p12//')
-		publichostname=$(echo $publichost | cut -d . -f1)
-		domainname=$(echo $publichost | sed "s/$publichostname.//")
-
-
-		for a in $(dig ipsec20591.$domainname TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
-			b=$(echo $a | cut -d : -f1)
-			if [[ "$b" -eq "$publichostname" ]]; then
-				srcid=$(echo $a | cut -d : -f2)
-			fi
-		done
-		ssh-keygen -f "${HOME}/.ssh/known_hosts" -R "$publichost"
-		scp $ikedpub "${userna}@$publichost:/tmp"
-		openssl pkcs12 -nodes -in $ikedpub -nocerts -passin pass:123456789 -passout pass:123456789 -out "$tmpdir/local.key"
-		openssl pkcs12 -nodes -in $ikedpub -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "$tmpdir/new.crt"
-		openssl x509 -pubkey -noout -passin pass:123456789 -in "$tmpdir/new.crt"  > src/etc/iked/pubkeys/ufqdn/"$srcid@ca.$domainname"
-		rm -rf $tmpdir
-		echo -e "$srcid@ca.$domainname created please update repository and all the others Openbsd hosts"
-	;;
-	"-Z")
-		comdomains=
-		echo -e "Type the two .com domains (the principle and the secondary) divided by a comma: "
-		read comdomains
-		principledomain=$(printf $comdomains | cut -d , -f1)
-		secondarydomain=$(printf $comdomains | cut -d , -f2)
-		for domain in $(printf "$comdomains" | xargs -d, -n1); do
-			echo -e "\n$domain: "
-			whois $domain | grep "Name Server" | grep -v "^Name"
-			dnssec=$(whois $domain| grep DNSSEC | grep -c "unsigned")
-			[[ $dnssec > 0 ]] && echo -e "\nDNSSEC not enable onto $domain!" || echo -e "\nDNSSEC enabled onto $domain!"
-			echo "<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>"
-		done
-		echo -e "You've got servers in:\n"
-		for vpnc_host in $(dig openbsd.${LDN} TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
-
-			local=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q $vpnc_host.${LDN} readlink /etc/localtime  | sed "s/\/usr\/share\/zoneinfo\///")
-			zonetab=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q $vpnc_host.${LDN} cat /usr/share/zoneinfo/zone.tab | grep $local)
-			[[ $zonetab ]] && echo -e "\n$zonetab\n" || echo -e "\n$local\n"
-			publicip=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q $vpnc_host.${LDN} ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
-			curl -s "http://ipinfo.io/$publicip" | sed '/readme/d'
-			loc=$(curl -s "http://ipinfo.io/$publicip" | grep loc | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g")
-			long=$(echo $loc | cut -d , -f2 | cut -d . -f1)
-			lat=$(echo $loc | cut -d , -f1 | cut -d . -f1)
-			country=$(curl -s "http://ipinfo.io/$publicip" | grep country | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g")
-			continent=$(grep "${country}" cndb/* | cut -d / -f2 | cut -d : -f1)
-			echo -e "\nLAT --> $lat"
-			echo -e "LONG --> $long\n"
-			if [[ $long -ge -180 && $long -le -60 && $lat -ge 0 ]]; then group=12 && ospfarea="0.0.1.2" && G12+=("$vpnc_host"); fi
-			if [[ $long -ge -60 && $long -le 60 && $lat -ge 0 ]]; then group=34 && ospfarea="0.0.3.4" && G34+=("$vpnc_host"); fi
-			if [[ $long -ge 60 && $long -le 180 && $lat -ge 0 ]]; then group=56 && ospfarea="0.0.5.6" && G56+=("$vpnc_host"); fi
-			if [[ $long -ge -180 && $long -le -60 && $lat -le 0 ]]; then group=12 && ospfarea="0.0.1.2" && G12+=("$vpnc_host"); fi
-			if [[ $long -ge -60 && $long -le 60 && $lat -le 0 ]]; then group=34 && ospfarea="0.0.3.4" && G34+=("$vpnc_host"); fi
-			if [[ $long -ge 60 && $long -le 180 && $lat -le 0 ]]; then group=56 && ospfarea="0.0.5.6" && G56+=("$vpnc_host"); fi
-			echo -e "GROUP --> $group"
-			echo -e "BACKBONE OSPFAREA 0.0.0.0"
-			echo -e "GEO OSPFAREA --> $ospfarea"
-			echo -e "CONTINENT --> $continent\n"
-		done
-		[[ ${#G12[@]} > 1 ]] && rand12p=$[$RANDOM % ${#G12[@]}] || rand12p="${G12[0]}"
-		[[ ${#G34[@]} > 1 ]] && rand34p=$[$RANDOM % ${#G34[@]}] || rand34p="${G34[0]}"
-		[[ ${#G56[@]} > 1 ]] && rand56p=$[$RANDOM % ${#G56[@]}] || rand56p="${G56[0]}"
-		echo -e "The master PowerDNS server for $principledomain in the group 34 is ${G34[$rand34p]} in the group 12 is ${G12[$rand12p]} and in the group 56 is ${G56[$rand56p]}"
-		publicip=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q ${G34[$rand34p]}.${LDN} ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
-		nsd34p=$(curl -s "http://ipinfo.io/$publicip" | grep hostname | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g" | sed "s/$principledomain/$secondarydomain/" | tr '[:lower:]' '[:upper:]')
-		routerid34p=$(dig "${G34[$rand34p]}.${LDN}" A +short)
-		publicip=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q ${G12[$rand12p]}.${LDN} ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
-		nsd12p=$(curl -s "http://ipinfo.io/$publicip" | grep hostname | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g" | sed "s/$principledomain/$secondarydomain/" | tr '[:lower:]' '[:upper:]')
-		routerid12p=$(dig "${G12[$rand12p]}.${LDN}" A +short)
-		publicip=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q ${G56[$rand56p]}.${LDN} ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
-		nsd56p=$(curl -s "http://ipinfo.io/$publicip" | grep hostname | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g" | sed "s/$principledomain/$secondarydomain/" | tr '[:lower:]' '[:upper:]')
-		routerid56p=$(dig "${G56[$rand56p]}.${LDN}" A +short)
-		#masterp34slave12=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G34[$rand34p]}.${LDN}" ospfctl show fib | grep "$routerid12p" | awk '{print $4}')
-		#masterp34gre12=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G34[$rand34p]}.${LDN}" ifconfig | grep $masterp34slave12 | awk '{print $2}')
-		#masterp34slave56=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G34[$rand34p]}.${LDN}" ospfctl show fib | grep "$routerid56p" | awk '{print $4}')
-		#masterp34gre56=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G34[$rand34p]}.${LDN}" ifconfig | grep $masterp34slave56 | awk '{print $2}')
-		#slavep12master34=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G12[$rand12p]}.${LDN}" ospfctl show fib | grep "$routerid34p" | awk '{print $4}')
-		#slavep12gre34=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G12[$rand12p]}.${LDN}" ifconfig | grep $slavep12master34 | awk '{print $2}')
-		#slavep56master34=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G56[$rand56p]}.${LDN}" ospfctl show fib | grep "$routerid34p" | awk '{print $4}')
-		#slavep56gre34=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G56[$rand56p]}.${LDN}" ifconfig | grep $slavep56master34 | awk '{print $2}')
-		epoch=$(date +%s)
-		if [[ ! -e "../db/domains.sqlite3" ]]; then
-			echo -e "initialize sqlite3 domains local database"
-			sqlite3 "../db/domains.sqlite3" < "src/openbsd/db.sql"
-
-		else
-			echo -e "erasing and initializing sqlite3 domains local database"
-			sqlite3 "../db/domains.sqlite3" "DROP TABLE domains;"
-			sqlite3 "../db/domains.sqlite3" < "src/openbsd/db.sql"
-		fi
-		sqlite3 "../db/domains.sqlite3" "INSERT INTO domains (name,ns34,ns12,ns56,last_update)  values (\"$principledomain\",\"$routerid34p\",\"$routerid12p\",\"$routerid56p\",$epoch);"
-		if [ $dnssec = 0 ]; then
-			dnssec_keyid=$(whois "${principledomain}" | grep DNSSEC\ DS | awk '{print $4}' | head -n 1)
-			sqlite3 "../db/domains.sqlite3" "UPDATE domains SET dnssec = 0, dnssec_keyid = ${dnssec_keyid} WHERE name = ${principledomain};"
-		fi
-		echo -e "Please configure WHOIS server for $principledomain with:"
-		printf '%s\n' $nsd34p
-		printf '%s\n' $nsd12p
-		printf '%s\n' $nsd56p
-		echo -e "Useful PowerDNS parameters:"
-		printf '%s\t%s\t%s\n' $routerid34p #$masterp34gre12 $masterp34gre56
-		printf '%s\t%s\n' $routerid12p #$slavep12gre34
-		printf '%s\t%s\n' $routerid56p #$slavep56gre34
-		[[ ${#G12[@]} > 1 ]] && rand12s=$[$RANDOM % ${#G12[@]}] || rand12s="${G12[0]}"
-		[[ ${#G34[@]} > 1 ]] && rand34s=$[$RANDOM % ${#G34[@]}] || rand34s="${G34[0]}"
-		[[ ${#G56[@]} > 1 ]] && rand56s=$[$RANDOM % ${#G56[@]}] || rand56s="${G56[0]}"
-		echo -e "The master PowerDNS server for $secondarydomain in the group 34 is ${G34[$rand34s]} slaves are in the group 12 ${G12[$rand12s]} and in the group 56 ${G56[$rand56s]}"
-		publicip=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q ${G34[$rand34s]}.${LDN} ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
-		nsd34s=$(curl -s "http://ipinfo.io/$publicip" | grep hostname | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g" | tr '[:lower:]' '[:upper:]')
-		routerid34s=$(dig "${G34[$rand34s]}.${LDN}" A +short)
-		publicip=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q ${G12[$rand12s]}.${LDN} ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
-		nsd12s=$(curl -s "http://ipinfo.io/$publicip" | grep hostname | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g" | tr '[:lower:]' '[:upper:]')
-		routerid12s=$(dig "${G12[$rand12s]}.${LDN}" A +short)
-		publicip=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q ${G56[$rand56s]}.${LDN} ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
-		nsd56s=$(curl -s "http://ipinfo.io/$publicip" | grep hostname | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g" | tr '[:lower:]' '[:upper:]')
-		routerid56s=$(dig "${G56[$rand56s]}.${LDN}" A +short)
-		#masters34slave12=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G34[$rand34s]}.${LDN}" ospfctl show fib | grep "$routerid12s" | awk '{print $4}')
-		#masters34gre12=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G34[$rand34s]}.${LDN}" ifconfig | grep $masters34slave12 | awk '{print $2}')
-		#masters34slave56=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G34[$rand34s]}.${LDN}" ospfctl show fib | grep "$routerid56s" | awk '{print $4}')
-		#masters34gre56=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G34[$rand34s]}.${LDN}" ifconfig | grep $masters34slave56 | awk '{print $2}')
-		#slaves12master34=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G12[$rand12s]}.${LDN}" ospfctl show fib | grep "$routerid34s" | awk '{print $4}')
-		#slaves12gre34=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G12[$rand12s]}.${LDN}" ifconfig | grep $slaves12master34 | awk '{print $2}')
-		#slaves56master34=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G56[$rand56s]}.${LDN}" ospfctl show fib | grep "$routerid34s" | awk '{print $4}')
-		#slaves56gre34=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G56[$rand56s]}.${LDN}" ifconfig | grep $slaves56master34 | awk '{print $2}')
-		echo -e "Please configure WHOIS server for $secondarydomain with:"
-		printf '%s\n' $nsd34s
-		printf '%s\n' $nsd12s
-		printf '%s\n' $nsd56s
-		echo -e "Useful PowerDNS parameters:"
-		printf '%s\t%s\t%s\n' $routerid34s #$masters34gre12 $masters34gre56
-		printf '%s\t%s\n' $routerid12s #$slaves12gre34
-		printf '%s\t%s\n' $routerid56s #$slaves56gre34
-		tsig256s=$(dd if=/dev/urandom of=/dev/stdout count=1 bs=64 status=none | openssl base64)
-		tmpupload=$(mktemp)
-		ctrl=
-		while true; do
-			read -p "Start configuring $secondarydomain onto native PowerDNS for ${G34[$rand34s]}? yes/no: " ctrl
-			case $ctrl in
-				[yY]*)
-					echo $routerid12s > $tmpupload && echo $routerid56s >> $tmpupload && echo ${tsig256s} | tr -d ' ' >> $tmpupload && echo $secondarydomain >> $tmpupload
-					scp $tmpupload "${G34[$rand34s]}.${LDN}:/tmp/powernsd_distributed"
-					ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -t "${G34[$rand34s]}.${LDN}"  doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -D powerdns #distributed
-					break
-				;;
-				[nN]*)
-					echo 'Ok, going ahead'
-					break
-				;;
-				*)
-					echo 'Invalid input' >&2
-			esac
-		done
-		ctrl=
-		while true; do
-			read -p "Continue with configuring $secondarydomain onto native PowerDNS for ${G12[$rand12s]}? yes/no: " ctrl
-			case $ctrl in
-				[yY]*)
-					echo $masters34slave12 > $tmpupload && echo ${tsig256s} | tr -d ' ' >> $tmpupload && echo $secondarydomain >> $tmpupload
-					scp $tmpupload "${G12[$rand12s]}.${LDN}:/tmp/powerdns_distributed"
-					ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -t "${G12[$rand12s]}.${LDN}"  doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -D powerdns #distributed
-					break
-				;;
-				[nN]*)
-					echo 'Ok, going ahead'
-					break
-				;;
-				*)
-					echo 'Invalid input' >&2
-			esac
-		done
-		ctrl=
-		while true; do
-			read -p "Continue with configuring $secondarydomain onto native PowerDNS for ${G56[$rand56s]}? yes/no: " ctrl
-			case $ctrl in
-				[yY]*)
-					echo $masters34slave56 > $tmpupload && echo ${tsig256s} | tr -d ' ' >> $tmpupload && echo $secondarydomain >> $tmpupload
-					scp $tmpupload "${G56[$rand56s]}.${LDN}:/tmp/powernsd_distributed"
-					ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -t "${G56[$rand56s]}.${LDN}"  doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -D powerdns #distributed
-					break
-				;;
-				[nN]*)
-					echo 'Ok, going ahead'
-					break
-				;;
-				*)
-					echo 'Invalid input' >&2
-			esac
-		done
-		echo -e "Secondary domain $secondarydomain configured"
-	;;
-
-	"-U")
-		if [[ ! -d "$HOME/.ssh/Backup$daterelease" ]]; then
-			mkdir "$HOME/.ssh/Backup$daterelease"
-		else
-			rm -rf "$HOME/.ssh/Backup$daterelease"
-			mkdir "$HOME/.ssh/Backup$daterelease"
-		fi
-		if [[ -e "$HOME/.ssh/id_ed25519" ]]; then
-			mv $HOME/.ssh/{id_ed25519,id_ed25519.pub,id_ed25519-cert.pub} "$HOME/.ssh/Backup$daterelease"
-		fi
-		ssh-keygen -t ed25519 -C "taglio@${LDN}"
-		cat "$HOME/.ssh/id_ed25519.pub" > "$HOME/Work/telecom.lobby/OpenBSD/src/etc/sshauthorized_keys"
-		sed -i "s|^Public.*|Public ssh key for user = $(cat $HOME/.ssh/id_ed25519.pub)|" installation/install-vps.conf
-		pwdfile=$(mktemp)
-		# Read Password
-		password=$(systemd-ask-password "Enter CA password: ")
-		# Run Command
-		echo $password > $pwdfile
-		echo -n Type the mounted FAT32 pen drive directory:
-		read fat32pen
-		if [[ ! -d "$fat32pen" ]]; then
-			mkdir "$fat32pen/CA_update"
-		else
-			rm -rf  "$fat32pen/CA_update"
-			mkdir "$fat32pen/CA_update"
-		fi
-		cp "$HOME/.ssh/id_ed25519.pub" "$fat32pen/CA_update"
-		cp  $pwdfile "$fat32pen/CA_update/capwd.txt"
-		srm $pwdfile
-		umount $fat32pen
-		ctrl=
-		while [ -z $ctrl ]
-		do
-			echo -e "Ready? type 1 "
-			read ctrl
-		done
-		cp "$fat32pen/CA_update/id_ed25519-cert.pub" "$HOME/.ssh/"
-		srm "$fat32pen/CA_update/"
-	;;
-	"-NO")
-		for vpnc_host in $(dig openbsd.${LDN} TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
-			echo -e "Connecting to $vpnc_host"
-			ssh -t $vpnc_host.${LDN} doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U newospf
-		done
-		mk=
-		echo -e "Type the internal hostname of the Mikrotik: "
-		read mk
-		mkscript=$(mktemp)
-		mkpubip=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q admin@$mk /ip addr pr where dynamic | awk '{print $3}' | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b")
-		loc=$(curl -s "http://ipinfo.io/$mkpubip" | grep loc | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g")
-		long=$(echo $loc | cut -d , -f2 | cut -d . -f1)
-		lat=$(echo $loc | cut -d , -f1 | cut -d . -f1)
-		echo -e "\nLAT --> $lat"
-		echo -e "LONG --> $long\n"
-		if [[ $long -ge -180 && $long -le -60 && $lat -ge 0 ]]; then group=12 && ospfarea="0.0.1.2"; fi
-		if [[ $long -ge -60 && $long -le 60 && $lat -ge 0 ]]; then group=34 && ospfarea="0.0.3.4"; fi
-		if [[ $long -ge 60 && $long -le 180 && $lat -ge 0 ]]; then group=56 && ospfarea="0.0.5.6"; fi
-		if [[ $long -ge -180 && $long -le -60 && $lat -le 0 ]]; then group=12 && ospfarea="0.0.1.2"; fi
-		if [[ $long -ge -60 && $long -le 60 && $lat -le 0 ]]; then group=34 && ospfarea="0.0.3.4"; fi
-		if [[ $long -ge 60 && $long -le 180 && $lat -le 0 ]]; then group=56 && ospfarea="0.0.5.6"; fi
-		echo "/routing ospf area add name=$group area-id=$ospfarea" > $mkscript
-		for grepubip in $(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q admin@$mk /interface gre pr | grep remote-address | awk '{print $1}' | cut -d \= -f2); do
-			grenetwork=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q admin@$mk "/ip address print where interface=[/interface get [/interface gre find where remote-address=$grepubip] name];" | awk '{print $3}' | awk 'FNR == 3')"/30"
-			remoteloc=$(curl -s "http://ipinfo.io/$grepubip" | grep loc | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g")
-			remotelong=$(echo $remoteloc | cut -d , -f2 | cut -d . -f1)
-			remotelat=$(echo $remoteloc | cut -d , -f1 | cut -d . -f1)
-			if [[ $remotelong -ge -180 && $remotelong -le -60 && $remotelat -ge 0 ]]; then remotegroup=12 ; fi
-			if [[ $remotelong -ge -60 && $remotelong -le 60 && $remotelat -ge 0 ]]; then remotegroup=34 ; fi
-			if [[ $remotelong -ge 60 && $remotelong -le 180 && $remotelat -ge 0 ]]; then remotegroup=56 ; fi
-			if [[ $remotelong -ge -180 && $remotelong -le -60 && $remotelat -le 0 ]]; then remotegroup=12 ; fi
-			if [[ $remotelong -ge -60 && $remotelong -le 60 && $remotelat -le 0 ]]; then remotegroup=34 ; fi
-			if [[ $remotelong -ge 60 && $remotelong -le 180 && $remotelat -le 0 ]]; then remotegroup=56 ; fi
-			[[ $group = $remotegroup ]] && \
-				echo "/routing ospf network set network=\"$grenetwork\" area=$group" >> $mkscript
-		done
-		cat $mkscript
-		#scp $mkscript "admin@$mk:/newospfd.rsc"
-		ssh admin@$mk /import file-name=newospfd.rsc
-		edgeos=
-		echo -e "Type the internal hostname of the EdgeOS: "
-		read edgeos
-		edgescript=$(mktemp)
-		auxscript=$(mktemp)
-		edgepublicip=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q $edgeos /sbin/ip addr show dev pppoe0 | awk 'FNR == 3' | awk {'print $2'})
-		loc=$(curl -s "http://ipinfo.io/$edgepublicip" | grep loc | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g")
-		long=$(echo $loc | cut -d , -f2 | cut -d . -f1)
-		lat=$(echo $loc | cut -d , -f1 | cut -d . -f1)
-		echo -e "\nLAT --> $lat"
-		echo -e "LONG --> $long\n"
-		if [[ $long -ge -180 && $long -le -60 && $lat -ge 0 ]]; then group=12 && ospfarea="0.0.1.2"; fi
-		if [[ $long -ge -60 && $long -le 60 && $lat -ge 0 ]]; then group=34 && ospfarea="0.0.3.4"; fi
-		if [[ $long -ge 60 && $long -le 180 && $lat -ge 0 ]]; then group=56 && ospfarea="0.0.5.6"; fi
-		if [[ $long -ge -180 && $long -le -60 && $lat -le 0 ]]; then group=12 && ospfarea="0.0.1.2"; fi
-		if [[ $long -ge -60 && $long -le 60 && $lat -le 0 ]]; then group=34 && ospfarea="0.0.3.4"; fi
-		if [[ $long -ge 60 && $long -le 180 && $lat -le 0 ]]; then group=56 && ospfarea="0.0.5.6"; fi
-		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper begin" > $edgescript
-		for tunedge in $(ssh -q $edgeos /sbin/ip link | grep tun | awk {'print $2'} | sed "s/@NONE://"); do
-			tunpublicip=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q $edgeos /sbin/ip link list dev $tunedge | awk 'FNR == 2' | awk '{print $4}')
-			tunprivateip=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q $edgeos /sbin/ip addr show dev $tunedge | awk 'FNR == 3' | awk '{print $2}')
-			tunnetwork=$(ipcalc -c $tunprivateip | grep Network | awk '{print $2}')
-			remoteloc=$(curl -s "http://ipinfo.io/$tunpublicip" | grep loc | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g")
-			remotelong=$(echo $remoteloc | cut -d , -f2 | cut -d . -f1)
-			remotelat=$(echo $remoteloc | cut -d , -f1 | cut -d . -f1)
-			if [[ $remotelong -ge -180 && $remotelong -le -60 && $remotelat -ge 0 ]]; then remotegroup=12 ; fi
-			if [[ $remotelong -ge -60 && $remotelong -le 60 && $remotelat -ge 0 ]]; then remotegroup=34 ; fi
-			if [[ $remotelong -ge 60 && $remotelong -le 180 && $remotelat -ge 0 ]]; then remotegroup=56 ; fi
-			if [[ $remotelong -ge -180 && $remotelong -le -60 && $remotelat -le 0 ]]; then remotegroup=12 ; fi
-			if [[ $remotelong -ge -60 && $remotelong -le 60 && $remotelat -le 0 ]]; then remotegroup=34 ; fi
-			if [[ $remotelong -ge 60 && $remotelong -le 180 && $remotelat -le 0 ]]; then remotegroup=56 ; fi
-			[[ $group = $remotegroup ]] && \
-				echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set protocols ospf area $ospfarea network $tunnetwork" >>  $auxscript || \
-				echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set protocols ospf area 0.0.0.0 network $tunnetwork" >>  $auxscript
-		done
-		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete protocols ospf area 0.0.0.0" >> $edgescript
-		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set protocols ospf area $ospfarea" >> $edgescript
-		cat $auxscript | grep $ospfarea >> $edgescript
-		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set protocols ospf area 0.0.0.0" >> $edgescript
-		cat $auxscript | grep "0.0.0.0" >> $edgescript
-		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper commit" >> $edgescript
-		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper save" >> $edgescript
-		cat $edgescript
-	;;
+	#[mikrotik]
 	"-CHR")
 		read -p "Type LTE public hostname: " chr
 		publichostname=$(echo "${chr}" | cut -d . -f1)
@@ -1057,128 +791,6 @@ case $3 in
 			#ssh "${poplocalhostname}.${localdomainname}" doas sh /home/taglio/Bin/newchr.sh
 		done
 	;;
-	"-CI")
-		read -p "Build IPv4 static custom installation template? yes/no: " ctrl
-		if [[ "${ctrl}" == "yes" ]]; then
-			template=$(mktemp)
-			read -p "Type IPv4 address for vio0: " ip
-			cat installation/template-static.conf > "${template}"
-			sed -i "s|/IP/|${ip}|" "${template}"
-			read -p "Type netmask for vio0: " netmask
-			sed -i "s|/NETMASK/|${netmask}|" "${template}"
-			read -p "Type default IPv4 route: " router
-			sed -i "s|/ROUTER/|${router}|" "${template}"
-			sed -i "s|/EDDSA/|$(cat $HOME/.ssh/id_ed25519.pub)|" "${template}"
-			mv "${template}" installation/install-static.conf
-			ctrl=""
-		fi
-		read -p "Build custom size disklabel? yes/no: " ctrl
-		if [[ "${ctrl}" == "yes" ]]; then
-			template=$(mktemp)
-			cat installation/disk-template > "${template}"
-			read -p "Type size in GB: " root
-			let root-=1
-			sed -i "s|/ROOT/|${root}|" "${template}"
-			mv "${template}" installation/customdisklabel
-		fi
-		echo -e "Files added, please update the repository and remember to use https://bit.ly/3HD0Wne"
-	;;
-	"-RM")
-		read -p "Have you removed entry from local and public DNS daemons? yes/no: " ctrl
-	;;
-	"-KD")
-		echo "Current GMT time is: $(LANG=uk_UK date -u '+%b %d %H:%M:%S %Y GMT')"
-		echo "Current epoch time is: $(date +"%s")"
-		echo "Looking at OpenBSD hosts..."
-		currrentepoch=$(date +"%s")
-		for vpnc_host in $(dig openbsd.${LDN} TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
-			deadline=$(ssh -o LogLevel=QUIET -t $vpnc_host.${LDN} openssl x509 -in "/etc/iked/certs/*.crt" -noout -enddate | sed "s|^notAfter=||")
-			echo "IPsec SSL certificate deadline of $vpnc_host is: $deadline"
-			echo "IPsec SSL certificate epoch deadline of $vpnc_host is: $(date --date "${deadline}" "+%s")"
-			deadlineepoch=$(date --date "${deadline}" "+%s")
-			if [ "$deadlineepoch" -lt "$currrentepoch" ]; then
-				openbsdiked+=("$vpnc_host")
-				echo "$vpnc_host IPsec SSL certificate has to be upgraded"
-			fi
-		done
-		echo "Looking at Mikrotik RouterOS hosts..."
-		for vpnc_host in $(dig mikrotik.${LDN} TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
-			deadlinemk=$(ssh -o LogLevel=QUIET $vpnc_host.${LDN} /cert pr det where subject-alt-name=\"email:$vpnc_host@ca.telecomlobby.com\" | grep invalid-after | sed -e "s|[^.*]expires.*$||" -e "s|[[:space:]]* invalid-after=||")
-			deadline="$(echo $deadlinemk | cut -d / -f1) $(echo $deadlinemk | cut -d / -f2) $(echo $deadlinemk | cut -d " " -f2) $(echo $deadlinemk| cut -d / -f3 | cut -d " " -f1)"
-			echo "IPsec SSL certificate deadline of $vpnc_host is: $deadline"
-			echo "IPsec SSL certificate epoch deadline of $vpnc_host is: $(date --date "${deadline}" "+%s")"
-			deadlineepoch=$(date --date "${deadline}" "+%s")
-			if [ "$deadlineepoch" -lt "$currrentepoch" ]; then
-				mikrotikiked+=("$vpnc_host")
-				echo "$vpnc_host IPsec SSL certificate has to be upgraded"
-			fi
-		done
-		echo "Looking at Ubiquiti EdgeOS hosts..."
-		for vpnc_host in $(dig edgeos.${LDN} TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d' | cut -d : -f1); do
-			deadline=$(ssh -o LogLevel=QUIET -t $vpnc_host.${LDN} openssl x509 -in "/config/auth/local/*.crt" -noout -enddate | sed "s|^notAfter=||")
-			echo "IPsec SSL certificate deadline of $vpnc_host is: $deadline"
-			echo "IPsec SSL certificate epoch deadline of $vpnc_host is: $(date --date "${deadline}" "+%s")"
-			deadlineepoch=$(date --date "${deadline}" "+%s")
-			if [ "$deadlineepoch" -lt "$currrentepoch" ]; then
-				edgeosiked+=("$vpnc_host")
-				echo "$vpnc_host IPsec SSL certificate has to be upgraded"
-			fi
-		done
-		if [ ${#edgeosiked[@]} -gt 1 ]; then
-			echo "edgeos"
-		fi
-		if [ ${#openbsdiked[@]} -gt 1 ]; then
-			echo "openbsd"
-			for i in "${openbsdiked[@]}"; do
-				echo "Working into $i Ipsec SSL certificate upgrade"
-				ikedpub=
-				while [ -z $ikedpub ]
-				do
-					echo "Type the PATH to the upgraded iked PK12 file for $i "
-					read ikedpub
-				done
-				tmpdir=$(mktemp -d)
-				pk12=$(basename $ikedpub)
-				publichost=$(echo $pk12 | sed 's/.p12//')
-				publichostname=$(echo $publichost | cut -d . -f1)
-				domainname=$(echo $publichost | sed "s/$publichostname.//")
-				for a in $(dig ipsec20591.$domainname TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
-					b=$(echo $a | cut -d : -f1)
-					if [[ "$b" -eq "$publichostname" ]]; then
-					srcid=$(echo $a | cut -d : -f2)
-					fi
-				done
-				echo "uploading P12 to /tmp onto $i"
-				scp $ikedpub "$i.${LDN}:/tmp"
-				ssh -t $i.${LDN} doas sh "/home/taglio/Sources/Git/OpenBSD/tools/ikedsslupgade"
-				echo "uploading P12 to Mikrotik hosts"
-				for vpnc_host in $(dig mikrotik.${LDN} TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
-					scp $ikedpub "${vpnc_host}.${LDN}"
-					echo "/certificate remove [/certificate find where name=${publichost}]" > /tmp/i.rsc
-				 	echo "/certificate import passphrase=123456789 file-name=$pk12 name=${publichost}" >> /tmp/i.rsc
-					echo "/ip ipsec identity set [/ip ipsec identity find where certificate=${publichost}] certificate=${publichost}" >> /tmp/i.rsc
-					scp /tmp/i.rsc "${vpnc_host}.${LDN}"
-					cat  /tmp/i.rsc
-					sleep 40
-					#eval "ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 ${vpnc_host}.${LDN} :execute \{/import i.rsc\}"
-				done
-				openssl pkcs12 -nodes -in $ikedpub -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "$tmpdir/$publichost.crt"
-				echo "uploading .crt to EdgeOS hosts"
-				for vpnc_host in $(dig edgeos.${LDN} TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d' | cut -d : -f1); do
-					scp "$tmpdir/$publichost.crt" "$vpnc_host.${LDN}:/config/auth"
-					ssh $vpnc_host.${LDN} "sudo cp /config/auth/${publichost}.crt /etc/ipsec.d/certs/"
-					ssh $vpnc_host.${LDN} "sudo ipsec rereadall"
-					ssh $vpnc_host.${LDN} "sudo ipsec reload"
-				done
-				openssl x509 -pubkey -noout -passin pass:123456789 -in "$tmpdir/$publichost.crt"  > src/etc/iked/pubkeys/ufqdn/"$srcid@ca.$domainname"
-				srm -r "${tmpdir}"
-				echo -e "$srcid@ca.$domainname created please update repository and all the others Openbsd hosts"
-			done
-		fi
-		if [ ${#mikrotikiked[@]} -gt 1 ]; then
-			echo "mikrotik"
-		fi
-	;;
 	"-LTE")
 		read -p "Type LTE router public hostname: " lte
 		publichostname=$(echo "${lte}" | cut -d . -f1)
@@ -1338,6 +950,308 @@ case $3 in
 		eval "${sshcmd} ${userna}@${lte} /interface list add name=GRE"
 
 	;;
+	#[workstation]
+	"-RS")
+		lanhost=
+		while [ -z $lanhost ]
+		do
+			echo 'Type the LAN hostname '
+			read lanhost
+		done
+		pubhost=
+		while [ -z $pubhost ]
+		do
+			echo 'Type the public hostname '
+			read pubhost
+		done
+		hash=
+		while [ -z $hash ]
+		do
+			echo 'Type the ED25519 hash '
+			read hash
+		done
+		if [[ $(grep -c $lanhost src/etc/ssh/remote_install/authorized_keys) -gt 0 ]]; then
+			for linenum in $(grep -n $lanhost src/etc/ssh/remote_install/authorized_keys | cut -d : -f1); do
+				sed -i "$linenum"d src/etc/ssh/remote_install/authorized_keys
+			done
+		fi
+
+		echo "ssh-ed25519 $hash root@$lanhost" >> src/etc/ssh/remote_install/authorized_keys
+		#	if [[ $(grep -c $pubhost src/etc/ssh/ssh_known_hosts) -gt 0 ]]; then
+		#		for linenum in $(grep -n $pubhost src/etc/ssh/ssh_known_hosts | cut -d : -f1); do
+		#			sed -i "$linenum"d src/etc/ssh/ssh_known_hosts
+		#		done
+		#	fi
+		#
+		#	echo "# $pubhost:31137 SSH-2.0-OpenSSH_8.6" >> src/etc/ssh/ssh_known_hosts
+		#	echo "[$pubhost]:31137 ssh-ed25519 $hash" >> src/etc/ssh/ssh_known_hosts
+		echo -e "remote_install/authorized_keys and ssh_known_hosts UPDATED
+		\n please use git_openbsd.sh to update the public GIT"
+	;;
+	"-K")
+		ikedpub=
+		while [ -z $ikedpub ]
+		do
+			echo 'Type the PATH to the new iked PK12 file '
+			read ikedpub
+		done
+		tmpdir=$(mktemp -d)
+		pk12=$(basename $ikedpub)
+		publichost=$(echo $pk12 | sed 's/.p12//')
+		publichostname=$(echo $publichost | cut -d . -f1)
+		domainname=$(echo $publichost | sed "s/$publichostname.//")
+
+
+		for a in $(dig ipsec20591.$domainname TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+			b=$(echo $a | cut -d : -f1)
+			if [[ "$b" -eq "$publichostname" ]]; then
+				srcid=$(echo $a | cut -d : -f2)
+			fi
+		done
+		ssh-keygen -f "${HOME}/.ssh/known_hosts" -R "$publichost"
+		scp $ikedpub "${userna}@$publichost:/tmp"
+		openssl pkcs12 -nodes -in $ikedpub -nocerts -passin pass:123456789 -passout pass:123456789 -out "$tmpdir/local.key"
+		openssl pkcs12 -nodes -in $ikedpub -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "$tmpdir/new.crt"
+		openssl x509 -pubkey -noout -passin pass:123456789 -in "$tmpdir/new.crt"  > src/etc/iked/pubkeys/ufqdn/"$srcid@ca.$domainname"
+		rm -rf $tmpdir
+		echo -e "$srcid@ca.$domainname created please update repository and all the others Openbsd hosts"
+	;;
+	"-Z")
+		comdomains=
+		echo -e "Type the two .com domains (the principle and the secondary) divided by a comma: "
+		read comdomains
+		principledomain=$(printf $comdomains | cut -d , -f1)
+		secondarydomain=$(printf $comdomains | cut -d , -f2)
+		for domain in $(printf "$comdomains" | xargs -d, -n1); do
+			echo -e "\n$domain: "
+			whois $domain | grep "Name Server" | grep -v "^Name"
+			dnssec=$(whois $domain| grep DNSSEC | grep -c "unsigned")
+			[[ $dnssec > 0 ]] && echo -e "\nDNSSEC not enable onto $domain!" || echo -e "\nDNSSEC enabled onto $domain!"
+			echo "<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>"
+		done
+		echo -e "You've got servers in:\n"
+		for vpnc_host in $(dig openbsd.${LDN} TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+
+			local=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q $vpnc_host.${LDN} readlink /etc/localtime  | sed "s/\/usr\/share\/zoneinfo\///")
+			zonetab=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q $vpnc_host.${LDN} cat /usr/share/zoneinfo/zone.tab | grep $local)
+			[[ $zonetab ]] && echo -e "\n$zonetab\n" || echo -e "\n$local\n"
+			publicip=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q $vpnc_host.${LDN} ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
+			curl -s "http://ipinfo.io/$publicip" | sed '/readme/d'
+			loc=$(curl -s "http://ipinfo.io/$publicip" | grep loc | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g")
+			long=$(echo $loc | cut -d , -f2 | cut -d . -f1)
+			lat=$(echo $loc | cut -d , -f1 | cut -d . -f1)
+			country=$(curl -s "http://ipinfo.io/$publicip" | grep country | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g")
+			continent=$(grep "${country}" cndb/* | cut -d / -f2 | cut -d : -f1)
+			echo -e "\nLAT --> $lat"
+			echo -e "LONG --> $long\n"
+			if [[ $long -ge -180 && $long -le -60 && $lat -ge 0 ]]; then group=12 && ospfarea="0.0.1.2" && G12+=("$vpnc_host"); fi
+			if [[ $long -ge -60 && $long -le 60 && $lat -ge 0 ]]; then group=34 && ospfarea="0.0.3.4" && G34+=("$vpnc_host"); fi
+			if [[ $long -ge 60 && $long -le 180 && $lat -ge 0 ]]; then group=56 && ospfarea="0.0.5.6" && G56+=("$vpnc_host"); fi
+			if [[ $long -ge -180 && $long -le -60 && $lat -le 0 ]]; then group=12 && ospfarea="0.0.1.2" && G12+=("$vpnc_host"); fi
+			if [[ $long -ge -60 && $long -le 60 && $lat -le 0 ]]; then group=34 && ospfarea="0.0.3.4" && G34+=("$vpnc_host"); fi
+			if [[ $long -ge 60 && $long -le 180 && $lat -le 0 ]]; then group=56 && ospfarea="0.0.5.6" && G56+=("$vpnc_host"); fi
+			echo -e "GROUP --> $group"
+			echo -e "BACKBONE OSPFAREA 0.0.0.0"
+			echo -e "GEO OSPFAREA --> $ospfarea"
+			echo -e "CONTINENT --> $continent\n"
+		done
+		[[ ${#G12[@]} > 1 ]] && rand12p=$[$RANDOM % ${#G12[@]}] || rand12p="${G12[0]}"
+		[[ ${#G34[@]} > 1 ]] && rand34p=$[$RANDOM % ${#G34[@]}] || rand34p="${G34[0]}"
+		[[ ${#G56[@]} > 1 ]] && rand56p=$[$RANDOM % ${#G56[@]}] || rand56p="${G56[0]}"
+		echo -e "The master PowerDNS server for $principledomain in the group 34 is ${G34[$rand34p]} in the group 12 is ${G12[$rand12p]} and in the group 56 is ${G56[$rand56p]}"
+		publicip=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q ${G34[$rand34p]}.${LDN} ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
+		nsd34p=$(curl -s "http://ipinfo.io/$publicip" | grep hostname | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g" | sed "s/$principledomain/$secondarydomain/" | tr '[:lower:]' '[:upper:]')
+		routerid34p=$(dig "${G34[$rand34p]}.${LDN}" A +short)
+		publicip=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q ${G12[$rand12p]}.${LDN} ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
+		nsd12p=$(curl -s "http://ipinfo.io/$publicip" | grep hostname | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g" | sed "s/$principledomain/$secondarydomain/" | tr '[:lower:]' '[:upper:]')
+		routerid12p=$(dig "${G12[$rand12p]}.${LDN}" A +short)
+		publicip=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q ${G56[$rand56p]}.${LDN} ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
+		nsd56p=$(curl -s "http://ipinfo.io/$publicip" | grep hostname | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g" | sed "s/$principledomain/$secondarydomain/" | tr '[:lower:]' '[:upper:]')
+		routerid56p=$(dig "${G56[$rand56p]}.${LDN}" A +short)
+		#masterp34slave12=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G34[$rand34p]}.${LDN}" ospfctl show fib | grep "$routerid12p" | awk '{print $4}')
+		#masterp34gre12=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G34[$rand34p]}.${LDN}" ifconfig | grep $masterp34slave12 | awk '{print $2}')
+		#masterp34slave56=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G34[$rand34p]}.${LDN}" ospfctl show fib | grep "$routerid56p" | awk '{print $4}')
+		#masterp34gre56=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G34[$rand34p]}.${LDN}" ifconfig | grep $masterp34slave56 | awk '{print $2}')
+		#slavep12master34=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G12[$rand12p]}.${LDN}" ospfctl show fib | grep "$routerid34p" | awk '{print $4}')
+		#slavep12gre34=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G12[$rand12p]}.${LDN}" ifconfig | grep $slavep12master34 | awk '{print $2}')
+		#slavep56master34=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G56[$rand56p]}.${LDN}" ospfctl show fib | grep "$routerid34p" | awk '{print $4}')
+		#slavep56gre34=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G56[$rand56p]}.${LDN}" ifconfig | grep $slavep56master34 | awk '{print $2}')
+		epoch=$(date +%s)
+		if [[ ! -e "../db/domains.sqlite3" ]]; then
+			echo -e "initialize sqlite3 domains local database"
+			sqlite3 "../db/domains.sqlite3" < "src/openbsd/db.sql"
+
+		else
+			echo -e "erasing and initializing sqlite3 domains local database"
+			sqlite3 "../db/domains.sqlite3" "DROP TABLE domains;"
+			sqlite3 "../db/domains.sqlite3" < "src/openbsd/db.sql"
+		fi
+		sqlite3 "../db/domains.sqlite3" "INSERT INTO domains (name,ns34,ns12,ns56,last_update)  values (\"$principledomain\",\"$routerid34p\",\"$routerid12p\",\"$routerid56p\",$epoch);"
+		if [ $dnssec = 0 ]; then
+			dnssec_keyid=$(whois "${principledomain}" | grep DNSSEC\ DS | awk '{print $4}' | head -n 1)
+			sqlite3 "../db/domains.sqlite3" "UPDATE domains SET dnssec = 0, dnssec_keyid = ${dnssec_keyid} WHERE name = ${principledomain};"
+		fi
+		echo -e "Please configure WHOIS server for $principledomain with:"
+		printf '%s\n' $nsd34p
+		printf '%s\n' $nsd12p
+		printf '%s\n' $nsd56p
+		echo -e "Useful PowerDNS parameters:"
+		printf '%s\t%s\t%s\n' $routerid34p #$masterp34gre12 $masterp34gre56
+		printf '%s\t%s\n' $routerid12p #$slavep12gre34
+		printf '%s\t%s\n' $routerid56p #$slavep56gre34
+		[[ ${#G12[@]} > 1 ]] && rand12s=$[$RANDOM % ${#G12[@]}] || rand12s="${G12[0]}"
+		[[ ${#G34[@]} > 1 ]] && rand34s=$[$RANDOM % ${#G34[@]}] || rand34s="${G34[0]}"
+		[[ ${#G56[@]} > 1 ]] && rand56s=$[$RANDOM % ${#G56[@]}] || rand56s="${G56[0]}"
+		echo -e "The master PowerDNS server for $secondarydomain in the group 34 is ${G34[$rand34s]} slaves are in the group 12 ${G12[$rand12s]} and in the group 56 ${G56[$rand56s]}"
+		publicip=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q ${G34[$rand34s]}.${LDN} ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
+		nsd34s=$(curl -s "http://ipinfo.io/$publicip" | grep hostname | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g" | tr '[:lower:]' '[:upper:]')
+		routerid34s=$(dig "${G34[$rand34s]}.${LDN}" A +short)
+		publicip=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q ${G12[$rand12s]}.${LDN} ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
+		nsd12s=$(curl -s "http://ipinfo.io/$publicip" | grep hostname | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g" | tr '[:lower:]' '[:upper:]')
+		routerid12s=$(dig "${G12[$rand12s]}.${LDN}" A +short)
+		publicip=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q ${G56[$rand56s]}.${LDN} ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
+		nsd56s=$(curl -s "http://ipinfo.io/$publicip" | grep hostname | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g" | tr '[:lower:]' '[:upper:]')
+		routerid56s=$(dig "${G56[$rand56s]}.${LDN}" A +short)
+		#masters34slave12=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G34[$rand34s]}.${LDN}" ospfctl show fib | grep "$routerid12s" | awk '{print $4}')
+		#masters34gre12=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G34[$rand34s]}.${LDN}" ifconfig | grep $masters34slave12 | awk '{print $2}')
+		#masters34slave56=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G34[$rand34s]}.${LDN}" ospfctl show fib | grep "$routerid56s" | awk '{print $4}')
+		#masters34gre56=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G34[$rand34s]}.${LDN}" ifconfig | grep $masters34slave56 | awk '{print $2}')
+		#slaves12master34=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G12[$rand12s]}.${LDN}" ospfctl show fib | grep "$routerid34s" | awk '{print $4}')
+		#slaves12gre34=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G12[$rand12s]}.${LDN}" ifconfig | grep $slaves12master34 | awk '{print $2}')
+		#slaves56master34=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G56[$rand56s]}.${LDN}" ospfctl show fib | grep "$routerid34s" | awk '{print $4}')
+		#slaves56gre34=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q "${G56[$rand56s]}.${LDN}" ifconfig | grep $slaves56master34 | awk '{print $2}')
+		echo -e "Please configure WHOIS server for $secondarydomain with:"
+		printf '%s\n' $nsd34s
+		printf '%s\n' $nsd12s
+		printf '%s\n' $nsd56s
+		echo -e "Useful PowerDNS parameters:"
+		printf '%s\t%s\t%s\n' $routerid34s #$masters34gre12 $masters34gre56
+		printf '%s\t%s\n' $routerid12s #$slaves12gre34
+		printf '%s\t%s\n' $routerid56s #$slaves56gre34
+		tsig256s=$(dd if=/dev/urandom of=/dev/stdout count=1 bs=64 status=none | openssl base64)
+		tmpupload=$(mktemp)
+		ctrl=
+		while true; do
+			read -p "Start configuring $secondarydomain onto native PowerDNS for ${G34[$rand34s]}? yes/no: " ctrl
+			case $ctrl in
+				[yY]*)
+					echo $routerid12s > $tmpupload && echo $routerid56s >> $tmpupload && echo ${tsig256s} | tr -d ' ' >> $tmpupload && echo $secondarydomain >> $tmpupload
+					scp $tmpupload "${G34[$rand34s]}.${LDN}:/tmp/powernsd_distributed"
+					ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -t "${G34[$rand34s]}.${LDN}"  doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -D powerdns #distributed
+					break
+				;;
+				[nN]*)
+					echo 'Ok, going ahead'
+					break
+				;;
+				*)
+					echo 'Invalid input' >&2
+			esac
+		done
+		ctrl=
+		while true; do
+			read -p "Continue with configuring $secondarydomain onto native PowerDNS for ${G12[$rand12s]}? yes/no: " ctrl
+			case $ctrl in
+				[yY]*)
+					echo $masters34slave12 > $tmpupload && echo ${tsig256s} | tr -d ' ' >> $tmpupload && echo $secondarydomain >> $tmpupload
+					scp $tmpupload "${G12[$rand12s]}.${LDN}:/tmp/powerdns_distributed"
+					ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -t "${G12[$rand12s]}.${LDN}"  doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -D powerdns #distributed
+					break
+				;;
+				[nN]*)
+					echo 'Ok, going ahead'
+					break
+				;;
+				*)
+					echo 'Invalid input' >&2
+			esac
+		done
+		ctrl=
+		while true; do
+			read -p "Continue with configuring $secondarydomain onto native PowerDNS for ${G56[$rand56s]}? yes/no: " ctrl
+			case $ctrl in
+				[yY]*)
+					echo $masters34slave56 > $tmpupload && echo ${tsig256s} | tr -d ' ' >> $tmpupload && echo $secondarydomain >> $tmpupload
+					scp $tmpupload "${G56[$rand56s]}.${LDN}:/tmp/powernsd_distributed"
+					ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -t "${G56[$rand56s]}.${LDN}"  doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -D powerdns #distributed
+					break
+				;;
+				[nN]*)
+					echo 'Ok, going ahead'
+					break
+				;;
+				*)
+					echo 'Invalid input' >&2
+			esac
+		done
+		echo -e "Secondary domain $secondarydomain configured"
+	;;
+	"-U")
+		if [[ ! -d "$HOME/.ssh/Backup$daterelease" ]]; then
+			mkdir "$HOME/.ssh/Backup$daterelease"
+		else
+			rm -rf "$HOME/.ssh/Backup$daterelease"
+			mkdir "$HOME/.ssh/Backup$daterelease"
+		fi
+		if [[ -e "$HOME/.ssh/id_ed25519" ]]; then
+			mv $HOME/.ssh/{id_ed25519,id_ed25519.pub,id_ed25519-cert.pub} "$HOME/.ssh/Backup$daterelease"
+		fi
+		ssh-keygen -t ed25519 -C "taglio@${LDN}"
+		cat "$HOME/.ssh/id_ed25519.pub" > "$HOME/Work/telecom.lobby/OpenBSD/src/etc/sshauthorized_keys"
+		sed -i "s|^Public.*|Public ssh key for user = $(cat $HOME/.ssh/id_ed25519.pub)|" installation/install-vps.conf
+		pwdfile=$(mktemp)
+		# Read Password
+		password=$(systemd-ask-password "Enter CA password: ")
+		# Run Command
+		echo $password > $pwdfile
+		echo -n Type the mounted FAT32 pen drive directory:
+		read fat32pen
+		if [[ ! -d "$fat32pen" ]]; then
+			mkdir "$fat32pen/CA_update"
+		else
+			rm -rf  "$fat32pen/CA_update"
+			mkdir "$fat32pen/CA_update"
+		fi
+		cp "$HOME/.ssh/id_ed25519.pub" "$fat32pen/CA_update"
+		cp  $pwdfile "$fat32pen/CA_update/capwd.txt"
+		srm $pwdfile
+		umount $fat32pen
+		ctrl=
+		while [ -z $ctrl ]
+		do
+			echo -e "Ready? type 1 "
+			read ctrl
+		done
+		cp "$fat32pen/CA_update/id_ed25519-cert.pub" "$HOME/.ssh/"
+		srm "$fat32pen/CA_update/"
+	;;
+
+	"-CI")
+		read -p "Build IPv4 static custom installation template? yes/no: " ctrl
+		if [[ "${ctrl}" == "yes" ]]; then
+			template=$(mktemp)
+			read -p "Type IPv4 address for vio0: " ip
+			cat installation/template-static.conf > "${template}"
+			sed -i "s|/IP/|${ip}|" "${template}"
+			read -p "Type netmask for vio0: " netmask
+			sed -i "s|/NETMASK/|${netmask}|" "${template}"
+			read -p "Type default IPv4 route: " router
+			sed -i "s|/ROUTER/|${router}|" "${template}"
+			sed -i "s|/EDDSA/|$(cat $HOME/.ssh/id_ed25519.pub)|" "${template}"
+			mv "${template}" installation/install-static.conf
+			ctrl=""
+		fi
+		read -p "Build custom size disklabel? yes/no: " ctrl
+		if [[ "${ctrl}" == "yes" ]]; then
+			template=$(mktemp)
+			cat installation/disk-template > "${template}"
+			read -p "Type size in GB: " root
+			let root-=1
+			sed -i "s|/ROOT/|${root}|" "${template}"
+			mv "${template}" installation/customdisklabel
+		fi
+		echo -e "Files added, please update the repository and remember to use https://bit.ly/3HD0Wne"
+	;;
 	"-GEO")
 		read -p "Type public IP: " geoip
 		curl -s "http://ipinfo.io/$geoip" | sed '/readme/d'
@@ -1496,6 +1410,102 @@ case $3 in
 		srm -r "${tmpdir}"
 		echo -e "$srcid@ca.$domainname created please update repository and all the others Openbsd hosts"
 	;;
+esac
+
+exit 0
+
+
+
+case $3 in
+
+
+
+
+
+	"-NO")
+		for vpnc_host in $(dig openbsd.${LDN} TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+			echo -e "Connecting to $vpnc_host"
+			ssh -t $vpnc_host.${LDN} doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U newospf
+		done
+		mk=
+		echo -e "Type the internal hostname of the Mikrotik: "
+		read mk
+		mkscript=$(mktemp)
+		mkpubip=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q admin@$mk /ip addr pr where dynamic | awk '{print $3}' | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b")
+		loc=$(curl -s "http://ipinfo.io/$mkpubip" | grep loc | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g")
+		long=$(echo $loc | cut -d , -f2 | cut -d . -f1)
+		lat=$(echo $loc | cut -d , -f1 | cut -d . -f1)
+		echo -e "\nLAT --> $lat"
+		echo -e "LONG --> $long\n"
+		if [[ $long -ge -180 && $long -le -60 && $lat -ge 0 ]]; then group=12 && ospfarea="0.0.1.2"; fi
+		if [[ $long -ge -60 && $long -le 60 && $lat -ge 0 ]]; then group=34 && ospfarea="0.0.3.4"; fi
+		if [[ $long -ge 60 && $long -le 180 && $lat -ge 0 ]]; then group=56 && ospfarea="0.0.5.6"; fi
+		if [[ $long -ge -180 && $long -le -60 && $lat -le 0 ]]; then group=12 && ospfarea="0.0.1.2"; fi
+		if [[ $long -ge -60 && $long -le 60 && $lat -le 0 ]]; then group=34 && ospfarea="0.0.3.4"; fi
+		if [[ $long -ge 60 && $long -le 180 && $lat -le 0 ]]; then group=56 && ospfarea="0.0.5.6"; fi
+		echo "/routing ospf area add name=$group area-id=$ospfarea" > $mkscript
+		for grepubip in $(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q admin@$mk /interface gre pr | grep remote-address | awk '{print $1}' | cut -d \= -f2); do
+			grenetwork=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q admin@$mk "/ip address print where interface=[/interface get [/interface gre find where remote-address=$grepubip] name];" | awk '{print $3}' | awk 'FNR == 3')"/30"
+			remoteloc=$(curl -s "http://ipinfo.io/$grepubip" | grep loc | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g")
+			remotelong=$(echo $remoteloc | cut -d , -f2 | cut -d . -f1)
+			remotelat=$(echo $remoteloc | cut -d , -f1 | cut -d . -f1)
+			if [[ $remotelong -ge -180 && $remotelong -le -60 && $remotelat -ge 0 ]]; then remotegroup=12 ; fi
+			if [[ $remotelong -ge -60 && $remotelong -le 60 && $remotelat -ge 0 ]]; then remotegroup=34 ; fi
+			if [[ $remotelong -ge 60 && $remotelong -le 180 && $remotelat -ge 0 ]]; then remotegroup=56 ; fi
+			if [[ $remotelong -ge -180 && $remotelong -le -60 && $remotelat -le 0 ]]; then remotegroup=12 ; fi
+			if [[ $remotelong -ge -60 && $remotelong -le 60 && $remotelat -le 0 ]]; then remotegroup=34 ; fi
+			if [[ $remotelong -ge 60 && $remotelong -le 180 && $remotelat -le 0 ]]; then remotegroup=56 ; fi
+			[[ $group = $remotegroup ]] && \
+				echo "/routing ospf network set network=\"$grenetwork\" area=$group" >> $mkscript
+		done
+		cat $mkscript
+		#scp $mkscript "admin@$mk:/newospfd.rsc"
+		ssh admin@$mk /import file-name=newospfd.rsc
+		edgeos=
+		echo -e "Type the internal hostname of the EdgeOS: "
+		read edgeos
+		edgescript=$(mktemp)
+		auxscript=$(mktemp)
+		edgepublicip=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q $edgeos /sbin/ip addr show dev pppoe0 | awk 'FNR == 3' | awk {'print $2'})
+		loc=$(curl -s "http://ipinfo.io/$edgepublicip" | grep loc | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g")
+		long=$(echo $loc | cut -d , -f2 | cut -d . -f1)
+		lat=$(echo $loc | cut -d , -f1 | cut -d . -f1)
+		echo -e "\nLAT --> $lat"
+		echo -e "LONG --> $long\n"
+		if [[ $long -ge -180 && $long -le -60 && $lat -ge 0 ]]; then group=12 && ospfarea="0.0.1.2"; fi
+		if [[ $long -ge -60 && $long -le 60 && $lat -ge 0 ]]; then group=34 && ospfarea="0.0.3.4"; fi
+		if [[ $long -ge 60 && $long -le 180 && $lat -ge 0 ]]; then group=56 && ospfarea="0.0.5.6"; fi
+		if [[ $long -ge -180 && $long -le -60 && $lat -le 0 ]]; then group=12 && ospfarea="0.0.1.2"; fi
+		if [[ $long -ge -60 && $long -le 60 && $lat -le 0 ]]; then group=34 && ospfarea="0.0.3.4"; fi
+		if [[ $long -ge 60 && $long -le 180 && $lat -le 0 ]]; then group=56 && ospfarea="0.0.5.6"; fi
+		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper begin" > $edgescript
+		for tunedge in $(ssh -q $edgeos /sbin/ip link | grep tun | awk {'print $2'} | sed "s/@NONE://"); do
+			tunpublicip=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q $edgeos /sbin/ip link list dev $tunedge | awk 'FNR == 2' | awk '{print $4}')
+			tunprivateip=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -q $edgeos /sbin/ip addr show dev $tunedge | awk 'FNR == 3' | awk '{print $2}')
+			tunnetwork=$(ipcalc -c $tunprivateip | grep Network | awk '{print $2}')
+			remoteloc=$(curl -s "http://ipinfo.io/$tunpublicip" | grep loc | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g")
+			remotelong=$(echo $remoteloc | cut -d , -f2 | cut -d . -f1)
+			remotelat=$(echo $remoteloc | cut -d , -f1 | cut -d . -f1)
+			if [[ $remotelong -ge -180 && $remotelong -le -60 && $remotelat -ge 0 ]]; then remotegroup=12 ; fi
+			if [[ $remotelong -ge -60 && $remotelong -le 60 && $remotelat -ge 0 ]]; then remotegroup=34 ; fi
+			if [[ $remotelong -ge 60 && $remotelong -le 180 && $remotelat -ge 0 ]]; then remotegroup=56 ; fi
+			if [[ $remotelong -ge -180 && $remotelong -le -60 && $remotelat -le 0 ]]; then remotegroup=12 ; fi
+			if [[ $remotelong -ge -60 && $remotelong -le 60 && $remotelat -le 0 ]]; then remotegroup=34 ; fi
+			if [[ $remotelong -ge 60 && $remotelong -le 180 && $remotelat -le 0 ]]; then remotegroup=56 ; fi
+			[[ $group = $remotegroup ]] && \
+				echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set protocols ospf area $ospfarea network $tunnetwork" >>  $auxscript || \
+				echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set protocols ospf area 0.0.0.0 network $tunnetwork" >>  $auxscript
+		done
+		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper delete protocols ospf area 0.0.0.0" >> $edgescript
+		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set protocols ospf area $ospfarea" >> $edgescript
+		cat $auxscript | grep $ospfarea >> $edgescript
+		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper set protocols ospf area 0.0.0.0" >> $edgescript
+		cat $auxscript | grep "0.0.0.0" >> $edgescript
+		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper commit" >> $edgescript
+		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper save" >> $edgescript
+		cat $edgescript
+	;;
+
 	*)
 	;;
 esac
