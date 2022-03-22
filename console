@@ -471,6 +471,20 @@ case "${OPT}" in
 		echo "Current epoch time is: $(date +"%s")"
 		echo "Looking at OpenBSD hosts..."
 		currrentepoch=$(date +"%s")
+		for (( j=0; j<${#wa[@]}; j++ )); do
+			echo -e "Connecting to ${wa[j]}.${LDN}..."
+			c=$(capa3 ${wa[j]}.${LDN} "wan")
+			[[ "${c}" == 1 ]] && (
+			case $(dnsquery -T ${wa[j]}) in
+				"openbsd")
+				;;
+				"mikrotik")
+				;;
+				"edgeos")
+				;;
+			esac
+			) || echo "${wa[j]}.${LDN} unreachable"
+		done
 		for vpnc_host in $(dig openbsd.${LDN} TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 			deadline=$(ssh -o LogLevel=QUIET -t $vpnc_host.${LDN} openssl x509 -in "/etc/iked/certs/*.crt" -noout -enddate | sed "s|^notAfter=||")
 			echo "IPsec SSL certificate deadline of $vpnc_host is: $deadline"
@@ -576,13 +590,7 @@ case "${OPT}" in
 		read -p "Type LTE public hostname: " chr
 		publichostname=$(echo "${chr}" | cut -d . -f1)
 		chrpubip=$(dig A "${chr}" +short)
-		domainname=$(echo "${chr}" | sed "s|${publichostname}.||")
-			for a in $(dig ipsec20591.$domainname TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
-			b=$(echo $a | cut -d : -f1)
-			if [[ "$b" -eq "$publichostname" ]]; then
-				srcid=$(echo $a | cut -d : -f2)
-			fi
-		done
+		lhn=$(dnsquery -MR $(echo "${publichostname}" | sed "s|.${PDN}||"))
 		let counter=0
 		counter=$(expr $counter + $(capa3 "${chr}" "wan"))
 		if (( counter = 1 )); then
@@ -602,7 +610,7 @@ case "${OPT}" in
 			eval "${scpcmd} src/mikrotik/CHR-reset.rsc ${userna}@${chr}:/"
 			eval "${sshcmd} ${userna}@${chr} :execute \{/import file-name=CHR-reset.rsc\}"
 			echo "configuring hostname, timezone, date, time"
-			eval "${sshcmd} ${userna}@${chr} /sys id set name=${srcid}.${LDN}"
+			eval "${sshcmd} ${userna}@${chr} /sys id set name=${lhn}.${LDN}"
 			chrtz=$(curl -s "http://ipinfo.io/${chrpubip}" | sed '/readme/d' | grep timezone | awk '{print $2}' | sed -e "s|\"||g" -e "s|,||")
 			eval "${sshcmd} ${userna}@${chr} /sys clock set time-zone-name=${chrtz}"
 			chrdate=$(date +%b/%d/%Y)
@@ -610,7 +618,7 @@ case "${OPT}" in
 			chrtime=$(TZ="${chrtz}" date | awk '{print $5}')
 			eval "${sshcmd} ${userna}@${chr} /system clock set time=${chrtime}"
 			echo "adding ${userna} RSA ssh key"
-			[[ -e "$HOME/.ssh/id_rsa.pub" ]] || ssh-keygen -t rsa -C "${userna}@${localdomainname}"
+			[[ -e "$HOME/.ssh/id_rsa.pub" ]] || ssh-keygen -t rsa -C "${userna}@${LDN}"
 			eval "${scpcmd} $HOME/.ssh/id_rsa.pub ${userna}@${chr}:/"
 			eval "${sshcmd} ${userna}@${chr} /user ssh-keys remove [find user=${userna}] \; /user ssh-keys import user=${userna} public-key-file=id_rsa.pub"
 			sshcmd="ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5"
@@ -619,9 +627,10 @@ case "${OPT}" in
 			eval "${sshcmd} ${userna}@${chr} /ip ipsec policy group add name=group_ikev2_cert"
 			eval "${sshcmd} ${userna}@${chr} /ip ipsec profile add dh-group=ecp384,modp3072 dpd-interval=30s dpd-maximum-failures=1 enc-algorithm=aes-256 hash-algorithm=sha256 name=NSA-RECOMMENDED nat-traversal=no"
 			eval "${sshcmd} ${userna}@${chr} /ip ipsec proposal add auth-algorithms=sha256 enc-algorithms=aes-256-cbc lifetime=1h name=NSA pfs-group=none"
-			ipsecpeers=$(mktemp)
+			ipsecpeers=$(tempfile)
+			mkr=$(dnsquery -R "mikrotik")
 			echo ":foreach P in=[/ip ipsec peer find] do={ /ip ipsec peer remove \$P }" > ${ipsecpeers}
-			eval "${sshcmd} ${userna}@calli.telecom.lobby /ip ipsec peer export >> ${ipsecpeers}"
+			eval "${sshcmd} ${userna}@${mkr}.${LDN} /ip ipsec peer export >> ${ipsecpeers}"
 			sed -i "s|45.32.144.15|${chrpubip}|g" "${ipsecpeers}"
 			echo "/ip ipsec peer add name=uma_ikev2_cert address=45.32.144.15 local-address=${chrpubip} exchange-mode=ike2 profile=NSA-RECOMMENDED" >> ${ipsecpeers}
 			eval "${scpcmd} ${ipsecpeers} ${userna}@${chr}:/ipsec_peers.rsc"
