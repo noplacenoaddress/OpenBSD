@@ -93,6 +93,9 @@ function dnsquery () {
                     sed -i "s| \"$|\"|g" "${r}"
                     grep "${2}" "${r}" | cut -d " " -f1
                 ;;
+				"-R")
+					dig "${3}.${LDN}" TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d' | shuf -n 1
+				;;
 			esac
 		;;
 		*)
