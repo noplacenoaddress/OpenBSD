@@ -801,6 +801,7 @@ case "${OPT}" in
 		done
 	;;
 	"-LTE")
+		read -p "Local or remote configuration?: [local|remote]" ctrl
 		read -p "Type LTE router public hostname: " lte
 		publichostname=$(echo "${lte}" | cut -d . -f1)
 		ltepubip=$(dig A "${lte}" +short)

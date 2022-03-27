@@ -38,7 +38,7 @@ function typeofvar () {
 function tempfile () {
     local TF="${1}"
     [[ -e "${RD}" ]] || mkdir "${RD}"
-    for t in $(ls "${RD}"/console-* | grep -v "${TODAY}"); do srm "${t}" ; done
+	[[ -e "${RD}/console-*" ]] && for t in $(ls "${RD}"/console-* | grep -v "${TODAY}"); do srm "${t}" ; done
     touch "${RD}"/console-${TODAY}-${RANDOM}
     echo $_
 }
