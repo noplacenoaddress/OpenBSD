@@ -1,9 +1,9 @@
 /interface l2tp-client
 add add-default-route=yes allow-fast-path=yes connect-to=/L2TPPOP/ \
-    disabled=no ipsec-secret=/L2TPIPSEC/
-    use-ipsec=yes use-peer-dns=yes user=/HOSTNAME/
+    disabled=no ipsec-secret="/L2TPIPSEC/" \
+    use-ipsec=yes use-peer-dns=yes user="/HOSTNAME/" password="/L2TPPWD/"
 /interface lte apn
-add apn=/APN/ name=/PROVIDER/
+add apn=/APN/ name=/PROVIDER/ comment="MCCMNC=/MMCMNC/ MVNO=/MVNO/"
 /interface lte
 set [ find ] allow-roaming=yes apn-profiles=/PROVIDER/ name=lte1 network-mode=lte \
     pin=/SIMPIN/
@@ -17,6 +17,7 @@ add address-pool=dhcpd disabled=no interface=ether1 name=dhcpd src-address=\
 /ip neighbor discovery-settings
 set discover-interface-list=!dynamic
 /ip address
+remove [find interface=ether1]
 add address=10.1.10.1/24 interface=ether1 network=10.1.10.0
 /ip cloud
 set ddns-enabled=yes
@@ -39,6 +40,11 @@ add action=lookup-only-in-table routing-mark=ddns table=ddns
 /system clock
 set time-zone-autodetect=no time-zone-name=Europe/Madrid
 /system identity
-set name=/HOSTNAME/
+set name="/HOSTNAME/"
 /system ntp client
 set enabled=yes primary-ntp=185.232.69.65 secondary-ntp=192.36.143.130
+/user
+add group=full name=taglio
+remove [find name=admin]
+/user
+set [find name=taglio] password="/USRPWD/"
