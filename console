@@ -801,7 +801,7 @@ case "${OPT}" in
 		done
 	;;
 	"-LTE")
-		read -p "Local or remote configuration?: [local|remote] " ctrl
+		read -p "Local or remote configuration?: [local|remote|next] " ctrl
 		case "${ctrl}" in
 			"local")
 				ssh-keygen -f "${HOME}/.ssh/known_hosts" -R "192.168.88.1"
@@ -842,11 +842,34 @@ case "${OPT}" in
 					echo -e "Connecting to ${hostname} for first configuration..."
 					c=$(capa3 "192.168.88.1" "wan")
 					[[ "${c}" == 1 ]] && (
-						scp -o StrictHostKeyChecking=no "${tf}" admin@192.168.88.1:/lte_basic.rsc
-						eval "ssh -o StrictHostKeyChecking=no admin@192.168.88.1 :execute \{/import lte_basic.rsc\}"
+						scp -q -o StrictHostKeyChecking=no "${tf}" admin@192.168.88.1:/lte_basic.rsc
+						scp -q -o StrictHostKeyChecking=no "${HOME}/.ssh/id_rsa.pub" admin@192.168.88.1:/
+						eval "ssh -q -o StrictHostKeyChecking=no admin@192.168.88.1 :execute \{/import lte_basic.rsc\}"
 
 					) || echo "${hostname} unreachable at default 192.168.88.1"
 				)|| exit 1
+			;;
+			"next")
+				echo -e "Getting variables..."
+				ddns=$(ssh 10.1.10.1 /ip cloud pr | grep -w dns\-name | awk '{print $2}' | tr -d '\n\r') ; echo -e "DDNS --> ${ddns}"
+				imei=$(ssh 10.1.10.1 /int lte info lte1 once  | grep imei | awk '{print $2}' | tr -d '\n\r') ; echo -e "IMEI --> ${imei}"
+				imsi=$(ssh 10.1.10.1 /int lte info lte1 once  | grep imsi | awk '{print $2}' | tr -d '\n\r') ; echo -e "IMSI --> ${imsi}"
+				uicc=$(ssh 10.1.10.1 /int lte info lte1 once  | grep uicc | awk '{print $2}' | tr -d '\n\r' | sed "s|.$||") ; echo -e "UICC --> ${uicc}"
+				hostname=$(ssh 10.1.10.1 /sys id pr | awk '{print $2}' | sed '$d')
+				l2tppop=$(ssh 10.1.10.1 ":put [/int l2tp-client get [find user=${hostname}] comment;]" | tr -d '\n\r')
+				l2tpphn=$(echo "${l2tppop}" | cut -d . -f1)
+				echo -e "adding DDNS to ${l2tppop}"
+				l2tplhn=$(dnsquery -MR "${l2tpphn}")
+				counter=$(ssh "${l2tplhn}"."${LDN}" ":put [/ip firewall address-list get [find comment=${hostname}]] | grep -v such | wc -l")
+				(( counter = 0 )) && (
+					ssh "${l2tplhn}"."${LDN}" "/ip fire address-list add list=lte address=${ddns} comment=${hostname}"
+				) || (
+					ssh "${l2tplhn}"."${LDN}" "/ip fire address-list remove [ find comment=${hostname} ]"
+					ssh "${l2tplhn}"."${LDN}" "/ip fire address-list add list=lte address=${ddns} comment=${hostname}"
+				)
+				echo "adding comment to lte interface onto ${hostname}"
+				ssh 10.1.10.1 "/sys note set note=\"\nIMEI: ${imei}\nIMSI: ${imsi}\nUICC: ${uicc}\""
+
 			;;
 			"remote")
 				read -p "Type LTE router public hostname: " lte

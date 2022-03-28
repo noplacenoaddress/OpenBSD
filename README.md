@@ -1419,7 +1419,7 @@ Then use the console script, that on march 2022 has been develop in its new vers
 
 ```bash
 taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -SO mikrotik -LTE
-Local or remote configuration?: [local|remote] local
+Local or remote configuration?: [local|remote|next] local
 Host 192.168.88.1 not found in /home/taglio/.ssh/known_hosts
 Type the LTE router hostname: 803328-LHG
 Type the LTE router LTE provider: [digi|xenet] digi
@@ -1484,6 +1484,26 @@ Warning: Permanently added '192.168.88.1' (RSA) to the list of known hosts.
 console-2803-30873                                                                                                                                                                                                                                      100% 2071   868.9KB/s   00:00    
 taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ 
 ```
+
+Is about interest speaking about [Mobile Virtual Network Operator](https://en.wikipedia.org/wiki/Mobile_virtual_network_operator) because are hard coded inside and for now only DIGI and PTVTELECOM under the name of XENET are present in the system. They are connection parameters for LTE connection.
+
+#### Getting and working onto variables.
+
+```bash
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -SO mikrotik -LTE
+Local or remote configuration?: [local|remote|next] next
+Getting variables...
+DDNS --> d6ad0ef88577.sn.mynetname.net
+IMEI --> 355654094754095
+IMSI --> 214035069297112
+UICC --> 8934129027000121120
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ 
+```
+
+Some acronyms very important in the LTE network:
+
+- [IMEI](https://en.wikipedia.org/wiki/International_Mobile_Equipment_Identity) that means International Mobile Equipment Identity, world wide unique identification of the radio device. In our case a [R11e-LTE](https://mikrotik.com/product/r11e_lte) device.
+- [IMSI](https://en.wikipedia.org/wiki/International_mobile_subscriber_identity) that means International Mobile Subscriber identity, world wide unique [SIM card](https://en.wikipedia.org/wiki/SIM_card) identification.
 
 #### Remote configuration
 
