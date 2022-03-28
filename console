@@ -858,6 +858,7 @@ case "${OPT}" in
 				hostname=$(ssh 10.1.10.1 /sys id pr | awk '{print $2}' | sed '$d')
 				l2tppop=$(ssh 10.1.10.1 ":put [/int l2tp-client get [find user=${hostname}] comment;]" | tr -d '\n\r')
 				l2tpphn=$(echo "${l2tppop}" | cut -d . -f1)
+				read -p "Type the MSISDN: " msisdn
 				echo -e "adding DDNS to ${l2tppop}"
 				l2tplhn=$(dnsquery -MR "${l2tpphn}")
 				counter=$(ssh "${l2tplhn}"."${LDN}" ":put [/ip firewall address-list get [find comment=${hostname}]] | grep -v such | wc -l")
@@ -867,8 +868,8 @@ case "${OPT}" in
 					ssh "${l2tplhn}"."${LDN}" "/ip fire address-list remove [ find comment=${hostname} ]"
 					ssh "${l2tplhn}"."${LDN}" "/ip fire address-list add list=lte address=${ddns} comment=${hostname}"
 				)
-				echo "adding comment to lte interface onto ${hostname}"
-				ssh 10.1.10.1 "/sys note set note=\"\nIMEI: ${imei}\nIMSI: ${imsi}\nUICC: ${uicc}\""
+				echo "adding comment to MOTD onto ${hostname}"
+				ssh 10.1.10.1 "/sys note set note=\"\nIMEI: ${imei}\nIMSI: ${imsi}\nUICC: ${uicc}\nMSISDN: ${msisdn}\""
 
 			;;
 			"remote")

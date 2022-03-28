@@ -6,7 +6,7 @@ add add-default-route=yes allow-fast-path=yes connect-to=/L2TPPOP/ \
 add apn=/APN/ name=/PROVIDER/ comment="MCCMNC=/MMCMNC/ MVNO=/MVNO/" use-peer-dns=no
 /interface lte
 set [ find ] allow-roaming=yes apn-profiles=/PROVIDER/ name=lte1 network-mode=lte \
-    pin=/SIMPIN/ 
+    pin=/SIMPIN/
 /interface wireless security-profiles
 set [ find default=yes ] supplicant-identity=MikroTik
 /ip pool
@@ -35,8 +35,13 @@ add action=mark-routing chain=output dst-address-list=ddns new-routing-mark=\
 add action=masquerade chain=srcnat src-address=10.1.10.0/24
 /ip route
 add distance=1 gateway=lte1 routing-mark=ddns
+add distance=1 gateway=l2tp-out1 routing-mark=l2tp
+add distance=1 gateway=lte1 routing-mark=lte
 /ip route rule
 add action=lookup-only-in-table routing-mark=ddns table=ddns
+add action=lookup-only-in-table routing-mark=l2tp table=l2tp
+add action=lookup-only-in-table routing-mark=lte table=lte
+
 /system clock
 set time-zone-autodetect=no time-zone-name=Europe/Madrid
 /system identity
