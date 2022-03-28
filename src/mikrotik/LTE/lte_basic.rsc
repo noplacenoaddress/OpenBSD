@@ -6,7 +6,7 @@ add add-default-route=yes allow-fast-path=yes connect-to=/L2TPPOP/ \
 add apn=/APN/ name=/PROVIDER/ comment="MCCMNC=/MMCMNC/ MVNO=/MVNO/" use-peer-dns=no
 /interface lte
 set [ find ] allow-roaming=yes apn-profiles=/PROVIDER/ name=lte1 network-mode=lte \
-    pin=/SIMPIN/ comment="MCCMNC=/MMCMNC/ MVNO=/MVNO/"
+    pin=/SIMPIN/ 
 /interface wireless security-profiles
 set [ find default=yes ] supplicant-identity=MikroTik
 /ip pool
@@ -24,7 +24,7 @@ set ddns-enabled=yes
 /ip dhcp-server network
 add address=10.1.10.0/24 dns-server=10.1.10.1 gateway=10.1.10.1
 /ip dns
-set allow-remote-requests=yes set servers="8.8.8.8,8.8.4.4"
+set allow-remote-requests=yes servers="8.8.8.8,8.8.4.4"
 /ip firewall address-list
 add address=cloud.mikrotik.com list=ddns
 add address=cloud2.mikrotik.com list=ddns
@@ -48,3 +48,4 @@ add group=full name=taglio
 remove [find name=admin]
 /user
 set [find name=taglio] password="/USRPWD/"
+/user ssh-keys import user=taglio public-key-file=id_rsa.pub
