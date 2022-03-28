@@ -1402,7 +1402,7 @@ root@ganesha:/var/nsd/etc#
 
 ![](https://github.com/redeltaglio/OpenBSD/raw/master/img/3fe10498-bb07-4ca3-972f-bd62b53026b0.jpeg)
 
-Two types, one are end users the other routers to our network that create WISP point of presence, one appliance of my network the other one LTE rural customer. 
+Two types, one are end users the other routers to our network that create WISP point of presence, one appliance of my network the other one LTE rural customer. In the WISP POP configuration LTE antennas are used only to bridge and [APN](https://en.wikipedia.org/wiki/Access_Point_Name) protocol got the passthrough flag active. 
 
 In the two cases CPE is a [Mikrotik LHG LTE kit](https://mikrotik.com/product/lhg_lte_kit).
 
