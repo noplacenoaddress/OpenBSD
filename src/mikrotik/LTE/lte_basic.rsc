@@ -1,12 +1,12 @@
 /interface l2tp-client
 add add-default-route=yes allow-fast-path=yes connect-to=/L2TPPOP/ \
-    disabled=no ipsec-secret="/L2TPIPSEC/" \
-    use-ipsec=yes use-peer-dns=yes user="/HOSTNAME/" password="/L2TPPWD/"
+    disabled=no ipsec-secret="/L2TPIPSEC/" comment=/L2TPPOP/ \
+    use-ipsec=yes use-peer-dns=no user="/HOSTNAME/" password="/L2TPPWD/"
 /interface lte apn
-add apn=/APN/ name=/PROVIDER/ comment="MCCMNC=/MMCMNC/ MVNO=/MVNO/"
+add apn=/APN/ name=/PROVIDER/ comment="MCCMNC=/MMCMNC/ MVNO=/MVNO/" use-peer-dns=no
 /interface lte
 set [ find ] allow-roaming=yes apn-profiles=/PROVIDER/ name=lte1 network-mode=lte \
-    pin=/SIMPIN/
+    pin=/SIMPIN/ comment="MCCMNC=/MMCMNC/ MVNO=/MVNO/"
 /interface wireless security-profiles
 set [ find default=yes ] supplicant-identity=MikroTik
 /ip pool
@@ -24,7 +24,7 @@ set ddns-enabled=yes
 /ip dhcp-server network
 add address=10.1.10.0/24 dns-server=10.1.10.1 gateway=10.1.10.1
 /ip dns
-set allow-remote-requests=yes
+set allow-remote-requests=yes set servers="8.8.8.8,8.8.4.4"
 /ip firewall address-list
 add address=cloud.mikrotik.com list=ddns
 add address=cloud2.mikrotik.com list=ddns
