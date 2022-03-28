@@ -1406,6 +1406,87 @@ Two types, one are end users the other routers to our network that create WISP p
 
 In the two cases CPE is a [Mikrotik LHG LTE kit](https://mikrotik.com/product/lhg_lte_kit).
 
+#### Local configuration
+
+![](https://github.com/redeltaglio/OpenBSD/raw/master/img/LHGR-LTE.jpg)
+
+Perform a `/system reset-configuration no-defaults=yes` to the board and then add default IPv4 address `/ip address add address=192.168.88.1/24 interface=ether1`. For security disable and enable ssh service: 
+
+- `/ip service set ssh disabled=yes`
+- `/ip service set ssh disabled=no`
+
+Then use the console script, that on march 2022 has been develop in its new version:
+
+```bash
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -SO mikrotik -LTE
+Local or remote configuration?: [local|remote] local
+Host 192.168.88.1 not found in /home/taglio/.ssh/known_hosts
+Type the LTE router hostname: 803328-LHG
+Type the LTE router LTE provider: [digi|xenet] digi
+Type the LTE SIM PIN: 1234
+Type the L2TP POP public hostname: ixp.telecomlobby.com
+🔐 Type the L2TP user password:  ****************************************************************
+🔐 Type the L2TP IPSEC key:  ****************************************************************
+🔐 Type the router user password:  ****************************************************************
+/interface l2tp-client
+add add-default-route=yes allow-fast-path=yes connect-to=ixp.telecomlobby.com \
+    disabled=no ipsec-secret="XXXX" comment=ixp.telecomlobby.com \
+    use-ipsec=yes use-peer-dns=no user="803328-LHG" password="XXXX"
+/interface lte apn
+add apn=internet.digimobil.es name=digi comment="MCCMNC=21407 MVNO=DIGI" use-peer-dns=no
+/interface lte
+set [ find ] allow-roaming=yes apn-profiles=digi name=lte1 network-mode=lte \
+    pin=1234 comment="MCCMNC=21407 MVNO=DIGI"
+/interface wireless security-profiles
+set [ find default=yes ] supplicant-identity=MikroTik
+/ip pool
+add name=dhcpd ranges=10.1.10.10-10.1.10.254
+/ip dhcp-server
+add address-pool=dhcpd disabled=no interface=ether1 name=dhcpd src-address=\
+    10.1.10.1
+/ip neighbor discovery-settings
+set discover-interface-list=!dynamic
+/ip address
+remove [find interface=ether1]
+add address=10.1.10.1/24 interface=ether1 network=10.1.10.0
+/ip cloud
+set ddns-enabled=yes
+/ip dhcp-server network
+add address=10.1.10.0/24 dns-server=10.1.10.1 gateway=10.1.10.1
+/ip dns
+set allow-remote-requests=yes set servers="8.8.8.8,8.8.4.4"
+/ip firewall address-list
+add address=cloud.mikrotik.com list=ddns
+add address=cloud2.mikrotik.com list=ddns
+/ip firewall mangle
+add action=mark-routing chain=output dst-address-list=ddns new-routing-mark=\
+    ddns passthrough=yes
+/ip firewall nat
+add action=masquerade chain=srcnat src-address=10.1.10.0/24
+/ip route
+add distance=1 gateway=lte1 routing-mark=ddns
+/ip route rule
+add action=lookup-only-in-table routing-mark=ddns table=ddns
+/system clock
+set time-zone-autodetect=no time-zone-name=Europe/Madrid
+/system identity
+set name="803328-LHG"
+/system ntp client
+set enabled=yes primary-ntp=185.232.69.65 secondary-ntp=192.36.143.130
+/user
+add group=full name=taglio
+remove [find name=admin]
+/user
+set [find name=taglio] password="XXXX"
+Go Ahead? [yes/no]: yes
+Connecting to 803328-LHG for first configuration...
+Warning: Permanently added '192.168.88.1' (RSA) to the list of known hosts.
+console-2803-30873                                                                                                                                                                                                                                      100% 2071   868.9KB/s   00:00    
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ 
+```
+
+#### Remote configuration
+
 First of all I want to underline that lines of routers connected to our network to form a little POP in the WISP appliance are connected to the Internet using a provider that give access to it using NAT. Taking this in consideration will perform in different steps:
 
 - `/ip cloud set ddns-enable=yes` means enable a dynamic host using a Mikrotik service that point to external IP address of the connection. For example `d6af0e9e2591.sn.mynetname.net`.
