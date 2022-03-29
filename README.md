@@ -1496,7 +1496,10 @@ Getting variables...
 DDNS --> d6ad0ef88577.sn.mynetname.net
 IMEI --> 355654094754095
 IMSI --> 214035069297112
-UICC --> 8934129027000121120
+ICCID --> 8934129027000121120
+Type the MSISDN: 744658838
+adding DDNS to ixp.telecomlobby.com
+adding comment to MOTD onto 803328-LHG
 taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ 
 ```
 
@@ -1504,6 +1507,8 @@ Some acronyms very important in the LTE network:
 
 - [IMEI](https://en.wikipedia.org/wiki/International_Mobile_Equipment_Identity) that means International Mobile Equipment Identity, world wide unique identification of the radio device. In our case a [R11e-LTE](https://mikrotik.com/product/r11e_lte) device.
 - [IMSI](https://en.wikipedia.org/wiki/International_mobile_subscriber_identity) that means International Mobile Subscriber identity, world wide unique [SIM card](https://en.wikipedia.org/wiki/SIM_card) identification.
+- [ICCID](https://en.wikipedia.org/wiki/SIM_card#ICCID), that means Integrated Circuit Card Identifier, world wide unique Sim card serial number.
+- [MSISDN](https://en.wikipedia.org/wiki/MSISDN), that means Mobile Station International Subscriber Directory Number, world wide unique [telephone number](https://en.wikipedia.org/wiki/E.164) mapped to the SIM card.
 
 #### Remote configuration
 

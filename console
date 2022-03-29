@@ -854,7 +854,7 @@ case "${OPT}" in
 				ddns=$(ssh 10.1.10.1 /ip cloud pr | grep -w dns\-name | awk '{print $2}' | tr -d '\n\r') ; echo -e "DDNS --> ${ddns}"
 				imei=$(ssh 10.1.10.1 /int lte info lte1 once  | grep imei | awk '{print $2}' | tr -d '\n\r') ; echo -e "IMEI --> ${imei}"
 				imsi=$(ssh 10.1.10.1 /int lte info lte1 once  | grep imsi | awk '{print $2}' | tr -d '\n\r') ; echo -e "IMSI --> ${imsi}"
-				uicc=$(ssh 10.1.10.1 /int lte info lte1 once  | grep uicc | awk '{print $2}' | tr -d '\n\r' | sed "s|.$||") ; echo -e "UICC --> ${uicc}"
+				iccid=$(ssh 10.1.10.1 /int lte info lte1 once  | grep uicc | awk '{print $2}' | tr -d '\n\r' | sed "s|.$||") ; echo -e "ICCID --> ${iccid}"
 				hostname=$(ssh 10.1.10.1 /sys id pr | awk '{print $2}' | sed '$d')
 				l2tppop=$(ssh 10.1.10.1 ":put [/int l2tp-client get [find user=${hostname}] comment;]" | tr -d '\n\r')
 				l2tpphn=$(echo "${l2tppop}" | cut -d . -f1)
@@ -869,7 +869,8 @@ case "${OPT}" in
 					ssh "${l2tplhn}"."${LDN}" "/ip fire address-list add list=lte address=${ddns} comment=${hostname}"
 				)
 				echo "adding comment to MOTD onto ${hostname}"
-				ssh 10.1.10.1 "/sys note set note=\"\nIMEI: ${imei}\nIMSI: ${imsi}\nUICC: ${uicc}\nMSISDN: ${msisdn}\""
+				echo "/sys note set note=\"\nIMEI: ${imei}\nIMSI: ${imsi}\ICCID: ${iccid}\nMSISDN: ${msisdn}\""
+				ssh 10.1.10.1 "/sys note set note=\"\nIMEI: ${imei}\nIMSI: ${imsi}\nICCID: ${iccid}\nMSISDN: ${msisdn}\""
 
 			;;
 			"remote")
