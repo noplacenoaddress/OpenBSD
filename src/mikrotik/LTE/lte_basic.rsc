@@ -35,19 +35,23 @@ add action=mark-routing chain=output dst-address-list=ddns new-routing-mark=\
 add action=masquerade chain=srcnat src-address=10.1.10.0/24
 /ip route
 add distance=1 gateway=lte1 routing-mark=ddns
-add distance=1 gateway=l2tp-out1 routing-mark=l2tp
-add distance=1 gateway=lte1 routing-mark=lte
+add distance=3 dst-address=9.9.9.9/32 gateway=lte1
 /ip route rule
 add action=lookup-only-in-table routing-mark=ddns table=ddns
-add action=lookup-only-in-table routing-mark=l2tp table=l2tp
-add action=lookup-only-in-table routing-mark=lte table=lte
-
 /system clock
 set time-zone-autodetect=no time-zone-name=Europe/Madrid
 /system identity
 set name="/HOSTNAME/"
 /system ntp client
 set enabled=yes primary-ntp=185.232.69.65 secondary-ntp=192.36.143.130
+/tool netwatch
+add down-script=\
+    "/int lte set [find] disabled=yes\r\
+    \n/int lte set [find] disable=no\r\
+    \n" host=9.9.9.9 interval=3m up-script="/ip cloud force-update\r\
+    \n:delay delay-time=10\r\
+    \n/interface l2tp-client set [ find ] disabled=yes\r\
+    \n/interface l2tp-client set [ find ] disabled=no"
 /user
 add group=full name=taglio
 remove [find name=admin]
