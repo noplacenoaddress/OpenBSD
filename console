@@ -575,14 +575,15 @@ case "${OPT}" in
 	;;
 	#[openbsd]
 	"-G"|"-S"|"-D"|"-PF"|"-7")
-		[[ "${3}" == "-G" ]] && rcmd="git -C "$proghome" pull"
-		[[ "${3}" == "-S" ]] && rcmd="${ws} -U scripts"
-		[[ "${3}" == "-D" ]] && rcmd="${ws} -U dyndnspop"
-		[[ "${3}" == "-PF" ]] && rcmd="${ws} -U pf"
-		[[ "${3}" == "-7" ]] && rcmd="doas sh /home/taglio/Sources/Git/OpenBSD/tools/seven"
+		ws="doas sh /home/taglio/Sources/Git/OpenBSD/setup_node"
+		[[ "${5}" == "-G" ]] && rcmd="git -C "$proghome" pull"
+		[[ "${5}" == "-S" ]] && rcmd="${ws} -U scripts"
+		[[ "${5}" == "-D" ]] && rcmd="${ws} -U dyndnspop"
+		[[ "${5}" == "-PF" ]] && rcmd="${ws} -U pf"
+		[[ "${5}" == "-7" ]] && rcmd="doas sh /home/taglio/Sources/Git/OpenBSD/tools/seven"
 		for (( j=0; j<${#wa[@]}; j++ )); do
 			echo -e "Connecting to ${wa[j]}.${LDN}"
-			ssh ${wa[j]}.${LDN} eval "${rcmd}"
+			eval "ssh ${wa[j]}.${LDN} ${rcmd}"
 		done
 	;;
 	#[mikrotik]
@@ -859,6 +860,7 @@ case "${OPT}" in
 				l2tppop=$(ssh 10.1.10.1 ":put [/int l2tp-client get [find user=${hostname}] comment;]" | tr -d '\n\r')
 				l2tpphn=$(echo "${l2tppop}" | cut -d . -f1)
 				read -p "Type the MSISDN: " msisdn
+				read -p "Type the town name: " town
 				echo -e "adding DDNS to ${l2tppop}"
 				l2tplhn=$(dnsquery -MR "${l2tpphn}")
 				counter=$(ssh "${l2tplhn}"."${LDN}" ":put [/ip firewall address-list get [find comment=${hostname}]] | grep -v such | wc -l")
@@ -871,6 +873,8 @@ case "${OPT}" in
 				echo "adding comment to MOTD onto ${hostname}"
 				echo "/sys note set note=\"\nIMEI: ${imei}\nIMSI: ${imsi}\ICCID: ${iccid}\nMSISDN: ${msisdn}\""
 				ssh 10.1.10.1 "/sys note set note=\"\nIMEI: ${imei}\nIMSI: ${imsi}\nICCID: ${iccid}\nMSISDN: ${msisdn}\""
+				echo "Producing values..."
+
 
 			;;
 			"remote")
