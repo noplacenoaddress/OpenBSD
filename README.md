@@ -1535,7 +1535,49 @@ Next start to configure the new LTE last mile Internet access router, in my case
    taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ 
    ```
 
-3. 
+#### LTE appendix, unstable cells. 
+
+Sometimes and in some environment depending on relative problems to cells or temporary problems with virtual mobile operators or MMC. We add some cycles and one special route to test LTE connectivity using [netwatch](https://wiki.mikrotik.com/wiki/Manual:Tools/Netwatch) in the client side and `ppp profile script` in the server side :
+
+```bash
+/tool netwatch
+add down-script="/int lte set [find] disabled=yes\r\
+    \n/interface l2tp-client set [ find ] disabled=yes\r\
+    \n/int lte set [find] disabled=no\r\
+    \n\r\
+    \n:local continue true\r\
+    \n:local counter 0\r\
+    \n:while (\$continue) do={:delay delay-time=30 ; :if ([/ping 9.9.9.9 count=1]=0) do={ :set \$counter (\$counter + 1); :if (\$counter>3) do={:set counter 0 ; /sys reboot} else={/interface lte set [find] disabled=yes ; /int lte set [find] disabled=no}} else={:set \$continue fal\
+    se ; :set \$counter 0}}\r\
+    \n" host=9.9.9.9 interval=10s up-script=":delay delay-time=2\r\
+    \n/ip cloud force-update\r\
+    \n:delay delay-time=10\r\
+    \n/interface l2tp-client set [ find ] disabled=no\r\
+    \n\r\
+    \n\r\
+    \n:local continue true\r\
+    \n:delay delay-time=60\r\
+    \n:while (\$continue) do={:delay delay-time=60 ; :if ([/interface l2tp-client get [find] running] = false) do={/interface l2tp-client set [find] disabled=yes ; /int l2tp-client set [find] disabled=no} else={:set \$continue false}}\r\
+    \n"
+```
+
+```bash
+/tool e-mail
+set address=192.168.13.44 from=calli@telecom.lobby password=XXX port=587 start-tls=yes user=robot_redamaes
+/ppp profile
+add change-tcp-mss=no dns-server=8.8.8.8,8.8.4.4 local-address=172.16.30.1 name=L2TP-PUBLIC on-down=\
+    ":local interfaceName\r\
+    \n:set interfaceName [/interface get \$interface name]\r\
+    \n\r\
+    \n/ip dns cache flush \r\
+    \n /tool e-mail send start-tls=yes to=riccardo@redama.es body=\"\$interfaceName down\"" on-up=":local interfaceName\r\
+    \n:set interfaceName [/interface get \$interface name]\r\
+    \n\r\
+    \n /tool e-mail send start-tls=yes to=riccardo@redama.es body=\"\$interfaceName up\"" use-encryption=yes use-ipv6=no use-mpls=no use-upnp=no
+
+```
+
+
 
 ### Hamradio passive and active point of presence
 
