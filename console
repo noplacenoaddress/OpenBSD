@@ -860,7 +860,6 @@ case "${OPT}" in
 				l2tppop=$(ssh 10.1.10.1 ":put [/int l2tp-client get [find user=${hostname}] comment;]" | tr -d '\n\r')
 				l2tpphn=$(echo "${l2tppop}" | cut -d . -f1)
 				read -p "Type the MSISDN: " msisdn
-				read -p "Type the town name: " town
 				echo -e "adding DDNS to ${l2tppop}"
 				l2tplhn=$(dnsquery -MR "${l2tpphn}")
 				counter=$(ssh "${l2tplhn}"."${LDN}" ":put [/ip firewall address-list get [find comment=${hostname}]] | grep -v such | wc -l")
@@ -871,10 +870,12 @@ case "${OPT}" in
 					ssh "${l2tplhn}"."${LDN}" "/ip fire address-list add list=lte address=${ddns} comment=${hostname}"
 				)
 				echo "adding comment to MOTD onto ${hostname}"
-				echo "/sys note set note=\"\nIMEI: ${imei}\nIMSI: ${imsi}\ICCID: ${iccid}\nMSISDN: ${msisdn}\""
 				ssh 10.1.10.1 "/sys note set note=\"\nIMEI: ${imei}\nIMSI: ${imsi}\nICCID: ${iccid}\nMSISDN: ${msisdn}\""
 				echo "Producing values..."
-
+				phn=$(cat /dev/urandom | tr -dc '[:alpha:]' | fold -w 3 | head -n 1 |  tr '[:upper:]' '[:lower:]')
+				echo "The public hostname is ${phn}.${PDN} and must resolve $(ssh 10.1.10.1 /ip addr pr where interface=l2tp-out1 | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | head -n 1 | tr -d '\n\r')"
+				routerid="192.168.13.$(shuf -i 1-255 -n 1)"
+				echo "The routerid is ${routerid}"
 
 			;;
 			"remote")
