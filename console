@@ -830,7 +830,7 @@ case "${OPT}" in
 				read -p "Type the LTE SIM PIN: " simpin
 				sed -i "s|/SIMPIN/|${simpin}|g" "${tf}"
 				read -p "Type the L2TP POP public hostname: " l2tppop
-				sed -i "s|/L2TPPOP/|${l2tppop}|g" "${tf}"
+				sed -i "s|/L2TPPOP/|$(dig A ${l2tppop} +short | tr -d '\n')|g" "${tf}"
 				l2tppwd=$(systemd-ask-password "Type the L2TP user password: ")
 				sed -i "s|/L2TPPWD/|${l2tppwd}|g" "${tf}"
 				l2tpipsec=$(systemd-ask-password "Type the L2TP IPSEC key: ")

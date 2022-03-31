@@ -45,13 +45,24 @@ set name="/HOSTNAME/"
 /system ntp client
 set enabled=yes primary-ntp=185.232.69.65 secondary-ntp=192.36.143.130
 /tool netwatch
-add down-script=\
-    "/int lte set [find] disabled=yes\r\
-    \n/int lte set [find] disable=no\r\
-    \n" host=9.9.9.9 interval=3m up-script="/ip cloud force-update\r\
-    \n:delay delay-time=10\r\
+add down-script="/int lte set [find] disabled=yes\r\
     \n/interface l2tp-client set [ find ] disabled=yes\r\
-    \n/interface l2tp-client set [ find ] disabled=no"
+    \n/int lte set [find] disabled=no\r\
+    \n\r\
+    \n:local continue true\r\
+    \n:local counter 0\r\
+    \n:while (\$continue) do={:delay delay-time=30 ; :if ([/ping 9.9.9.9 count=1]=0) do={ :set \$counter (\$counter + 1); :if (\$counter>3) do={:set counter 0 ; /sys reboot} else={/interface lte set [find] disabled=yes ; /int lte set [find] disabled=no}} else={:set \$continue fal\
+    se ; :set \$counter 0}}\r\
+    \n" host=9.9.9.9 interval=10s up-script=":delay delay-time=2\r\
+    \n/ip cloud force-update\r\
+    \n:delay delay-time=10\r\
+    \n/interface l2tp-client set [ find ] disabled=no\r\
+    \n\r\
+    \n\r\
+    \n:local continue true\r\
+    \n:delay delay-time=60\r\
+    \n:while (\$continue) do={:delay delay-time=60 ; :if ([/interface l2tp-client get [find] running] = false) do={/interface l2tp-client set [find] disabled=yes ; /int l2tp-client set [find] disabled=no} else={:set \$continue false}}\r\
+    \n"
 /user
 add group=full name=taglio
 remove [find name=admin]
