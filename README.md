@@ -1500,7 +1500,10 @@ ICCID --> 8934129027000121120
 Type the MSISDN: 744658838
 adding DDNS to ixp.telecomlobby.com
 adding comment to MOTD onto 803328-LHG
-taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ 
+Producing values...
+The public hostname is fij.telecomlobby.com and must resolve 188.213.5.220
+The routerid is 192.168.13.69
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$
 ```
 
 Some acronyms very important in the LTE network:
@@ -1509,6 +1512,8 @@ Some acronyms very important in the LTE network:
 - [IMSI](https://en.wikipedia.org/wiki/International_mobile_subscriber_identity) that means International Mobile Subscriber identity, world wide unique [SIM card](https://en.wikipedia.org/wiki/SIM_card) identification.
 - [ICCID](https://en.wikipedia.org/wiki/SIM_card#ICCID), that means Integrated Circuit Card Identifier, world wide unique Sim card serial number.
 - [MSISDN](https://en.wikipedia.org/wiki/MSISDN), that means Mobile Station International Subscriber Directory Number, world wide unique [telephone number](https://en.wikipedia.org/wiki/E.164) mapped to the SIM card.
+
+As you can see our tool give us also a aleatory public host that have to be configured into public DNS tree daemons. Also remember to add the tuple "local hostname <--> public hostname" to the internal DNS daemon. Also we've got a new `routerid` for OSPF configure.
 
 #### Remote configuration
 
@@ -1537,7 +1542,7 @@ Next start to configure the new LTE last mile Internet access router, in my case
 
 #### LTE appendix, unstable cells. 
 
-Sometimes and in some environment depending on relative problems to cells or temporary problems with virtual mobile operators or MMC. We add some cycles and one special route to test LTE connectivity using [netwatch](https://wiki.mikrotik.com/wiki/Manual:Tools/Netwatch) in the client side and `ppp profile script` in the server side :
+Sometimes and in some environment depending on relative problems to cells or temporary problems with virtual mobile operators or MMC. We add some cycles and one special route to test LTE connectivity using [netwatch](https://wiki.mikrotik.com/wiki/Manual:Tools/Netwatch) in the client side and `ppp profile script` in the server side . For example mobile operator Orange in the Spanish territory cut data connection every hour by sending a special [GSM command](http://howltestuffworks.blogspot.com/2012/02/deactivate-eps-bearer-context-request.html) `+CGEV: EPS PDN DEACT 5`:
 
 ```bash
 /tool netwatch
@@ -1577,7 +1582,7 @@ add change-tcp-mss=no dns-server=8.8.8.8,8.8.4.4 local-address=172.16.30.1 name=
 
 ```
 
-
+Next it will be great coding some SMS stuff in emergency GSM mode.
 
 ### Hamradio passive and active point of presence
 
