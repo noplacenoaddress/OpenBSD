@@ -856,7 +856,7 @@ case "${OPT}" in
 				imei=$(ssh 10.1.10.1 /int lte info lte1 once  | grep imei | awk '{print $2}' | tr -d '\n\r') ; echo -e "IMEI --> ${imei}"
 				imsi=$(ssh 10.1.10.1 /int lte info lte1 once  | grep imsi | awk '{print $2}' | tr -d '\n\r') ; echo -e "IMSI --> ${imsi}"
 				iccid=$(ssh 10.1.10.1 /int lte info lte1 once  | grep uicc | awk '{print $2}' | tr -d '\n\r' | sed "s|.$||") ; echo -e "ICCID --> ${iccid}"
-				hostname=$(ssh 10.1.10.1 /sys id pr | awk '{print $2}' | sed '$d')
+				hostname=$(ssh 10.1.10.1 /sys id pr | awk '{print $2}' | sed '$d' | cut -d . -f1 | tr -d '\n\r')
 				l2tppop=$(ssh 10.1.10.1 ":put [/int l2tp-client get [find user=${hostname}] comment;]" | tr -d '\n\r')
 				l2tpphn=$(echo "${l2tppop}" | cut -d . -f1)
 				read -p "Type the MSISDN: " msisdn
@@ -876,19 +876,30 @@ case "${OPT}" in
 				echo "The public hostname is ${phn}.${PDN} and must resolve $(ssh 10.1.10.1 /ip addr pr where interface=l2tp-out1 | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | head -n 1 | tr -d '\n\r')"
 				routerid="192.168.13.$(shuf -i 1-255 -n 1)"
 				echo "The routerid is ${routerid}"
+				read -p "Is ${hostname} a LTE router or a LTE CPE?: [router|cpe] " ctrl
+				case "${ctrl}" in
+					"router")
+						lteadm="172.16.$(shuf -i 1-255 -n 1).0/24"
+						echo "The LTE router ADM vlan is ${lteadm}"
+						ltedata="172.16.$(shuf -i 1-255 -n 1).0/24"
+						echo "The LTE router DATA vlan is ${ltedata}"
+						lteham="172.16.$(shuf -i 1-255 -n 1).0/24"
+						echo "The LTE router HAM vlan is ${lteham}"
+					;;
+					"cpe")
+						echo "In this case ${hostname} will configured in the remote step as NAT router using 10.1.10.0/24 as ether1 network."
+					;;
+					*)
+						echo "Type router or cpe!" ; exit 1
+					;;
+				esac
 
 			;;
 			"remote")
 				read -p "Type LTE router public hostname: " lte
-				publichostname=$(echo "${lte}" | cut -d . -f1)
+				phn=$(echo "${lte}" | cut -d . -f1)
 				ltepubip=$(dig A "${lte}" +short)
-				domainname=$(echo "${lte}" | sed "s|${publichostname}.||")
-					for a in $(dig ipsec20591.$domainname TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
-					b=$(echo $a | cut -d : -f1)
-					if [[ "$b" -eq "$publichostname" ]]; then
-						srcid=$(echo $a | cut -d : -f2)
-					fi
-				done
+				lhn=$(dnsquery -MR "${phn}")
 				let counter=0
 				counter=$(expr $counter + $(capa3 "${lte}" "wan"))
 				if (( counter = 1 )); then
@@ -896,8 +907,9 @@ case "${OPT}" in
 					pwd=$(passcheck "${lte}")
 					ssh-keygen -f "$HOME/.ssh/known_hosts" -R "${lte}"
 					if [[ $pwd = "0" ]]; then
-						echo "no password present"
-						echo "follow README.md of github" ; exit 1
+						echo "SSH key present and valid"
+						sshcmd="ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5"
+						scpcmd="scp -o StrictHostKeyChecking=no -o ConnectTimeout=5"
 					elif [[ $pwd = "143" ]]; then
 						echo "with password"
 						password=$(systemd-ask-password "Enter ${lte} ${userna} password: ")
@@ -908,7 +920,7 @@ case "${OPT}" in
 				eval "${scpcmd} src/mikrotik/LTE-reset.rsc ${userna}@${lte}:/LTEreset.rsc"
 				eval "${sshcmd} ${userna}@${lte} /import file-name=LTEreset.rsc"
 				echo "configuring hostname, timezone, date, time"
-				eval "${sshcmd} ${userna}@${lte} /sys id set name=${srcid}.${LDN}"
+				eval "${sshcmd} ${userna}@${lte} /sys id set name=${lhn}.${LDN}"
 				eval "${sshcmd} ${userna}@${lte} /sys clock set time-zone-name=Europe/Madrid"
 				ltedate=$(date +%b/%d/%Y)
 				eval "${sshcmd} ${userna}@${lte} /system clock set date=${ltedate}"

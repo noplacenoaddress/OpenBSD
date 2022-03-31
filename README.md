@@ -1501,8 +1501,12 @@ Type the MSISDN: 744658838
 adding DDNS to ixp.telecomlobby.com
 adding comment to MOTD onto 803328-LHG
 Producing values...
-The public hostname is fij.telecomlobby.com and must resolve 188.213.5.220
-The routerid is 192.168.13.69
+The public hostname is mor.telecomlobby.com and must resolve 188.213.5.220
+The routerid is 192.168.13.115
+Is 803328-LHG a LTE router or a LTE CPE?: [router|cpe] router
+The LTE router ADM vlan is 172.16.167.0/24
+The LTE router DATA vlan is 172.16.255.0/24
+The LTE router HAM vlan is 172.16.231.0/24
 taglio@trimurti:~/Work/telecom.lobby/OpenBSD$
 ```
 
@@ -1513,7 +1517,7 @@ Some acronyms very important in the LTE network:
 - [ICCID](https://en.wikipedia.org/wiki/SIM_card#ICCID), that means Integrated Circuit Card Identifier, world wide unique Sim card serial number.
 - [MSISDN](https://en.wikipedia.org/wiki/MSISDN), that means Mobile Station International Subscriber Directory Number, world wide unique [telephone number](https://en.wikipedia.org/wiki/E.164) mapped to the SIM card.
 
-As you can see our tool give us also a aleatory public host that have to be configured into public DNS tree daemons. Also remember to add the tuple "local hostname <--> public hostname" to the internal DNS daemon. Also we've got a new `routerid` for OSPF configure.
+As you can see our tool give us also a aleatory public host that have to be configured into public DNS tree daemons. Also remember to add the tuple "local hostname <--> public hostname" to the internal DNS daemon. Also we've got a new `routerid` for OSPF configure, and networks for different vlans to add in the remote section in the case it will be configured as a router.
 
 #### Remote configuration
 
