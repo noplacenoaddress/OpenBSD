@@ -34,6 +34,7 @@ function menu () {
             echo -e $0 "-I ${LDN} -SO [openbsd] -S -> scripts [o]"
             echo -e $0 "-I ${LDN} -SO [openbsd] -D -> dyndnspop [o]"
 			echo -e $0 "-I ${LDN} -SO [openbsd] -7 -> changes to 7.0 release [o]"
+			echo -e $0 "-I ${LDN} -SO [openbsd] -PF -> changes to PF firewall [o]"
 			echo -e $0 "-I ${LDN} -SO [mikrotik] -LTE -> new RouterOS LTE Router instance [o]"
 			echo -e $0 "-I ${LDN} -SO [mikrotik] -CHR -> new RouterOS Cloud Hosted Router istance [o] "
 			echo -e $0 "-I ${LDN} -SO [workstation] -GR6 -> add IPv6 ULA to gre tunnel interfaces [o]"
@@ -73,7 +74,7 @@ PDN=$(dig "${LDN}" TXT +short | sed "s|\"||g") && [[ "${PDN}" ]] || ( echo "inte
 	( [ "${5}" == "-N"  -o "${5}" == "-C" -o "${5}" == "-P" ] && [ "${4}" == "openbsd"  -o "${4}" == "mikrotik" -o "${4}" == "edgeos" -o "${4}" == "ALL" ] ) || \
 	( [ "${5}" == "-F" ] && [ "${4}" == "openbsd"  -o "${4}" == "edgeos" -o "${4}" == "ALL" ] ) || \
 	( [ "${5}" == "-KD" ] && [ "${4}" == "ALL" ] ) || \
-	( [ "${5}" == "-G"  -o "${5}" == "-S" -o "${5}" == "-D" ] && [ "${4}" == "openbsd" ] ) || \
+	( [ "${5}" == "-G"  -o "${5}" == "-S" -o "${5}" == "-D" -o "${5}" == "-PF" ] && [ "${4}" == "openbsd" ] ) || \
 	( [ "${5}" == "-LTE"  -o "${5}" == "-CHR" ] && [ "${4}" == "mikrotik" ] ) || \
 	( [ "${5}" == "-GR6"  -o "${5}" == "-RS" -o "${5}" == "-Z" -o "${5}" == "-GEO"  -o "${5}" == "-CU" -o "${5}" == "-U" -o "${5}" == "-CI" -o "${5}" == "-K" ] && [ "${4}" == "workstation" ] )
 ) && OPT="${5}" || menu 2
