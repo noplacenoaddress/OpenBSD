@@ -1964,3 +1964,6 @@ A couple of advisors:
 - Iked use various methods to authenticate to the opposite peer, in our mixed environment we use two:
   - OpenBSD to OpenBSD tunnels will use [RFC 7427](https://datatracker.ietf.org/doc/html/rfc7427) directives. In that case we store X509 certificates in under `/etc/iked/certs.` Normally under OpenBSD we had to use [ikectl(8)](https://man.openbsd.org/ikectl) but in our project we do by hand, or better saying using ours tools. I decide to archive local certificate under the name of `local.crt` and the others with the public hostname and the suffix `.crt`.  Certificates are selected also specifying the complete issuer field of the certificate. *Some fields could be randomized for security also*.
   - OpenBSD to Linux based OS will use public RSA key that will be selected using the [FQDN](https://en.wikipedia.org/wiki/Fully_qualified_domain_name) or the [SAN](https://en.wikipedia.org/wiki/Subject_Alternative_Name) extension fields of the certificate.
+- We denied gre traffic onto egress interface, but in [enc(4)](https://man.openbsd.org/enc.4) pseudo device. 
+- We use 1/3 default pf state timeout for gre protocol  `set timeout { other.first 20, other.multiple 20, other.single 10 }  `.
+
