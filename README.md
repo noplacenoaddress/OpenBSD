@@ -1523,32 +1523,60 @@ As you can see our tool give us also a aleatory public host that have to be conf
 
 First of all I want to underline that lines of routers connected to our network to form a little POP in the WISP appliance are connected to the Internet using a provider that give access to it using NAT. Taking this in consideration will perform in different steps:
 
-- `/ip cloud set ddns-enable=yes` means enable a dynamic host using a Mikrotik service that point to external IP address of the connection. For example `d6af0e9e2591.sn.mynetname.net`.
 - IPSec connection will use [NAT traversal](https://en.wikipedia.org/wiki/NAT_traversal) feature because its bare nature, router is behind NAT! Others have to accept incoming connection to the `4500 UDP` port from the dynamic host that we've just configured.
 - Use `src/etc/pf.conf.table.lte` to add the new LTE WISP point of presence.
 - Because its nature behind NAT use [l2tp](https://en.wikipedia.org/wiki/Layer_2_Tunneling_Protocol) to add a public IPv4 address to it. But you can ever do it in IPv6 to not consume an IPv4 from your pool. Remember that this IPSec and L2TP tunnel will be created using one of our Mikrotik endpoints. Be careful to use as the Internet gateway for the workstation LAN the same endpoint. This machine will be not configured in the automatic IPSec configuration process until the end when it will be.
 
 Next start to configure the new LTE last mile Internet access router, in my case public host is `mir.telecomlobby.com`, internal host is `thangka.telecom.lobby` and router id is `192.168.13.10`:
 
-1. ```bash
-   root@ganesha:/var/nsd/zones/master# cat telecomlobby.com.zone | grep ipsec20     
-   ipsec20591              IN TXT "uk:ganesha;us:saraswati;jp:shiva;es:indra;bg:neo;au:vishnu;mad:bhagavati;ixp:calli;br:xolotl;za:umnyama;mir:thangka;"
-   root@ganesha:/var/nsd/zones/master# 
-   ```
+```
+root@ganesha:/var/nsd/zones/master# cat telecomlobby.com.zone | grep ipsec20     
+ipsec20591              IN TXT "uk:ganesha;us:saraswati;jp:shiva;es:indra;bg:neo;au:vishnu;mad:bhagavati;ixp:calli;br:xolotl;za:umnyama;mir:thangka;"
+root@ganesha:/var/nsd/zones/master# 
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ dig A mir.telecomlobby.com @8.8.8.8 +short
+188.213.5.222
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ dig -x 188.213.5.222 +short
+mir.telecomlobby.com.
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ 
+```
 
-2. ```bash
-   taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ dig A mir.telecomlobby.com @8.8.8.8 +short
-   188.213.5.222
-   taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ dig -x 188.213.5.222 +short
-   mir.telecomlobby.com.
-   taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ 
-   ```
+Next launch the tool using `remote` as option this time we will connect using public IPv4 address, as the system is like it is installed in the customer and the configuration is post installation:
+
+```
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ ./console -I telecom.lobby -SO mikrotik -LTE                                                                                                                                                                                               
+Local or remote configuration?: [local|remote|next] remote
+Type LTE router public hostname: fij.telecomlobby.com
+Layer three test passed...   
+# Host fij.telecomlobby.com found: line 224
+/home/taglio/.ssh/known_hosts updated.
+Original contents retained as /home/taglio/.ssh/known_hosts.old       
+SSH key present and valid                                                                                                                                                                                                                                                 Warning: Permanently added 'fij.telecomlobby.com' (RSA) to the list of known hosts.                                                   LTE-reset.rsc 100% 1212    13.4KB/s   00:00                                                             
+Script file loaded and executed successfully
+configuring hostname, timezone, date, time                                                                                           
+adding taglio RSA ssh key                   
+id_rsa.pub 100%  574     8.9KB/s   00:00     
+adding fij.telecomlobby.com common IPSEC settings
+tmp.m96XmZhE1f 100%  921    14.0KB/s   00:00                                                 
+Script file loaded and executed successfully                          
+tmp.MLucd73xss 100%  915    11.6KB/s   00:00                                                                           
+Script file loaded and executed successfull                                                                                           
+installing local private and public key and peers public keys
+Type local directory with p12 exported IPsec certificates: /home/taglio/Work/redama/ipsec                                      failure: already have such vlan                                                                                                       
+failure: already have such address          
+Type the LTE routerid: 192.168.13.115
+configuring OSPF daemon                                               
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$
+```
+
+
 
 #### LTE appendix, unstable cells. 
 
 Sometimes and in some environment depending on relative problems to cells or temporary problems with virtual mobile operators or MMC. We add some cycles and one special route to test LTE connectivity using [netwatch](https://wiki.mikrotik.com/wiki/Manual:Tools/Netwatch) in the client side and `ppp profile script` in the server side . For example mobile operator Orange in the Spanish territory cut data connection every hour by sending a special [GSM command](http://howltestuffworks.blogspot.com/2012/02/deactivate-eps-bearer-context-request.html) `+CGEV: EPS PDN DEACT 5`:
 
 ```bash
+#delay-time 240 = 4min
+#counter>5 = 20 min
 /tool netwatch
 add down-script="/int lte set [find] disabled=yes\r\
     \n/interface l2tp-client set [ find ] disabled=yes\r\
@@ -1556,7 +1584,7 @@ add down-script="/int lte set [find] disabled=yes\r\
     \n\r\
     \n:local continue true\r\
     \n:local counter 0\r\
-    \n:while (\$continue) do={:delay delay-time=30 ; :if ([/ping 9.9.9.9 count=1]=0) do={ :set \$counter (\$counter + 1); :if (\$counter>3) do={:set counter 0 ; /sys reboot} else={/interface lte set [find] disabled=yes ; /int lte set [find] disabled=no}} else={:set \$continue fal\
+    \n:while (\$continue) do={:delay delay-time=240 ; :if ([/ping 9.9.9.9 count=1]=0) do={ :set \$counter (\$counter + 1); :if (\$counter>5) do={:set counter 0 ; /sys reboot} else={/interface lte set [find] disabled=yes ; /int lte set [find] disabled=no}} else={:set \$continue fal\
     se ; :set \$counter 0}}\r\
     \n" host=9.9.9.9 interval=10s up-script=":delay delay-time=2\r\
     \n/ip cloud force-update\r\
