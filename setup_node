@@ -614,6 +614,13 @@ function upgrade {
 				pfctl -nf /etc/pf.conf
 				pfctl -f /etc/pf.conf
 			fi
+			[[ -e "/etc/pf.conf.table.lte" ]] && sha256compare "/etc/pf.conf.table.lte" "$tmpdir/pf.conf.table.lte" || sha256ctrl=1
+			if [[ $sha256ctrl -eq 1 ]]; then
+				echo "pf.conf.table.lte upgrade"
+				install -o root -g wheel -m 0640  "$tmpdir/pf.conf.table.lte" /etc/
+				pfctl -nf /etc/pf.conf
+				pfctl -f /etc/pf.conf
+			fi
 			[[ -e "/etc/pf.conf.table.nsd" ]] && sha256compare "/etc/pf.conf.table.nsd" "$tmpdir/pf.conf.table.nsd" || sha256ctrl=1
 			if [[ $sha256ctrl -eq 1 ]]; then
 				echo "pf.conf.table.nsd upgrade"
