@@ -1815,5 +1815,77 @@ Host *.telecom.lobby
         ControlPath ~/.ssh/master-%r@%h:%p.socket
 ```
 
+#### OpenBSD iked(8) fine tuning and interoperability.
 
+```bash
+root@ganesha:/etc# find . -name "iked.*" ; cd iked && find .
+./examples/iked.conf
+./iked.conf
+./iked.conf.jp.telecomlobby.com
+./iked.conf.bg.telecomlobby.com
+./iked.conf.spr.telecomlobby.com
+./iked.conf.us.telecomlobby.com
+./iked.conf.au.telecomlobby.com
+./iked.conf.mad.telecomlobby.com
+./iked.conf.ixp.telecomlobby.com
+./iked.conf.br.telecomlobby.com
+.
+./ca
+./ca/ca.crt
+./certs
+./certs/local.crt
+./certs/jp.telecomlobby.com.crt
+./certs/bg.telecomlobby.com.crt
+./certs/au.telecomlobby.com.crt
+./certs/mad.telecomlobby.com.crt
+./certs/us.telecomlobby.com.crt
+./certs/br.telecomlobby.com.crt
+./crls
+./export
+./private
+./private/local.key
+./pubkeys
+./pubkeys/ipv4
+./pubkeys/ipv6
+./pubkeys/fqdn
+./pubkeys/fqdn/ixp.telecomlobby.com
+./pubkeys/fqdn/spr.telecomlobby.com
+./pubkeys/ufqdn
+./pubkeys/ufqdn/indra@ca.telecomlobby.com
+./pubkeys/ufqdn/calli@ca.telecomlobby.com
+./local.pub
+root@ganesha:/etc/iked# 
+```
+
+```bash
+root@ganesha:/etc/iked# ipsecctl -sf 
+flow esp in proto gre from 2.139.174.201 to 78.141.201.0 peer 2.139.174.201 srcid UFQDN/ganesha@ca.telecomlobby.com dstid UFQDN/indra@ca.telecomlobby.com type require
+flow esp in proto gre from 5.134.119.135 to 78.141.201.0 peer 5.134.119.135 srcid UFQDN/ganesha@ca.telecomlobby.com dstid UFQDN/calli@ca.telecomlobby.com type require
+flow esp in proto gre from 94.72.143.163 to 78.141.201.0 peer 94.72.143.163 srcid ASN1_DN//C=UK/ST=England/L=London/CN=uk.telecomlobby.com dstid ASN1_DN//C=BG/ST=Lovech/L=Troyan/O=Telecom Lobby/OU=VPNC/CN=bg.telecomlobby.com type require
+flow esp in proto gre from 139.180.165.223 to 78.141.201.0 peer 139.180.165.223 srcid ASN1_DN//C=UK/ST=England/L=London/CN=uk.telecomlobby.com dstid ASN1_DN//C=AU/ST=New South Wales/L=Sidney/CN=au.telecomlobby.com type require
+flow esp in proto gre from 139.180.206.19 to 78.141.201.0 peer 139.180.206.19 srcid ASN1_DN//C=UK/ST=England/L=London/CN=uk.telecomlobby.com dstid ASN1_DN//C=JP/ST=Tokyo/L=Heiwajima/CN=jp.telecomlobby.com type require
+flow esp in proto gre from 155.138.247.27 to 78.141.201.0 peer 155.138.247.27 srcid ASN1_DN//C=UK/ST=England/L=London/CN=uk.telecomlobby.com dstid ASN1_DN//C=US/ST=Texas/L=Dallas/O=Telecom Lobby/OU=VPNC/CN=us.telecomlobby.com type require
+flow esp in proto gre from 216.238.100.26 to 78.141.201.0 peer 216.238.100.26 srcid ASN1_DN//C=UK/ST=England/L=London/CN=uk.telecomlobby.com dstid ASN1_DN//C=BR/ST=Sao Paulo/L=Sao Paulo/O=Telecom Lobby/OU=VPNC/CN=br.telecomlobby.com type require
+flow esp out proto gre from 78.141.201.0 to 2.139.174.201 peer 2.139.174.201 srcid UFQDN/ganesha@ca.telecomlobby.com dstid UFQDN/indra@ca.telecomlobby.com type require
+flow esp out proto gre from 78.141.201.0 to 5.134.119.135 peer 5.134.119.135 srcid UFQDN/ganesha@ca.telecomlobby.com dstid UFQDN/calli@ca.telecomlobby.com type require
+flow esp out proto gre from 78.141.201.0 to 94.72.143.163 peer 94.72.143.163 srcid ASN1_DN//C=UK/ST=England/L=London/CN=uk.telecomlobby.com dstid ASN1_DN//C=BG/ST=Lovech/L=Troyan/O=Telecom Lobby/OU=VPNC/CN=bg.telecomlobby.com type require
+flow esp out proto gre from 78.141.201.0 to 139.180.165.223 peer 139.180.165.223 srcid ASN1_DN//C=UK/ST=England/L=London/CN=uk.telecomlobby.com dstid ASN1_DN//C=AU/ST=New South Wales/L=Sidney/CN=au.telecomlobby.com type require
+flow esp out proto gre from 78.141.201.0 to 139.180.206.19 peer 139.180.206.19 srcid ASN1_DN//C=UK/ST=England/L=London/CN=uk.telecomlobby.com dstid ASN1_DN//C=JP/ST=Tokyo/L=Heiwajima/CN=jp.telecomlobby.com type require
+flow esp out proto gre from 78.141.201.0 to 155.138.247.27 peer 155.138.247.27 srcid ASN1_DN//C=UK/ST=England/L=London/CN=uk.telecomlobby.com dstid ASN1_DN//C=US/ST=Texas/L=Dallas/O=Telecom Lobby/OU=VPNC/CN=us.telecomlobby.com type require
+flow esp out proto gre from 78.141.201.0 to 216.238.100.26 peer 216.238.100.26 srcid ASN1_DN//C=UK/ST=England/L=London/CN=uk.telecomlobby.com dstid ASN1_DN//C=BR/ST=Sao Paulo/L=Sao Paulo/O=Telecom Lobby/OU=VPNC/CN=br.telecomlobby.com type require
+root@ganesha:/etc/iked# 
+```
+
+```bash
+ikev2 "us.telecomlobby.com" active transport \
+        proto gre from 78.141.201.0 to 155.138.247.27 \
+        local uk.telecomlobby.com peer us.telecomlobby.com \
+        ikesa  prf hmac-sha2-512  enc aes-256-gcm-12 group brainpool512  \
+        childsa  enc chacha20-poly1305 group curve25519 \
+        srcid "/C=UK/ST=England/L=London/CN=uk.telecomlobby.com" \
+        dstid "/C=US/ST=Texas/L=Dallas/O=Telecom Lobby/OU=VPNC/CN=us.telecomlobby.com" \
+        ikelifetime 86400 lifetime 3600 \
+        rfc7427 tag us.telecomlobby.com tap enc2
+
+```
 

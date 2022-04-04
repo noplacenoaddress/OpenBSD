@@ -603,6 +603,8 @@ function upgrade {
 				sha256compare "/etc/pf.conf.macro.gre.tag.in" "$tmpdir/pf.conf.macro.gre.tag.in" || sha256ctrl=1
 				if [[ $sha256ctrl -eq 1 ]]; then
 					install -o root -g wheel -m 0640  "$tmpdir/pf.conf.macro.gre.tag.in" /etc/
+					pfctl -nf /etc/pf.conf
+					pfctl -f /etc/pf.conf
 				fi
 			fi
 			[[ -e "/etc/pf.conf.table.ipsec" ]] && sha256compare "/etc/pf.conf.table.ipsec" "$tmpdir/pf.conf.table.ipsec" || sha256ctrl=1
