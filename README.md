@@ -1975,3 +1975,6 @@ A couple of advisors:
 - We denied gre traffic onto egress interface, but in [enc(4)](https://man.openbsd.org/enc.4) pseudo device. 
 - We use 1/3 default pf state timeout for gre protocol  `set timeout { other.first 20, other.multiple 20, other.single 10 }  `.
 
+#### Queue
+
+![](https://miro.medium.com/max/1400/1*1Siq7wg78OpNs58Znvu_sw.png)
