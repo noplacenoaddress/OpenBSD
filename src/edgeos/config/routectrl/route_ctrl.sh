@@ -1,5 +1,6 @@
 #!/bin/bash
-# -L </dev/null &>/dev/null &
+#-L </dev/null &>/dev/null &
+
 
 declare -a groups=("12" "34" "43" "56")
 
@@ -79,7 +80,7 @@ case "$1" in
 		peerlip=$(echo "${grelip}" | sed "s|${greliplo}|${peerliplo}|")
 		ping_result=$(nice -n 20 chrt -i 0 ionice -c3 /usr/bin/fping -I${2} $peerlip 2>&1)
 		alive="alive"
-		status=$(/usr/sbin/ipsec status $tunnelid)
+		#status=$(/usr/sbin/ipsec status $tunnelid)
 		established="INSTALLED"
 		tunep=$(/sbin/ip link list dev "${2}" | awk 'FNR == 2' | awk '{print $4}')
 
@@ -87,8 +88,7 @@ case "$1" in
 				/bin/ps axu | grep "$tunnelid\|CRON\|netwatch" | grep -v grep | grep -v $$ | awk '{print $2}' | xargs kill -9
 				/usr/sbin/ipsec stroke down-nb $tunnelid
 				/usr/sbin/ipsec down $tunnelid
-				/usr/sbin/ipsec up $tunnelid
-				sleep 60s
+				./timeout 20 /usr/sbin/ipsec up $tunnelid
 		else
 			for group in "${groups[@]}"; do
 				/sbin/ipset list "${group}" | grep "${tunep}" &> /dev/null
@@ -156,7 +156,7 @@ case "$1" in
 		do
 			for tun in $(/sbin/ip link | grep tun | awk '{print $2}' | sed "s|@.*||g"); do
                 echo "ok"
-				./timeout -s9 240 nice -n 20 chrt -i 0 ionice -c3 /config/routectrl/route_ctrl.sh -T "${tun}"
+				./timeout -s9 25 nice -n 20 chrt -i 0 ionice -c3 /config/routectrl/route_ctrl.sh -T "${tun}"
 			done
 		done
 	;;
