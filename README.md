@@ -1817,6 +1817,10 @@ Host *.telecom.lobby
 
 #### OpenBSD iked(8) fine tuning and interoperability.
 
+![](https://github.com/redeltaglio/OpenBSD/raw/master/img/puffyiked.png)
+
+We find the OpenBSD ikev2 implementation directly in the base system, it isn't very simple to understand but the fault is only our. Reading man pages will explain exactly how to use it, but, from I was an adolescent playing with Unix, *I'm too lame to read man man* as I use to write in my IRC whois state.
+
 ```bash
 root@ganesha:/etc# find . -name "iked.*" ; cd iked && find .
 ./examples/iked.conf
@@ -1886,6 +1890,5 @@ ikev2 "us.telecomlobby.com" active transport \
         dstid "/C=US/ST=Texas/L=Dallas/O=Telecom Lobby/OU=VPNC/CN=us.telecomlobby.com" \
         ikelifetime 86400 lifetime 3600 \
         rfc7427 tag us.telecomlobby.com tap enc2
-
 ```
 
