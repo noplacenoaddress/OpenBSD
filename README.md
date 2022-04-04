@@ -1614,7 +1614,15 @@ add change-tcp-mss=no dns-server=8.8.8.8,8.8.4.4 local-address=172.16.30.1 name=
 
 ```
 
-Next it will be great coding some SMS stuff in emergency GSM mode.
+Another tool to take care of IPv4 change into LTE interfaces is managed by OpenBSD under `src/root/Bin/lteddns.sh`, configured in [crontab(1)](https://man.openbsd.org/crontab.1) to be executed every 10 seconds by [cron(8).](https://man.openbsd.org/cron) It's very simple, flush the unbound cache for the domain name used in Mikrotik, flush the PF table and reload it:
+
+```bash
+#!/bin/ksh
+
+unbound-control flush_zone mynetname.net ; pfctl -t lte -T kill ; pfctl -t lte -T add -f /etc/pf.conf.table.lte 
+```
+
+
 
 ### Hamradio passive and active point of presence
 
