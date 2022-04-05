@@ -944,7 +944,7 @@ case "${OPT}" in
 				for ipipsec in $(ssh ${userna}@${mk}.${LDN} /ip fire addr pr where list=ipsec | sed -e "s|^.*${mkip}.*$||" | awk '{print $3}' |  sed -e "/^$/d" | tail -n +3); do
 					echo "/ip fire address-list add list=ipsec address=${ipipsec}" >> "${rtdomain}"
 				done
-				echo "/ip firewall mangle add action=mark-routing chain=output dst-address-list=ipsec new-routing-mark=ipsec passthrough=yes" >> "${rtdomain}"
+				echo "/ip firewall mangle add action=mark-routing chain=output dst-address-list=ipsec new-routing-mark=ipsec passthrough=no" >> "${rtdomain}"
 				echo "/ip route rule add action=lookup-only-in-table routing-mark=ipsec table=ipsec" >> "${rtdomain}"
 				echo "/ip route add comment=ipsec distance=1 gateway=lte1 routing-mark=ipsec" >> "${rtdomain}"
 				eval "${scpcmd} ${rtdomain} ${userna}@${lte}:/rtdomains.rsc"
@@ -1092,14 +1092,63 @@ case "${OPT}" in
 					com=$(ssh "${mk}.${LDN}" /int gre print where name="${gre}");
 					comm=$(echo "${com}" | sed 's/\r//g')
 					poplocalhostname=$(echo "${comm}" | awk 'NR==2' | sed "s|^.*;;; ||")
-					echo "/ip firewall mangle add action=mark-connection chain=input connection-mark=no-mark  passthrough=yes dst-address=${lteid} in-interface=${gre} new-connection-mark=${poplocalhostname}"
-					eval "${sshcmd} ${userna}@${lte} /ip firewall mangle add action=mark-connection chain=input connection-mark=no-mark  passthrough=yes dst-address=${lteid} in-interface=${gre} new-connection-mark=${poplocalhostname}"
-					echo "/ip firewall mangle add action=mark-routing chain=output connection-mark=${poplocalhostname} new-routing-mark=${poplocalhostname} out-interface=!${gre} passthrough=yes src-address=${lteid}"
-					eval "${sshcmd} ${userna}@${lte} /ip firewall mangle add action=mark-routing chain=output connection-mark=${poplocalhostname} new-routing-mark=${poplocalhostname} out-interface=!${gre} passthrough=yes src-address=${lteid}"
-					echo "/ip route rule add routing-mark=${poplocalhostname} table=${poplocalhostname} action=lookup-only-in-table"
-					eval "${sshcmd} ${userna}@${lte} /ip route rule add routing-mark=${poplocalhostname} table=${poplocalhostname} action=lookup-only-in-table"
-					echo "/ip route add distance=1 gateway=${gre} routing-mark=${poplocalhostname} comment=\"from ${poplocalhostname} to ${lteid}\""
-					eval "${sshcmd} ${userna}@${lte} /ip route add distance=1 gateway=${gre} routing-mark=${poplocalhostname} comment=\"from ${poplocalhostname} to ${lteid}\""
+					echo "/ip firewall mangle add action=mark-connection chain=input connection-mark=no-mark  passthrough=yes dst-address=${lteid} in-interface=${gre} new-connection-mark=${poplocalhostname}" >> "${tf}"
+					#eval "${sshcmd} ${userna}@${lte} /ip firewall mangle add action=mark-connection chain=input connection-mark=no-mark  passthrough=yes dst-address=${lteid} in-interface=${gre} new-connection-mark=${poplocalhostname}"
+					echo "/ip firewall mangle add action=mark-routing chain=output connection-mark=${poplocalhostname} new-routing-mark=${poplocalhostname} out-interface=!${gre} passthrough=yes src-address=${lteid}" >> "${tf}"
+					#eval "${sshcmd} ${userna}@${lte} /ip firewall mangle add action=mark-routing chain=output connection-mark=${poplocalhostname} new-routing-mark=${poplocalhostname} out-interface=!${gre} passthrough=yes src-address=${lteid}"
+					echo "/ip route rule add routing-mark=${poplocalhostname} table=${poplocalhostname} action=lookup-only-in-table" >> "${tf}"
+					#eval "${sshcmd} ${userna}@${lte} /ip route rule add routing-mark=${poplocalhostname} table=${poplocalhostname} action=lookup-only-in-table"
+					echo "/ip route add distance=1 gateway=${gre} routing-mark=${poplocalhostname} comment=\"from ${poplocalhostname} to ${lteid}\"" >> "${tf}"
+					#eval "${sshcmd} ${userna}@${lte} /ip route add distance=1 gateway=${gre} routing-mark=${poplocalhostname} comment=\"from ${poplocalhostname} to ${lteid}\""
+				done
+				eval "${scpcmd} "${tf}" ${userna}@${lte}:/rd.rsc"
+				eval "${sshcmd} ${userna}@${lte} :execute \{/import rd.rsc\}"
+				echo "starting OpenBSD remote install"
+				dnsquery wa "openbsd"
+				for (( j=0; j<${#wa[@]}; j++ )); do
+					c=0
+					for i in $(ssh "${wa[j]}.${LDN}" ifconfig gre | grep gre*[0-9] | cut -d : -f1 |sed "s|gre||g"); do
+						((c < i)) && c=$i
+					done
+					((c+=1))
+				done
+				for poplocalhostname in $(dig TXT openbsd.telecom.lobby +short | sed "s|\"||g" | tr ";" "\n" | awk NF); do
+					ssh "${poplocalhostname}".telecom.lobby install -o "${userna}" -g wheel -m 0750 "${HOME}/Sources/Git/OpenBSD/src/mikrotik/openbsd/newchr.sh ${HOME}/Bin/"
+					#[[ "${poplocalhostname}" == "varuna" ]] && poplocalhostname="neo"
+					pophost=$(dig ipsec20591.${domainname} TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d' | grep "${poplocalhostname}" | cut -d : -f1)".${domainname}"
+					popip=$(dig A "${pophost}" +short)
+					x="7"
+					#[[ "${poplocalhostname}" == "neo" ]] && poplocalhostname="varuna"
+					[[ "${poplocalhostname}" == "bhagavati" ]] && x="8"
+					popgre=$(ssh ${userna}@${chr} int gre print where comment="${poplocalhostname}" | grep -E "gre-tunnel[0-9]{1,2}" | awk '{print $1}' | sed -e "s|name=||" -e "s|\"||g")
+					let a=$(ssh ${userna}@${chr} ip addr print where interface="${popgre}" | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | head -n 1 | cut -d . -f4)+0
+					md5=$(ssh ${userna}@${chr} routing ospf interface pr where interface="${popgre}" | awk '{print $7}' | grep -E '^.{15}$')
+					greip="10.10.10."${a}
+					b=$(expr $a + 1)
+					popgreip="10.10.10."${b}
+					mkdir "/tmp/${poplocalhostname}"
+					cp "src/mikrotik/openbsd/"{iked.conf,hostname.enc,hostname.gre,ospfd.conf} "/tmp/${poplocalhostname}"
+					mv "/tmp/${poplocalhostname}/hostname.gre" "/tmp/${poplocalhostname}/hostname.gre${x}"
+					mv "/tmp/${poplocalhostname}/hostname.enc" "/tmp/${poplocalhostname}/hostname.enc${x}"
+					for file in $(find "/tmp/${poplocalhostname}" -maxdepth 1 -type f); do
+						sed -i "s|/PUBLICHOST/|${chr}|g" $file
+						sed -i "s|/POPIP/|${popip}|g" $file
+						sed -i "s|/PUBLICIP/|${chrpubip}|g" $file
+						sed -i "s|/POPHOST/|${pophost}|g" $file
+						sed -i "s|/POPLOCALHOSTNAME/|${poplocalhostname}|g" $file
+						sed -i "s|/HOSTNAME/|${srcid}|g" $file
+						sed -i "s|/POPGREIP/|${popgreip}|g" $file
+						sed -i "s|/GREIP/|${greip}|g" $file
+						sed -i "s|/X/|${x}|g" $file
+						sed -i "s|/MD5/|${md5}|g" $file
+					done
+
+					tar -cvf /tmp/calli.tar -C /tmp "/tmp/${poplocalhostname}/"
+					srm -r "/tmp/${poplocalhostname}"
+					echo "uploading to ${poplocalhostname}..."
+					scp /tmp/calli.tar "${poplocalhostname}.${localdomainname}:/tmp"
+					srm "/tmp/calli.tar"
+					#ssh "${poplocalhostname}.${localdomainname}" doas sh /home/taglio/Bin/newchr.sh
 				done
 				exit
 			;;
