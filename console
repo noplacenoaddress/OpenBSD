@@ -1081,7 +1081,7 @@ case "${OPT}" in
 				eval "${sshcmd} ${userna}@${lte} /ip firewall address-list add list=lan address=172.16.18.0/24"
 				eval "${sshcmd} ${userna}@${lte} /ip firewall address-list add list=lan address=172.16.19.0/24"
 				eval "${sshcmd} ${userna}@${lte} /ip firewall address-list add list=lan address=10.10.10.0/24"
-				cp src/mikrotik/filter.rsc /tmp
+				cp src/mikrotik/LTE/filter.rsc /tmp
 				sed -i "s|/PUBLICIP/|${ltepubip}|g" /tmp/filter.rsc
 				eval "${scpcmd} /tmp/filter.rsc ${userna}@${lte}:/filter.rsc"
 				eval "${sshcmd} ${userna}@${lte} :execute \{/import filter.rsc\}"

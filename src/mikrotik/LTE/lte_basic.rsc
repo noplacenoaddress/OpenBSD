@@ -13,6 +13,7 @@ set [ find default=yes ] supplicant-identity=MikroTik
 add name=WAN
 /interface list member
 add interface=l2tp-out1 list=WAN
+add interface=lte1 list=WAN
 /ip pool
 add name=dhcpd ranges=10.1.10.10-10.1.10.254
 /ip dhcp-server
