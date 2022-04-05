@@ -1506,7 +1506,7 @@ The routerid is 192.168.13.115
 Is 803328-LHG a LTE router or a LTE CPE?: [router|cpe] router
 The LTE router ADM vlan is 172.16.167.0/24
 The LTE router DATA vlan is 172.16.255.0/24
-The LTE router HAM vlan is 172.16.231.0/24
+    The LTE router HAM vlan is 172.16.231.0/24
 taglio@trimurti:~/Work/telecom.lobby/OpenBSD$
 ```
 
@@ -1584,18 +1584,22 @@ add down-script="/int lte set [find] disabled=yes\r\
     \n\r\
     \n:local continue true\r\
     \n:local counter 0\r\
-    \n:while (\$continue) do={:delay delay-time=240 ; :if ([/ping 9.9.9.9 count=1]=0) do={ :set \$counter (\$counter + 1); :if (\$counter>5) do={:set counter 0 ; /sys reboot} else={/interface lte set [find] disabled=yes ; /int lte set [find] disabled=no}} else={:set \$continue fal\
-    se ; :set \$counter 0}}\r\
+    \n:while (\$continue) do={:delay delay-time=240 ; :if ([/ping 9.9.9.9 count=1]=0) do={ :set \$counter (\$counter + 1); :if (\$counter>5) do={:set counter \
+    0 ; /sys reboot} else={/interface lte set [find] disabled=yes ; /int lte set [find] disabled=no}} else={:set \$continue false ; :set \$counter 0}}\r\
     \n" host=9.9.9.9 interval=10s up-script=":delay delay-time=2\r\
     \n/ip cloud force-update\r\
+    \n:delay delay-time=2\r\
+    \n:local continue true\r\
+    \n:while (\$continue) do={:if ([/ip cloud get public-address] = 188.213.5.220) do={/ip cloud force-update} else={:set \$continue false}}\r\
+    \n\r\
     \n:delay delay-time=10\r\
     \n/interface l2tp-client set [ find ] disabled=no\r\
     \n\r\
     \n\r\
-    \n:local continue true\r\
+    \n:set \$continue true\r\
     \n:delay delay-time=60\r\
-    \n:while (\$continue) do={:delay delay-time=60 ; :if ([/interface l2tp-client get [find] running] = false) do={/interface l2tp-client set [find] disabled=yes ; /int l2tp-client set [find] disabled=no} else={:set \$continue false}}\r\
-    \n"
+    \n:while (\$continue) do={:delay delay-time=60 ; :if ([/interface l2tp-client get [find] running] = false) do={/interface l2tp-client set [find] disabled=\
+    yes ;
 ```
 
 ```bash

@@ -1051,6 +1051,54 @@ case "${OPT}" in
 				eval "${sshcmd} ${userna}@${lte}  /routing ospf network add area=backbone network=${ltedata}"
 				eval "${sshcmd} ${userna}@${lte}  /routing ospf network add area=backbone network=${lteham}"
 				eval "${sshcmd} ${userna}@${lte} /interface list add name=GRE"
+				lastnetwork=$(dig TXT gre7058."${domainname}" +short | sed "s|\"||g")
+				ospfinterface=$(mktemp)
+				for ltegre in $(ssh "${userna}@${lte}" :foreach i in=[/interface gre find] do=\{:put [/interface gre get \$i name]\; \} | tr -d '\n\r'); do
+					((lastnetwork-=4))
+					firstip=$((lastnetwork + 1))
+					eval "${sshcmd} ${userna}@${lte} /ip addr add address=10.10.10.${firstip}/30 interface=${ltegre}"
+					eval "${sshcmd} ${userna}@${lte} /routing ospf network add area=backbone network=10.10.10.${lastnetwork}/30"
+					ospfmd5=$(tr -cd '[:alnum:],.' < /dev/random | fold -w 15 | head -n 1)
+					ssh ${userna}@${lte} routing ospf interface add authentication=md5 authentication-key=${ospfmd5} network-type=point-to-point interface="${ltegre}"
+					eval "${sshcmd} ${userna}@${lte} /interface list member add list=GRE interface=${ltegre}"
+				done
+				echo "configuring RouterOS web server access list and firewall address list"
+				randomop=$(dnsquery -R "openbsd")
+				acweb=""
+				for host in $(ssh "${randomop}.${LDN}" cat /etc/pf.conf.table.ipsec | grep -v \# | awk NF | uniq); do
+				 	acweb+="${host},"
+					eval "${sshcmd} ${userna}@${chr} /ip firewall address-list add list=servers address=${host}"
+				done
+				for host in $(ssh "${randomop}.${LDN}"  cat /etc/pf.conf.table.clientes | grep -v \# | awk NF | uniq); do
+					eval "${sshcmd} ${userna}@${chr} /ip firewall address-list add list=otherswan address=${host}"
+				done
+				acweb=${acweb::-1}
+				eval "${sshcmd} ${userna}@${lte} /ip service set www address=${acweb}"
+				eval "${sshcmd} ${userna}@${lte} /ip firewall address-list add list=lan address=196.168.13.0/24"
+				eval "${sshcmd} ${userna}@${lte} /ip firewall address-list add list=lan address=172.16.17.0/24"
+				eval "${sshcmd} ${userna}@${lte} /ip firewall address-list add list=lan address=172.16.18.0/24"
+				eval "${sshcmd} ${userna}@${lte} /ip firewall address-list add list=lan address=172.16.19.0/24"
+				eval "${sshcmd} ${userna}@${lte} /ip firewall address-list add list=lan address=10.10.10.0/24"
+				cp src/mikrotik/filter.rsc /tmp
+				sed -i "s|/PUBLICIP/|${ltepubip}|g" /tmp/filter.rsc
+				eval "${scpcmd} /tmp/filter.rsc ${userna}@${lte}:/filter.rsc"
+				eval "${sshcmd} ${userna}@${lte} :execute \{/import filter.rsc\}"
+				srm /tmp/filter.rsc
+				echo "configuring routing domains"
+				for chrgre in $(ssh "${userna}@${lte}" :foreach i in=[/interface gre find] do=\{:put [/interface gre get \$i name]\; \}); do
+					gre=$(echo "${chrgre}"| sed 's/\r//g')
+					com=$(ssh "${mk}.${LDN}" /int gre print where name="${gre}");
+					comm=$(echo "${com}" | sed 's/\r//g')
+					poplocalhostname=$(echo "${comm}" | awk 'NR==2' | sed "s|^.*;;; ||")
+					echo "/ip firewall mangle add action=mark-connection chain=input connection-mark=no-mark  passthrough=yes dst-address=${lteid} in-interface=${gre} new-connection-mark=${poplocalhostname}"
+					eval "${sshcmd} ${userna}@${lte} /ip firewall mangle add action=mark-connection chain=input connection-mark=no-mark  passthrough=yes dst-address=${lteid} in-interface=${gre} new-connection-mark=${poplocalhostname}"
+					echo "/ip firewall mangle add action=mark-routing chain=output connection-mark=${poplocalhostname} new-routing-mark=${poplocalhostname} out-interface=!${gre} passthrough=yes src-address=${lteid}"
+					eval "${sshcmd} ${userna}@${lte} /ip firewall mangle add action=mark-routing chain=output connection-mark=${poplocalhostname} new-routing-mark=${poplocalhostname} out-interface=!${gre} passthrough=yes src-address=${lteid}"
+					echo "/ip route rule add routing-mark=${poplocalhostname} table=${poplocalhostname} action=lookup-only-in-table"
+					eval "${sshcmd} ${userna}@${lte} /ip route rule add routing-mark=${poplocalhostname} table=${poplocalhostname} action=lookup-only-in-table"
+					echo "/ip route add distance=1 gateway=${gre} routing-mark=${poplocalhostname} comment=\"from ${poplocalhostname} to ${lteid}\""
+					eval "${sshcmd} ${userna}@${lte} /ip route add distance=1 gateway=${gre} routing-mark=${poplocalhostname} comment=\"from ${poplocalhostname} to ${lteid}\""
+				done
 				exit
 			;;
 		esac
