@@ -9,6 +9,10 @@ set [ find ] allow-roaming=yes apn-profiles=/PROVIDER/ name=lte1 network-mode=lt
     pin=/SIMPIN/
 /interface wireless security-profiles
 set [ find default=yes ] supplicant-identity=MikroTik
+/interface list
+add name=WAN
+/interface list member
+add interface=l2tp-out1 list=WAN
 /ip pool
 add name=dhcpd ranges=10.1.10.10-10.1.10.254
 /ip dhcp-server
@@ -51,17 +55,25 @@ add down-script="/int lte set [find] disabled=yes\r\
     \n\r\
     \n:local continue true\r\
     \n:local counter 0\r\
-    \n:while (\$continue) do={:delay delay-time=30 ; :if ([/ping 9.9.9.9 count=1]=0) do={ :set \$counter (\$counter + 1); :if (\$counter>3) do={:set counter 0 ; /sys reboot} else={/interface lte set [find] disabled=yes ; /int lte set [find] disabled=no}} else={:set \$continue fal\
-    se ; :set \$counter 0}}\r\
+    \n:while (\$continue) do={:delay delay-time=240 ; :if ([/ping 9.9.9.9 count=1]=0) do={ :set \$counter (\$counter + 1);\
+    \_:if (\$counter>5) do={:set counter 0 ; /sys reboot} else={/interface lte set [find] disabled=yes ; /int lte set [fin\
+    d] disabled=no}} else={:set \$continue false ; :set \$counter 0}}\r\
     \n" host=9.9.9.9 interval=10s up-script=":delay delay-time=2\r\
     \n/ip cloud force-update\r\
+    \n:delay delay-time=2\r\
+    \n:local continue true\r\
+    \n:while (\$continue) do={:if ([/ip cloud get public-address] = 188.213.5.220) do={/ip cloud force-update} else={:set \
+    \$continue false}}\r\
+    \n\r\
     \n:delay delay-time=10\r\
     \n/interface l2tp-client set [ find ] disabled=no\r\
     \n\r\
     \n\r\
-    \n:local continue true\r\
+    \n:set \$continue true\r\
     \n:delay delay-time=60\r\
-    \n:while (\$continue) do={:delay delay-time=60 ; :if ([/interface l2tp-client get [find] running] = false) do={/interface l2tp-client set [find] disabled=yes ; /int l2tp-client set [find] disabled=no} else={:set \$continue false}}\r\
+    \n:while (\$continue) do={:delay delay-time=60 ; :if ([/interface l2tp-client get [find] running] = false) do={/ip clo\
+    ud force-update ; :delay delay-time=2 ; /interface l2tp-client set [find] disabled=yes ; /int l2tp-client set [find] d\
+    isabled=no} else={:set \$continue false}}\r\
     \n"
 /user
 add group=full name=taglio
