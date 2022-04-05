@@ -20,6 +20,8 @@
 /ip addr remove [find comment=DATA]
 /ip addr remove [find comment=HAM]
 /ip addr remove [find interface=lo1]
+/ip addr remove [find interface=~gre]
+/ip addr remove [find invalid]
 /int vlan remove [find comment=ADM]
 /int vlan remove [find comment=DATA]
 /int vlan remove [find comment=PPPOE]

@@ -14,7 +14,7 @@ add action=accept chain=input dst-address=/PUBLICIP/ in-interface=ether1 protoco
 add action=accept chain=input dst-address=/PUBLICIP/ in-interface=ether1 protocol=ipsec-esp src-address-list=roadwarriors
 add action=accept chain=input in-interface-list=GRE protocol=ospf
 add action=accept chain=input dst-port=21,22,80,8291 in-interface-list=GRE protocol=tcp src-address-list=lan
-add action=accept chain=input dst-port=22,8291 in-interface=ether1 log=yes log-prefix="Install daemons" protocol=tcp src-address-list=servers
+add action=accept chain=input dst-port=22,8291 in-interface-list=WAN log=yes log-prefix="Install daemons" protocol=tcp src-address-list=servers
 add action=drop chain=input comment=LAST log=yes log-prefix="debug drop input"
 add action=accept chain=forward connection-state=new dst-address=172.16.17.106 dst-port=80,443 in-interface=ether1 protocol=tcp
 add action=drop chain=forward connection-state=new dst-address-list=lan in-interface=ether1
