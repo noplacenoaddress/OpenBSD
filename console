@@ -1111,11 +1111,17 @@ case "${OPT}" in
 						((c < i)) && c=$i
 					done
 					((c+=1))
+					pophn=$(dnsquery -MR "${wa[j]}")
+					pip=$(dig A "${pophn}.${PDN}" +short)
+				 	mkgre=$(ssh ${userna}@${chr} int gre print where comment="${wa[j]}" | grep -E "gre-tunnel[0-9]{1,2}" | awk '{print $1}' | sed -e "s|name=||" -e "s|\"||g")
+					mkut=$(ssh ${userna}@${chr} ip addr print where interface="${mkgre}" | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | head -n 1 | cut -d . -f4 | tr -d '\n\d')
+					md5=$(ssh ${userna}@${chr} routing ospf interface pr where interface="${mkgre}" | awk '{print $7}' | grep -E '^.{15}$')
+					poput=$((mkut + 1))
 				done
 				for poplocalhostname in $(dig TXT openbsd.telecom.lobby +short | sed "s|\"||g" | tr ";" "\n" | awk NF); do
 					ssh "${poplocalhostname}".telecom.lobby install -o "${userna}" -g wheel -m 0750 "${HOME}/Sources/Git/OpenBSD/src/mikrotik/openbsd/newchr.sh ${HOME}/Bin/"
 					#[[ "${poplocalhostname}" == "varuna" ]] && poplocalhostname="neo"
-					pophost=$(dig ipsec20591.${domainname} TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d' | grep "${poplocalhostname}" | cut -d : -f1)".${domainname}"
+					(dig ipsec20591.${domainname} TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d' | grep "${poplocalhostname}" | cut -d : -f1)".${domainname}"
 					popip=$(dig A "${pophost}" +short)
 					x="7"
 					#[[ "${poplocalhostname}" == "neo" ]] && poplocalhostname="varuna"
