@@ -33,7 +33,7 @@
 /interface list remove [find where name=GRE]
 /ip fire filter remove [find]
 /ip fire nat remove [find]
-/ip firewall mangle remove [find dst-address-list!="ddns"]
+/ip firewall mangle remove [find dst-address-list!="ddns" && connection-mark!="ddns"]
 /ip fire address-list remove [find list=ipsec]
 /ip fire address-list remove [find list=lan]
 /ip fire address-list remove [find list=otherswan]

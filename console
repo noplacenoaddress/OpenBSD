@@ -937,19 +937,20 @@ case "${OPT}" in
 				eval "${sshcmd} ${userna}@${lte} /ip ipsec policy group add name=group_ikev2_cert"
 				eval "${sshcmd} ${userna}@${lte} /ip ipsec profile add dh-group=ecp384,modp3072 dpd-interval=30s dpd-maximum-failures=1 enc-algorithm=aes-256 hash-algorithm=sha256 name=LTE nat-traversal=yes"
 				eval "${sshcmd} ${userna}@${lte} /ip ipsec proposal add auth-algorithms=sha256 enc-algorithms=aes-256-cbc lifetime=1h name=NSA pfs-group=none"
-				rtdomain=$(mktemp)
+				rtdomain=$(tempfile)
 				mk=$(dnsquery -R "mikrotik")
 				mkphn=$(dnsquery -M "${mk}")
 				mkip=$(dig A "${mkphn}.${PDN}" +short)
 				for ipipsec in $(ssh ${userna}@${mk}.${LDN} /ip fire addr pr where list=ipsec | sed -e "s|^.*${mkip}.*$||" | awk '{print $3}' |  sed -e "/^$/d" | tail -n +3); do
 					echo "/ip fire address-list add list=ipsec address=${ipipsec}" >> "${rtdomain}"
 				done
-				echo "/ip firewall mangle add action=mark-routing chain=output dst-address-list=ipsec new-routing-mark=ipsec passthrough=no" >> "${rtdomain}"
+				echo "/ip firewall mangle add action=mark-connection chain=output dst-address-list=ipsec new-connection-mark=ipsec passthrough=yes" >> "${rtdomain}"
+				echo "/ip firewall mangle add action=mark-routing chain=output connection-mark=ipsec new-routing-mark=ipsec passthrough=no" >> "${rtdomain}"
 				echo "/ip route rule add action=lookup-only-in-table routing-mark=ipsec table=ipsec" >> "${rtdomain}"
 				echo "/ip route add comment=ipsec distance=1 gateway=lte1 routing-mark=ipsec" >> "${rtdomain}"
 				eval "${scpcmd} ${rtdomain} ${userna}@${lte}:/rtdomains.rsc"
 				eval "${sshcmd} ${userna}@${lte} /import file-name=rtdomains.rsc"
-				ipsecpeers=$(mktemp)
+				ipsecpeers=$(tempfile)
 				echo ":foreach P in=[/ip ipsec peer find where dynamic=no] do={ /ip ipsec peer remove \$P }" > ${ipsecpeers}
 				eval "${sshcmd} ${userna}@${mk}.${LDN} /ip ipsec peer export >> ${ipsecpeers}"
 				sed -i "s|local-address=${mkip}||g" "${ipsecpeers}"
@@ -975,16 +976,17 @@ case "${OPT}" in
 					eval "${sshcmd} ${userna}@${lte} /certificate import file-name=$peerlocalhostname.crt name=${peerpublichostname} passphrase=123456789"
 					srm -r "${tmpdir}"
 				done
-				ipsecpeers=$(mktemp)
+				ipsecpeers=$(tempfile)
 				echo ":foreach P in=[/ip ipsec identity find where dynamic=no] do={ /ip ipsec identity remove \$P }" > ${ipsecpeers}
 				eval "${sshcmd} ${userna}@${mk}.${LDN} /ip ipsec identity export >> ${ipsecpeers}"
 				sed -i "s|${mkphn}.${PDN}|${lte}|g" "${ipsecpeers}"
+				sed -i "s|${mk}@|${lhn}@|g" "${ipsecpeers}"
 				sed -i "s|.p12_[0-9]||" "${ipsecpeers}"
 				eval "${scpcmd} ${ipsecpeers} ${userna}@${lte}:/ipsec_identity.rsc"
 				eval "${sshcmd} ${userna}@${lte} /import file-name=ipsec_identity.rsc"
 				#eval "${sshcmd} ${userna}@${lte} /ip ipsec identity add peer=calli_ikev2_cert auth-method=digital-signature remote-id=user-fqdn:calli@ca.telecomlobby.com match-by=certificate certificate="${lte}"remote-certificate=ixp.telecomlobby.com generate-policy=no policy-template-group=group_ikev2_cert"
 				srm "${ipsecpeers}"
-				ipsecpolicy=$(mktemp)
+				ipsecpolicy=$(tempfile)
 				eval "${sshcmd} ${userna}@${mk}.${LDN} /ip ipsec policy export > ${ipsecpolicy}"
 				sed -i '/set/d' "${ipsecpolicy}"
 				sed -i '/policy\ group/d' "${ipsecpolicy}"
@@ -1000,7 +1002,7 @@ case "${OPT}" in
 				#eval "${scpcmd} src/mikrotik/file_clean.rsc ${userna}@${lte}:/"
 				#eval "${sshcmd} ${userna}@${lte} :execute \{/import file_clean.rsc\}"
 				echo "start to configure GRE interfaces"
-				grepeers=$(mktemp)
+				grepeers=$(tempfile)
 				eval "${sshcmd} ${userna}@${mk}.${LDN} /interface gre export >> ${grepeers}"
 				sed -i "s|local-address=${mkip}||g" "${grepeers}"
 				eval "${scpcmd} ${grepeers} ${userna}@${lte}:/interface_gre.rsc"
@@ -1081,6 +1083,7 @@ case "${OPT}" in
 				eval "${sshcmd} ${userna}@${lte} /ip firewall address-list add list=lan address=172.16.18.0/24"
 				eval "${sshcmd} ${userna}@${lte} /ip firewall address-list add list=lan address=172.16.19.0/24"
 				eval "${sshcmd} ${userna}@${lte} /ip firewall address-list add list=lan address=10.10.10.0/24"
+				eval "${sshcmd} ${userna}@${lte} /ip firewall address-list add list=lan address=10.1.10.0/24"
 				cp src/mikrotik/LTE/filter.rsc /tmp
 				sed -i "s|/PUBLICIP/|${ltepubip}|g" /tmp/filter.rsc
 				eval "${scpcmd} /tmp/filter.rsc ${userna}@${lte}:/filter.rsc"
@@ -1117,46 +1120,28 @@ case "${OPT}" in
 					mkut=$(ssh ${userna}@${chr} ip addr print where interface="${mkgre}" | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | head -n 1 | cut -d . -f4 | tr -d '\n\d')
 					md5=$(ssh ${userna}@${chr} routing ospf interface pr where interface="${mkgre}" | awk '{print $7}' | grep -E '^.{15}$')
 					poput=$((mkut + 1))
-				done
-				for poplocalhostname in $(dig TXT openbsd.telecom.lobby +short | sed "s|\"||g" | tr ";" "\n" | awk NF); do
-					ssh "${poplocalhostname}".telecom.lobby install -o "${userna}" -g wheel -m 0750 "${HOME}/Sources/Git/OpenBSD/src/mikrotik/openbsd/newchr.sh ${HOME}/Bin/"
-					#[[ "${poplocalhostname}" == "varuna" ]] && poplocalhostname="neo"
-					(dig ipsec20591.${domainname} TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d' | grep "${poplocalhostname}" | cut -d : -f1)".${domainname}"
-					popip=$(dig A "${pophost}" +short)
-					x="7"
-					#[[ "${poplocalhostname}" == "neo" ]] && poplocalhostname="varuna"
-					[[ "${poplocalhostname}" == "bhagavati" ]] && x="8"
-					popgre=$(ssh ${userna}@${chr} int gre print where comment="${poplocalhostname}" | grep -E "gre-tunnel[0-9]{1,2}" | awk '{print $1}' | sed -e "s|name=||" -e "s|\"||g")
-					let a=$(ssh ${userna}@${chr} ip addr print where interface="${popgre}" | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | head -n 1 | cut -d . -f4)+0
-					md5=$(ssh ${userna}@${chr} routing ospf interface pr where interface="${popgre}" | awk '{print $7}' | grep -E '^.{15}$')
-					greip="10.10.10."${a}
-					b=$(expr $a + 1)
-					popgreip="10.10.10."${b}
-					mkdir "/tmp/${poplocalhostname}"
-					cp "src/mikrotik/openbsd/"{iked.conf,hostname.enc,hostname.gre,ospfd.conf} "/tmp/${poplocalhostname}"
-					mv "/tmp/${poplocalhostname}/hostname.gre" "/tmp/${poplocalhostname}/hostname.gre${x}"
-					mv "/tmp/${poplocalhostname}/hostname.enc" "/tmp/${poplocalhostname}/hostname.enc${x}"
-					for file in $(find "/tmp/${poplocalhostname}" -maxdepth 1 -type f); do
-						sed -i "s|/PUBLICHOST/|${chr}|g" $file
+					[[ -e "/tmp/${wa[j]}" ]] || mkdir "/tmp/${wa[j]}" && (rm -rf /tmp/${wa[j]} ; mkdir "/tmp/${wa[j]}")
+					cp "src/mikrotik/openbsd/"{iked.conf,hostname.enc,hostname.gre,ospfd.conf} "/tmp/${wa[j]}"
+					mv "/tmp/${wa[j]}/hostname.gre" "/tmp/${wa[j]}/hostname.gre${c}"
+					mv "/tmp/${wa[j]}/hostname.enc" "/tmp/${wa[j]}/hostname.enc${c}"
+					for file in $(find "/tmp/${wa[j]}" -maxdepth 1 -type f); do
+						sed -i "s|/PUBLICHOST/|${lte}|g" $file
 						sed -i "s|/POPIP/|${popip}|g" $file
-						sed -i "s|/PUBLICIP/|${chrpubip}|g" $file
+						sed -i "s|/PUBLICIP/|${ltepubip}|g" $file
 						sed -i "s|/POPHOST/|${pophost}|g" $file
 						sed -i "s|/POPLOCALHOSTNAME/|${poplocalhostname}|g" $file
-						sed -i "s|/HOSTNAME/|${srcid}|g" $file
+						sed -i "s|/HOSTNAME/|${lhn}|g" $file
 						sed -i "s|/POPGREIP/|${popgreip}|g" $file
 						sed -i "s|/GREIP/|${greip}|g" $file
-						sed -i "s|/X/|${x}|g" $file
+						sed -i "s|/X/|${c}|g" $file
 						sed -i "s|/MD5/|${md5}|g" $file
 					done
-
-					tar -cvf /tmp/calli.tar -C /tmp "/tmp/${poplocalhostname}/"
-					srm -r "/tmp/${poplocalhostname}"
-					echo "uploading to ${poplocalhostname}..."
-					scp /tmp/calli.tar "${poplocalhostname}.${localdomainname}:/tmp"
-					srm "/tmp/calli.tar"
-					#ssh "${poplocalhostname}.${localdomainname}" doas sh /home/taglio/Bin/newchr.sh
+					#tar -cvf /tmp/calli.tar -C /tmp "/tmp/${poplocalhostname}/"
+					#srm -r "/tmp/${poplocalhostname}"
+					#echo "uploading to ${poplocalhostname}..."
+					#scp /tmp/calli.tar "${poplocalhostname}.${localdomainname}:/tmp"
+					#srm "/tmp/calli.tar"
 				done
-				exit
 			;;
 		esac
 	;;
