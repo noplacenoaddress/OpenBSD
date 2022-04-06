@@ -950,6 +950,7 @@ case "${OPT}" in
 				echo "/ip route add comment=ipsec distance=1 gateway=lte1 routing-mark=ipsec" >> "${rtdomain}"
 				eval "${scpcmd} ${rtdomain} ${userna}@${lte}:/rtdomains.rsc"
 				eval "${sshcmd} ${userna}@${lte} /import file-name=rtdomains.rsc"
+				srm "${rtdomain}"
 				ipsecpeers=$(tempfile)
 				echo ":foreach P in=[/ip ipsec peer find where dynamic=no] do={ /ip ipsec peer remove \$P }" > ${ipsecpeers}
 				eval "${sshcmd} ${userna}@${mk}.${LDN} /ip ipsec peer export >> ${ipsecpeers}"
@@ -1059,7 +1060,12 @@ case "${OPT}" in
 					((lastnetwork == 255 )) && ((lastnetwork-=3)) || ((lastnetwork-=4))
 					echo $lastnetwork
 					firstip=$((lastnetwork + 1))
+					secondip=$((lastnetwork + 2))
+					a=$(eval "${sshcmd} ${userna}@${lte} :put [/int gre get [find name=${ltegre}] comment]" | tr -d '\r')"_ikev2_cert"
 					eval "${sshcmd} ${userna}@${lte} /ip addr add address=10.10.9.${firstip}/30 interface=${ltegre}"
+					eval "${sshcmd} ${userna}@${lte} /int gre set ${ltegre} local-address=203.0.113.${firstip} remote-address=203.0.113.${secondip}"
+					eval "${sshcmd} ${userna}@${lte} /ip ipsec policy set [find peer=${a}] src-address=203.0.113.${firstip} dst-address=203.0.113.${secondip} tunnel=yes"
+					eval "${sshcmd} ${userna}@${lte} /ip addr add address=203.0.113.${firstip}/30 interface=lo1"
 					eval "${sshcmd} ${userna}@${lte} /routing ospf network add area=backbone network=10.10.9.${lastnetwork}/30"
 					ospfmd5=$(tr -cd '[:alnum:],.' < /dev/random | fold -w 15 | head -n 1)
 					ssh ${userna}@${lte} routing ospf interface add authentication=md5 authentication-key=${ospfmd5} network-type=point-to-point interface="${ltegre}"
@@ -1121,10 +1127,10 @@ case "${OPT}" in
 					md5=$(ssh ${userna}@${chr} routing ospf interface pr where interface="${mkgre}" | awk '{print $7}' | grep -E '^.{15}$')
 					poput=$((mkut + 1))
 					[[ -e "/tmp/${wa[j]}" ]] || mkdir "/tmp/${wa[j]}" && (rm -rf /tmp/${wa[j]} ; mkdir "/tmp/${wa[j]}")
-					cp "src/mikrotik/openbsd/"{iked.conf,hostname.enc,hostname.gre,ospfd.conf} "/tmp/${wa[j]}"
+					cp "src/mikrotik/LTE/"{iked.conf,hostname.enc,hostname.gre,ospfd.conf} "/tmp/${wa[j]}"
 					mv "/tmp/${wa[j]}/hostname.gre" "/tmp/${wa[j]}/hostname.gre${c}"
 					mv "/tmp/${wa[j]}/hostname.enc" "/tmp/${wa[j]}/hostname.enc${c}"
-					for file in $(find "/tmp/${wa[j]}" -maxdepth 1 -type f); do
+					for file in $(find "/tmp/${wa[j]}/" -maxdepth 1 -type f); do
 						sed -i "s|/PUBLICHOST/|${lte}|g" $file
 						sed -i "s|/POPIP/|${popip}|g" $file
 						sed -i "s|/PUBLICIP/|${ltepubip}|g" $file
