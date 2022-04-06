@@ -3,7 +3,7 @@
 add action=accept chain=input icmp-options=8:0-255 protocol=icmp
 add action=accept chain=input connection-state=established
 add action=accept chain=input connection-state=related
-add action=drop chain=output dst-address-list=servers ipsec-policy=out,none log=yes log-prefix="GRE ERROR" out-interface=lte1 protocol=gre src-address=/PUBLICIP/
+add action=drop chain=output dst-address-list=servers ipsec-policy=out,none log=yes log-prefix="GRE ERROR" protocol=gre
 add action=accept chain=input in-interface-list=GRE protocol=ospf
 add action=accept chain=input dst-port=21,22,80,8291 in-interface-list=GRE protocol=tcp src-address-list=lan
 add action=accept chain=input dst-port=22,8291 in-interface=l2tp-out1 log=yes log-prefix="Install daemons" protocol=tcp src-address-list=servers
