@@ -3,3 +3,16 @@ keepalive 5 2
 mtu 1392
 !ifconfig gre/X/ /POPGREIP/ /GREIP/ netmask 0xfffffffc up
 !ifconfig gre/X/ tunnel /POPIP/ /PUBLICIP/
+
+description "fij.telecomlobby.com"
+inet 10.10.9.226/30
+up
+
+ikev2 "fij.telecomlobby.com" passive tunnel \
+    from 0.0.0.0/0 to 10.10.9.224/30 \
+    local  peer fij.telecomlobby.com \
+    ikesa auth hmac-sha2-256 enc aes-256 group ecp384  \
+    childsa auth hmac-sha2-256 enc aes-256  \
+    srcid "xolotl@ca.telecomlobby.com" dstid "803328-LHG@ca.telecomlobby.com" \
+    ikelifetime 86400 lifetime 3600 \
+

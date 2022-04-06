@@ -34,8 +34,8 @@ set allow-remote-requests=yes servers="8.8.8.8,8.8.4.4"
 add address=cloud.mikrotik.com list=ddns
 add address=cloud2.mikrotik.com list=ddns
 /ip firewall mangle
-add action=mark-routing chain=output dst-address-list=ddns new-routing-mark=\
-    ddns passthrough=yes
+add action=mark-connection chain=output dst-address-list=ddns new-connection-mark=ddns passthrough=yes
+add action=mark-routing chain=output connection-mark=ddns new-routing-mark=ddns passthrough=no
 /ip firewall nat
 add action=masquerade chain=srcnat src-address=10.1.10.0/24
 /ip route
@@ -72,9 +72,8 @@ add down-script="/int lte set [find] disabled=yes\r\
     \n\r\
     \n:set \$continue true\r\
     \n:delay delay-time=60\r\
-    \n:while (\$continue) do={:delay delay-time=60 ; :if ([/interface l2tp-client get [find] running] = false) do={/ip clo\
-    ud force-update ; :delay delay-time=2 ; /interface l2tp-client set [find] disabled=yes ; /int l2tp-client set [find] d\
-    isabled=no} else={:set \$continue false}}\r\
+    \n:while (\$continue) do={:delay delay-time=60 ; :if ([/interface l2tp-client get [find] running] = false) do={/ip cloud force-update ; :delay delay-time=\
+    2 ; /interface l2tp-client set [find] disabled=yes ; :delay delay-time=2 ; /int l2tp-client set [find] disabled=no} else={:set \$continue false}}\r\
     \n"
 /user
 add group=full name=taglio
