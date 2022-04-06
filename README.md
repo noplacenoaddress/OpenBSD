@@ -1636,6 +1636,8 @@ unbound-control flush_zone mynetname.net ; pfctl -t lte -T kill ; pfctl -t lte -
 
 #### OpenBSD, Mikrotik and EdgeOS firewall
 
+![](https://github.com/redeltaglio/OpenBSD/raw/master/img/mkdf.png)
+
 Let's explain how firewall does it works in our network. We shall start with address lists, that takes different names depending what system operative does implement them:
 
 - OpenBSD, [pf(4)](https://man.openbsd.org/pf), [tables](https://www.openbsd.org/faq/pf/tables.html)
