@@ -19,8 +19,8 @@ cat ospfd.conf >> /etc/ospfd.conf
 echo "include \"/etc/iked.conf.${chrpublichostname}\"" >> /etc/iked.conf
 sh /etc/netstart "gre${x}"
 sh /etc/netstart "enc${x}"
-iked -n
-ospfd -n
-rcctl restart iked
-rcctl restart ospfd
-exit
+iked -n  > /dev/null 2>&1
+[[ $? == 0 ]] || (logger "iked configuration error" ; exit 1)
+iked -n  > /dev/null 2>&1
+[[ $? == 0 ]] || (logger "ospfd configuration error" ; exit 1)
+{(rcctl restart iked; rcctl restart ospfd) 1>/dev/null &} ; exit
