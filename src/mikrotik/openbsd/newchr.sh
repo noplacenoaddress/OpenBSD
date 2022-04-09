@@ -6,7 +6,7 @@ tmpdir=$(mktemp -d)
 
 
 cd "${tmpdir}"
-tar -xvf ../${file}.tar
+tar -xvf ../"${file}"
 mv tmp/*/* .
 rm -rf tmp/
 chrpublichostname=$(cat hostname.enc? | head -n 1 | awk '{print $2}' | sed "s|\"||g")

@@ -1147,7 +1147,7 @@ case "${OPT}" in
 						sed -i "s|/MD5/|${md5}|g" $file
 					done
 					tar -cvf /tmp/lte.tar -C /tmp "/tmp/${wa[j]}/"
-					srm -r "/tmp/${poplocalhostname}"
+					srm -r "/tmp/${wa[j]}"
 					echo "uploading to ${wa[j]}..."
 					scp /tmp/lte.tar "${wa[j]}.${LDN}:/tmp"
 				done
