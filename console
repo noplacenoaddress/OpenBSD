@@ -88,7 +88,7 @@ source "lib/foo.sh"
 
 # a work array and a pair of strings
 
-[[ $(typeofvar wa) == "array" ]] && [[ $(echo ${#wa[@]}) != "0" ]] && ( unset wa && declare -a wa ) || declare -a wa
+([[ $(typeofvar wa) == "array" ]] && [[ $(echo ${#wa[@]}) != "0" ]]) && ( unset wa && declare -a wa ) || declare -a wa
 [[ $(typeofvar ws) == "string" ]] && [[ $(echo ${#ws}) != "0" ]] && ( unset ws && ws="" ) || ws=""
 [[ $(typeofvar tf) == "string" ]] && [[ $(echo ${#tf}) != "0" ]] && ( unset tf && tf="" ) || tf=""
 
@@ -1034,9 +1034,9 @@ case "${OPT}" in
 				read -p "Type the 111 vlan network prefix: " ltedata
 				read -p "Type the 43 vlan network prefix: " lteham
 				echo "configuring layer 2 VLANs (router will be .254)"
-				lteadmip=$(printf '%s' $(echo $lteadm | sed "s|0/24||")'254')
-				ltedataip=$(printf '%s' $(echo $ltedata | sed "s|0/24||")'254')
-				ltehamip=$(printf '%s' $(echo $lteham | sed "s|0/24||")'254')
+				lteadmip=$(printf '%s' $(echo $lteadm | sed "s|0/24||")'254/24')
+				ltedataip=$(printf '%s' $(echo $ltedata | sed "s|0/24||")'254/24')
+				ltehamip=$(printf '%s' $(echo $lteham | sed "s|0/24||")'254/24')
 				eval "${sshcmd} ${userna}@${lte} /int vlan add interface=ether1 vlan-id=100 comment=ADM"
 				eval "${sshcmd} ${userna}@${lte}  /ip addr add interface=[/interface get [/interface vlan find where comment=\"ADM\"] name] address=${lteadmip} comment=ADM"
 				eval "${sshcmd} ${userna}@${lte} /int vlan add interface=ether1 vlan-id=111 comment=DATA"
@@ -1113,6 +1113,8 @@ case "${OPT}" in
 				eval "${scpcmd} "${tf}" ${userna}@${lte}:/rd.rsc"
 				eval "${sshcmd} ${userna}@${lte} :execute \{/import rd.rsc\}"
 				echo "starting OpenBSD remote install"
+				echo $LDN
+				typeofvar wa
 				dnsquery wa "openbsd"
 				for (( j=0; j<${#wa[@]}; j++ )); do
 					c=0
@@ -1120,11 +1122,11 @@ case "${OPT}" in
 						((c < i)) && c=$i
 					done
 					((c+=1))
-					pophn=$(dnsquery -MR "${wa[j]}")
-					pip=$(dig A "${pophn}.${PDN}" +short)
-				 	mkgre=$(ssh ${userna}@${chr} int gre print where comment="${wa[j]}" | grep -E "gre-tunnel[0-9]{1,2}" | awk '{print $1}' | sed -e "s|name=||" -e "s|\"||g")
-					mkut=$(ssh ${userna}@${chr} ip addr print where interface="${mkgre}" | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | head -n 1 | cut -d . -f4 | tr -d '\n\d')
-					md5=$(ssh ${userna}@${chr} routing ospf interface pr where interface="${mkgre}" | awk '{print $7}' | grep -E '^.{15}$')
+					pophn=$(dnsquery -M "${wa[j]}")
+					pip=$(dnsquery -R "${wa[j]}")
+				 	mkgre=$(ssh ${userna}@${lte} int gre print where comment="${wa[j]}" | grep -E "gre-tunnel[0-9]{1,2}" | awk '{print $1}' | sed -e "s|name=||" -e "s|\"||g" | tr -d '\n\r')
+					mkut=$(ssh ${userna}@${lte} ip addr print where interface="${mkgre}" | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | head -n 1 | cut -d . -f4 | tr -d '\n\r')
+					md5=$(ssh ${userna}@${lte} routing ospf interface pr where interface="${mkgre}" | awk '{print $7}' | grep -E '^.{15}$')
 					poput=$((mkut + 1))
 					[[ -e "/tmp/${wa[j]}" ]] || mkdir "/tmp/${wa[j]}" && (rm -rf /tmp/${wa[j]} ; mkdir "/tmp/${wa[j]}")
 					cp "src/mikrotik/LTE/"{iked.conf,hostname.enc,hostname.gre,ospfd.conf} "/tmp/${wa[j]}"
@@ -1132,21 +1134,22 @@ case "${OPT}" in
 					mv "/tmp/${wa[j]}/hostname.enc" "/tmp/${wa[j]}/hostname.enc${c}"
 					for file in $(find "/tmp/${wa[j]}/" -maxdepth 1 -type f); do
 						sed -i "s|/PUBLICHOST/|${lte}|g" $file
-						sed -i "s|/POPIP/|${popip}|g" $file
+						sed -i "s|/POPIP/|${pip}|g" $file
 						sed -i "s|/PUBLICIP/|${ltepubip}|g" $file
-						sed -i "s|/POPHOST/|${pophost}|g" $file
-						sed -i "s|/POPLOCALHOSTNAME/|${poplocalhostname}|g" $file
+						sed -i "s|/POPHOST/|${pophn}.${PDN}|g" $file
+						sed -i "s|/POPLOCALHOSTNAME/|${wa[j]}|g" $file
 						sed -i "s|/HOSTNAME/|${lhn}|g" $file
-						sed -i "s|/POPGREIP/|${popgreip}|g" $file
-						sed -i "s|/GREIP/|${greip}|g" $file
+						sed -i "s|/POPGREIP/|10.10.9.${poput}|g" $file
+						sed -i "s|/ENCPOPIP/|203.0.113.${poput}|g" $file
+						sed -i "s|/GREIP/|10.10.9.${mkut}|g" $file
+						sed -i "s|/ENCLTEIP/|203.0.113.${mkut}|g" $file
 						sed -i "s|/X/|${c}|g" $file
 						sed -i "s|/MD5/|${md5}|g" $file
 					done
-					#tar -cvf /tmp/calli.tar -C /tmp "/tmp/${poplocalhostname}/"
-					#srm -r "/tmp/${poplocalhostname}"
-					#echo "uploading to ${poplocalhostname}..."
-					#scp /tmp/calli.tar "${poplocalhostname}.${localdomainname}:/tmp"
-					#srm "/tmp/calli.tar"
+					tar -cvf /tmp/lte.tar -C /tmp "/tmp/${wa[j]}/"
+					srm -r "/tmp/${poplocalhostname}"
+					echo "uploading to ${wa[j]}..."
+					scp /tmp/lte.tar "${wa[j]}.${LDN}:/tmp"
 				done
 			;;
 		esac
