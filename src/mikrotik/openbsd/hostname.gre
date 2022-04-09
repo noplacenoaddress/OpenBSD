@@ -9,10 +9,22 @@ inet 10.10.9.226/30
 up
 
 ikev2 "fij.telecomlobby.com" passive tunnel \
-    from 0.0.0.0/0 to 10.10.9.224/30 \
-    local  peer fij.telecomlobby.com \
+    from 10.10.9.224/30 to 10.10.9.224/30 \
+    local 216.238.100.26 peer any \
     ikesa auth hmac-sha2-256 enc aes-256 group ecp384  \
     childsa auth hmac-sha2-256 enc aes-256  \
     srcid "xolotl@ca.telecomlobby.com" dstid "803328-LHG@ca.telecomlobby.com" \
-    ikelifetime 86400 lifetime 3600 \
+    ikelifetime 86400 lifetime 3600 tap enc10
 
+
+Apr  6 11:23:53 xolotl iked[45184]: spi=0xe181cb81d26b5378: recv IKE_SA_INIT req 0 peer 46.37.82.148:18752 local 216.238.100.26:4500, 280 bytes, policy 'fij.telecomlobby.com'
+Apr  6 11:23:53 xolotl iked[45184]: spi=0xe181cb81d26b5378: send IKE_SA_INIT res 0 peer 46.37.82.148:18752 local 216.238.100.26:4500, 297 bytes, NAT-T
+Apr  6 11:23:53 xolotl iked[45184]: spi=0xe181cb81d26b5378: recv IKE_AUTH req 1 peer 46.37.82.148:18752 local 216.238.100.26:4500, 1792 bytes, policy 'fij.telecomlobby.com'
+Apr  6 11:23:53 xolotl iked[45184]: spi=0xe181cb81d26b5378: ikev2_ike_auth_recv: obtained lease: 0.0.0.0
+Apr  6 11:23:53 xolotl iked[45184]: spi=0xe181cb81d26b5378: assigned address 10.10.9.225 to UFQDN/803328-LHG@ca.telecomlobby.com
+Apr  6 11:23:53 xolotl iked[45184]: spi=0xe181cb81d26b5378: send IKE_AUTH res 1 peer 46.37.82.148:18752 local 216.238.100.26:4500, 1584 bytes, NAT-T
+Apr  6 11:23:53 xolotl iked[45184]: spi=0xe181cb81d26b5378: ikev2_childsa_enable: loaded SPIs: 0x31ba04b0, 0x033cb24d (enc aes-256 auth hmac-sha2-256)
+Apr  6 11:23:53 xolotl iked[45184]: spi=0xe181cb81d26b5378: ikev2_childsa_enable: loaded flows: ESP-0.0.0.0/0=10.10.9.224/30(0)
+Apr  6 11:23:53 xolotl iked[45184]: spi=0xe181cb81d26b5378: established peer 46.37.82.148:18752[UFQDN/803328-LHG@ca.telecomlobby.com] local 216.238.100.26:4500[UFQDN/xolotl@ca.telecomlobby.com] assigned 10.10.9.225 policy 'fij.telecomlobby.com' as responder (enc aes-256 auth hmac-sha2-256 group ecp384 prf hmac-sha2-256)
+Apr  6 11:23:54 xolotl iked[45184]: spi=0xe181cb81d26b5378: ikev2_ikesa_recv_delete: received delete
+Apr  6 11:23:54 xolotl iked[45184]: spi=0xe181cb81d26b5378: sa_free: received delete

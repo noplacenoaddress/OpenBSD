@@ -14,6 +14,7 @@
 /ip route remove [find routing-mark=ipsec]
 /ip route rule remove [find routing-mark=ipsec]
 /ip route remove [find gateway=~gre]
+/ip route remove [find where gateway~"^\\*[0-9a-fA-F]{1,8}\$"]
 /routing ospf network remove [find]
 /routing ospf interface remove [find]
 /interface gre remove [find]
