@@ -12,7 +12,7 @@ rm -rf tmp/
 phn=$(cat hostname.enc*[0-9] | head -n 1 | awk '{print $2}' | sed "s|\"||g")
 x=$(cat hostname.gre*[0-9] | grep gre | head -n 1 | awk '{print $2}' | sed "s|gre||")
 install -o root -g wheel -m 0640 hostname.enc"${x}" /etc
-install -o root -g wheel -m 0640 hostname.gre"${x}"/etc
+install -o root -g wheel -m 0640 hostname.gre"${x}" /etc
 install -o root -g wheel -m 0640 iked.conf "/etc/iked.conf.${phn}"
 sed -i "/^}$/d" /etc/ospfd.conf
 cat ospfd.conf >> /etc/ospfd.conf
