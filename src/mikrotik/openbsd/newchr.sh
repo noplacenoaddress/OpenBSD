@@ -21,6 +21,6 @@ sh /etc/netstart "gre${x}"
 sh /etc/netstart "enc${x}"
 iked -n  > /dev/null 2>&1
 [[ $? == 0 ]] || (logger "iked configuration error" ; exit 1)
-iked -n  > /dev/null 2>&1
+ospfd -n  > /dev/null 2>&1
 [[ $? == 0 ]] || (logger "ospfd configuration error" ; exit 1)
 {(rcctl restart iked; rcctl restart ospfd) 1>/dev/null &} ; exit
