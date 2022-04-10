@@ -1146,10 +1146,10 @@ case "${OPT}" in
 						sed -i "s|/X/|${c}|g" $file
 						sed -i "s|/MD5/|${md5}|g" $file
 					done
-					tar -cvf /tmp/lte.tar -C /tmp "/tmp/${wa[j]}/"
+					tar -cvf /tmp/"${lhn}".tar -C /tmp "/tmp/${wa[j]}/"
 					srm -r "/tmp/${wa[j]}"
 					echo "uploading to ${wa[j]}..."
-					scp /tmp/lte.tar "${wa[j]}.${LDN}:/tmp"
+					scp /tmp/"${lhn}".tar "${wa[j]}.${LDN}:/tmp"
 				done
 			;;
 		esac
