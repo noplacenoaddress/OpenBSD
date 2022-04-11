@@ -853,6 +853,7 @@ case "${OPT}" in
 			;;
 			"next")
 				echo -e "Getting variables..."
+				ssh-keygen -f "/home/taglio/.ssh/known_hosts" -R "10.1.10.1"
 				ddns=$(ssh 10.1.10.1 /ip cloud pr | grep -w dns\-name | awk '{print $2}' | tr -d '\n\r') ; echo -e "DDNS --> ${ddns}"
 				imei=$(ssh 10.1.10.1 /int lte info lte1 once  | grep imei | awk '{print $2}' | tr -d '\n\r') ; echo -e "IMEI --> ${imei}"
 				imsi=$(ssh 10.1.10.1 /int lte info lte1 once  | grep imsi | awk '{print $2}' | tr -d '\n\r') ; echo -e "IMSI --> ${imsi}"
