@@ -14,6 +14,7 @@ x=$(cat hostname.gre*[0-9] | grep gre | head -n 1 | awk '{print $2}' | sed "s|gr
 install -o root -g wheel -m 0640 hostname.enc"${x}" /etc
 install -o root -g wheel -m 0640 hostname.gre"${x}" /etc
 install -o root -g wheel -m 0640 iked.conf "/etc/iked.conf.${phn}"
+install -o root -g wheel -m 0640 /home/taglio/Sorces/Git/iked/pubkeys/"${lhn}"@ca.telecomlobby.com /etc/iked/pubkeys
 sed -i "/^}$/d" /etc/ospfd.conf
 cat ospfd.conf >> /etc/ospfd.conf
 echo "include \"/etc/iked.conf.${phn}\"" >> /etc/iked.conf
