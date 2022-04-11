@@ -1056,7 +1056,7 @@ case "${OPT}" in
 				eval "${sshcmd} ${userna}@${lte}  /routing ospf network add area=backbone network=${ltedata}"
 				eval "${sshcmd} ${userna}@${lte}  /routing ospf network add area=backbone network=${lteham}"
 				eval "${sshcmd} ${userna}@${lte} /interface list add name=GRE"
-				lastnetwork=$(dig TXT gre7058."${PDN}" +short | sed "s|\"||g")
+				lastnetwork=$(dig TXT gre7058."${PDN}" +short @8.8.8.8 | sed "s|\"||g")
 				ospfinterface=$(mktemp)
 				for ltegre in $(ssh "${userna}@${lte}" :foreach i in=[/interface gre find] do=\{:put [/interface gre get \$i name]\; \} | tr -d '\r'); do
 					((lastnetwork == 255 )) && ((lastnetwork-=3)) || ((lastnetwork-=4))
@@ -1070,7 +1070,7 @@ case "${OPT}" in
 					eval "${sshcmd} ${userna}@${lte} /ip addr add address=203.0.113.${firstip}/30 interface=lo1"
 					eval "${sshcmd} ${userna}@${lte} /routing ospf network add area=backbone network=10.10.9.${lastnetwork}/30"
 					ospfmd5=$(tr -cd '[:alnum:],.' < /dev/random | fold -w 15 | head -n 1)
-					ssh ${userna}@${lte} routing ospf interface add authentication=md5 authentication-key=${ospfmd5} network-type=point-to-point interface="${ltegre}"
+					eval "${sshcmd} ${userna}@${lte} /routing ospf interface add authentication=md5 authentication-key=${ospfmd5} network-type=point-to-point interface=${ltegre}"
 					eval "${sshcmd} ${userna}@${lte} /interface list member add list=GRE interface=${ltegre}"
 				done
 				echo "configuring RouterOS web server access list and firewall address list"
