@@ -886,6 +886,7 @@ case "${OPT}" in
 						echo "The LTE router DATA vlan is ${ltedata}"
 						lteham="172.16.$(shuf -i 1-255 -n 1).0/24"
 						echo "The LTE router HAM vlan is ${lteham}"
+
 					;;
 					"cpe")
 						echo "In this case ${hostname} will configured in the remote step as NAT router using 10.1.10.0/24 as ether1 network."
@@ -1150,6 +1151,9 @@ case "${OPT}" in
 					srm -r "/tmp/${wa[j]}"
 					echo "uploading to ${wa[j]}..."
 					scp /tmp/"${lhn}".tar "${wa[j]}.${LDN}:/tmp"
+					#ssh "${wa[j]}.${LDN}" cp "src/etc/iked/pubkeys/${lhn}@ca.telecomlobby.com" /etc/iked/pubkeys
+					ssh "${wa[j]}.${LDN}" cp "src/mikrotik/openbsd/newchr.sh" /home/"${userna}"/Bin
+					ssh "${wa[j]}.${LDN}" doas sh /home/"${userna}"/Bin/newchr.sh
 				done
 			;;
 		esac
