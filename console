@@ -1159,7 +1159,7 @@ case "${OPT}" in
 				case "${ctrl}" in
 					"yes")
 						for (( j=0; j<${#wa[@]}; j++ )); do
-							ssh "${wa[j]}.${LDN}" cp "src/mikrotik/openbsd/newchr.sh" /home/"${userna}"/Bin
+							ssh "${wa[j]}.${LDN}" cp "/home/${userna}/Sources/Git/OpenBSD/src/mikrotik/openbsd/newchr.sh" /home/"${userna}"/Bin
 							ssh "${wa[j]}.${LDN}" doas sh /home/"${userna}"/Bin/newchr.sh
 						done
 
