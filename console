@@ -1046,6 +1046,9 @@ case "${OPT}" in
 				eval "${sshcmd} ${userna}@${lte} /int vlan add interface=ether1 vlan-id=43 comment=HAM"
 				eval "${sshcmd} ${userna}@${lte}  /ip addr add interface=[/interface get [/interface vlan find where comment=\"HAM\"] name] address=${ltehamip} comment=HAM"
 				eval "${sshcmd} ${userna}@${lte} /int vlan add interface=ether1 vlan-id=131 comment=PPPOE"
+				eval "${sshcmd} ${userna}@${lte} /routing ospf interface add interface[/interface get [/interface vlan find where comment=\"ADM\"] name] network-type=broadcast passive=yes"
+				eval "${sshcmd} ${userna}@${lte} /routing ospf interface add interface=[/interface get [/interface vlan find where comment=\"DATA\"] name] network-type=broadcast passive=yes"
+			    eval "${sshcmd} ${userna}@${lte} /routing ospf interface add interface=[/interface get [/interface vlan find where comment=\"HAM\"] name] network-type=broadcast passive=yes"
 				read -p "Type the LTE routerid: " lteid
 				echo "configuring OSPF daemon"
 				eval "${sshcmd} ${userna}@${lte} /routing ospf instance set [ find default=yes ] redistribute-connected=as-type-2 redistribute-other-ospf=as-type-1 redistribute-static=as-type-2 router-id=${lteid}"
