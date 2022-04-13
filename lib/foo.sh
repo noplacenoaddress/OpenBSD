@@ -96,6 +96,13 @@ function dnsquery () {
 				"-R")
 					dig "${2}.${LDN}" TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d' | shuf -n 1
 				;;
+				"-TT")
+					r=$(tempfile)
+					for i in $(dig openbsd."${LDN}" TXT +short | sed "s|\"||g" | tr ";" "\n" | sed "/^$/d"); do ( echo "openbsd ${i} $(dnsquery -R ${i})" >> "${r}") ; done
+					#for i in $(dig raspi."${LDN}" TXT +short | sed "s|\"||g" | tr ";" "\n" | sed "/^$/d"); do ( echo "raspi ${i} $(dnsquery -R ${i})" >> "${r}") ; done
+					for i in $(dig mikrotik."${LDN}" TXT +short | sed "s|\"||g" | tr ";" "\n" | sed "/^$/d"); do ( echo "mikrotik ${i} $(dnsquery -R ${i})" >> "${r}") ; done
+					for i in $(dig edgeos."${LDN}" TXT +short | sed "s|\"||g" | tr ";" "\n" | sed "/^$/d"); do ( echo "edgeos ${i} $(dnsquery -R ${i})" >> "${r}") ; done
+					[[ "${3}" == $(grep "${2}" "${r}" | awk '{print $1}') ]] && return 0 || return 1
 			esac
 		;;
 		*)
