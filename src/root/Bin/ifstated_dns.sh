@@ -1,9 +1,8 @@
 #!/bin/ksh
 
+
 OLDIP=$(/usr/bin/dig A "${1}" +short)
-while true; do
-    [[ $(/usr/bin/dig A "${1}" +short) != "${OLDIP}" ]] && (
-        /usr/sbin/ikectl reload
-        exit
-        )
-done
+
+[[ $(/usr/bin/dig A "${1}" +short) != "${OLDIP}" ]] && (
+    return 0
+) || return 1
