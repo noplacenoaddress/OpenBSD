@@ -1617,12 +1617,38 @@ add change-tcp-mss=no dns-server=8.8.8.8,8.8.4.4 local-address=172.16.30.1 name=
 
 ```
 
-Another tool to take care of IPv4 change into LTE interfaces is managed by OpenBSD under `src/root/Bin/lteddns.sh`, configured in [crontab(1)](https://man.openbsd.org/crontab.1) to be executed every 10 seconds by [cron(8).](https://man.openbsd.org/cron) It's very simple, flush the unbound cache for the domain name used in Mikrotik, flush the PF table and reload it:
+Another tool to take care of IPv4 change into LTE interfaces is managed by OpenBSD under `src/root/Bin/lteddns.sh`, configured in [crontab(1)](https://man.openbsd.org/crontab.1) to be executed every 60 seconds by [cron(8).](https://man.openbsd.org/cron) It's very simple, flush the unbound cache for the domain name used in Mikrotik, flush the PF table and reload it:
+
+```bash
+# crontan -l
+SHELL=/bin/sh
+PATH=/bin:/sbin:/usr/bin:/usr/sbin
+HOME=/var/log
+#minute hour    mday    month   wday    [flags] command
+*     *   *   *   *   /bin/ksh /root/Bin/lteddns.sh
+#
+```
+
+
 
 ```bash
 #!/bin/ksh
 
-unbound-control flush_zone mynetname.net ; pfctl -t lte -T kill ; pfctl -t lte -T add -f /etc/pf.conf.table.lte 
+let counter=1
+while ((counter<5)); do
+  ((counter=counter+1))
+  /bin/sleep $((10-$(/bin/date +%s)%10))
+  /usr/sbin/unbound-control flush_zone mynetname.net
+  for ddns in $(cat /etc/pf.conf.table.lte | grep mynetname.net); do
+      oldip=$(dig A "${ddns}" +short)
+      (( $(/sbin/pfctl -t lte -T show | grep -c "${oldip}") == 0 )) && (
+        /usr/sbin/ikectl reload
+        /sbin/pfctl -t lte -T kill
+        /sbin/pfctl -t lte -T add -f /etc/pf.conf.table.lte
+      )
+  done
+done
+
 ```
 
 
