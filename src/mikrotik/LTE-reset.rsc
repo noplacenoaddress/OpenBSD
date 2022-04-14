@@ -32,6 +32,7 @@
 /routing filter remove [find]
 /interface list member remove [find where list=GRE]
 /interface list remove [find where name=GRE]
+:foreach ITEM in=[/interface gre find] do={:local COMMENT [/interface gre get $ITEM comment]; /ip route remove [find where routing-mark="$COMMENT"]}
 /ip fire filter remove [find]
 /ip fire nat remove [find]
 /ip firewall mangle remove [find dst-address-list!="ddns" && connection-mark!="ddns"]
