@@ -41,6 +41,10 @@ add action=mark-routing chain=output connection-mark=l2tpctrl new-routing-mark=l
 
 /ip firewall nat
 add action=masquerade chain=srcnat src-address=10.1.10.0/24
+add action=src-nat chain=srcnat log=yes out-interface=l2tp-out1 src-address=10.1.10.0/24 to-addresses=/L2TPIP/
+add action=masquerade chain=srcnat log=yes out-interface=lte1 src-address=10.1.10.0/24
+add action=masquerade chain=srcnat out-interface=lte1 routing-mark=ddns
+add action=src-nat chain=srcnat out-interface=l2tp-out1 routing-mark=l2tpctrl to-addresses=/L2TPIP/
 /ip route
 add distance=1 gateway=lte1 routing-mark=ddns
 add distance=1 dst-address=1.1.1.1/32 gateway=l2tp-out1 routing-mark=l2tpctrl
@@ -55,21 +59,21 @@ set name="/HOSTNAME/"
 /system ntp client
 set enabled=yes primary-ntp=185.232.69.65 secondary-ntp=192.36.143.130
 /tool netwatch
-add down-script="/int lte set [find] disabled=yes\r\
+add down-script="/tool netwatch set [find host=1.1.1.1] disabled=yes\r\
+    \n/int lte set [find] disabled=yes\r\
+    \n/tool netwatch set [find host=1.1.1.1] disabled=yes\r\
     \n/interface l2tp-client set [ find ] disabled=yes\r\
     \n/int lte set [find] disabled=no\r\
     \n\r\
     \n:local continue true\r\
     \n:local counter 0\r\
-    \n:while (\$continue) do={:delay delay-time=240 ; :if ([/ping 9.9.9.9 count=1]=0) do={ :set \$counter (\$counter + 1);\
-    \_:if (\$counter>5) do={:set counter 0 ; /sys reboot} else={/interface lte set [find] disabled=yes ; /int lte set [fin\
-    d] disabled=no}} else={:set \$continue false ; :set \$counter 0}}\r\
-    \n" host=9.9.9.9 interval=10s up-script=":delay delay-time=2\r\
+    \n:while (\$continue) do={:delay delay-time=240 ; :if ([/ping 9.9.9.9 count=1]=0) do={ :set \$counter (\$counter + 1); :if (\$counter>5) do={:set counter 0 ; /sys reboot} else={/interface lte set [find] disabled=yes ; /int lte set [find] disabled=no}} else={:set \$continue fa\
+    lse ; :set \$counter 0}}\r\
+    \n" host=9.9.9.9 interval=10s timeout=300ms up-script=":delay delay-time=2\r\
     \n/ip cloud force-update\r\
     \n:delay delay-time=2\r\
     \n:local continue true\r\
-    \n:while (\$continue) do={:if ([/ip cloud get public-address] = 188.213.5.220) do={/ip cloud force-update} else={:set \
-    \$continue false}}\r\
+    \n:while (\$continue) do={:if ([/ip cloud get public-address] = /L2TPIP/) do={/ip cloud force-update} else={:set \$continue false}}\r\
     \n\r\
     \n:delay delay-time=10\r\
     \n/interface l2tp-client set [ find ] disabled=no\r\
@@ -77,8 +81,8 @@ add down-script="/int lte set [find] disabled=yes\r\
     \n\r\
     \n:set \$continue true\r\
     \n:delay delay-time=60\r\
-    \n:while (\$continue) do={:delay delay-time=60 ; :if ([/interface l2tp-client get [find] running] = false) do={/ip cloud force-update ; :delay delay-time=\
-    2 ; /interface l2tp-client set [find] disabled=yes ; :delay delay-time=2 ; /int l2tp-client set [find] disabled=no} else={:set \$continue false}}\r\
+    \n:while (\$continue) do={:delay delay-time=60 ; :if ([/interface l2tp-client get [find] running] = false) do={/ip cloud force-update ; :delay delay-time=2 ; /interface l2tp-client set [find] disabled=yes ; :delay delay-time=2 ; /int l2tp-client set [find] disabled=no} else={\
+    :set \$continue false ; /tool netwatch set [find host=1.1.1.1] disabled=no}}\r\
     \n"
 add down-script=":if ([/interface l2tp-client get [find] running] = true) do={\r\
     \n\t/interface l2tp-client set [find] disabled=yes\r\
