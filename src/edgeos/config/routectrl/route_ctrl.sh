@@ -69,11 +69,12 @@ case "$1" in
 			echo "pass tun interface device as argument"
 			exit 1
 		fi
+
 		peer=$(/sbin/ip link show dev "${2}" | grep alias | awk '{print $2}')
 		phm=$(echo "${peer}" | cut -d . -f1)
 		typeset -u upphm="${phm}"
 		tunnelid="telecomlobby-${upphm}"
-		grelip=$(/sbin/ip addr show dev "${2}" | grep -w inet | awk '{print $2}' | sed "s|/.*$||")
+    	grelip=$(/sbin/ip addr show dev "${2}" | grep -w inet | awk '{print $2}' | sed "s|/.*$||")
 		greliplo=$(echo "${grelip}" | cut -d . -f4)
 		grebrdiplo=$(/sbin/ip addr show dev "${2}" | grep -w inet | awk '{print $4}' | cut -d . -f4)
 		(( grebrdiplo-greliplo==2 )) && ((peerliplo = grebrdiplo - 1)) || ((peerliplo = grebrdiplo - 2))
@@ -155,7 +156,13 @@ case "$1" in
 		while true
 		do
 			for tun in $(/sbin/ip link | grep tun | awk '{print $2}' | sed "s|@.*||g"); do
-                echo "ok"
+                popri=$(/sbin/ip route | grep "${tun}" | grep 192.168.13 | awk '{print $1}')
+                [[ "nexthop" == $(/sbin/ip route | grep -w "${popri}" -A 1 | tail -n 1 | awk '{print $1}') ]] && (
+                    for group in "${groups[@]}"; do
+                        /sbin/ip route ls table "${group}" | grep "${tun}" &> /dev/null
+                        [ $? -eq 0 ] && /sbin/ip route del table "${group}" default dev "${tun}"
+                    done
+                )
 				./timeout -s9 25 nice -n 20 chrt -i 0 ionice -c3 /config/routectrl/route_ctrl.sh -T "${tun}"
 			done
 		done
