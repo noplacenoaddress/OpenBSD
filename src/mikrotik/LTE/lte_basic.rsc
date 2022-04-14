@@ -36,13 +36,18 @@ add address=cloud2.mikrotik.com list=ddns
 /ip firewall mangle
 add action=mark-connection chain=output dst-address-list=ddns new-connection-mark=ddns passthrough=yes
 add action=mark-routing chain=output connection-mark=ddns new-routing-mark=ddns passthrough=no
+add action=mark-connection chain=output dst-address=1.1.1.1 new-connection-mark=l2tpctrl passthrough=yes
+add action=mark-routing chain=output connection-mark=l2tpctrl new-routing-mark=l2tpctrl passthrough=no
+
 /ip firewall nat
 add action=masquerade chain=srcnat src-address=10.1.10.0/24
 /ip route
 add distance=1 gateway=lte1 routing-mark=ddns
+add distance=1 dst-address=1.1.1.1/32 gateway=l2tp-out1 routing-mark=l2tpctrl
 add distance=3 dst-address=9.9.9.9/32 gateway=lte1
 /ip route rule
 add action=lookup-only-in-table routing-mark=ddns table=ddns
+add action=lookup-only-in-table routing-mark=l2tpctrl table=l2tpctrl
 /system clock
 set time-zone-autodetect=no time-zone-name=Europe/Madrid
 /system identity
@@ -75,6 +80,11 @@ add down-script="/int lte set [find] disabled=yes\r\
     \n:while (\$continue) do={:delay delay-time=60 ; :if ([/interface l2tp-client get [find] running] = false) do={/ip cloud force-update ; :delay delay-time=\
     2 ; /interface l2tp-client set [find] disabled=yes ; :delay delay-time=2 ; /int l2tp-client set [find] disabled=no} else={:set \$continue false}}\r\
     \n"
+add down-script=":if ([/interface l2tp-client get [find] running] = true) do={\r\
+    \n\t/interface l2tp-client set [find] disabled=yes\r\
+    \n\t:delay delay-time=120\r\
+    \n\t/interface l2tp-client set [find] disabled=no\r\
+    \n}" host=1.1.1.1 interval=10s timeout=300ms
 /user
 add group=full name=taglio
 remove [find name=admin]
