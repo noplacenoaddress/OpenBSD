@@ -832,6 +832,9 @@ case "${OPT}" in
 				sed -i "s|/SIMPIN/|${simpin}|g" "${tf}"
 				read -p "Type the L2TP POP public hostname: " l2tppop
 				sed -i "s|/L2TPPOP/|$(dig A ${l2tppop} +short | tr -d '\n')|g" "${tf}"
+				read -p "Type the L2TP IPv4 binded: " l2tpip
+				sed -i "s|/L2TPIP/${l2tpip}|g" "${tf}"
+				sed -i "s|/L2TPPOP/|$(dig A ${l2tppop} +short | tr -d '\n')|g" "${tf}"
 				l2tppwd=$(systemd-ask-password "Type the L2TP user password: ")
 				sed -i "s|/L2TPPWD/|${l2tppwd}|g" "${tf}"
 				l2tpipsec=$(systemd-ask-password "Type the L2TP IPSEC key: ")
@@ -1070,7 +1073,15 @@ case "${OPT}" in
 				eval "${sshcmd} ${userna}@${lte}  /routing ospf network add area=backbone network=${ltedata}"
 				eval "${sshcmd} ${userna}@${lte}  /routing ospf network add area=backbone network=${lteham}"
 				eval "${sshcmd} ${userna}@${lte} /interface list add name=GRE"
-				lastnetwork=$(dig TXT gre7058."${PDN}" +short @8.8.8.8 | sed "s|\"||g")
+				read -p "Type last broadcast or query the name server database? [bcast|dns]: " ctrl
+				case "${ctrl}" in
+					"bcast")
+						read -p "Enter the last octet [0-255]: " lastnetwork
+					;;
+					"dns")
+						lastnetwork=$(dig TXT gre7058."${PDN}" +short @8.8.8.8 | sed "s|\"||g")
+					;;
+				esac
 				ospfinterface=$(mktemp)
 				for ltegre in $(ssh "${userna}@${lte}" :foreach i in=[/interface gre find] do=\{:put [/interface gre get \$i name]\; \} | tr -d '\r'); do
 					((lastnetwork == 255 )) && ((lastnetwork-=3)) || ((lastnetwork-=4))
