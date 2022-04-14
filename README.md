@@ -2009,3 +2009,7 @@ A couple of advisors:
 #### Queue
 
 ![](https://miro.medium.com/max/1400/1*1Siq7wg78OpNs58Znvu_sw.png)
+
+#### OSPF timings
+
+![](https://raw.githubusercontent.com/redeltaglio/OpenBSD/master/img/ospf-timers-guide-table.webp)
