@@ -1060,7 +1060,7 @@ case "${OPT}" in
 				eval "${sshcmd} ${userna}@${lte} /int vlan add interface=ether1 vlan-id=43 comment=HAM"
 				eval "${sshcmd} ${userna}@${lte}  /ip addr add interface=[/interface get [/interface vlan find where comment=\"HAM\"] name] address=${ltehamip} comment=HAM"
 				eval "${sshcmd} ${userna}@${lte} /int vlan add interface=ether1 vlan-id=131 comment=PPPOE"
-				eval "${sshcmd} ${userna}@${lte} /routing ospf interface add interface[/interface get [/interface vlan find where comment=\"ADM\"] name] network-type=broadcast passive=yes"
+				eval "${sshcmd} ${userna}@${lte} /routing ospf interface add interface=[/interface get [/interface vlan find where comment=\"ADM\"] name] network-type=broadcast passive=yes"
 				eval "${sshcmd} ${userna}@${lte} /routing ospf interface add interface=[/interface get [/interface vlan find where comment=\"DATA\"] name] network-type=broadcast passive=yes"
 			    eval "${sshcmd} ${userna}@${lte} /routing ospf interface add interface=[/interface get [/interface vlan find where comment=\"HAM\"] name] network-type=broadcast passive=yes"
 				read -p "Type the LTE routerid: " lteid
@@ -1140,6 +1140,7 @@ case "${OPT}" in
 				eval "${scpcmd} "${tf}" ${userna}@${lte}:/rd.rsc"
 				eval "${sshcmd} ${userna}@${lte} :execute \{/import rd.rsc\}"
 				echo "starting OpenBSD remote install"
+				([[ $(typeofvar wa) == "array" ]] && [[ $(echo ${#wa[@]}) != "0" ]]) && ( unset wa && declare -a wa ) || declare -a wa
 				dnsquery wa "openbsd"
 				for (( j=0; j<${#wa[@]}; j++ )); do
 					c=0
@@ -1152,6 +1153,7 @@ case "${OPT}" in
 				 	mkgre=$(ssh ${userna}@${lte} int gre print where comment="${wa[j]}" | grep -E "gre-tunnel[0-9]{1,2}" | awk '{print $1}' | sed -e "s|name=||" -e "s|\"||g" | tr -d '\n\r')
 					mkut=$(ssh ${userna}@${lte} ip addr print where interface="${mkgre}" | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | head -n 1 | cut -d . -f4 | tr -d '\n\r')
 					md5=$(ssh ${userna}@${lte} routing ospf interface pr where interface="${mkgre}" | awk '{print $7}' | grep -E '^.{15}$')
+					mynetname=$(ssh ${userna}@${lte}  ":put [/ip cloud get dns-name;]")
 					poput=$((mkut + 1))
 					[[ -e "/tmp/${wa[j]}" ]] || mkdir "/tmp/${wa[j]}" && (rm -rf /tmp/${wa[j]} ; mkdir "/tmp/${wa[j]}")
 					cp "src/mikrotik/LTE/"{iked.conf,hostname.enc,hostname.gre,ospfd.conf} "/tmp/${wa[j]}"
@@ -1170,6 +1172,7 @@ case "${OPT}" in
 						sed -i "s|/ENCLTEIP/|203.0.113.${mkut}|g" $file
 						sed -i "s|/X/|${c}|g" $file
 						sed -i "s|/MD5/|${md5}|g" $file
+						sed -i "s|/MYNETNAME/|${mynetname}|g" $file
 					done
 					tar -cvf /tmp/"${lhn}".tar -C /tmp "/tmp/${wa[j]}/"
 					srm -r "/tmp/${wa[j]}"
