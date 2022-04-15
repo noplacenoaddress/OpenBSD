@@ -1291,7 +1291,13 @@ function configuration {
 			openssl x509 -pubkey -noout -passin pass:123456789 -in "/etc/iked/certs/$publichost.crt"  > /etc/iked/local.pub
 
 			for file in $(find $basedir/src/etc/iked/pubkeys/ufqdn/ -name "*@*"); do
-				install -o root -g wheel -m 0644 $file /etc/iked/pubkeys/ufqdn/
+				install -o root -g wheel -m 0444 $file /etc/iked/pubkeys/ufqdn/
+			done
+			for file in $(find $basedir/src/etc/iked/pubkeys/fqdn/ -name "*.${domainname}"); do
+				install -o root -g wheel -m 0444 $file /etc/iked/pubkeys/fqdn/
+			done
+			for file in $(find $basedir/src/etc/iked/certs/ -name "*.${domainname}.crt"); do
+				install -o root -g wheel -m 0444 $file /etc/iked/certs/
 			done
 			rcctl enable iked
 			rcctl set iked flags "-vv"
