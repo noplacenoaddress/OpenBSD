@@ -42,7 +42,7 @@ fi
 case "$1" in
 	"-B")
 		sleep 30s
-		for tun in $(/sbin/ip link | grep tun | awk '{print $2}' | sed "s|@.*||g"); do
+		for tun in $(/sbin/ip link | grep tun | grep -v tun[7,8] | awk '{print $2}' | sed "s|@.*||g"); do
 			tunep=$(/sbin/ip link list dev "${tun}" | awk 'FNR == 2' | awk '{print $4}')
 			phm=$(/sbin/ip link list dev "${tun}" | grep alias | awk '{print $2}')
 			for group in "${groups[@]}"; do
@@ -155,7 +155,7 @@ case "$1" in
 		#open_sem $n
 		while true
 		do
-			for tun in $(/sbin/ip link | grep tun | awk '{print $2}' | sed "s|@.*||g"); do
+			for tun in $(/sbin/ip link | grep tun | grep -v tun[7,8] | awk '{print $2}' | sed "s|@.*||g"); do
                 popri=$(/sbin/ip route | grep "${tun}" | grep 192.168.13 | awk '{print $1}')
                 [[ "nexthop" == $(/sbin/ip route | grep -w "${popri}" -A 1 | tail -n 1 | awk '{print $1}') ]] && (
                     for group in "${groups[@]}"; do

@@ -11,6 +11,7 @@
 /file remove [find type="script"]
 :foreach I in=[/ip firewall mangle find where new-routing-mark=ipsec] do={/ip firewall mangle remove $I}
 :foreach I in=[/ip firewall address-list find where list=ipsec] do={/ip firewall address-list remove $I}
+:foreach ITEM in=[/interface gre find] do={:local COMMENT [/interface gre get $ITEM comment]; /ip route remove [find where routing-mark="$COMMENT"]}
 /ip route remove [find routing-mark=ipsec]
 /ip route rule remove [find routing-mark=ipsec]
 /ip route remove [find gateway=~gre]
@@ -32,7 +33,6 @@
 /routing filter remove [find]
 /interface list member remove [find where list=GRE]
 /interface list remove [find where name=GRE]
-:foreach ITEM in=[/interface gre find] do={:local COMMENT [/interface gre get $ITEM comment]; /ip route remove [find where routing-mark="$COMMENT"]}
 /ip fire filter remove [find]
 /ip fire nat remove [find]
 /ip firewall mangle remove [find dst-address-list!="ddns" && connection-mark!="ddns"]
