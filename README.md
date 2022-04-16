@@ -2011,6 +2011,22 @@ A couple of advisors:
 
 ![](https://miro.medium.com/max/1400/1*1Siq7wg78OpNs58Znvu_sw.png)
 
+Let's obtain values to do a correct queue sizing. First of all obtain the egress interface Internet bandwidth available on the VPS:
+
+```bash
+neo# wget -4 -O /dev/null http://speedtest.novoserve.com/10GB.bin 
+--2022-04-16 09:12:56--  http://speedtest.novoserve.com/10GB.bin
+Resolving speedtest.novoserve.com (speedtest.novoserve.com)... 185.80.233.178
+Connecting to speedtest.novoserve.com (speedtest.novoserve.com)|185.80.233.178|:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 10737418240 (10G) [application/octet-stream]
+Saving to: '/dev/null'
+/dev/null     2%[===>                                240.97M  20.5MB/s    eta 10m 39
+neo# 
+```
+
+
+
 #### OSPF timings
 
 ![](https://raw.githubusercontent.com/redeltaglio/OpenBSD/master/img/ospf-timers-guide-table.webp)
