@@ -1,9 +1,8 @@
 ikev2 "/POP/" active transport \
-	proto gre \
-	from /PUBLICIP/ to /POPIP/ \
+	proto gre from /PUBLICIP/ to /POPIP/ \
     local /PUBLICIP/ peer /POPIP/ \
 	ikesa auth hmac-sha2-256 enc aes-256 group ecp256  \
     childsa auth hmac-sha2-256 enc aes-256 group ecp256 \
-	srcid "/SRCID/@ca./DOMAINNAME/" \
-        ikelifetime 86400 lifetime 3600 \
-        tag /POP/ tap enc/X/
+	srcid "/SRCID/@ca./DOMAINNAME/" dstid "/POPLOCALHOSTNAME/@ca"\
+    ikelifetime 86400 lifetime 3600 \
+    rfc7427 tag /POP/ tap enc/X/
