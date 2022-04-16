@@ -38,8 +38,9 @@ elif [[ ! -z "${1}" && "${1}" == gre*[0-9] ]]; then
 fi
 publichostname=$(echo $last | cut -d . -f1)
 domainname=$(echo $last | sed "s/$publichostname.//")
+pip=$(dig A "${last}" +short)
 
-for a in $(dig ipsec20591.$domainname TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+for a in $(dig ipsec20591.$domainname TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 	b=$(echo $a | cut -d : -f1)
 	if [[ "${b}" == "${publichostname}" ]]; then
 		srcid=$(echo $a | cut -d : -f2)
@@ -63,8 +64,11 @@ done
 pubkey="$srcid@ca.$domainname"
 sed -i "/interface $ospfinterface/,/}/d" /etc/ospfd.conf
 sed -i "/$ospfinterface/d" /etc/pf.conf.macro.gre.tag.in
-nohup rcctl restart ospfd & > /tmp/nohup
+sed -i "/$pip/d" /etc/pf.conf.table.ipsec
+/sbin/pfctl -t ipsec -T kill
+/sbin/pfctl -t ipsec -T add -f /etc/pf.conf.table.ipsec
 /bin/rm -r "/etc/iked/pubkeys/ufqdn/${pubkey}"
+/bin/rm -r "/etc/iked/certs/${last}.crt"
 pfctl -f /etc/pf.conf
-
+nohup rcctl restart ospfd &> /dev/null
 exit
