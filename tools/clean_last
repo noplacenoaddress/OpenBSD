@@ -67,8 +67,8 @@ sed -i "/$ospfinterface/d" /etc/pf.conf.macro.gre.tag.in
 sed -i "/$pip/d" /etc/pf.conf.table.ipsec
 /sbin/pfctl -t ipsec -T kill
 /sbin/pfctl -t ipsec -T add -f /etc/pf.conf.table.ipsec
-/bin/rm -r "/etc/iked/pubkeys/ufqdn/${pubkey}"
-/bin/rm -r "/etc/iked/certs/${last}.crt"
+[[ -e "/etc/iked/pubkeys/ufqdn/${pubkey}" ]] && /bin/rm -r "/etc/iked/pubkeys/ufqdn/${pubkey}"
+[[ -e "/etc/iked/certs/${last}.crt" ]] && /bin/rm -r "/etc/iked/certs/${last}.crt"
 pfctl -f /etc/pf.conf
 nohup rcctl restart ospfd &> /dev/null
 exit
