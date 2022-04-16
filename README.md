@@ -2025,7 +2025,7 @@ Saving to: '/dev/null'
 neo# 
 ```
 
-
+Next calculate bandwidth of the GRE interface from the point of view of a client, speaking for example about the WISP service:
 
 #### OSPF timings
 
