@@ -1108,6 +1108,10 @@ function configuration {
 			rcctl disable resolvd
 			sh /etc/netstart $egressinterface
 		;;
+		"dynamic")
+			echo "arp -s $defaultv4router $macdefaultv4router" > /etc/rc.local
+			arp -s $defaultv4router $macdefaultv4router
+		;;
 		"basic")
 			hostname "$hostname.$landomainname"
 			echo "dot files"
@@ -1748,11 +1752,13 @@ case $1 in
 									echo "ipv6egress#$ipv6egress" >> /tmp/config.ini
 									echo "ipv6prefix#$ipv6prefix" >> /tmp/config.ini
 									echo "ipv6defrouter#$ipv6defrouter" >> /tmp/config.ini
+									configuration "static"
 									;;
 								"dynamic")
 									ipv6egress=$(slaacctl show interface | grep 2001 | awk 'NR>2' | head -n 1 | cut -d , -f1)
 									ipv6prefix=$(slaacctl show interface | grep 2001 | awk 'NR>2' | head -n 1 | cut -d \/ -f2)
 									ipv6defrouter=$(netstat -rn -f inet6 | awk 'NR>8' | head -n 1 | awk '{print $2}')
+									configuretion "dynamic"
 									;;
 								*)
 									echo -n "Please type static or dynamic \n"
@@ -1760,7 +1766,7 @@ case $1 in
 									;;
 							esac
 						done
-					configuration "static"
+
 				else
 					error_exit "$LINENO: EXIT FROM USER."
 				fi
