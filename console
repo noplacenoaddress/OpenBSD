@@ -1,4 +1,4 @@
-d#!/usr/bin/bash
+#!/usr/bin/bash
 
 # GLOBAL VAR
 # IPv6 ULA fc00::/7
@@ -337,7 +337,9 @@ case "${OPT}" in
 			[[ "${c}" == 1 ]] && (
 				case $(dnsquery -T ${wa[j]}) in
 					"openbsd")
+						echo "${phtc}"
 						ghtc=$(ssh ${wa[j]}.${LDN} ifconfig gre | grep -wB 1 "${phtc}" | head -n 1 | awk '{print $1}' | sed "s|:$||")
+						echo "${ghtc}"
 						ssh ${wa[j]}.${LDN} "echo ${ghtc} > /tmp/cleantmp"
 						ssh ${wa[j]}.${LDN} doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node -A cleanlast"
 					;;
