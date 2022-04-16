@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+d#!/usr/bin/bash
 
 # GLOBAL VAR
 # IPv6 ULA fc00::/7

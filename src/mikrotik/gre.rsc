@@ -1,7 +1,7 @@
 #Mikrotik POP GRE template site to site OpenBSD
 
 /interface gre
-add comment=/HOSTNAME/ keepalive=5s,2 local-address=/POPIP/ mtu=1392 remote-address=/PUBLICIP/
+add comment=/HOSTNAME/ keepalive=5s,2 local-address=/POPIP/ mtu=1392 remote-address=/PUBLICIP/ clamp-tcp-mss=no
 
 
 
