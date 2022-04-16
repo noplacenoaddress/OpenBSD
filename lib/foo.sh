@@ -75,12 +75,12 @@ function dnsquery () {
 		"none")
 			case "${1}" in
 				"-M")
-					for ph in $(dig ipsec20591."${PDN}" TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d' ); do
+					for ph in $(dig ipsec20591."${PDN}" TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d' ); do
 						[[ $(echo "${ph}" | cut -d : -f2) == "${2}" ]] && echo "${ph}" | cut -d : -f1
 					done
 				;;
 				"-MR")
-					for ph in $(dig ipsec20591."${PDN}" TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d' ); do
+					for ph in $(dig ipsec20591."${PDN}" TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d' ); do
 						[[ $(echo "${ph}" | cut -d : -f1) == "${2}" ]] && echo "${ph}" | cut -d : -f2
 					done
 				;;
