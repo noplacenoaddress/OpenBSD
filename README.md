@@ -2027,6 +2027,26 @@ neo#
 
 Next calculate bandwidth of the GRE interface from the point of view of a client, speaking for example about the WISP service:
 
+```
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ wget -4 -O /dev/null http://speedtest.novoserve.com/10GB.bin
+--2022-04-16 11:19:35--  http://speedtest.novoserve.com/10GB.bin
+Resolving speedtest.novoserve.com (speedtest.novoserve.com)... 185.80.233.178
+Connecting to speedtest.novoserve.com (speedtest.novoserve.com)|185.80.233.178|:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 10737418240 (10G) [application/octet-stream]
+Saving to: ‘/dev/null’
+
+/dev/null                                                                0%[                                                                                                                                                                           ]  19,41M  6,92MB/s               ^C
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ 
+
+```
+
+Remember that you can use also iperf or others tools to size it. Next you can size also with web pages like [Speedtest](https://www.speedtest.net/) or [DSLreport](http://www.dslreports.com/speedtest), this last one is very interesting for a sizing of what is known like [bufferbloat](https://en.wikipedia.org/wiki/Bufferbloat), something so important to take in care when we're speaking about IPsec tunneling over conventional FTTH lines.
+
+![](https://raw.githubusercontent.com/redeltaglio/OpenBSD/master/img/speedtest.png)
+
+![](https://raw.githubusercontent.com/redeltaglio/OpenBSD/master/img/dslreport.png)
+
 #### OSPF timings
 
 ![](https://raw.githubusercontent.com/redeltaglio/OpenBSD/master/img/ospf-timers-guide-table.webp)
