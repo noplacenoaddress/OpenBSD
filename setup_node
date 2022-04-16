@@ -1287,9 +1287,11 @@ function configuration {
 			cd $basedir
 			install -o root -g wheel -m 0644  $basedir/src/etc/iked/ca/ca.crt /etc/iked/ca/
 			openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -nocerts -passin pass:123456789 -passout pass:123456789 -out /etc/iked/private/local.key
-			openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "/etc/iked/certs/$publichost.crt"
+			openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "/etc/iked/certs/local.crt"
 			openssl x509 -pubkey -noout -passin pass:123456789 -in "/etc/iked/certs/$publichost.crt"  > /etc/iked/local.pub
-
+			chmod 0400 /etc/iked/private/local.key
+			chmod 0444 "/etc/iked/certs/local.crt"
+			chmod 0444 /etc/iked/local.pub
 			for file in $(find $basedir/src/etc/iked/pubkeys/ufqdn/ -name "*@*"); do
 				install -o root -g wheel -m 0444 $file /etc/iked/pubkeys/ufqdn/
 			done
@@ -1308,6 +1310,7 @@ function configuration {
 			for vpnc_ip in $(dig vpnc.$domainname A +short @8.8.8.8)
 			do
 				vpnc_host=$(dig -x $vpnc_ip +short @8.8.8.8 | sed 's/.$//')
+				[[ "${vpnc_host}" == "*rima-tde.net" ]] && vpnc_host="spr.telecomlobby.com"
 				vpnc_ips[i]="$vpnc_ip"
 				vpnc_hosts[i]="$vpnc_host"
 				if [ ! -d "/tmp/$vpnc_host" ]; then
@@ -1318,50 +1321,41 @@ function configuration {
 				fi
 
 				echo include \"/etc/iked.conf.$vpnc_host\" >> /etc/iked.conf
-				if [[ $(nc -w1  $vpnc_ip 22 | grep -c "ROSSSH") -eq 1 ]]; then
-					install -o root -g wheel -m 0640 $basedir/src/etc/iked.conf.mikrotik "/etc/iked.conf.$vpnc_host"
-					if [[ -e "/tmp/$vpnc_host/$vpnc_host.rsc" ]]; then
-						rm -rf "/tmp/$vpnc_host/$vpnc_host.rsc"
-					fi
-					cp $basedir/src/mikrotik/ipsec.rsc "/tmp/$vpnc_host/$vpnc_host.rsc"
-					sed -i "s/\/POPIP\//$vpnc_ip/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
-					sed -i "s/\/POP\//$vpnc_host/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
-				elif [[ $(nc -w1  $vpnc_ip 22 | grep -c "ROSSSH") -eq 0 ]]; then
-					install -o root -g wheel -m 0640 $basedir/src/etc/iked.conf.openbsd "/etc/iked.conf.$vpnc_host"
-					cp $basedir/src/openbsd/iked.conf.openbsd "/tmp/$vpnc_host/iked.conf.$publichost"
-					sed -i "s/\/POPIP\//$vpnc_ip/g" "/tmp/$vpnc_host/iked.conf.$publichost"
-					sed -i "s/\/POP\//$vpnc_host/g" "/tmp/$vpnc_host/iked.conf.$publichost"
-					srcid=$(hostname -s)
-					#if [[ "$srcid" == "varuna" ]]; then
-					#	srcid="neo"
-					#fi
-					sed -i "s/\/POPID\//$srcid/g" "/tmp/$vpnc_host/iked.conf.$publichost"
-				fi
+				banner=$(nc -w1  $vpnc_ip 22)
+				srcid=$(hostname -s)
+				case "${banner}" in
+					"*ROSSSH")
+						install -o root -g wheel -m 0640 $basedir/src/etc/iked.conf.mikrotik "/etc/iked.conf.$vpnc_host"
+						if [[ -e "/tmp/$vpnc_host/$vpnc_host.rsc" ]]; then
+							rm -rf "/tmp/$vpnc_host/$vpnc_host.rsc"
+						fi
+						cp $basedir/src/mikrotik/ipsec.rsc "/tmp/$vpnc_host/$vpnc_host.rsc"
+						sed -i "s/\/POPIP\//$vpnc_ip/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
+						sed -i "s/\/POP\//$vpnc_host/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
+					;;
+					"*Debian*")
+						install -o root -g wheel -m 0640 $basedir/src/etc/iked.conf.edgeos "/etc/iked.conf.$vpnc_host"
+						install -o root -g wheel -m 0640 $basedir/src/etc/iked.conf.edgeos "/etc/iked.conf.$vpnc_host"
+						cp $basedir/src/edgeos/ipsec.conf "/tmp/$vpnc_host/"
+						cp "/etc/iked/certs/local.crt" "/tmp/$vpnc_host/ $publichost.crt"
+					;;
+					*)
+						install -o root -g wheel -m 0640 $basedir/src/etc/iked.conf.openbsd "/etc/iked.conf.$vpnc_host"
+						cp $basedir/src/openbsd/iked.conf.openbsd "/tmp/$vpnc_host/iked.conf.$publichost"
+
+					;;
+				esac
 				sed -i "s/\/POPIP\//$vpnc_ip/g" "/etc/iked.conf.$vpnc_host"
 				sed -i "s/\/POP\//$vpnc_host/g" "/etc/iked.conf.$vpnc_host"
+				sed -i "s/\/POPIP\//$vpnc_ip/g" "/tmp/$vpnc_host/iked.conf.$publichost"
+				sed -i "s/\/POP\//$vpnc_host/g" "/tmp/$vpnc_host/iked.conf.$publichost"
+				sed -i "s/\/POPID\//$srcid/g" "/tmp/$vpnc_host/iked.conf.$publichost"
 				sed -i "s|/X/|$i|g" "/etc/iked.conf.$vpnc_host"
 				install -o root -g wheel -m 0640 $basedir/src/etc/hostname.enc-X- "/etc/hostname.enc$i"
 				sed -i "s/\/POP\//$vpnc_host/g" "/etc/hostname.enc$i"
 				sh /etc/netstart "enc$i"
 				i=$i+1
 			done
-			dyndnshost=$(dig vpnc.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')
-			if [[ ! -d "/tmp/$dyndnshost" ]]; then
-				mkdir "/tmp/$dyndnshost"
-			else
-				rm -rf "/tmp/$dyndnshost"
-				mkdir "/tmp/$dyndnshost"
-			fi
-			echo include \"/etc/iked.conf.$dyndnshost\" >> /etc/iked.conf
-			install -o root -g wheel -m 0640 $basedir/src/etc/iked.conf.edgeos "/etc/iked.conf.$dyndnshost"
-			sed -i "s/\/POPIP\//$(dig $dyndnshost A +short | tail -n 1)/g" "/etc/iked.conf.$dyndnshost"
-			sed -i "s/\/POP\//$dyndnshost/g" "/etc/iked.conf.$dyndnshost"
-			sed -i "s/\/X\//$i/g" "/etc/iked.conf.$dyndnshost"
-			install -o root -g wheel -m 0640 $basedir/src/etc/hostname.enc-X- "/etc/hostname.enc$i"
-			sed -i "s/\/POP\//$dyndnshost/g" "/etc/hostname.enc$i"
-			sh /etc/netstart "enc$i"
-			cp $basedir/src/edgeos/ipsec.conf "/tmp/$dyndnshost/"
-			cp "/etc/iked/certs/$publichost.crt" "/tmp/$dyndnshost/"
 			find /etc/ -type f -name "iked.*" | xargs -I {}
 			custom "/tmp" "2"
 			custom "/etc" "1"
@@ -1398,7 +1392,25 @@ function configuration {
 				sed -i "s/\/POPIP\//$popip/g" "/etc/hostname.gre$index"
 				if [ $i -eq 0 ]; then
 					typeset -i lastnet
-					lastnet=$(dig gre7058.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')
+					ctrl=
+					while [ -z $ctrl ]
+					do
+						echo 'Type last gre network or get from DNS? [net|dns]: '
+						read ctrl
+					done
+					case "${ctrl}" in
+						"net")
+							lastnet=
+							while [ -z $net ]
+							do
+								echo 'Type last octet used in gre networks [0-255]: '
+								read lastnet
+							done
+						;;
+						"dns")
+							lastnet=$(dig gre7058.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')
+						;;
+					esac
 				else
 					lastnet=$lastnet-4
 				fi
@@ -1427,7 +1439,6 @@ function configuration {
 					sed -i "s/\/PUBLICHOST\//$publichost/g" "/tmp/$pophost/gre.sh"
 					sed -i "s/\/PUBLICIP\//$publicip/g" "/tmp/$pophost/gre.sh"
 					sed -i "s/\/ROUTERIDLAST\//$routeridlast/g" "/tmp/$pophost/gre.sh"
-
 				else
 					cp $basedir/src/openbsd/hostname.gre.openbsd "/tmp/$pophost/hostname.gre$lasttun"
 					cp $basedir/src/openbsd/hostname.enc.openbsd "/tmp/$pophost/hostname.enc$lasttun"
