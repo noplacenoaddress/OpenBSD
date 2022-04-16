@@ -913,10 +913,7 @@ function upgrade {
 function admin {
 	case $1 in
 		"cleanlast")
-			[[ -e "/tmp/cleantmp" ]] && (
-				gre=$(cat "/tmp/cleantmp")
-			)
-			sh  $basedir/tools/clean_last "${gre}"
+			[[ -e "/tmp/cleantmp" ]] && sh  $basedir/tools/clean_last $(cat /tmp/cleantmp)
 		;;
 		"sslcareq")
 			cd /etc/ssl
