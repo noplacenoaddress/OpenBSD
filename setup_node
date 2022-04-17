@@ -1323,9 +1323,10 @@ function configuration {
 				fi
 
 				echo include \"/etc/iked.conf.$vpnc_host\" >> /etc/iked.conf
-				banner=$(/usr/bin/nc -w1 $vpnc_ip 22)
-				[[ "${banner}" == "" ]] && banner=$(/usr/bin/nc -w1 $vpnc_ip 31137)
+				banner=$(/usr/bin/nc -w2 $vpnc_ip 22)
+				[[ "${banner}" == "" ]] && banner=$(/usr/bin/nc -w2 $vpnc_ip 31137)
 				srcid=$(hostname -s)
+				echo $srcid
 				echo "${banner}"
 				case "${banner}" in
 					*ROSSSH)
