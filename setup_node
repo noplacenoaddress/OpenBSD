@@ -83,8 +83,8 @@ if [[ $uid -ne 0 ]]; then
 	print $0 "you've got to run $0 as UID=0 \n"
 	exit 1
 fi
-if [[ $_ != "/bin/ksh" ]]; then
-	print $0 "you've got to run $0 with ksh command interpreter \n"
+if [[ $_ == "/bin/sh" ]]; then
+	print $0 "you've got to run $0 with ksh command interpreter or directly\n"
 	exit 1
 fi
 if [[ $# -eq 0 ]]; then
