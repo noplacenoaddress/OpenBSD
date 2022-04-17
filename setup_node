@@ -1323,8 +1323,8 @@ function configuration {
 				fi
 
 				echo include \"/etc/iked.conf.$vpnc_host\" >> /etc/iked.conf
-				banner=$(nc -w1 $vpnc_ip 22)
-				[[ "${banner}" == "" ]] && banner=$(nc -w1  $vpnc_ip 31137)
+				banner=$(/usr/bin/nc -w1 $vpnc_ip 22)
+				[[ "${banner}" == "" ]] && banner=$(/usr/bin/nc -w1 $vpnc_ip 31137)
 				srcid=$(hostname -s)
 				echo "${banner}"
 				case "${banner}" in
