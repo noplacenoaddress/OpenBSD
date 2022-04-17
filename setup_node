@@ -1322,12 +1322,11 @@ function configuration {
 				fi
 
 				echo include \"/etc/iked.conf.$vpnc_host\" >> /etc/iked.conf
-				banner=$(nc -w1  $vpnc_ip 22)
+				banner=$(nc -w1 $vpnc_ip 22)
 				[[ "${banner}" == "" ]] && banner=$(nc -w1  $vpnc_ip 31137)
 				srcid=$(hostname -s)
-				echo "${banner}"
 				case "${banner}" in
-					"*ROSSSH")
+					*ROSSSH*)
 						install -o root -g wheel -m 0640 $basedir/src/etc/iked.conf.mikrotik "/etc/iked.conf.$vpnc_host"
 						if [[ -e "/tmp/$vpnc_host/$vpnc_host.rsc" ]]; then
 							rm -rf "/tmp/$vpnc_host/$vpnc_host.rsc"
@@ -1336,14 +1335,13 @@ function configuration {
 						sed -i "s/\/POPIP\//$vpnc_ip/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
 						sed -i "s/\/POP\//$vpnc_host/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
 					;;
-					"*Debian*")
+					*Debian*)
 						install -o root -g wheel -m 0640 $basedir/src/etc/iked.conf.edgeos "/etc/iked.conf.$vpnc_host"
 						install -o root -g wheel -m 0640 $basedir/src/etc/iked.conf.edgeos "/etc/iked.conf.$vpnc_host"
 						cp $basedir/src/edgeos/ipsec.conf "/tmp/$vpnc_host/"
 						cp "/etc/iked/certs/local.crt" "/tmp/$vpnc_host/ $publichost.crt"
 					;;
-					"*OpenSSH_8.8")
-						echo "ok"
+					*OpenSSH_8.8*)
 						install -o root -g wheel -m 0640 $basedir/src/etc/iked.conf.openbsd "/etc/iked.conf.$vpnc_host"
 						cp $basedir/src/openbsd/iked.conf.openbsd "/tmp/$vpnc_host/iked.conf.$publichost"
 
