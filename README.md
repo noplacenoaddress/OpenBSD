@@ -433,7 +433,24 @@ neo$ mkdir -p Sources/Git && cd Sources/Git
 neo$ git clone https://github.com/redeltaglio/OpenBSD.git
 ```
 
-Next let's start to configure the system with our script `setup_node`, you've got to go ahead to every point pressing `1` or to type different variables:
+First think to notice is that I'm calling [ksh](https://man.openbsd.org/ksh.1) as command interpreter. It would not be necessary if we call setup node with `./` because the [shebang](https://en.wikipedia.org/wiki/Shebang_%28Unix%29) is calling the [Korn shell](http://www.kornshell.org/):
+
+```
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ head -n 1 setup_node 
+#!/bin/ksh
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ 
+```
+
+Be careful to not interpret with the [POSIX](https://es.wikipedia.org/wiki/POSIX) [shell](https://man.openbsd.org/sh.1) because it simply doesn't work because a check of the `$_` variable:
+
+```bash
+if [[ $_ -ne "/bin/ksh" ]]; then
+	print $0 "you've got to run $0 with ksh command interpreter \n"
+	exit 1
+fi
+```
+
+Start to configure the system with our script `setup_node`, you've got to go ahead to every point pressing `1` or to type different variables:
 
 - the type of IPv6 address:
   - `static`: 
@@ -446,11 +463,8 @@ Next let's start to configure the system with our script `setup_node`, you've go
 - `landomainname`, the interior domain name that in my case is `telecom.lobby`
 - `routerid`, the OSPFD router id and the IP of the `vether0` interface.
 
-Start with the configuration and <u>remember to put your route to 0.0.0.0 outside the OpenBSD MESH network!</u>
-
 ```shell
-root@neo:/home/taglio/Sources/Git/OpenBSD# sh setup_node                                                                                                                                 changing installurl
-Go ahead type 1 
+root@neo:/home/taglio/Sources/Git/OpenBSD# ksh setup_node
 ```
 
 After some points the program give us the root ssh `ed25519` key of the new host. That is [EdDSA](https://en.wikipedia.org/wiki/EdDSA) in [public key cryptography](https://en.wikipedia.org/wiki/Public-key_cryptography).  Update the repository using the `console` script:
@@ -593,7 +607,7 @@ root@varuna:/etc#
 Then create a new SSL internal [CSR](https://en.wikipedia.org/wiki/Certificate_signing_request) certificate request and download it to the CA server to create a new [x.509](https://en.wikipedia.org/wiki/X.509) [CRT](https://en.wikipedia.org/wiki/X.690#DER_encoding) for the internal services like `httpd(8)` and the surely next installed daemon [dovecot](https://www.dovecot.org/).
 
 ```shell
-root@varuna:/home/taglio/Sources/Git/OpenBSD# sh setup_node -A sslcareq 
+root@varuna:/home/taglio/Sources/Git/OpenBSD# ksh setup_node -A sslcareq 
 Generating RSA private key, 2048 bit long modulus
 ...................................................................+++++
 .......+++++
@@ -645,7 +659,7 @@ My software build scripts to automatic configure the new hosts also for those gu
 To add the new OpenBSD host to my Mikrotik steps are very simple. Do this in the new guy:
 
 ```shell
-root@varuna:/home/taglio/Sources/Git/OpenBSD# sh setup_node -A otheros
+root@varuna:/home/taglio/Sources/Git/OpenBSD# ksh setup_node -A otheros
 Download Mikrotik Routeros script from http://varuna.telecom.lobby/fr.telecomlobby.com/fr.telecomlobby.com.rsc
 root@varuna:/home/taglio/Sources/Git/OpenBSD# 
 ```
@@ -942,7 +956,7 @@ taglio@trimurti:~/Work/telecom.lobby/OpenBSD$
 As `4 of January 2022` both setup_node and console scripts question to the user what is the subnet to use:
 
 ```bash
-umnyama# sh setup_node -I                                                                Type 1 to use /tmp/config.ini 
+umnyama# ksh setup_node -I                                                                Type 1 to use /tmp/config.ini 
 0
 Type the current gre subnet 
 10.10.9
