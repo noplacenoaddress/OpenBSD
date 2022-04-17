@@ -1310,6 +1310,7 @@ function configuration {
 			custom "/etc" "1"
 			for vpnc_ip in $(dig vpnc.$domainname A +short @8.8.8.8)
 			do
+				echo "${vpnc_ip}"
 				vpnc_host=$(dig -x $vpnc_ip +short @8.8.8.8 | sed 's/.$//')
 				[[ "${vpnc_host}" == "*rima-tde.net" ]] && vpnc_host="spr.telecomlobby.com"
 				vpnc_ips[i]="$vpnc_ip"
