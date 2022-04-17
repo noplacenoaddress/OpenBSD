@@ -1328,7 +1328,7 @@ function configuration {
 				fi
 				while [[ "${banner}" = *Invalid* ]]; do
 					banner=$(nc -w2 $vpnc_ip 31137)
-				fi
+				done
 				srcid=$(hostname -s)
 				echo $srcid
 				echo $banner
