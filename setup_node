@@ -83,6 +83,10 @@ if [[ $uid -ne 0 ]]; then
 	print $0 "you've got to run $0 as UID=0 \n"
 	exit 1
 fi
+if [[ $_ -ne "/bin/ksh" ]]; then
+	print $0 "you've got to run $0 with ksh command interpreter \n"
+	exit 1
+fi
 if [[ $# -eq 0 ]]; then
 	print $0 "have to be used with the following options \
 			\n \
@@ -1324,12 +1328,12 @@ function configuration {
 				fi
 
 				echo include \"/etc/iked.conf.$vpnc_host\" >> /etc/iked.conf
-				banner=`nc -w2 $vpnc_ip 22`
+				banner=$(nc -w2 $vpnc_ip 22)
 				if [[ $banner == "" ]]; then
-					banner=`nc -w2 $vpnc_ip 31137`
+					banner=$(nc -w2 $vpnc_ip 31137)
 				fi
 				while [[ $banner == *Invalid* ]]; do
-					banner=`nc -w2 $vpnc_ip 31137`
+					banner=$(nc -w2 $vpnc_ip 31137)
 				done
 				echo $banner
 				srcid=$(hostname -s)
