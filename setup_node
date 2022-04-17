@@ -1311,7 +1311,9 @@ function configuration {
 			for vpnc_ip in $(dig vpnc.$domainname A +short @8.8.8.8); do
 				echo "${vpnc_ip}"
 				vpnc_host=$(dig -x $vpnc_ip +short @8.8.8.8 | sed 's/.$//')
-				[[ "${vpnc_host}" == *rima-tde.net ]] && vpnc_host="spr.telecomlobby.com"
+				if [[ "${vpnc_host}" == *rima-tde.net ]]; then
+					 vpnc_host="spr.telecomlobby.com"
+				 fi
 				vpnc_ips[i]="$vpnc_ip"
 				vpnc_hosts[i]="$vpnc_host"
 				if [ ! -d "/tmp/$vpnc_host" ]; then
@@ -1323,7 +1325,9 @@ function configuration {
 
 				echo include \"/etc/iked.conf.$vpnc_host\" >> /etc/iked.conf
 				banner=`nc -w2 $vpnc_ip 22`
-				[[ $banner == "" ]] && banner=`nc -w2 $vpnc_ip 31137`
+				if [[ $banner == "" ]]; then
+					banner=`nc -w2 $vpnc_ip 31137`
+				fi
 				while [[ $banner == *Invalid* ]]; do
 					banner=`nc -w2 $vpnc_ip 31137`
 				done
