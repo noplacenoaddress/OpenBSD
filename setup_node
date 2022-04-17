@@ -1322,14 +1322,15 @@ function configuration {
 				fi
 
 				echo include \"/etc/iked.conf.$vpnc_host\" >> /etc/iked.conf
-				banner=$(nc -w2 $vpnc_ip 22)
-				[[ $banner == "" ]] && banner=$(nc -w2 $vpnc_ip 31137)
-				while [[ "${banner}" == *Invalid* ]]; do
-					banner=$(nc -w2 $vpnc_ip 31137)
+				banner=`nc -w2 $vpnc_ip 22`
+				[[ $banner == "" ]] && banner=`nc -w2 $vpnc_ip 31137`
+				while [[ $banner == *Invalid* ]]; do
+					banner=`nc -w2 $vpnc_ip 31137`
 				done
+				echo $banner
 				srcid=$(hostname -s)
 				echo $srcid
-				echo $banner
+
 				case $banner in
 					*ROSSSH*)
 						install -o root -g wheel -m 0640 $basedir/src/etc/iked.conf.mikrotik "/etc/iked.conf.$vpnc_host"
