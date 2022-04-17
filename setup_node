@@ -1289,7 +1289,7 @@ function configuration {
 			install -o root -g wheel -m 0644  $basedir/src/etc/iked/ca/ca.crt /etc/iked/ca/
 			openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -nocerts -passin pass:123456789 -passout pass:123456789 -out /etc/iked/private/local.key
 			openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "/etc/iked/certs/local.crt"
-			openssl x509 -pubkey -noout -passin pass:123456789 -in "/etc/iked/certs/$publichost.crt"  > /etc/iked/local.pub
+			openssl x509 -pubkey -noout -passin pass:123456789 -in "/etc/iked/certs/local.crt"  > /etc/iked/local.pub
 			chmod 0400 /etc/iked/private/local.key
 			chmod 0444 "/etc/iked/certs/local.crt"
 			chmod 0444 /etc/iked/local.pub
