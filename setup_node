@@ -1308,8 +1308,7 @@ function configuration {
 			i=0
 			install -o root -g wheel -m 0640  $basedir/src/etc/iked.conf /etc/
 			custom "/etc" "1"
-			for vpnc_ip in $(dig vpnc.$domainname A +short @8.8.8.8)
-			do
+			for vpnc_ip in $(dig vpnc.$domainname A +short @8.8.8.8); do
 				echo "${vpnc_ip}"
 				vpnc_host=$(dig -x $vpnc_ip +short @8.8.8.8 | sed 's/.$//')
 				[[ "${vpnc_host}" == "*rima-tde.net" ]] && vpnc_host="spr.telecomlobby.com"
@@ -1323,8 +1322,8 @@ function configuration {
 				fi
 
 				echo include \"/etc/iked.conf.$vpnc_host\" >> /etc/iked.conf
-				banner=$(/usr/bin/nc -w2 $vpnc_ip 22)
-				[[ "${banner}" == "" ]] && banner=$(/usr/bin/nc -w2 $vpnc_ip 31137)
+				banner=$( /usr/bin/nc -w2 $vpnc_ip 22 )
+				[[ "${banner}" == "" ]] && banner=$( /usr/bin/nc -w2 $vpnc_ip 31137 )
 				srcid=$(hostname -s)
 				echo $srcid
 				echo "${banner}"
