@@ -238,7 +238,7 @@ case "${OPT}" in
 			[[ "${c}" == 1 ]] && (
 				case $(dnsquery -T ${wa[j]}) in
 					"openbsd")
-						ssh ${wa[j]}.${LDN} doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node -U newhost"
+						ssh ${wa[j]}.${LDN} doas ksh "/home/taglio/Sources/Git/OpenBSD/setup_node -U newhost"
 					;;
 					"mikrotik")
 						openbsd=
@@ -342,7 +342,7 @@ case "${OPT}" in
 						ghtc=$(ssh ${wa[j]}.${LDN} ifconfig gre | grep -wB 1 "${phtc}" | head -n 1 | awk '{print $1}' | sed "s|:$||")
 						echo "${ghtc}"
 						ssh ${wa[j]}.${LDN} "echo ${ghtc} > /tmp/cleantmp"
-						ssh ${wa[j]}.${LDN} doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node -A cleanlast"
+						ssh ${wa[j]}.${LDN} doas ksh "/home/taglio/Sources/Git/OpenBSD/setup_node -A cleanlast"
 					;;
 					"mikrotik")
 						#ghtc=$(ssh ${wa[j]}.${LDN} ":put [/int gre get [find comment=xolotl] name;]" | tr -d '\r\n')
@@ -456,7 +456,7 @@ case "${OPT}" in
 			[[ "${c}" == 1 ]] && (
 			case $(dnsquery -T ${wa[j]}) in
 				"openbsd")
-					ssh ${wa[j]}.${LDN} doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node -U file"
+					ssh ${wa[j]}.${LDN} doas ksh "/home/taglio/Sources/Git/OpenBSD/setup_node -U file"
 				;;
 				"edgeos")
 					read -p "Type the src/edgeos/config file to update into ${wa[j]}.${LDN}: " fedge
@@ -548,7 +548,7 @@ case "${OPT}" in
 				done
 				echo "uploading P12 to /tmp onto $i"
 				scp $ikedpub "$i.${LDN}:/tmp"
-				ssh -t $i.${LDN} doas sh "/home/taglio/Sources/Git/OpenBSD/tools/ikedsslupgade"
+				ssh -t $i.${LDN} doas ksh "/home/taglio/Sources/Git/OpenBSD/tools/ikedsslupgade"
 				echo "uploading P12 to Mikrotik hosts"
 				for vpnc_host in $(dig mikrotik.${LDN} TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 					scp $ikedpub "${vpnc_host}.${LDN}"
@@ -579,12 +579,12 @@ case "${OPT}" in
 	;;
 	#[openbsd]
 	"-G"|"-S"|"-D"|"-PF"|"-7")
-		ws="doas sh /home/taglio/Sources/Git/OpenBSD/setup_node"
+		ws="doas ksh /home/taglio/Sources/Git/OpenBSD/setup_node"
 		[[ "${5}" == "-G" ]] && rcmd="git -C "$proghome" pull"
 		[[ "${5}" == "-S" ]] && rcmd="${ws} -U scripts"
 		[[ "${5}" == "-D" ]] && rcmd="${ws} -U dyndnspop"
 		[[ "${5}" == "-PF" ]] && rcmd="${ws} -U pf"
-		[[ "${5}" == "-7" ]] && rcmd="doas sh /home/taglio/Sources/Git/OpenBSD/tools/seven"
+		[[ "${5}" == "-7" ]] && rcmd="doas ksh /home/taglio/Sources/Git/OpenBSD/tools/seven"
 		for (( j=0; j<${#wa[@]}; j++ )); do
 			echo -e "Connecting to ${wa[j]}.${LDN}"
 			eval "ssh ${wa[j]}.${LDN} ${rcmd}"
@@ -802,7 +802,7 @@ case "${OPT}" in
 			echo "uploading to ${poplocalhostname}..."
 			scp /tmp/calli.tar "${poplocalhostname}.${localdomainname}:/tmp"
 			srm "/tmp/calli.tar"
-			#ssh "${poplocalhostname}.${localdomainname}" doas sh /home/taglio/Bin/newchr.sh
+			#ssh "${poplocalhostname}.${localdomainname}" doas ksh /home/taglio/Bin/newchr.sh
 		done
 	;;
 	"-LTE")
@@ -1189,7 +1189,7 @@ case "${OPT}" in
 					"yes")
 						for (( j=0; j<${#wa[@]}; j++ )); do
 							ssh "${wa[j]}.${LDN}" cp "/home/${userna}/Sources/Git/OpenBSD/src/mikrotik/openbsd/newchr.sh" /home/"${userna}"/Bin
-							ssh "${wa[j]}.${LDN}" doas sh /home/"${userna}"/Bin/newchr.sh
+							ssh "${wa[j]}.${LDN}" doas ksh /home/"${userna}"/Bin/newchr.sh
 						done
 
 					;;
@@ -1385,7 +1385,7 @@ case "${OPT}" in
 				[yY]*)
 					echo $routerid12s > $tmpupload && echo $routerid56s >> $tmpupload && echo ${tsig256s} | tr -d ' ' >> $tmpupload && echo $secondarydomain >> $tmpupload
 					scp $tmpupload "${G34[$rand34s]}.${LDN}:/tmp/powernsd_distributed"
-					ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -t "${G34[$rand34s]}.${LDN}"  doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -D powerdns #distributed
+					ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -t "${G34[$rand34s]}.${LDN}"  doas ksh "/home/taglio/Sources/Git/OpenBSD/setup_node" -D powerdns #distributed
 					break
 				;;
 				[nN]*)
@@ -1403,7 +1403,7 @@ case "${OPT}" in
 				[yY]*)
 					echo $masters34slave12 > $tmpupload && echo ${tsig256s} | tr -d ' ' >> $tmpupload && echo $secondarydomain >> $tmpupload
 					scp $tmpupload "${G12[$rand12s]}.${LDN}:/tmp/powerdns_distributed"
-					ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -t "${G12[$rand12s]}.${LDN}"  doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -D powerdns #distributed
+					ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -t "${G12[$rand12s]}.${LDN}"  doas ksh "/home/taglio/Sources/Git/OpenBSD/setup_node" -D powerdns #distributed
 					break
 				;;
 				[nN]*)
@@ -1421,7 +1421,7 @@ case "${OPT}" in
 				[yY]*)
 					echo $masters34slave56 > $tmpupload && echo ${tsig256s} | tr -d ' ' >> $tmpupload && echo $secondarydomain >> $tmpupload
 					scp $tmpupload "${G56[$rand56s]}.${LDN}:/tmp/powernsd_distributed"
-					ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -t "${G56[$rand56s]}.${LDN}"  doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -D powerdns #distributed
+					ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3  -o ConnectionAttempts=1 -t "${G56[$rand56s]}.${LDN}"  doas ksh "/home/taglio/Sources/Git/OpenBSD/setup_node" -D powerdns #distributed
 					break
 				;;
 				[nN]*)
@@ -1633,7 +1633,7 @@ case "${OPT}" in
 		case "${t}" in
 			"openbsd")
 				scp $ikedpub "$lhn.${LDN}:/tmp"
-				ssh -t $lhn.${LDN} doas sh "/home/taglio/Sources/Git/OpenBSD/tools/ikedsslupgade"
+				ssh -t $lhn.${LDN} doas ksh "/home/taglio/Sources/Git/OpenBSD/tools/ikedsslupgade"
 			;;
 			"mikrotik")
 				scp $ikedpub "$lhn.${LDN}:/"
@@ -1676,7 +1676,7 @@ case "${OPT}" in
 	"-NO")
 		for vpnc_host in $(dig openbsd.${LDN} TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 			echo -e "Connecting to $vpnc_host"
-			ssh -t $vpnc_host.${LDN} doas sh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U newospf
+			ssh -t $vpnc_host.${LDN} doas ksh "/home/taglio/Sources/Git/OpenBSD/setup_node" -U newospf
 		done
 		mk=
 		echo -e "Type the internal hostname of the Mikrotik: "
