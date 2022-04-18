@@ -23,7 +23,7 @@ if [ "$tarsha256" == $(cat "$publichost.sha256") ]; then
 	install -o root -g wheel -m 0640 hostname.gre*[0-9] /etc/
 	install -o root -g wheel -m 0640 hostname.enc*[0-9] /etc/
 	srcid=$(cat iked.conf.$hostconnected | grep srcid | awk '{print $2}' | sed 's/"//g' | cut -d @ -f1)
-	sed -i "s/$srcid/$(hostname -s)/" iked.conf.*
+	#sed -i "s/$srcid/$(hostname -s)/" iked.conf.*
 	vpnc_host=$(ls iked.conf.* | sed 's/iked.conf.//')
 	if [[ $(grep -c $vpnc_host /etc/iked.conf) -eq 0 ]]; then
 		echo include \"/etc/iked.conf.$vpnc_host\" >> /etc/iked.conf

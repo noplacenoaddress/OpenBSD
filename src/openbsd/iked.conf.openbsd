@@ -4,7 +4,7 @@ ikev2 "/PUBLICHOST/" active transport \
 	local /POP/ peer /PUBLICHOST/ \
 	ikesa  prf hmac-sha2-512  enc aes-256-gcm-12 group brainpool512  \
 	childsa  enc chacha20-poly1305 group curve25519 \
-	srcid "/POPASN1/" \
-	dstid "/ASN1/" \
+	srcid "//POPASN1/" \
+	dstid "//ASN1/" \
 	ikelifetime 86400 lifetime 3600 \
 	rfc7427 tag /PUBLICHOST/ tap enc/X/
