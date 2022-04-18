@@ -1480,6 +1480,7 @@ function configuration {
 					sed -i "s/\/PUBLICIP\//$publicip/g" "/tmp/$pophost/hostname.gre$lasttun"
 					sed -i "s/\/GREPOPIP\//"${grecursubnet}".$grepopip/g" "/tmp/$pophost/hostname.gre$lasttun"
 					sed -i "s/\/GRELOCALIP\//"${grecursubnet}".$grelocalip/g" "/tmp/$pophost/hostname.gre$lasttun"
+					sed -i "s/\/ROUTERIDLAST\//$routeridlast/g" "/tmp/$pophost/hostname.gre$lasttun"
 				fi
 				i=$i+1
 			done
