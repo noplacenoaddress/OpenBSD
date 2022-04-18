@@ -1297,7 +1297,7 @@ function configuration {
 			chmod 0400 /etc/iked/private/local.key
 			chmod 0444 "/etc/iked/certs/local.crt"
 			chmod 0444 /etc/iked/local.pub
-			asn1=$(openssl x509 -in /etc/iked/certs/local.crt -noout -text | grep Subject: | sed "s|Subject: ||" | sed "s| ||g" | sed "s|,|/|g")
+			asn1=$(openssl x509 -in /etc/iked/certs/local.crt -noout -text | grep Subject: | sed "s|Subject: ||" |  sed "s|, |\/|g")
 			for file in $(find $basedir/src/etc/iked/pubkeys/ufqdn/ -name "*@*"); do
 				install -o root -g wheel -m 0444 $file /etc/iked/pubkeys/ufqdn/
 			done
@@ -1362,7 +1362,7 @@ function configuration {
 						cp "/etc/iked/certs/local.crt" "/tmp/$vpnc_host/$publichost.crt"
 					;;
 					*OpenSSH_8.8*)
-						popasn1=$(openssl x509 -in /etc/iked/certs/$vpnc_host.crt -noout -text | grep Subject: | sed "s|Subject: ||" | sed "s| ||g" | sed "s|,|/|g")
+						popasn1=$(openssl x509 -in /etc/iked/certs/$vpnc_host.crt -noout -text | grep Subject: | sed "s|Subject: ||" |  sed "s|, |\/|g")
 						install -o root -g wheel -m 0640 $basedir/src/etc/iked.conf.openbsd "/etc/iked.conf.$vpnc_host"
 						sed -i "s|/ASN1/|${asn1}|g" "/etc/iked.conf.$vpnc_host"
 						sed -i "s|/POPASN1/|${popasn1}|g" "/etc/iked.conf.$vpnc_host"
