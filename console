@@ -45,6 +45,7 @@ function menu () {
 			echo -e $0 "-I ${LDN} -SO [workstation] -U   -> update the workstation's user EdDSA certificate [o]"
 			echo -e $0 "-I ${LDN} -SO [workstation] -CI  -> custom installation templates [o]"
 			echo -e $0 "-I ${LDN} -SO [workstation] -K   -> new IKED pk12 archive [o]"
+			echo -e $0 "-I ${LDN} -SO [workstation] -NDS   -> encrypt TXT DNS record [o]"
 			echo
 		;;
 	esac
@@ -76,7 +77,7 @@ PDN=$(dig "${LDN}" TXT +short | sed "s|\"||g") && [[ "${PDN}" ]] || ( echo "inte
 	( [ "${5}" == "-KD" ] && [ "${4}" == "ALL" ] ) || \
 	( [ "${5}" == "-G"  -o "${5}" == "-S" -o "${5}" == "-D" -o "${5}" == "-PF" ] && [ "${4}" == "openbsd" ] ) || \
 	( [ "${5}" == "-LTE"  -o "${5}" == "-CHR" ] && [ "${4}" == "mikrotik" ] ) || \
-	( [ "${5}" == "-GR6"  -o "${5}" == "-RS" -o "${5}" == "-Z" -o "${5}" == "-GEO"  -o "${5}" == "-CU" -o "${5}" == "-U" -o "${5}" == "-CI" -o "${5}" == "-K" ] && [ "${4}" == "workstation" ] )
+	( [ "${5}" == "-GR6"  -o "${5}" == "-RS" -o "${5}" == "-Z" -o "${5}" == "-GEO"  -o "${5}" == "-CU" -o "${5}" == "-U" -o "${5}" == "-CI" -o "${5}" == "-K"  -o "${5}" == "-NSD" ] && [ "${4}" == "workstation" ] )
 ) && OPT="${5}" || menu 2
 
 
@@ -1259,7 +1260,7 @@ case "${OPT}" in
 		openssl pkcs12 -nodes -in $ikedpub -nocerts -passin pass:123456789 -passout pass:123456789 -out "$tmpdir/local.key"
 		openssl pkcs12 -nodes -in $ikedpub -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "src/etc/iked/certs/${publichost}.crt"
 		openssl x509 -pubkey -noout -passin pass:123456789 -in "src/etc/iked/certs/${publichost}.crt"  > src/etc/iked/pubkeys/ufqdn/"$lhn@ca.$PDN"
-		cp "src/etc/iked/pubkeys/ufqdn/$lhn@ca.$PDN" "src/etc/iked/pubkeys/fqdn/${publichost}" 
+		cp "src/etc/iked/pubkeys/ufqdn/$lhn@ca.$PDN" "src/etc/iked/pubkeys/fqdn/${publichost}"
 		rm -rf $tmpdir
 		echo -e "$lhn@ca.$PDN created please update repository and all the others Openbsd hosts"
 	;;
@@ -1754,6 +1755,18 @@ case "${OPT}" in
 		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper commit" >> $edgescript
 		echo "/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper save" >> $edgescript
 		cat $edgescript
+	;;
+	"-NSD")
+		password=$(systemd-ask-password "Enter TXT record password: ")
+		openbsd=$(dig TXT openbsd."${LDN}" +short | sed "s|\"||g" | openssl enc -e -A -des3 -base64 -pass pass:"${password}" -pbkdf2)
+		mikrotik=$(dig TXT mikrotik."${LDN}" +short | sed "s|\"||g" | openssl enc -e -A -des3 -base64 -pass pass:"${password}" -pbkdf2)
+		edgeos=$(dig TXT edgeos."${LDN}" +short | sed "s|\"||g" | openssl enc -e -A -des3 -base64 -pass pass:"${password}" -pbkdf2)
+		lte=$(dig TXT lte."${LDN}" +short | sed "s|\"||g" | openssl enc -e -A -des3 -base64 -pass pass:"${password}" -pbkdf2)
+		echo "openbsd                  IN TXT    \"${openbsd}\""
+		echo "mikrotik                 IN TXT    \"${mikrotik}\""
+		echo "edgeos                   IN TXT    \"${edgeos}\""
+		echo "lte                      IN TXT    \"${lte}\""
+
 	;;
 esac
 

@@ -1318,7 +1318,9 @@ function configuration {
 				vpnc_host=$(dig -x $vpnc_ip +short @8.8.8.8 | sed 's/.$//')
 				if [[ "${vpnc_host}" == *rima-tde.net ]]; then
 					 vpnc_host="spr.telecomlobby.com"
-				 fi
+			 	fi
+				vpnc_phn=$(echo "${vpnc_host}" | sed "s|${domainname}||")
+				poplocalhostname="$(dig ipsec20591."${domainname}" TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d' | grep -w "${vpnc_phn}" | cut -d : -f2)"
 				vpnc_ips[i]="$vpnc_ip"
 				vpnc_hosts[i]="$vpnc_host"
 				if [ ! -d "/tmp/$vpnc_host" ]; then
@@ -1349,12 +1351,15 @@ function configuration {
 						cp $basedir/src/mikrotik/ipsec.rsc "/tmp/$vpnc_host/$vpnc_host.rsc"
 						sed -i "s/\/POPIP\//$vpnc_ip/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
 						sed -i "s/\/POP\//$vpnc_host/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
+						sed -i "s/\/POPLOCALHOSTNAME\//$poplocalhostname/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
 					;;
 					*Debian*)
 						install -o root -g wheel -m 0640 $basedir/src/etc/iked.conf.edgeos "/etc/iked.conf.$vpnc_host"
 						install -o root -g wheel -m 0640 $basedir/src/etc/iked.conf.edgeos "/etc/iked.conf.$vpnc_host"
 						cp $basedir/src/edgeos/ipsec.conf "/tmp/$vpnc_host/"
-						cp "/etc/iked/certs/local.crt" "/tmp/$vpnc_host/ $publichost.crt"
+						sed -i "s/\/POPLOCALHOSTNAME\//$poplocalhostname/g" "/etc/iked.conf.$vpnc_host"
+						sed -i "s/\/POPLOCALHOSTNAME\//$poplocalhostname/g" "/tmp/$vpnc_host/ipsec.conf"
+						cp "/etc/iked/certs/local.crt" "/tmp/$vpnc_host/$publichost.crt"
 					;;
 					*OpenSSH_8.8*)
 						popasn1=$(openssl x509 -in /etc/iked/certs/$vpnc_host.crt -noout -text | grep Subject: | sed "s|Subject: ||" | sed "s| ||g" | sed "s|,|/|g")
@@ -1447,16 +1452,16 @@ function configuration {
 					sed -i "s/\/HOSTNAME\//$hostname/g" "/tmp/$pophost/$pophost.rsc"
 					sed -i "s/\/PUBLICIP\//$publicip/g" "/tmp/$pophost/$pophost.rsc"
 				elif grep -q "ecp256" $file; then
-					cp $basedir/src/edgeos/scripts/ES-SRCID-_netwatch.sh "/tmp/$pophost/ES-${publichostname}_netwatch.sh"
-					cp $basedir/src/edgeos/scripts/ES-SRCID--updown.sh "/tmp/$pophost/ES-$publichostname-updown.sh"
+					#cp $basedir/src/edgeos/scripts/ES-SRCID-_netwatch.sh "/tmp/$pophost/ES-${publichostname}_netwatch.sh"
+					#cp $basedir/src/edgeos/scripts/ES-SRCID--updown.sh "/tmp/$pophost/ES-$publichostname-updown.sh"
 					#edgeos_script "${lasttun}" "${routeridlast}"
 					cp $basedir/src/edgeos/gre.sh "/tmp/$pophost/"
-					sed -i "s/\/GREPOPIP\//"${grecursubnet}".$grepopip/g" "/tmp/$pophost/ES-${publichostname}_netwatch.sh"
+					#sed -i "s/\/GREPOPIP\//"${grecursubnet}".$grepopip/g" "/tmp/$pophost/ES-${publichostname}_netwatch.sh"
 					sed -i "s/\/GREPOPIP\//"${grecursubnet}".$grepopip/g" "/tmp/$pophost/gre.sh"
-					sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" "/tmp/$pophost/ES-${publichostname}_netwatch.sh"
-					sed -i "s/\/TUN\//tun$lasttun/g" "/tmp/$pophost/ES-${publichostname}_netwatch.sh"
+					#sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" "/tmp/$pophost/ES-${publichostname}_netwatch.sh"
+					#sed -i "s/\/TUN\//tun$lasttun/g" "/tmp/$pophost/ES-${publichostname}_netwatch.sh"
 					sed -i "s/\/TUN\//tun$lasttun/g" "/tmp/$pophost/gre.sh"
-					sed -i "s/\/TUN\//tun$lasttun/g" "/tmp/$pophost/ES-$publichostname-updown.sh"
+					#sed -i "s/\/TUN\//tun$lasttun/g" "/tmp/$pophost/ES-$publichostname-updown.sh"
 					sed -i "s/\/PUBLICHOST\//$publichost/g" "/tmp/$pophost/gre.sh"
 					sed -i "s/\/PUBLICIP\//$publicip/g" "/tmp/$pophost/gre.sh"
 					sed -i "s/\/ROUTERIDLAST\//$routeridlast/g" "/tmp/$pophost/gre.sh"
