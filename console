@@ -45,7 +45,7 @@ function menu () {
 			echo -e $0 "-I ${LDN} -SO [workstation] -U   -> update the workstation's user EdDSA certificate [o]"
 			echo -e $0 "-I ${LDN} -SO [workstation] -CI  -> custom installation templates [o]"
 			echo -e $0 "-I ${LDN} -SO [workstation] -K   -> new IKED pk12 archive [o]"
-			echo -e $0 "-I ${LDN} -SO [workstation] -NDS   -> encrypt TXT DNS record [o]"
+			echo -e $0 "-I ${LDN} -SO [workstation] -NDS -> encrypt TXT DNS record [o]"
 			echo
 		;;
 	esac
