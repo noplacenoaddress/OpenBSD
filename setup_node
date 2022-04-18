@@ -1400,7 +1400,8 @@ function configuration {
 			i=0
 			for file in $(find /etc -maxdepth 1 -name "iked.conf.*") ; do
 				index=$(cat $file | tail -n 1 | awk '{print $4}' | sed 's/enc//')
-				[[ "${index}" = [0-9] ]] && index=$(cat $file | tail -n 1 | awk '{print $5}' | sed 's/enc//')
+				[[ "${index}" = [0-9] ]] || index=$(cat $file | tail -n 1 | awk '{print $5}' | sed 's/enc//')
+				echo "${index}"
 				install -o root -g wheel -m 0640 "$basedir/src/etc/hostname.gre-X-" "/etc/hostname.gre$index"
 				pophost=$(echo $file | sed "s/\/etc\/iked.conf.//")
 				sed -i "s/\/POPHOST\//$pophost/g" "/etc/hostname.gre$index"
