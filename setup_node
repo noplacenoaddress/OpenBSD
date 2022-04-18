@@ -1489,7 +1489,7 @@ function configuration {
 			      \n gre18994.$domainname TXT to $lasttun \n"
 	      	custom "/etc" "1"
 			sleep 2
-			for file in /etc/hostname.gre*[0-9] ; do
+				for file in /etc/hostname.gre*[0-9] ; do
 				sh /etc/netstart $(echo $file | awk -F. '{print $2}')
 			done
 		;;
