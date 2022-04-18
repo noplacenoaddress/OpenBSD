@@ -1456,7 +1456,7 @@ function configuration {
 				elif grep -q "ecp256" $file; then
 					#cp $basedir/src/edgeos/scripts/ES-SRCID-_netwatch.sh "/tmp/$pophost/ES-${publichostname}_netwatch.sh"
 					#cp $basedir/src/edgeos/scripts/ES-SRCID--updown.sh "/tmp/$pophost/ES-$publichostname-updown.sh"
-					edgeos_script "${lasttun}" "${routeridlast}"
+					#edgeos_script "${lasttun}" "${routeridlast}"
 					cp $basedir/src/edgeos/gre.sh "/tmp/$pophost/"
 					#sed -i "s/\/GREPOPIP\//"${grecursubnet}".$grepopip/g" "/tmp/$pophost/ES-${publichostname}_netwatch.sh"
 					sed -i "s/\/GREPOPIP\//"${grecursubnet}".$grepopip/g" "/tmp/$pophost/gre.sh"
