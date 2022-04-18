@@ -454,7 +454,7 @@ function upgrade {
 				git clone https://github.com/redeltaglio/OpenBSD-private-CA.git
 				chown -R taglio:wheel OpenBSD-private-CA/
 				cd OpenBSD-private-CA
-				sh setup_host
+				ksh setup_host
 			else
 				cd "$basedir/../OpenBSD-private-CA"
 				git pull
