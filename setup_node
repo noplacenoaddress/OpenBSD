@@ -461,9 +461,9 @@ function upgrade {
 				cd ..
 				chown -R taglio:wheel OpenBSD-private-CA/
 				cd OpenBSD-private-CA
-				sh setup_host
+				ksh setup_host
 			fi
-			rm /etc/ssh/principals/taglio
+			[[ -e "/etc/ssh/principals/taglio" ]] && rm -rf /etc/ssh/principals/taglio
 			echo "wheel" > /etc/ssh/principals/taglio
 		;;
 		"ipsec")
