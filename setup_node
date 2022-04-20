@@ -29,6 +29,7 @@
 #pleroma: https://docs-develop.pleroma.social/backend/
 #pleroma: https://umbriel.fr/blog/Pleroma_installation_report.html
 # https://github.com/banesullivan/localtileserver
+# https://zx2c4.com/ip
 
 #####
 #
@@ -1699,6 +1700,24 @@ function configuration {
 				config_pdns || \
 					echo "PowerDNS is running..." ; exit 1
 		;;
+		"wireguard")
+			ifconfig wg > /dev/null 2>&1
+			[[ $? -eq 1 ]] && (
+				let i=0
+			)
+			[[ $? -eq 0 ]] && (
+				let i=0
+				for x in $(ifconfig wg | grep wg*[0-9] | cut -d : -f1 | sed "s|wg||g"); do
+					[[ $x -gt $i ]] && i=$x
+				done
+				((i+=1))
+
+			)
+			ifconfig wg$i create wgport 13133 wgkey `openssl rand -base64 32` rdomain 13$i
+			pubkey=$(ifconfig wg$i | cut -d ' ' -f2)
+			ifconfig wg$i wgpeer $pubkey wgendpoint 127.0.0.1 13133 wgaip 192.168.13$i.2/32
+ 		;;
+
 	esac
 }
 
@@ -2248,6 +2267,7 @@ case $1 in
 				\nhttpd \
 				\nsmtpd  \
 				\nimapd   \
+				\nwireguard \
 				\n"
 			exit 1
 		fi
@@ -2262,6 +2282,10 @@ case $1 in
 			"smtpd")
 				echo "configuring smtpd"
 				configuration "smtpd"
+			;;
+			"wireguard")
+				echo "configuring wireguard"
+				configuration "wireguard"
 			;;
 		esac
 
