@@ -151,20 +151,27 @@ case "$1" in
 	;;
 	"-L")
 		#sleep 60s
-		n=3
-		#open_sem $n
+		n=2
+		open_sem $n
 		while true
 		do
-			for tun in $(/sbin/ip link | grep tun | grep -v tun[7,8] | awk '{print $2}' | sed "s|@.*||g"); do
-                popri=$(/sbin/ip route | grep "${tun}" | grep 192.168.13 | awk '{print $1}')
-                [[ "nexthop" == $(/sbin/ip route | grep -w "${popri}" -A 1 | tail -n 1 | awk '{print $1}') ]] && (
-                    for group in "${groups[@]}"; do
-                        /sbin/ip route ls table "${group}" | grep "${tun}" &> /dev/null
-                        [ $? -eq 0 ] && /sbin/ip route del table "${group}" default dev "${tun}"
-                    done
-                )
-				./timeout -s9 25 nice -n 20 chrt -i 0 ionice -c3 /config/routectrl/route_ctrl.sh -T "${tun}"
-			done
+            for tunid in $(/sbin/ip link | grep tun | grep -v tun[7,8] | awk '{print $2}' | sed "s|@.*||g" | sed "s|tun||g"); do
+        		for rid in "${rids[@]}"; do
+        			[ "${tunid}" = $(echo $rid | cut -d \; -f2) ] && (
+        				/sbin/ip route | grep 192.168.13.$(echo $rid | cut -d \; -f1) | grep tun$tunid
+        				[ $? -eq 1 ] && (
+        					for group in "${groups[@]}"; do
+        						/sbin/ip route ls table "${group}" | grep tun$tunid
+        						[ $? -eq 0 ] && /sbin/ip route del table "${group}" default dev tun$tunid
+                            done
+        				)
+        			)
+        		done
+
+        	done
+            for tunid in $(/sbin/ip link | grep tun | grep -v tun[7,8] | awk '{print $2}' | sed "s|@.*||g" | sed "s|tun||g"); do
+                [[ $(ps axu | grep timeout | grep tun$tunid | wc -l) == 0 ]] && ./timeout -s9 25 /config/routectrl/route_ctrl.sh -T tun$tunid
+            done
 		done
 	;;
 	*)

@@ -1714,7 +1714,7 @@ function configuration {
 
 			)
 			ifconfig wg$i create wgport 13133 wgkey `openssl rand -base64 32` rdomain 13$i
-			pubkey=$(ifconfig wg$i | cut -d ' ' -f2)
+			pubkey=$(ifconfig wg$i | grep wgpubkey | cut -d ' ' -f2)
 			ifconfig wg$i wgpeer $pubkey wgendpoint 127.0.0.1 13133 wgaip 192.168.13$i.2/32
  		;;
 
