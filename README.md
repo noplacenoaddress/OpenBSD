@@ -67,6 +67,7 @@ Open the `KVM` web console and the installation process of OpenBSD will start. I
 # dhclient vio0
 # cd /tmp && ftp -o install.conf https://bit.ly/3mEYdAo #static ip
 # cd /tmp && ftp -o install.conf https://bit.ly/3vmeL4X #dynamic ip
+# cd /tmp && ftp -o install.conf https://bit.ly/3xHXtBX # 7.1
 # install -af /tmp/install.conf
 # reboot
 ```
