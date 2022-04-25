@@ -8,7 +8,7 @@ while ((counter<5)); do
   for ddns in $(cat /etc/pf.conf.table.lte | grep mynetname.net); do
       oldip=$(/usr/bin/dig A "${ddns}" +short)
       (( $(/sbin/pfctl -t lte -T show | grep -wc "${oldip}") == 0 )) && (
-        /usr/sbin/ikectl reload
+        [[ "${1}" = "iked" ]] && /usr/sbin/ikectl reload
         /sbin/pfctl -t lte -T kill
         /sbin/pfctl -t lte -T add -f /etc/pf.conf.table.lte
       )
