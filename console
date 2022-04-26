@@ -110,7 +110,7 @@ fi
 
 
 case "${SO}" in
-	openbsd|edgeos|mikrotik|raspi)
+	openbsd|edgeos|mikrotik|raspi|lte)
 		dnsquery wa "${SO}"
 	;;
 	"ALL")
@@ -809,7 +809,12 @@ case "${OPT}" in
 		read -p "Local or remote configuration?: [local|remote|next] " ctrl
 		case "${ctrl}" in
 			"local")
+				read -p "In what world sector do you plan to install the LTE CPE?: [12|34|56] " geo
+				declare -a ps
+				dnsquery wa "openbsd"
+				latencyquery wa ps
 				ssh-keygen -f "${HOME}/.ssh/known_hosts" -R "192.168.88.1"
+
 				cat "src/mikrotik/LTE/lte_basic.rsc" > "${tf}"
 				read -p "Type the LTE router hostname: " hostname
 				sed -i "s|/HOSTNAME/|${hostname}|g" "${tf}"
