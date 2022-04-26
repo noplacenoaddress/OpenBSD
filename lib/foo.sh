@@ -55,6 +55,7 @@ function dnsquery () {
                     dig raspi."${LDN}" TXT +short >> "${r}"
 					dig mikrotik."${LDN}" TXT +short >> "${r}"
 					dig edgeos."${LDN}" TXT +short >> "${r}"
+					dig lte."${LDN}" TXT +short >> "${r}"
 					for lh in $(cat "${r}" | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
 						arr+=("${lh}")
 					done
@@ -90,6 +91,7 @@ function dnsquery () {
                     echo "raspi "$(dig raspi."${LDN}" TXT +short| sed "s|;| |g") >> "${r}"
                     echo "mikrotik "$(dig mikrotik."${LDN}" TXT +short| sed "s|;| |g") >> "${r}"
                     echo "edgeos "$(dig edgeos."${LDN}" TXT +short| sed "s|;| |g") >> "${r}"
+					echo "lte "$(dig edgeos."${LDN}" TXT +short| sed "s|;| |g") >> "${r}"
                     sed -i "s| \"$|\"|g" "${r}"
                     grep "${2}" "${r}" | cut -d " " -f1
                 ;;
@@ -102,6 +104,7 @@ function dnsquery () {
 					#for i in $(dig raspi."${LDN}" TXT +short | sed "s|\"||g" | tr ";" "\n" | sed "/^$/d"); do ( echo "raspi ${i} $(dnsquery -R ${i})" >> "${r}") ; done
 					for i in $(dig mikrotik."${LDN}" TXT +short | sed "s|\"||g" | tr ";" "\n" | sed "/^$/d"); do ( echo "mikrotik ${i} $(dnsquery -R ${i})" >> "${r}") ; done
 					for i in $(dig edgeos."${LDN}" TXT +short | sed "s|\"||g" | tr ";" "\n" | sed "/^$/d"); do ( echo "edgeos ${i} $(dnsquery -R ${i})" >> "${r}") ; done
+					for i in $(dig lte."${LDN}" TXT +short | sed "s|\"||g" | tr ";" "\n" | sed "/^$/d"); do ( echo "edgeos ${i} $(dnsquery -R ${i})" >> "${r}") ; done
 					[[ "${3}" == $(grep "${2}" "${r}" | awk '{print $1}') ]] && return 0 || return 1
 			esac
 		;;
@@ -111,6 +114,42 @@ function dnsquery () {
 	esac
 }
 
+function geoquery() {
+	loc=$(curl -s "http://ipinfo.io/${1}" | grep loc | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g")
+	long=$(echo $loc | cut -d , -f2 | cut -d . -f1)
+	lat=$(echo $loc | cut -d , -f1 | cut -d . -f1)
+	[[ $long -ge -180 && $long -le -60 && $lat -ge 0 ]] && group=12
+	[[ $long -ge -60 && $long -le 60 && $lat -ge 0 ]] && group=34
+	[[ $long -ge 60 && $long -le 180 && $lat -ge 0 ]] && group=56
+	[[ $long -ge -180 && $long -le -60 && $lat -le 0 ]] && group=12
+	[[ $long -ge -60 && $long -le 60 && $lat -le 0 ]] && group=34
+	[[ $long -ge 60 && $long -le 180 && $lat -le 0 ]] && group=56
+	echo "${group}"
+}
+
+function latencyquery() {
+	declare -n hosts="${1}"
+	declare -n latency="${2}"
+
+	for (( j=0; j<${#hosts[@]}; j++ )); do
+		r=$(ping -qc1 "${hosts[j]}"."${LDN}" 2>&1 | awk -F'/' 'END{ print (/^rtt/? "OK "$5"":"FAIL") }')
+		[[ "${r}" == "FAIL" ]] && latency+=("${r}") || latency+=("$(echo "${r}" | cut -d ' ' -f2 | cut -d . -f1)")
+	done
+}
+
+function bestlatencyid() {
+	declare -n tmp="${1}"
+	for (( j=0; j<${#tmp[@]}; j++ )); do
+		(( j == 0  )) && let temp="${tmp[j]}" || (
+			(( temp <= "${tmp[j]}" )) || temp="${tmp[j]}"
+		)
+	done
+	for i in "${!tmp[@]}"; do
+		if [[ "${tmp[$i]}" = "${temp}" ]]; then
+			echo "${i}";
+		fi
+	done
+}
 
 function strip_ansi() {
     declare tmp esc tpa re
