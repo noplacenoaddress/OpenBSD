@@ -18,6 +18,34 @@ I'm an addicted of privacy and security and I'm very tired about the modern slav
 
 #### VPS election
 
+```bash
+taglio@trimurti:~/Work/telecom.lobby/OpenBSD$ ssh ganesha.telecom.lobby
+    ____                 __     ____       __                __
+   / __ \___  ________  / /_   / __ \___  / /_  ____  ____  / /_
+  / /_/ / _ \/ ___/ _ \/ __/  / /_/ / _ \/ __ \/ __ \/ __ \/ __/
+ / _, _/  __(__  )  __/ /_   / _, _/  __/ /_/ / /_/ / /_/ / /_
+/_/ |_|\___/____/\___/\__/  /_/ |_|\___/_.___/\____/\____/\__/
+
+OpenBSD 7.1 (GENERIC) #443: Mon Apr 11 17:55:15 MDT 2022
+    deraadt@amd64.openbsd.org:/usr/src/sys/arch/amd64/compile/GENERIC
+real mem = 1056813056 (1007MB)
+avail mem = 1007656960 (960MB)
+ 4:38PM  up 6 days,  6:36, 2 users, load averages: 0.13, 0.14, 0.10
+ID              Pri State        DeadTime Address         Iface     Uptime
+192.168.13.14   1   FULL/P2P     00:00:35 10.10.9.93      gre15     10:28:52
+192.168.13.55   1   FULL/P2P     00:00:34 10.10.10.61     gre9      04:24:00
+192.168.13.61   1   FULL/P2P     00:00:38 10.10.10.161    gre6      14:29:21
+192.168.13.81   1   FULL/P2P     00:00:33 10.10.10.217    gre3      13:06:45
+192.168.13.1    1   FULL/P2P     00:00:30 10.10.10.225    gre2      01:09:52
+192.168.13.59   1   FULL/P2P     00:00:33 10.10.10.209    gre4      09:15:13
+192.168.13.34   1   FULL/P2P     00:00:38 10.10.10.230    gre1      14:40:49
+May a diseased yak take a liking to your sister.
+taglio@ganesha:/home/taglio$ 
+
+```
+
+
+
 First of all you've got to rent a VPS in one service provider, there are a lot on Internet a great resource to find the correct one is this website:
 
 - [Low End Box - Cheap VPS, Dedicated Servers and Hosting Deals](https://lowendbox.com/)
@@ -2104,3 +2132,4 @@ Remember that you can use also iperf or others tools to size it. Next you can si
 #### OSPF timings
 
 ![](https://raw.githubusercontent.com/redeltaglio/OpenBSD/master/img/ospf-timers-guide-table.webp)
+
