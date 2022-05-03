@@ -3,6 +3,68 @@
 #	$Telecomlobby: setup_node,v 0.1 11/3/2021 21:01:04 taglio$
 #
 #unbound: https://blog.c6h12o6.org/post/unbound-dnssec-dns-over-tls/
+<<<<<<< Updated upstream
+#sshd: https:/github.com/vedetta-com/vedetta/blob/master/src/usr/local/share/doc/vedetta/OpenSSH_Principals.md	
+=======
+<<<<<<< HEAD
+#sshd: https:/github.com/vedetta-com/vedetta/blob/master/$basedir/src/usr/local/share/doc/vedetta/OpenSSH_Principals.md
+#smptd: https://github.com/vedetta-com/caesonia
+#smtpd: https://www.vultr.com/docs/an-openbsd-e-mail-server-using-opensmtpd-dovecot-rspamd-and-rainloop
+#smtpd: https://prefetch.eu/blog/2020/email-server/
+#smtpd: https://poolp.org/posts/2019-09-14/setting-up-a-mail-server-with-opensmtpd-dovecot-and-rspamd/
+#smtpd: https://unixsheikh.com/tutorials/arch-linux-mail-server-tutorial-part-2-opensmtpd-dovecot-dkimproxy-and-lets-encrypt.html
+#smtpd: https://wiki.archlinux.org/title/OpenSMTPD
+#smtpd: https://git.sr.ht/~guidocella/personal-email-server-guide
+#nsd and powerdns: https://github.com/vedetta-com/dithematic
+#geoip and powerdns: https://doc.powerdns.com/authoritative/backends/geoip.html
+#powerdns: https://github.com/PowerDNS/pdns
+#geodns: https://jpmens.net/2015/11/12/geodns-with-powerdns-geoip-back-end/
+#geodns: https://umbriel.fr/blog/Building_a_DIY_CDN:_traffic_distribution.html
+#ospf: NBMA design https://www.blackhole-networks.com/OSPF_overload/
+#ospf: https://www.blackhole-networks.com/OSPF
+#dnssec: https://help.dreamhost.com/hc/en-us/articles/219539467
+#dnssec: https://github.com/redeltaglio/OpenBSD/raw/master/pdf/dnssec-lacnic-sep2016.handouts.pdf
+#dnssec: https://dnsviz.net/
+#nsd: https://zonemaster.net/domain_check
+#nsd: https://dnschecker.org/
+#xl2tpd client: https://findelabs.com/post/connecting-to-openbsd-l2tp-ipsec-vpn/
+#audit: https://cisofy.com/lynis/
+#tricks: https://ioctl.uk/2018/11/openbsd-hardening-tricks/
+#pleroma: https://docs-develop.pleroma.social/backend/
+#pleroma: https://umbriel.fr/blog/Pleroma_installation_report.html
+# https://github.com/banesullivan/localtileserver
+# https://zx2c4.com/ip
+>>>>>>> Stashed changes
+
+
+set -o errexit
+set -o nounset
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin:/root/Bin
+UID=$(id -u)
+
+if [[ $UID -ne 0 ]]; then
+	print $0 "you've got to run $0 as UID=0 \n"
+	exit 1
+fi
+<<<<<<< Updated upstream
+=======
+#if [[ $_ == "/bin/sh" ]]; then
+	#print $0 "you've got to run $0 with ksh command interpreter or directly\n"
+	#exit 1
+#fi
+if [[ $# -eq 0 ]]; then
+	print $0 "have to be used with the following options \
+			\n \
+			\n-I  -> install \
+			\n-U  -> upgrade \
+			\n-D  -> daemons \
+			\n-A  -> administrate \
+			\n"
+
+	exit 1
+fi
+=======
 #sshd: https:/github.com/vedetta-com/vedetta/blob/master/src/usr/local/share/doc/vedetta/OpenSSH_Principals.md	
 
 
@@ -16,11 +78,14 @@ if [[ $UID -ne 0 ]]; then
 	print $0 "you've got to run $0 as UID=0 \n"
 	exit 1
 fi
+>>>>>>> master
+>>>>>>> Stashed changes
 function error_exit {
     echo "${app}: ${1:-"Unknown Error"}" 1>&2
     exit 1
 }
 
+<<<<<<< Updated upstream
 app=$(basename $0)
 backups="/root/Backups"
 publicip=$(ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
@@ -31,37 +96,928 @@ dyndns=$(host -t a cat-01.hopto.org | cut -d ' ' -f4)
 basedir=$(pwd)
 tmpdir=$(mktemp -d)
 
+=======
+<<<<<<< HEAD
+function handler {
+
+}
+=======
+app=$(basename $0)
+backups="/root/Backups"
+publicip=$(ifconfig egress | grep inet |grep -v inet6 | cut -d ' ' -f2)
+publichost=$(dig -x $publicip +short @8.8.8.8 | sed 's/.$//')
+defaultv4router=$(route -n show | awk '/default/{print $2}' | head -n 1)
+macdefaultv4router=$(arp -an | grep $defaultv4router |  awk '{print $2}')
+dyndns=$(host -t a cat-01.hopto.org | cut -d ' ' -f4)
+basedir=$(pwd)
+tmpdir=$(mktemp -d)
+
+>>>>>>> master
+>>>>>>> Stashed changes
 
 function pidof {
 	ps axc -o pid,command | awk "\$2~/^`echo $1`\$/ {print \$1}"
 }
 
 function pkg {
+<<<<<<< Updated upstream
 	phase=$1
+=======
+<<<<<<< HEAD
+	typeset var phase=$1
+=======
+	phase=$1
+>>>>>>> master
+>>>>>>> Stashed changes
 
 	case $phase in
 		"shell")
 			pkg_add colorls nano wget fping iperf uptimed oidentd sqlite3 \
+<<<<<<< Updated upstream
 				nmap tor ipcalc rspamd-- gnupg--
 			;;
+=======
+<<<<<<< HEAD
+				nmap ipcalc arpd
+		;;
+		"smtpd")
+			pkg_add opensmtpd-filter-rspamd \
+				dovecot dovecot-pigeonhole gnupg-- rspamd--
+		;;
+		"pdns")
+			pkg_add ldns-utils drill validns libyaml yaml-cpp luajit libmaxminddb
+		;;
+		"tor")
+			pkg_add tor privoxy
+		;;
+		"l2tp")
+			pkg_add x2ltpd
+		;;
+		"compile")
+			autoconfver=$(pkg_info -Q autoconf | grep -e "^autoconf-[0-9]" | tail -n 1 | sed "s| .*$||")
+			#automakever=$(pkg_info -Q automake | grep -e "^automake-[0-9]" | tail -n 1 | sed "s| .*$||")
+			automakever="automake-1.16.3"
+			pkg_add "${autoconfver}" "${automakever}" gmake-- bison ragel libtool boost
+			if [[ ! -e "/etc/profile" ]]; then
+				echo AUTOCONF_VERSION="$(echo "${autoconfver}" | sed "s|^autoconf-||")" >> "/etc/profile"
+				echo AUTOMAKE_VERSION="$(echo "${automakever}" | sed "s|^automake-||" |  sed "s|.[0-9]$||")" >> "/etc/profile"
+				echo "export AUTOCONF_VERSION AUTOMAKE_VERSION" >> "/etc/profile"
+			fi
+			AUTOCONF_VERSION="$(echo "${autoconfver}" | sed "s|^autoconf-||")"
+			AUTOMAKE_VERSION="$(echo "${automakever}" | sed "s|^automake-||" | sed "s|.[0-9]p[0-9].*$||")"
+			export AUTOCONF_VERSION AUTOMAKE_VERSION
+		;;
+=======
+				nmap tor ipcalc rspamd-- gnupg--
+			;;
+>>>>>>> master
+>>>>>>> Stashed changes
 	esac
 }
 
 function cleanold {
+<<<<<<< Updated upstream
 	directory=$1
 	for file in $directory*.old; do
 		if [[ -e "$file" ]]; then
 			mv $file $backups
+=======
+<<<<<<< HEAD
+	typeset var directory=$1
+	for file in $directory*.old; do
+		if [[ -e "$file" ]]; then
+			mv $file $BACKUPS
+=======
+	directory=$1
+	for file in $directory*.old; do
+		if [[ -e "$file" ]]; then
+			mv $file $backups
+>>>>>>> master
+>>>>>>> Stashed changes
 		fi
 	done
 	for file in $directory.*.old; do
 		if [[ -e "$file" ]]; then
+<<<<<<< Updated upstream
 			mv $file $backups
 		fi	
+=======
+<<<<<<< HEAD
+			mv $file $BACKUPS
+		fi
+=======
+			mv $file $backups
+		fi	
+>>>>>>> master
+>>>>>>> Stashed changes
 	done
 }
 
 function custom {
+<<<<<<< Updated upstream
+	for file in $(find /etc -type f -maxdepth 1); do
+		sed -i "s/\/HOSTNAME\//$hostname/g" $file
+		sed -i "s/\/LANDOMAINNAME\//$landomainname/g" $file
+		sed -i "s/\/ROUTERID\//$routerid/g" $file
+		sed -i "s/\/PUBLICHOST\//$publichost/g" $file
+		sed -i "s/\/DOMAINNAME\//$domainname/g" $file
+		sed -i "s/\/SRCID\//$srcid/g" $file
+		sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" $file
+		sed -i "s/\/PUBLICIP\//$publicip/g" $file
+		sed -i "s/\/DYNDNS\//$dyndns/g" $file
+=======
+<<<<<<< HEAD
+	[[ $(ifconfig "${egressinterface}" | grep inet6 | grep -v fe80 | grep -v temporary) != "" ]] && \
+		ipv6egress=$(ifconfig "${egressinterface}" | grep inet6 | grep -v fe80 | grep -v temporary| awk '{print $2}')
+	for file in $(find $1 -type f -maxdepth $2); do
+		(: "${hostname?}") 2>/dev/null && sed -i "s/\/HOSTNAME\//$hostname/g" $file
+		(: "${landomainname?}") 2>/dev/null && sed -i "s/\/LANDOMAINNAME\//$landomainname/g" $file
+		(: "${routerid?}") 2>/dev/null && sed -i "s/\/ROUTERID\//$routerid/g" $file
+		(: "${publichost?}") 2>/dev/null && sed -i "s/\/PUBLICHOST\//$publichost/g" $file
+		(: "${domainname?}") 2>/dev/null && sed -i "s/\/DOMAINNAME\//$domainname/g" $file
+		(: "${srcid?}") 2>/dev/null && sed -i "s/\/SRCID\//$srcid/g" $file
+		(: "${publichostname?}") 2>/dev/null && sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" $file
+		(: "${publicip?}") 2>/dev/null && sed -i "s/\/PUBLICIP\//$publicip/g" $file
+		(: "${dyndns?}") 2>/dev/null && sed -i "s/\/DYNDNS\//$dyndns/g" $file
+		(: "${publicnetmask?}") 2>/dev/null && sed -i "s/\/PUBLICNETMASK\//$publicnetmask/g" $file
+		(: "${publicbcast?}") 2>/dev/null && sed -i "s/\/PUBLICBCAST\//$publicbcast/g" $file
+		(: "${ipv6egress?}") 2>/dev/null && sed -i "s/\/PUBV6\//${ipv6egress}/g" $file
+		(: "${ipv6prefix?}") 2>/dev/null && sed -i "s/\/PREFIX\//${ipv6prefix}/g" $file
+		(: "${localipv6?}") 2>/dev/null && sed -i "s/\/LOCALV6\//${localipv6}/g" $file
+		(: "${localprefix?}") 2>/dev/null && sed -i "s/\/LOCALPREFIX\//${localprefix}/g" $file
+		(: "${defaultv4router?}") 2>/dev/null && sed -i "s/\/ROUTEV4\//${defaultv4router}/g" $file
+		(: "${ipv6defrouter?}") 2>/dev/null && sed -i "s/\/ROUTEV6\//${ipv6defrouter}/g" $file
+		(: "${longdate?}") 2>/dev/null && sed -i "s/\/LONGDATE\//${longdate}/g" $file
+		(: "${egressinterface?}") 2>/dev/null && sed -i "s/\/EGRESS\//${egressinterface}/g" $file
+>>>>>>> Stashed changes
+	done
+	for file in $(find /etc/ssh -type f -maxdepth 2); do
+		sed -i "s/\/HOSTNAME\//$hostname/g" $file
+		sed -i "s/\/LANDOMAINNAME\//$landomainname/g" $file
+		sed -i "s/\/ROUTERID\//$routerid/g" $file
+		sed -i "s/\/PUBLICHOST\//$publichost/g" $file
+		sed -i "s/\/DOMAINNAME\//$domainname/g" $file
+		sed -i "s/\/SRCID\//$srcid/g" $file
+		sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" $file
+		sed -i "s/\/PUBLICIP\//$publicip/g" $file
+		sed -i "s/\/DYNDNS\//$dyndns/g" $file
+	done
+	for file in $(find /var/unbound /var/nsd /tmp -type f); do
+		sed -i "s/\/HOSTNAME\//$hostname/g" $file
+		sed -i "s/\/LANDOMAINNAME\//$landomainname/g" $file
+		sed -i "s/\/ROUTERID\//$routerid/g" $file
+		sed -i "s/\/PUBLICHOST\//$publichost/g" $file
+		sed -i "s/\/DOMAINNAME\//$domainname/g" $file
+		sed -i "s/\/SRCID\//$srcid/g" $file
+		sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" $file
+		sed -i "s/\/PUBLICIP\//$publicip/g" $file
+		sed -i "s/\/DYNDNS\//$dyndns/g" $file
+	done
+}
+
+<<<<<<< Updated upstream
+=======
+function backup {
+	CURRENTBACKUP="$BACKUPS/$datarelease"
+	mkdir -p "$CURRENTBACKUP/$1/"
+	case $1 in
+		"static")
+
+			cp -p /etc/{hostname.$egressinterface,mygate} "$CURRENTBACKUP/$1/"
+		;;
+		"basic")
+			mkdir -p "$CURRENTBACKUP/$1/{$uidna,root,etc}"
+			for file in $(find "/home/$uidna" -type f -maxdepth 1 -name ".*"); do
+				cp -p $file "$CURRENTBACKUP/$1/$uidna"
+			done
+			for file in $(find "/root" -type f -maxdepth 1 -name ".*"); do
+				cp -p $file "$CURRENTBACKUP/$1/root"
+			done
+
+			cp -p /etc/{dhclient.conf,resolv.conf.tail,doas.conf,myname,sysctl.conf,hostname.vether0,daily.local,rc.local} "$CURRENTBACKUP/$1/etc"
+		;;
+		"users")
+			for file in $(find "/home/$uidna/Bin" -type f -maxdepth 1 ); do
+				cp -p $file "$CURRENTBACKUP/$1"
+			done
+		;;
+		"scripts")
+			for file in $(find "/root/Bin" -type f -maxdepth 1 ); do
+				cp -p $file "$CURRENTBACKUP/$1"
+			done
+		;;
+		"unbound")
+			mkdir -p "$CURRENTBACKUP/$1/{etc,db}"
+			for file in $(find "/var/unbound/etc" -type f -maxdepth 1); do
+				cp -p $file "$CURRENTBACKUP/$1/etc"
+			done
+			for file in $(find "/var/unbound/db" -type f -maxdepth 1); do
+				cp -p $file "$CURRENTBACKUP/$1/db"
+			done
+		;;
+		"ssh")
+			for file in $(find "/etc/ssh" -type f -maxdepth 2); do
+				cp -p $file "$CURRENTBACKUP/$1/"
+			done
+		;;
+		"ipsec")
+			cp -Rp /etc/iked/  "$CURRENTBACKUP/$1/"
+			cp -p /etc/{iked.conf,iked.conf.*} "$CURRENTBACKUP/$1/"
+		;;
+		"gre")
+			configuration "gre"
+		;;
+		"pf")
+			for file in $(find "/etc" -type f -maxdepth 1 -name "pf.*"); do
+				cp -p $file "$CURRENTBACKUP/$1/"
+			done
+
+		;;
+		"ospf")
+			configuration "ospf"
+		;;
+		"ntpd")
+			configuration "ntpd"
+		;;
+		"remote")
+			if [[ -d /etc/ssh/remote_install ]]; then
+				for file in $(find "/etc/ssh/remote_install" -type f -maxdepth 1); do
+					cp -p $file "$CURRENTBACKUP/$1/"
+				done
+			fi
+		;;
+		"httpdbasic")
+			for file in $(find /etc -name "httpd.*" -type f -maxdepth 1); do
+				cp -p $file "$CURRENTBACKUP/$1/"
+			done
+		;;
+		"nsd")
+			for file in $(find "/var/nsd" -type f -not -path "/var/nsd/run/*"); do
+				cp -p $file "$CURRENTBACKUP/$1/"
+			done
+		;;
+		"newospf")
+
+			cp -p /etc/ospfd.conf "$CURRENTBACKUP/$1/"
+		;;
+		"relayd")
+			configuration "relayd"
+		;;
+		"all")
+			sh setup_node -I
+		;;
+	esac
+}
+
+
+function upgrade {
+
+	case $1 in
+		"unbound")
+
+			dhclient=$(pidof "dhclient")
+			[[ "${dhclient}" != "" ]] && \
+				pkill dhclient && \
+				rcctl stop dhclient && \
+				rcctl disable dhclient
+			install -o root -g wheel -m 0644 $basedir/src/etc/resolv.conf /etc/
+			install -o _unbound -g _unbound -m 0750  $basedir/src/var/unbound/etc/unbound.conf /var/unbound/etc/unbound.conf
+			install -o _unbound -g _unbound -m 0750  $basedir/src/var/unbound/etc/stub-zone.conf /var/unbound/etc/stub-zone.conf
+			rcctl restart unbound ||  error_exit "$LINENO: ERROR: UNBOUND failed."
+		;;
+		"ssh")
+			if [[ ! -d "$basedir/../OpenBSD-private-CA" ]]; then
+				echo "OpenBSD-private-CA not found cloning it..."
+				cd  ..
+				git clone https://github.com/redeltaglio/OpenBSD-private-CA.git
+				chown -R taglio:wheel OpenBSD-private-CA/
+				cd OpenBSD-private-CA
+				ksh setup_host
+			else
+				cd "$basedir/../OpenBSD-private-CA"
+				git pull
+				cd ..
+				chown -R taglio:wheel OpenBSD-private-CA/
+				cd OpenBSD-private-CA
+				ksh setup_host
+			fi
+			[[ -e "/etc/ssh/principals/taglio" ]] && rm -rf /etc/ssh/principals/taglio
+			echo "wheel" > /etc/ssh/principals/taglio
+		;;
+		"ipsec")
+			sha256compare "/etc/iked/ca/ca.crt" "$basedir/src/etc/iked/ca/ca.crt"
+			if [[ $sha256ctrl -eq 1 ]]; then
+				echo "ca.crt upgrade"
+				install -o root -g wheel -m 0644  $basedir/src/etc/ca/ca.crt /etc/iked/ca/
+			fi
+			tmpdir=$(mktemp -d)
+			openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -nocerts -passin pass:123456789 -passout pass:123456789 -out "$tmpdir/local.key"
+			openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "$tmpdir/$publichost.crt"
+			openssl x509 -pubkey -noout -passin pass:123456789 -in "/etc/iked/certs/$publichost.crt"  > "$tmpdir/local.pub"
+			sha256compare "/etc/iked/private/local.key" "$tmpdir/local.key"
+			if [[ $sha256ctrl -eq 1 ]]; then
+				echo "local.key upgrade"
+				openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -nocerts -passin pass:123456789 -passout pass:123456789 -out /etc/iked/private/local.key
+				openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "/etc/iked/certs/$publichost.crt"
+				openssl x509 -pubkey -noout -passin pass:123456789 -in "/etc/iked/certs/$publichost.crt"  > /etc/iked/local.pub
+			fi
+			rm -rf $tmpdir
+			for file in $(find $basedir/src/etc/iked/pubkeys/ufqdn/ -name "*@*"); do
+				filename=$(basename $file)
+				sha256compare "$file" "/etc/iked/pubkeys/ufqdn/$filename"
+				if [[ $sha256ctrl -eq 1 ]]; then
+					echo "$filename upgrade"
+					install -o root -g wheel -m 0644  $file /etc/iked/pubkeys/ufqdn/
+				fi
+			done
+			rm -rf $tmpdir
+			tmpdir=$(mktemp -d)
+			cp  $basedir/src/etc/iked.conf $tmpdir
+			if [[ $(grep -c hostname /tmp/config.ini) -eq 1 ]]; then
+				srcid=$(cat /tmp/config.ini  | grep hostname |cut -d \# -f2)
+			else
+				srcid=$(hostname -s)
+			fi
+			#if [[ "$srcid" == "varuna" ]]; then
+			#	srcid="neo"
+			#fi
+			for vpnc_ip in $(dig vpnc.$domainname A +short @8.8.8.8); do
+				vpnc_host=$(dig -x $vpnc_ip +short @8.8.8.8 | sed 's/.$//')
+				if [[ -e "/etc/iked.conf.$vpnc_host" ]]; then
+					echo include \"/etc/iked.conf.$vpnc_host\" >> "$tmpdir/iked.conf"
+					if grep -q "ecp384" "/etc/iked.conf.$vpnc_host"; then
+						cp $basedir/src/etc/iked.conf.mikrotik "$tmpdir/iked.conf.$vpnc_host"
+					elif grep -q "ecp256" "/etc/iked.conf.$vpnc_host"; then
+						cp $basedir/src/etc/iked.conf.edgeos "$tmpdir/iked.conf.$vpnc_host"
+					else
+						cp $basedir/src/etc/iked.conf.openbsd "$tmpdir/iked.conf.$vpnc_host"
+					fi
+					sed -i "s/\/POP\//$vpnc_host/g" "$tmpdir/iked.conf.$vpnc_host"
+					sed -i "s/\/POPIP\//$vpnc_ip/g" "$tmpdir/iked.conf.$vpnc_host"
+					type=$(cat "/etc/iked.conf.$vpnc_host" | head -n 1 | awk '{print $3}')
+					sed -i "s/\/TYPE\//$type/g" "$tmpdir/iked.conf.$vpnc_host"
+					sed -i "s/\/PUBLICIP\//$publicip/g" "$tmpdir/iked.conf.$vpnc_host"
+					sed -i "s/\/PUBLICHOST\//$publichost/g" "$tmpdir/iked.conf.$vpnc_host"
+					sed -i "s/\/SRCID\//$srcid/g" "$tmpdir/iked.conf.$vpnc_host"
+					sed -i "s/\/DOMAINNAME\//$domainname/g" "$tmpdir/iked.conf.$vpnc_host"
+					encx=$(cat "/etc/iked.conf.$vpnc_host" | awk -F'enc' '{print substr($2,0,1)}' | tail -n 1)
+					sed -i "s/\/X\//$encx/g" "$tmpdir/iked.conf.$vpnc_host"
+					sha256compare "/etc/iked.conf.$vpnc_host" "$tmpdir/iked.conf.$vpnc_host"
+					if [[ $sha256ctrl -eq 1 ]]; then
+						echo "$vpnc_host upgrade"
+						install -o root -g wheel -m 0640   "$tmpdir/iked.conf.$vpnc_host" /etc/
+					fi
+				fi
+			done
+			for vpnc_host in $(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g'); do
+				if [[ -e "/etc/iked.conf.$vpnc_host" ]]; then
+					echo include \"/etc/iked.conf.${vpnc_host}\" >> "$tmpdir/iked.conf"
+				fi
+				vpnc_ip=$(dig $vpnc_host A +short @8.8.8.8 | tail -n 1)
+				cp $basedir/src/etc/iked.conf.edgeos "$tmpdir/iked.conf.$vpnc_host"
+				sed -i "s/\/POP\//$vpnc_host/g" "$tmpdir/iked.conf.$vpnc_host"
+				sed -i "s/\/POPIP\//$vpnc_ip/g" "$tmpdir/iked.conf.$vpnc_host"
+				type=$(cat "/etc/iked.conf.$vpnc_host" | head -n 1 | awk '{print $3}')
+				sed -i "s/\/TYPE\//$type/g" "$tmpdir/iked.conf.$vpnc_host"
+				sed -i "s/\/PUBLICIP\//$publicip/g" "$tmpdir/iked.conf.$vpnc_host"
+				sed -i "s/\/PUBLICHOST\//$publichost/g" "$tmpdir/iked.conf.$vpnc_host"
+				sed -i "s/\/SRCID\//$srcid/g" "$tmpdir/iked.conf.$vpnc_host"
+				sed -i "s/\/DOMAINNAME\//$domainname/g" "$tmpdir/iked.conf.$vpnc_host"
+				encx=$(cat "/etc/iked.conf.$vpnc_host" | awk -F'enc' '{print substr($2,0,1)}' | tail -n 1)
+				sed -i "s/\/X\//$encx/g" "$tmpdir/iked.conf.$vpnc_host"
+				sha256compare "/etc/iked.conf.$vpnc_host" "$tmpdir/iked.conf.$vpnc_host"
+				if [[ $sha256ctrl -eq 1 ]]; then
+					echo "$vpnc_host upgrade"
+					install -o root -g wheel -m 0640   "$tmpdir/iked.conf.$vpnc_host" /etc/
+				fi
+				sha256compare "/etc/iked.conf.$vpnc_host" "$tmpdir/iked.conf.$vpnc_host"
+				if [[ $sha256ctrl -eq 1 ]]; then
+					echo "$vpnc_host upgrade"
+					install -o root -g wheel -m 0640   "$tmpdir/iked.conf.$vpnc_host" /etc/
+				fi
+			done
+			sha256compare "/etc/iked.conf" 	"$tmpdir/iked.conf"
+			if [[ $sha256ctrl -eq 1 ]]; then
+				echo "iked.conf upgrade"
+				install -o root -g wheel -m 0600  "$tmpdir/iked.conf" /etc/iked.conf
+			fi
+			iked -n
+			if [[ $sha256ctrl -eq 1 ]]; then
+				rcctl restart iked ||  error_exit "$LINENO: ERROR: IKED failed."
+			fi
+
+		;;
+		"gre")
+			configuration "gre"
+		;;
+		"pf")
+			tmpdir=$(mktemp -d)
+			for file in $(find $basedir/src/etc/ -name "pf.*" -type f -maxdepth 1); do
+				cp $file $tmpdir
+			done
+			for vpnc_ip in $(dig vpnc.$domainname A +short @8.8.8.8); do
+				echo "$vpnc_ip/32" >> "$tmpdir/pf.conf.table.ipsec"
+			done
+			for vpnc_ip in $(dig vpncN.$domainname A +short @8.8.8.8); do
+				echo "$vpnc_ip/32" >> "$tmpdir/pf.conf.table.ipsec"
+			done
+			for vpnc_host in $(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g'); do
+				vpnc_ip=$(dig $vpnc_host A +short @8.8.8.8 | tail -n 1)
+				if [[ ! -z $vpnc_ip ]]; then
+					echo "$vpnc_ip/32" >> "$tmpdir/pf.conf.table.ipsec"
+				fi
+			done
+			for grefile in $(ls /etc/hostname.gre*[0-9]); do
+				greinterface=$(echo $grefile | cut -d . -f2)
+				echo "pass in quick on ${greinterface} to vether0 tagged PERMITTED reply-to ${greinterface}" >> "$tmpdir/pf.conf.macro.gre.tag.in"
+			done
+			if [[ -e "/etc/pf.conf.macro.public" ]]; then
+			echo "pf.conf.macro.public upgrade"
+				custom "$tmpdir" "1"
+				sha256compare "/etc/pf.conf.macro.public" "$tmpdir/pf.conf.macro.public" || sha256ctrl=1
+				if [[ $sha256ctrl -eq 1 ]]; then
+					install -o root -g wheel -m 0640  "$tmpdir/pf.conf.macro.public" /etc/
+				fi
+			fi
+			if [[ -e "/etc/pf.conf.macro.gre.tag.in" ]]; then
+			echo "pf.conf.macro.gre.tag.in upgrade"
+				custom "$tmpdir" "1"
+				sha256compare "/etc/pf.conf.macro.gre.tag.in" "$tmpdir/pf.conf.macro.gre.tag.in" || sha256ctrl=1
+				if [[ $sha256ctrl -eq 1 ]]; then
+					install -o root -g wheel -m 0640  "$tmpdir/pf.conf.macro.gre.tag.in" /etc/
+					pfctl -nf /etc/pf.conf
+					pfctl -f /etc/pf.conf
+				fi
+			fi
+			[[ -e "/etc/pf.conf.table.ipsec" ]] && sha256compare "/etc/pf.conf.table.ipsec" "$tmpdir/pf.conf.table.ipsec" || sha256ctrl=1
+			if [[ $sha256ctrl -eq 1 ]]; then
+				echo "pf.conf.table.ipsec upgrade"
+				install -o root -g wheel -m 0640  "$tmpdir/pf.conf.table.ipsec" /etc/
+				pfctl -nf /etc/pf.conf
+				pfctl -f /etc/pf.conf
+			fi
+			[[ -e "/etc/pf.conf.table.lte" ]] && sha256compare "/etc/pf.conf.table.lte" "$tmpdir/pf.conf.table.lte" || sha256ctrl=1
+			if [[ $sha256ctrl -eq 1 ]]; then
+				echo "pf.conf.table.lte upgrade"
+				install -o root -g wheel -m 0640  "$tmpdir/pf.conf.table.lte" /etc/
+				pfctl -nf /etc/pf.conf
+				pfctl -f /etc/pf.conf
+			fi
+			[[ -e "/etc/pf.conf.table.nsd" ]] && sha256compare "/etc/pf.conf.table.nsd" "$tmpdir/pf.conf.table.nsd" || sha256ctrl=1
+			if [[ $sha256ctrl -eq 1 ]]; then
+				echo "pf.conf.table.nsd upgrade"
+				install -o root -g wheel -m 0640  "$tmpdir/pf.conf.table.nsd" /etc/
+				pfctl -nf /etc/pf.conf
+				pfctl -f /etc/pf.conf
+			fi
+			[[ -e "/etc/pf.conf.table.users" ]] && sha256compare "/etc/pf.conf.table.users" "$tmpdir/pf.conf.table.users" || sha256ctrl=1
+			if [[ $sha256ctrl -eq 1 ]]; then
+				echo "pf.conf.table.users upgrade"
+				install -o root -g wheel -m 0640  "$tmpdir/pf.conf.table.users" /etc/
+				pfctl -nf /etc/pf.conf
+				pfctl -f /etc/pf.conf
+			fi
+			[[ -e "/etc/pf.conf.table.locals" ]] && sha256compare "/etc/pf.conf.table.locals" "$tmpdir/pf.conf.table.locals" || sha256ctrl=1
+			if [[ $sha256ctrl -eq 1 ]]; then
+				echo "pf.conf.table.locals upgrade"
+				install -o root -g wheel -m 0640  "$tmpdir/pf.conf.table.locals" /etc/
+				pfctl -nf /etc/pf.conf
+				pfctl -f /etc/pf.conf
+			fi
+			[[ -e "/etc/pf.conf.table.clientes" ]] && sha256compare "/etc/pf.conf.table.clientes" "$tmpdir/pf.conf.table.clientes" || sha256ctrl=1
+			if [[ $sha256ctrl -eq 1 ]]; then
+				echo "pf.conf.table.clientes upgrade"
+				install -o root -g wheel -m 0640  "$tmpdir/pf.conf.table.clientes" /etc/
+				pfctl -nf /etc/pf.conf
+				pfctl -f /etc/pf.conf
+			fi
+
+			for file in $(find /etc -maxdepth 1 -name "iked.conf.*") ; do
+				tagged=$(echo $file | sed "s/\/etc\/iked.conf.//")
+				count=$(dig $tagged A +short @8.8.8.8 | wc -l)
+				if [[ $count -gt 1 ]]; then
+					iptagged=$(dig $tagged A +short @8.8.8.8 | tail -n 1)
+				else
+					iptagged=$(dig $tagged A +short @8.8.8.8)
+				fi
+				sed -i "s/\/TAGGED\//${tagged}/g" $tmpdir/pf.conf.macro.enc.{in,out}
+				sed -i "s/\/IPTAGGED\//${iptagged}/g" $tmpdir/pf.conf.macro.enc.{in,out}
+				cat $basedir/src/openbsd/pf.conf.openbsd | head -n 1 >> $tmpdir/pf.conf.macro.enc.in
+				cat $basedir/src/openbsd/pf.conf.openbsd | tail -n 1 >> $tmpdir/pf.conf.macro.enc.out
+			done
+			sed -i '$d' $tmpdir/pf.conf.macro.enc.{in,out}
+			sha256compare "/etc/pf.conf.macro.enc.in" "$tmpdir/pf.conf.macro.enc.in"
+			if [[ $sha256ctrl -eq 1 ]]; then
+				echo "pf.conf.macro.enc.in upgrade"
+				install -o root -g wheel -m 0640  "$tmpdir/pf.conf.macro.enc.in" /etc/
+			fi
+			sha256compare "/etc/pf.conf.macro.enc.out" "$tmpdir/pf.conf.macro.enc.out"
+			if [[ $sha256ctrl -eq 1 ]]; then
+				echo "pf.conf.macro.enc.out upgrade"
+				install -o root -g wheel -m 0640  "$tmpdir/pf.conf.macro.enc.out" /etc/
+			fi
+			landomainname=$(cat /etc/myname | sed 's/^[^.]*.//')
+			custom "$tmpdir" "1"
+			sha256compare "/etc/pf.conf" "$tmpdir/pf.conf"
+			if [[ $sha256ctrl -eq 1 ]]; then
+				echo "pf.conf upgrade"
+				install -o root -g wheel -m 0640  "$tmpdir/pf.conf" /etc/
+			fi
+			if [[ $sha256ctrl -eq 1 ]]; then
+				pfctrl=$(pfctl -nf /etc/pf.conf)
+				if [[ -z $pfctrl ]]; then
+					echo "PF ruleset OK"
+				fi
+				ctrl=
+				while [ -z $ctrl ]
+				do
+					echo 'The load PF rules and enable it type 1 '
+					read ctrl
+					if [[ "$ctrl" -eq 1 ]]; then
+						if [[ $(pfctl -si | head -n 1 | grep -c "Disabled") -eq 1 ]]; then
+							pfctl -f /etc/pf.conf
+							ctrl=
+							while [ -z $ctrl ]
+							do
+								echo 'Your connection will be close type 1 to continue '
+								read ctrl
+								pfctl -e && exit 1
+							done
+						elif [[ $(pfctl -si | head -n 1 | grep -c "Disabled") -eq 0 ]]; then
+							pfctl -f /etc/pf.conf
+						fi
+					fi
+				done
+			fi
+		;;
+		"ospf")
+			(: "${hostname?}") 2>/dev/null || hostname=$(hostname -s)
+			(: "${landomainname?}") 2>/dev/null || landomainname=$(hostname | sed "s/`hostname -s`.//")
+			configuration "ospf"
+		;;
+		"ntpd")
+			configuration "ntpd"
+		;;
+		"remote")
+			tmpdir=$(mktemp -d)
+			if [[ -d "/etc/ssh/remote_install" ]]; then
+				cp $basedir/src/etc/ssh/remote_install/* $tmpdir
+				custom "$tmpdir" "1"
+				sha256compare "/etc/ssh/remote_install/remote_install.conf" "$tmpdir/remote_install.conf"
+				if [[ $sha256ctrl -eq 1 ]]; then
+					echo "remote_install.conf upgrade"
+					install -o root -g wheel -m 0640  "$tmpdir/remote_install.conf" /etc/ssh/remote_install
+				fi
+				sha256compare "/etc/ssh/remote_install/authorized_keys" "$tmpdir/authorized_keys"
+				if [[ $sha256ctrl -eq 1 ]]; then
+					echo "authorized_keys upgrade"
+					install -o root -g wheel -m 0640  "$tmpdir/authorized_keys" /etc/ssh/remote_install
+				fi
+			else
+				mkdir /etc/ssh/remote_install
+				for file in $(find $basedir/src/etc/ssh/remote_install/ -type f); do
+					filename=$(basename $file)
+					if [[ "$filename" != "rc.local" ]]; then
+						install -o root -g wheel -m 0640 $file /etc/ssh/remote_install/
+					fi
+				done
+				custom "/etc/ssh/remote_install" "1"
+
+			fi
+			sha256compare "$basedir/src/usr/local/sbin/remote-install" "/usr/local/sbin/remote-install"
+			if [[ $sha256ctrl -eq 1 ]]; then
+				echo "remote-install upgrade"
+				install -o root -g wheel -m 0750 $basedir/src/usr/local/sbin/remote-install /usr/local/sbin/
+			fi
+			if [[ $(grep -c remote_install.conf /etc/rc.local) -eq 0 ]]; then
+				cat $basedir/src/etc/ssh/remote_install/rc.local >> /etc/rc.local
+			fi
+			pidof_remote=$(pidof "remote")
+			if [[ -z $pidof_remote ]]; then
+				/usr/sbin/sshd -f /etc/ssh/remote_install/remote_install.conf
+			else
+				kill -9 $(cat /var/run/sshd-remote-install.pid)
+				/usr/sbin/sshd -f /etc/ssh/remote_install/remote_install.conf
+			fi
+			install -o root -g wheel -m 0640 $basedir/src/etc/httpd.conf.acmefirst /etc/httpd.conf
+			custom "/etc/" "1"
+			httpd -n
+			pidof_httpd=$(pidof "httpd")
+			if [[ -z $pidof_remote ]]; then
+				rcctl enable httpd
+				rcctl start httpd ||  error_exit "$LINENO: ERROR: HTTPD failed."
+			else
+				rcctl restart httpd
+			fi
+
+		;;
+		"remoteinstall")
+			echo "connecting to remote OpenBSD MESH hosts..."
+			cat /dev/null > /etc/ssh/ssh_known_hosts
+			for file in $(find /etc -maxdepth 1 -name "iked.conf.*" -type f); do
+				if [[ $(grep -c "brainpool512" $file) -eq 1 ]]; then
+					remotehost=$(echo $file | sed "s/\/etc\/iked.conf.//")
+					ssh-keyscan -t ed25519 -p 31137 $remotehost > /etc/ssh/ssh_known_hosts
+					ssh -p 31137 $remotehost -v
+				fi
+			done
+			sleep 31
+			ctrl=
+			while [ -z $ctrl ]
+			do
+				echo 'Have you add the root ssh key to admin user onto mikrotik ?'
+				cat /root/.ssh/id_rsa.pub
+				echo 'Type 1 to continue '
+				read ctrl
+				if [[ "$ctrl" -eq 1 ]]; then
+					echo "ok"
+				else
+					error_exit "$LINENO: EXIT FROM USER."
+				fi
+
+			done
+		;;
+		"relayd")
+			configuration "relayd"
+		;;
+		"newhost")
+
+			sh "$basedir/$app" -U pf
+			install -o root -g wheel -m 0640 $basedir/src/etc/ssh/remote_install/authorized_keys /etc/ssh/remote_install/
+			pubkey=$(ls -lt "$basedir/src/etc/iked/pubkeys/ufqdn/" | awk '{print $9}' | awk 'FNR == 2 {print}')
+			install -o root -g wheel -m 0640 "$basedir/src/etc/iked/pubkeys/ufqdn/$pubkey" /etc/iked/pubkeys/ufqdn/
+
+		;;
+		"scripts")
+			configuration "scripts"
+		;;
+		"file")
+			if [[ ! -e "$BACKUPS/file" ]]; then
+				mkdir "$BACKUPS/file"
+			fi
+			fileupdate=
+			while [ -z $fileupdate ]
+			do
+				echo "Which file do you want to update [type dst complete PATH]? "
+				read fileupdate
+				[[ -e $fileupdate ]] && cp -p $fileupdate "$BACKUPS/file/$(basename $fileupdate)"
+				gitfile="$basedir/src$fileupdate"
+				install -o root -g wheel -m 0644 $gitfile $fileupdate
+			done
+		;;
+		"dyndnspop")
+			for vpnc_host in $(dig vpnc.telecomlobby.com TXT +short @8.8.8.8 | sed 's/\"//g'); do
+				vpnc_ip=$(dig $vpnc_host A +short @8.8.8.8 | tail -n 1)
+				if [[ ! -z $vpnc_ip ]]; then
+					for iked_conf in $(ls /etc/iked.conf.*); do
+						if [[ $(grep -c "ecp256" $iked_conf) -eq 2 ]]; then
+							pophost=$(cat $iked_conf | head -n 1 | awk '{print $2}' | sed 's/"//g')
+							greinterface=$(cat $iked_conf | tail -n 1 | awk '{print $4}' | sed 's/enc/gre/')
+							sh /root/Bin/change_endpoint.sh $greinterface $pophost
+
+						fi
+					done
+				fi
+			done
+		;;
+		"newospf")
+			ospfdtmp=$(mktemp)
+			area0tmp=$(mktemp)
+			routerid=$(cat /etc/ospfd.conf | grep router\-id | awk '{print $2}' | sed "s/\"//g")
+			loc=$(curl -s "http://ipinfo.io/$publicip" | grep loc | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g")
+			long=$(echo $loc | cut -d , -f2 | cut -d . -f1)
+			lat=$(echo $loc | cut -d , -f1 | cut -d . -f1)
+			echo -e "\nLAT --> $lat"
+			echo -e "LONG --> $long\n"
+			if [[ $long -ge -180 && $long -le -60 && $lat -ge 0 ]]; then group=12 && ospfarea="0.0.1.2"; fi
+			if [[ $long -ge -60 && $long -le 60 && $lat -ge 0 ]]; then group=34 && ospfarea="0.0.3.4"; fi
+			if [[ $long -ge 60 && $long -le 180 && $lat -ge 0 ]]; then group=56 && ospfarea="0.0.5.6"; fi
+			if [[ $long -ge -180 && $long -le -60 && $lat -le 0 ]]; then group=12 && ospfarea="0.0.1.2"; fi
+			if [[ $long -ge -60 && $long -le 60 && $lat -le 0 ]]; then group=34 && ospfarea="0.0.3.4"; fi
+			if [[ $long -ge 60 && $long -le 180 && $lat -le 0 ]]; then group=56 && ospfarea="0.0.5.6"; fi
+			printf "%s\n\n" "# \$OpenBSD: ospfd.conf,v 1.2 2018/08/07 07:06:20 claudio Exp $" > $ospfdtmp
+			printf "%s\n" "router-id \"$routerid\"" >> $ospfdtmp
+			printf "%s\n" "# areas" >> $ospfdtmp
+			printf "%s\n" "area $ospfarea {" >>  $ospfdtmp
+			for grefile in $(ls /etc/hostname.gre*[0-9]); do
+				greinterface=$(echo $grefile | cut -d . -f2)
+				greppublicip=$(cat $grefile | grep tunnel | awk '{print $5}')
+				remoteloc=$(curl -s "http://ipinfo.io/$greppublicip" | grep loc | awk '{print $2}' | sed 's/.$//' | sed "s/\"//g")
+				remotelong=$(echo $remoteloc | cut -d , -f2 | cut -d . -f1)
+				remotelat=$(echo $remoteloc | cut -d , -f1 | cut -d . -f1)
+				if [[ $remotelong -ge -180 && $remotelong -le -60 && $remotelat -ge 0 ]]; then remotegroup=12 && ospfarea="0.0.1.2"; fi
+				if [[ $remotelong -ge -60 && $remotelong -le 60 && $remotelat -ge 0 ]]; then remotegroup=34 && ospfarea="0.0.3.4"; fi
+				if [[ $remotelong -ge 60 && $remotelong -le 180 && $remotelat -ge 0 ]]; then remotegroup=56 && ospfarea="0.0.5.6"; fi
+				if [[ $remotelong -ge -180 && $remotelong -le -60 && $remotelat -le 0 ]]; then remotegroup=12 && ospfarea="0.0.1.2"; fi
+				if [[ $remotelong -ge -60 && $remotelong -le 60 && $remotelat -le 0 ]]; then remotegroup=34 && ospfarea="0.0.3.4"; fi
+				if [[ $remotelong -ge 60 && $remotelong -le 180 && $remotelat -le 0 ]]; then remotegroup=56 && ospfarea="0.0.5.6"; fi
+				[[ $group = $remotegroup ]] && \
+					awk "/$greinterface/{x=NR+8}(NR<=x){print}" /etc/ospfd.conf | sed '/type p2p/d'  | sed '/metric/d' | uniq -u |  awk 'NF' >>  $ospfdtmp || \
+					awk "/$greinterface/{x=NR+8}(NR<=x){print}" /etc/ospfd.conf | sed '/type p2p/d'  | sed '/metric/d' | uniq -u |  awk 'NF' >> $area0tmp
+			done
+			printf "\t%s\n" " interface vether0 {" >> $ospfdtmp
+			printf "\t\t%s\n" "metric 1" >> $ospfdtmp
+			printf "\t\t%s\n" "passive" >> $ospfdtmp
+			printf "\t%s\n" "}" >> $ospfdtmp
+			printf "%s\n" "}" >> $ospfdtmp
+			printf "%s\n" "area 0.0.0.0 {" >> $ospfdtmp
+			cat $area0tmp >> $ospfdtmp
+			printf "%s\n" "}" >> $ospfdtmp
+			cat $ospfdtmp
+			#/usr/sbin/ospfd -nf $ospfdtmp
+			#install -o root -g wheel -m 0600 $ospfdtmp /etc/ospfd.conf
+			#/usr/sbin/ospfd -nf /etc/ospfd.conf
+			#/usr/sbin/rcctl restart ospfd
+		;;
+		"vedetta")
+			dhcpleased=$(pidof "dhcpleased")
+			resolvd=$(pidof "resolvd")
+			[[ "${dhcpleased}" != "" ]] && rcctl stop dhcpleased
+			[[ "${resolvd}" != "" ]] && rcctl stop resolvd
+			dhcpleased=$(cat /etc/rc.conf.local | grep dhcpleased)
+			resolvd=$(cat /etc/rc.conf.local | grep resolvd)
+			[[ "${dhcpleased}" == "" ]] && rcctl disable dhcpleased
+			[[ "${resolvd}" == "" ]] && \
+				rcctl disable resolvd  && \
+				sed -i '/resolvd/d' "/etc/resolv.conf"
+			if ! getent passwd tsig  1>&-; then
+				useradd -u 25353 -g =uid -c "TSIG Wizard" -m -d /home/tsig -s /home/tsig tsig
+			fi
+			[ 0 = $(grep -c "github" /etc/changelist) ] && cat "src/openbsd/changelist.openbsd" >> "/etc/changelist"
+			[[ ! -e "/etc/mtree/special.local" ]] && \
+				install -o root -g wheel -m 0644 "src/openbsd/mtree.openbsd" "/etc/mtree/special.login" && \
+				custom "/etc/mtree" "1"
+
+		;;
+	esac
+}
+
+function admin {
+	case $1 in
+		"cleanlast")
+			[[ -e "/tmp/cleantmp" ]] && sh  $basedir/tools/clean_last $(cat /tmp/cleantmp)
+		;;
+		"sslcareq")
+			cd /etc/ssl
+			ftp -o /tmp/root-ca.crt http://ocsp.$(hostname | sed "s/$(hostname -s).//")/root-ca.crt
+			openssl x509 -in /tmp/root-ca.crt -out /tmp/root-ca.pem
+			if [[ $(grep -c "ocsp.$(hostname | sed "s/$(hostname -s).//")" /etc/ssl/cert.pem) -eq 0 ]]; then
+				echo "\n#ocsp.$(hostname | sed "s/$(hostname -s).//")\n" >> /etc/ssl/cert.pem
+				cat /tmp/root-ca.crt >> /etc/ssl/cert.pem
+			fi
+			rm -rf /tmp/root-ca.{crt,pem}
+			if [[ ! -d csr ]]; then
+				mkdir csr
+			fi
+			if [[ ! -d certs ]]; then
+				mkdir certs
+			fi
+			openssl genrsa -out "private/$(hostname).key" 2048
+			openssl rsa -in "/etc/ssl/private/$(hostname).key" -out "/etc/ssl/private/$(hostname)-nopwd.key"
+			openssl req -new -key "/etc/ssl/private/$(hostname)-nopwd.key" -out "/etc/ssl/csr/$(hostname).csr"
+			if [[ ! -d "/var/www/htdocs/$(hostname)" ]]; then
+				mkdir "/var/www/htdocs/$(hostname)"
+			fi
+			cp "/etc/ssl/csr/$(hostname).csr" "/var/www/htdocs/$(hostname)"
+			echo "Download csr from http://$(hostname)/$(hostname).csr to the CA server"
+			ctrl=
+			echo "Have you created the certificate onto the CA?"
+			while [ -z $ctrl ]
+			do
+				echo "Type 1 to go ahead "
+				read ctrl
+			done
+			ftp -o certs/$(hostname).crt http://web.telecom.lobby/CA_transfer/$(hostname)/$(hostname).crt
+			openssl x509 -in certs/$(hostname).crt -out certs/$(hostname).pem
+			echo "CRT downloaded and PEM created"
+		;;
+		"otheros")
+			hostname=$(hostname -s)
+			srcid=$(echo $publichost | sed "s/.$domainname//")
+			for vpnc_ip in $(dig vpnc.$domainname A +short @8.8.8.8); do
+				if [[ $(nc -w1  $vpnc_ip 22 | grep -c "ROSSSH") -eq 1 ]]; then
+					vpnc_host=$(dig -x $vpnc_ip +short @8.8.8.8 | sed 's/.$//')
+					if [[ -d "/var/www/htdocs/$(hostname)/$vpnc_host" ]]; then
+						rm -rf "/var/www/htdocs/$(hostname)/$vpnc_host"
+					fi
+					if [[ -d "/tmp/$vpnc_host" ]]; then
+						echo "Download Mikrotik Routeros script from http://$(hostname)/$vpnc_host/$vpnc_host.rsc"
+						custom "/tmp/$vpnc_host" 1
+						mv "/tmp/$vpnc_host/" "/var/www/htdocs/$(hostname)/"
+					else
+						mkdir "/tmp/$vpnc_host"
+						cp $basedir/src/mikrotik/ipsec.rsc "/tmp/$vpnc_host/$vpnc_host.rsc"
+
+						for file in $(ls /etc/hostname.gre*[0-9]); do
+							if [[ $(grep -c "$vpnc_host" $file) -eq 1 ]]; then
+								greinterface=$(echo $file | cut -d . -f2)
+								grepopip=$(cat $file | awk 'FNR == 5 {print}' | awk '{print $4}')
+								cat $basedir/src/mikrotik/gre.rsc >> "/tmp/$vpnc_host/$vpnc_host.rsc"
+								sed -i "s/\/GREPOPIP\//$grepopip/" "/tmp/$vpnc_host/$vpnc_host.rsc"
+							fi
+						done
+						cat $basedir/src/mikrotik/firewall.rsc >> "/tmp/$vpnc_host/$vpnc_host.rsc"
+						md5=$(awk "/$greinterface/{x=NR+8}(NR<=x){print}" /etc/ospfd.conf  | awk 'FNR == 3 {print}' | awk '{print $3}' | sed "s/\"//g")
+						#metric=$(awk "/$greinterface/{x=NR+11}(NR<=x){print}" /etc/ospfd.conf  | awk 'FNR == 6 {print}' | awk '{print $2}')
+						cat $basedir/src/mikrotik/ospfd.rsc >> "/tmp/$vpnc_host/$vpnc_host.rsc"
+						#sed -i "s/\/METRIC\//$metric/" "/tmp/$vpnc_host/$vpnc_host.rsc"
+						sed -i "s/\/OSPFMD5\//$md5/" "/tmp/$vpnc_host/$vpnc_host.rsc"
+						typeset -u publichostname=$(echo $publichost | sed "s/.$domainname//")
+						typeset -u pophostname=$(echo $vpnc_host | sed "s/.$domainname//")
+						sed -i "s/\/POPHOSTNAME\//$pophostname/" "/tmp/$vpnc_host/$vpnc_host.rsc"
+						greip=$(ifconfig $greinterface | tail -n 1 | awk '{print $2}')
+						grenetwork=$(ipcalc -c $greip / 30 | grep network | awk '{ print $3 }')
+						sed -i "s/\/GRENETWORK\//$grenetwork/" "/tmp/$vpnc_host/$vpnc_host.rsc"
+						sed -i "s/\/POPIP\//$vpnc_ip/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
+						sed -i "s/\/POP\//$vpnc_host/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
+						custom "/tmp/$vpnc_host" 1
+						echo "Download Mikrotik Routeros script from http://$(hostname)/$vpnc_host/$vpnc_host.rsc"
+						mv "/tmp/$vpnc_host/" "/var/www/htdocs/$(hostname)/"
+					fi
+				fi
+			done
+			for vpnc_host in $(dig vpnc.$domainname TXT +short @8.8.8.8 | sed 's/\"//g'); do
+				vpnc_ip=$(dig $vpnc_host A +short @8.8.8.8 | tail -n 1)
+				if [[ -d "/tmp/$vpnc_host" ]]; then
+					echo "Download Ubiquiti EdgeOS scripts from http://$(hostname)/$vpnc_host/$vpnc_host.tar"
+					tar -cvf "/tmp/$vpnc_host.tar" -C /tmp -s /tmp// $vpnc_host
+					mv "/tmp/$vpnc_host" "/var/www/htdocs/$(hostname)/"
+					mv "/tmp/$vpnc_host.tar" "/var/www/htdocs/$(hostname)/"
+					rm -rf "/tmp/$vpnc_host"
+				else
+					tmpdir=$(mktemp -d)
+					cp $basedir/src/edgeos/ipsec.conf "$tmpdir"
+					cp "/etc/iked/certs/$publichost.crt" "$tmpdir"
+					cp $basedir/src/edgeos/ipsec.sh "$tmpdir"
+					cp $basedir/src/edgeos/scripts/ES-SRCID-_netwatch.sh "$tmpdir/ES-${publichostname}_netwatch.sh"
+					cp $basedir/src/edgeos/scripts/ES-SRCID--updown.sh "$tmpdir/ES-$publichostname-updown.sh"
+					cp $basedir/src/edgeos/gre.sh "$tmpdir"
+					for file in $(ls /etc/hostname.gre*[0-9]); do
+						if [[ $(grep -c "$vpnc_host" $file) -eq 1 ]]; then
+							greinterface=$(echo $file | cut -d . -f2)
+							grepopip=$(cat $file | awk 'FNR == 5 {print}' | awk '{print $4}')
+							grenetwork=$(ipcalc -c $grepopip / 30 | grep network | awk '{ print $3 }')
+							sed -i "s/\/GREPOPIP\//$grepopip/g" "$tmpdir/ES-${publichostname}_netwatch.sh"
+							sed -i "s/\/GREPOPIP\//$grepopip/g" "$tmpdir/gre.sh"
+							sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" "$tmpdir/ES-${publichostname}_netwatch.sh"
+						fi
+					done
+					lasttun=$(ls -l /etc/hostname.gre*[0-9] | tail -n 1 |awk '{print $9}' | sed "s/\/etc\/hostname.gre//")
+					lasttunctrl=
+					while [ -z $lasttunctrl ]
+					do
+						echo "Is EdgeOS tun interface $lasttun? "
+						read lasttunctrl
+						case $lasttunctrl in
+							"yes")
+							;;
+							"no")
+								echo "Type the last digit of the TUN interface "
+								read lasttun
+							;;
+							*)
+								echo "Type yes or no"
+								exit 1
+							;;
+						esac
+					done
+					routeridlast=$(ifconfig vether0 | grep inet | awk '{print $2}' | cut -d . -f4)
+					sed -i "s/\/TUN\//tun$lasttun/g" "$tmpdir/ES-${publichostname}_netwatch.sh"
+					sed -i "s/\/TUN\//tun$lasttun/g" "$tmpdir/ES-$publichostname-updown.sh"
+					sed -i "s/\/TUN\//tun$lasttun/g" "$tmpdir/gre.sh"
+					sed -i "s/\/ROUTERIDLAST\//$routeridlast/g" "$tmpdir/gre.sh"
+					sed -i "s/\/ROUTERIDLAST\//$routeridlast/g" "$tmpdir/ES-$publichostname-updown.sh"
+					sed -i "s/\/PUBLICHOST\//$publichost/g" "$tmpdir/gre.sh"
+					sed -i "s/\/PUBLICIP\//$publicip/g" "$tmpdir/gre.sh"
+					sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g"  "$tmpdir/ipsec.sh"
+					if [[ -d "/var/www/htdocs/$(hostname)/${vpnc_host}/" ]]; then
+						rm -rf "/var/www/htdocs/$(hostname)/${vpnc_host}/"
+					fi
+					md5=$(awk "/$greinterface/{x=NR+8}(NR<=x){print}" /etc/ospfd.conf  | awk 'FNR == 3 {print}'  | awk '{print $3}' | sed "s/\"//g")
+					#metric=$(awk "/$greinterface/{x=NR+11}(NR<=x){print}" /etc/ospfd.conf  | awk 'FNR == 6 {print}' | awk '{print $2}')
+					cp $basedir/src/edgeos/ospf.sh "$tmpdir"
+					sed -i "s/\/TUN\//tun$lasttun/g" "$tmpdir/ospf.sh"
+					sed -i "s/\/OSPFMD5\//${md5}/g" "$tmpdir/ospf.sh"
+					#sed -i "s/\/METRIC\//${metric}/g" "$tmpdir/ospf.sh"
+					sed -i "s/\/GRENETWORK\//${grenetwork}\/30/g" "$tmpdir/ospf.sh"
+					custom "$tmpdir" 1
+					subdir=$(echo $tmpdir | sed "s/\/tmp\///")
+					tar -cvzf "/tmp/$vpnc_host.tar" -C $tmpdir $(ls $tmpdir)
+					mv "$tmpdir" "/var/www/htdocs/$(hostname)/${vpnc_host}/"
+					mv "/tmp/$vpnc_host.tar" "/var/www/htdocs/$(hostname)/"
+					rm -rf  "$tmpdir"
+					#ipsec update
+					#ipsec up telecomlobby?
+					#clear ip ospf process
+					#systemctl restart ospfd.service
+				fi
+			done
+
+		;;
+	esac
+}
+
+=======
 	for file in $(find /etc -type f -maxdepth 1); do
 		sed -i "s/\/HOSTNAME\//$hostname/g" $file
 		sed -i "s/\/LANDOMAINNAME\//$landomainname/g" $file
@@ -97,12 +1053,62 @@ function custom {
 	done
 }
 
+>>>>>>> master
+>>>>>>> Stashed changes
 function configuration {
 	phase=$1
 	if [[ $# -eq 2 ]]; then
 		subphase=$2
 	fi
 	case $phase in
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+		"static")
+			#ifconfig $egressinterface -inet6
+			install -o root -g wheel -m 0640  $basedir/src/etc/hostname.egress "/etc/hostname.$egressinterface"
+			install -o root -g wheel -m 0640 $basedir/src/etc/mygate /etc/
+			echo "${ipv6ctrl}"
+			if [[ "${ipv6ctrl}" == "static" ]]; then
+				rcctl stop slaacd
+				rcctl disable slaacd
+				tmphostname=$(mktemp)
+				cat "/etc/hostname.$egressinterface" | sed '/^inet6/d' > $tmphostname
+				echo "inet6 -autoconf" >> $tmphostname
+				echo "inet6 -soii" >> $tmphostname
+				echo "inet6 -temporary" >> $tmphostname
+				echo "inet6 $ipv6egress/$ipv6prefix" >> $tmphostname
+				cat $tmphostname > "/etc/hostname.$egressinterface"
+				echo $ipv6defrouter >> /etc/mygate
+			fi
+			echo "arp -s $defaultv4router $macdefaultv4router" > /etc/rc.local
+			arp -s $defaultv4router $macdefaultv4router
+			custom "/etc" "1"
+			echo "nameserver 8.8.8.8" > /etc/resolv.conf
+			rcctl stop dhcpleased
+			rcctl stop resolvd
+			rcctl disable dhcpleased
+			rcctl disable resolvd
+			sh /etc/netstart $egressinterface
+		;;
+		"dynamic")
+			echo "arp -s $defaultv4router $macdefaultv4router" > /etc/rc.local
+			arp -s $defaultv4router $macdefaultv4router
+		;;
+>>>>>>> Stashed changes
+		"basic")
+			echo "dot files"
+			for file in src/home/taglio/.*; do
+				if [[ -e "$file" ]]; then
+					install -o taglio -g wheel -m 0640  $file /home/taglio/ 
+				fi
+			done
+			cleanold "/home/taglio/"
+<<<<<<< Updated upstream
+			for file in src/root/.*; do
+=======
+			for file in $basedir/src/root/.*; do
+=======
 		"basic")
 			echo "dot files"
 			for file in src/home/taglio/.*; do
@@ -112,6 +1118,8 @@ function configuration {
 			done
 			cleanold "/home/taglio/"
 			for file in src/root/.*; do
+>>>>>>> master
+>>>>>>> Stashed changes
 				if [[ -e "$file" ]]; then
 					install -o root -g wheel -m 0640  $file /root/
 				fi
@@ -125,6 +1133,24 @@ function configuration {
 			ln -fs "/usr/share/zoneinfo/$iptmz" /etc/localtime
 			echo "installing automatic update \n"
 			if [[ ! -e "/etc/daily.local" ]]; then
+<<<<<<< Updated upstream
+				install -o root -g wheel -m 0640  src/etc/daily.local /etc/
+=======
+<<<<<<< HEAD
+				install -o root -g wheel -m 0640  $basedir/src/etc/daily.local /etc/
+>>>>>>> Stashed changes
+			elif ! grep -q "pkg_add" "/etc/daily.local"; then
+				cat src/etc/daily.local >> "/etc/daily.local"
+			fi
+			echo "dhclient, resolv.conf.tail, doas.conf, myname and sysctl.conf \n"
+			install -o root -g wheel -m 0644  src/etc/{dhclient.conf,resolv.conf.tail,doas.conf,myname,sysctl.conf} /etc/
+			install -o root -g wheel -m 0640  src/etc/hostname.vio0 /etc/
+			echo "vether"
+<<<<<<< Updated upstream
+			install -o root -g wheel -m 0644  src/etc/hostname.vether0 /etc/
+=======
+			install -o root -g wheel -m 0644  $basedir/src/etc/hostname.vether0 /etc/
+=======
 				install -o root -g wheel -m 0640  src/etc/daily.local /etc/
 			elif ! grep -q "pkg_add" "/etc/daily.local"; then
 				cat src/etc/daily.local >> "/etc/daily.local"
@@ -134,6 +1160,8 @@ function configuration {
 			install -o root -g wheel -m 0640  src/etc/hostname.vio0 /etc/
 			echo "vether"
 			install -o root -g wheel -m 0644  src/etc/hostname.vether0 /etc/
+>>>>>>> master
+>>>>>>> Stashed changes
 			echo "configuring iperf uptimed and oidentd \n"
 			pidof_uptimed=$(pidof "uptimed")
 			if [[ -z $pidof_uptimed ]]; then
@@ -142,6 +1170,38 @@ function configuration {
 			else
 				rcctl restart uptimed || error_exit "$LINENO: ERROR: UPTIMED failed."
 			fi
+<<<<<<< Updated upstream
+			install -o root -g wheel -m 0640  src/etc/rc.local /etc/
+			custom
+=======
+<<<<<<< HEAD
+			custom "/etc" "1"
+>>>>>>> Stashed changes
+			cd /tmp
+			nohup sh /etc/netstart vio0 & 
+			nohup sh /etc/netstart vether0 &
+			cd $basedir
+			sh /etc/rc.local
+			;;	
+		"users")
+			echo "vmail, dsync, _iperfd, wwwuser"
+			if ! getent passwd vmail 1>&-; then 
+				useradd -m -u 2000 -g =uid -c "Virtual Mail" -d /var/vmail -s /sbin/nologin vmail
+			fi
+			if ! getent passwd dsync  1>&-; then 
+				useradd -m -u 2001 -g =uid -c "Dsync Replication" -d /home/dsync -s /bin/ksh dsync
+			fi
+			if ! getent passwd _iperfd  1>&-; then 
+				useradd -m -u 2002 -g =uid -c "Iperfd Daemon" -d /nonexistent -s /sbin/nologin _iperfd
+			fi
+			if ! getent passwd wwwftp  1>&-; then 
+				useradd -u 2003 -g =uid -c "WWW Ftpd user" -d /var/www/htdocs -s /root/Bin/fake_shell.sh wwwftp
+			fi
+<<<<<<< Updated upstream
+			for file in src/home/taglio/Bin/*; do
+=======
+			for file in $basedir/src/home/taglio/Bin/*; do
+=======
 			install -o root -g wheel -m 0640  src/etc/rc.local /etc/
 			custom
 			cd /tmp
@@ -165,10 +1225,34 @@ function configuration {
 				useradd -u 2003 -g =uid -c "WWW Ftpd user" -d /var/www/htdocs -s /root/Bin/fake_shell.sh wwwftp
 			fi
 			for file in src/home/taglio/Bin/*; do
+>>>>>>> master
+>>>>>>> Stashed changes
 				if [[ -e "$file" ]]; then
 					install -o taglio -g wheel -m 0750  $file /home/taglio/Bin/
 				fi
 			done
+<<<<<<< Updated upstream
+			if [[ ! -e /home/taglio/.ssh/id_ed25519 ]]; then
+				doas -u taglio ssh-keygen -t ed25519 -N "" -f /home/taglio/.ssh/id_ed25519
+			fi
+		
+			;;
+=======
+<<<<<<< HEAD
+		;;
+>>>>>>> Stashed changes
+		"scripts")
+			for file in src/root/Bin/*.sh; do
+				if [[ -e "$file" ]]; then
+					install -o root -g wheel -m 0700  $file /root/Bin/
+				fi
+			done
+<<<<<<< Updated upstream
+			cleanold "/root/Bin/"
+			;;
+=======
+		;;
+=======
 			if [[ ! -e /home/taglio/.ssh/id_ed25519 ]]; then
 				doas -u taglio ssh-keygen -t ed25519 -N "" -f /home/taglio/.ssh/id_ed25519
 			fi
@@ -182,11 +1266,50 @@ function configuration {
 			done
 			cleanold "/root/Bin/"
 			;;
+>>>>>>> master
+>>>>>>> Stashed changes
 		"unbound")
 			pidof_unbound=$(pidof "unbound")
 			if [[ -z $pidof_unbound ]]; then
 				rcctl enable unbound
 			fi
+<<<<<<< Updated upstream
+			case $subphase in 
+=======
+<<<<<<< HEAD
+			case $subphase in
+>>>>>>> Stashed changes
+				"local")
+					unbound-anchor -a /var/unbound/db/root.key
+					wget --no-check-certificate https://192.0.47.9/domain/named.root -O /var/unbound/db/root.hints
+					install -o _unbound -g _unbound -m 0750  src/var/unbound/db/ca-certificates.crt /var/unbound/db/
+					chown _unbound:_unbound /var/unbound/db/*
+					install -o _unbound -g _unbound -m 0750  src/var/unbound/etc/unbound-local.conf /var/unbound/etc/unbound.conf
+					install -o _unbound -g _unbound -m 0750  src/var/unbound/etc/remote-control.conf /var/unbound/etc/
+					install -o _unbound -g _unbound -m 0750  src/var/unbound/etc/forward-zone.conf /var/unbound/etc/
+					custom
+					if [[ -z $pidof_unbound ]]; then
+						rcctl start unbound ||  error_exit "$LINENO: ERROR: UNBOUND failed."
+						
+					else
+						rcctl restart unbound ||  error_exit "$LINENO: ERROR: UNBOUND failed."
+					fi
+					cleanold "/var/unbound/etc/"
+					;;
+				"network")
+					install -o _unbound -g _unbound -m 0750  src/var/unbound/etc/unbound.conf /var/unbound/etc/unbound.conf
+					install -o _unbound -g _unbound -m 0750  src/var/unbound/etc/stub-zone.conf /var/unbound/etc/stub-zone.conf
+					rcctl restart unbound ||  error_exit "$LINENO: ERROR: UNBOUND failed."
+					cleanold "/var/unbound/etc/"
+					;;
+			esac
+<<<<<<< Updated upstream
+			;;		
+		"ssh") 
+=======
+		;;
+		"ssh")
+=======
 			case $subphase in 
 				"local")
 					unbound-anchor -a /var/unbound/db/root.key
@@ -214,6 +1337,8 @@ function configuration {
 			esac
 			;;		
 		"ssh") 
+>>>>>>> master
+>>>>>>> Stashed changes
 			publickey=$(ssh-keyscan -t ed25519 ::1 | sed "s/::1/[$publicip,$routerid]/")
 			sshfp=$(ssh-keyscan -D -t ed25519 ::1 | sed "s/::1/$hostname/")
 			if [[ ! -d /etc/ssh/ca ]]; then
@@ -221,8 +1346,20 @@ function configuration {
 			fi
 			case $subphase in
 				"public")
+<<<<<<< Updated upstream
 					install -o root -g wheel -m 0640 src/etc/ssh/sshd_public /etc/ssh/sshd_config
 					install -o root -g wheel -m 0640 src/etc/ssh/authorized_keys /etc/ssh/
+=======
+<<<<<<< HEAD
+					install -o root -g wheel -m 0640 $basedir/src/etc/ssh/sshd_public /etc/ssh/sshd_config
+					install -o root -g wheel -m 0640 $basedir/src/etc/ssh/ssh_config /etc/ssh/
+					#install -o root -g wheel -m 0640 $basedir/src/etc/ssh/ssh_known_hosts /etc/ssh
+					install -o root -g wheel -m 0640 $basedir/src/etc/ssh/authorized_keys /etc/ssh/
+=======
+					install -o root -g wheel -m 0640 src/etc/ssh/sshd_public /etc/ssh/sshd_config
+					install -o root -g wheel -m 0640 src/etc/ssh/authorized_keys /etc/ssh/
+>>>>>>> master
+>>>>>>> Stashed changes
 					workstahost=$(cat /etc/ssh/authorized_keys | cut -d @ -f2)
 					if [[ ! -d "/tmp/$workstahost.$landomainname" ]]; then
 						mkdir "/tmp/$workstahost.$landomainname"
@@ -230,7 +1367,16 @@ function configuration {
 						rm -rf "/tmp/$workstahost.$landomainname"
 						mkdir "/tmp/$workstahost.$landomainname"
 					fi
+<<<<<<< Updated upstream
 					custom
+=======
+<<<<<<< HEAD
+					custom "/etc/ssh" "2"
+					custom "/etc" "1"
+=======
+					custom
+>>>>>>> master
+>>>>>>> Stashed changes
 					rcctl restart sshd || error_exit "$LINENO: ERROR: SSHD failed."
 					;;
 				"ipsec")
@@ -243,7 +1389,15 @@ function configuration {
 				mkdir "/tmp/ca.$landomainname"
 			fi
 			echo $sshfp > "/tmp/ca.$landomainname/$landomainname.zone"
+<<<<<<< Updated upstream
 			;;
+=======
+<<<<<<< HEAD
+		;;
+=======
+			;;
+>>>>>>> master
+>>>>>>> Stashed changes
 		"ipsec")
 			if [[ -e "/etc/iked.conf" ]]; then
 				rm -rf /etc/{iked,iked.conf,iked.conf.*}
@@ -253,22 +1407,70 @@ function configuration {
 			mkdir -p /etc/iked/{ca,certs,crls,export,private,pubkeys}
 			mkdir -p /etc/iked/pubkeys/{ipv4,ipv6,fqdn,ufqdn}
 			cd $basedir
+<<<<<<< Updated upstream
 			install -o root -g wheel -m 0640  src/etc/iked/ca/ca.crt /etc/iked/ca/	
 			openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -nocerts -passin pass:123456789 -passout pass:123456789 -out /etc/iked/private/local.key
+=======
+<<<<<<< HEAD
+			install -o root -g wheel -m 0644  $basedir/src/etc/iked/ca/ca.crt /etc/iked/ca/
+			openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -nocerts -passin pass:123456789 -passout pass:123456789 -out /etc/iked/private/local.key
+			openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "/etc/iked/certs/local.crt"
+			openssl x509 -pubkey -noout -passin pass:123456789 -in "/etc/iked/certs/local.crt"  > /etc/iked/local.pub
+			chmod 0400 /etc/iked/private/local.key
+			chmod 0444 "/etc/iked/certs/local.crt"
+			chmod 0444 /etc/iked/local.pub
+			asn1=$(openssl x509 -in /etc/iked/certs/local.crt -noout -text | grep Subject: | sed "s|Subject: ||" |  sed "s|, |\/|g" | sed "s|        ||")
+			for file in $(find $basedir/src/etc/iked/pubkeys/ufqdn/ -name "*@*"); do
+				install -o root -g wheel -m 0444 $file /etc/iked/pubkeys/ufqdn/
+			done
+			for file in $(find $basedir/src/etc/iked/pubkeys/fqdn/ -name "*.${domainname}"); do
+				install -o root -g wheel -m 0444 $file /etc/iked/pubkeys/fqdn/
+			done
+			for file in $(find $basedir/src/etc/iked/certs/ -name "*.${domainname}.crt"); do
+				install -o root -g wheel -m 0444 $file /etc/iked/certs/
+=======
+			install -o root -g wheel -m 0640  src/etc/iked/ca/ca.crt /etc/iked/ca/	
+			openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -nocerts -passin pass:123456789 -passout pass:123456789 -out /etc/iked/private/local.key
+>>>>>>> Stashed changes
 			openssl pkcs12 -nodes -in "/tmp/$publichost.p12" -clcerts -nokeys -passin pass:123456789 -passout pass:123456789 -out "/etc/iked/certs/$publichost.crt"
 			openssl x509 -pubkey -noout -passin pass:123456789 -in "/etc/iked/certs/$publichost.crt"  > /etc/iked/local.pub
 			for file in $(find src/etc/iked/pubkeys/ufqdn/ -name "*@*"); do
 				install -o root -g wheel -m 0640 $file /etc/iked/pubkeys/ufqdn/
+<<<<<<< Updated upstream
+=======
+>>>>>>> master
+>>>>>>> Stashed changes
 			done
 			rcctl enable iked
 			rcctl set iked flags "-vv"
 			typeset -i i
 			i=0
+<<<<<<< Updated upstream
 			install -o root -g wheel -m 0640  src/etc/iked.conf /etc/
 			custom
 			for vpnc_ip in $(dig vpnc.$domainname A +short @8.8.8.8)
 			do
 				vpnc_host=$(dig -x $vpnc_ip +short @8.8.8.8 | sed 's/.$//')
+=======
+<<<<<<< HEAD
+			install -o root -g wheel -m 0640  $basedir/src/etc/iked.conf /etc/
+			custom "/etc" "1"
+			for vpnc_ip in $(dig vpnc.$domainname A +short @8.8.8.8); do
+				echo "${vpnc_ip}"
+				vpnc_host=$(dig -x $vpnc_ip +short @8.8.8.8 | sed 's/.$//')
+				if [[ "${vpnc_host}" == *rima-tde.net ]]; then
+					 vpnc_host="spr.telecomlobby.com"
+			 	fi
+				vpnc_phn=$(echo "${vpnc_host}" | sed "s|${domainname}||")
+				poplocalhostname="$(dig ipsec20591."${domainname}" TXT +short | sed "s/\"//g" | tr \; '\n' | sed '$d' | grep -w "${vpnc_phn}" | cut -d : -f2)"
+=======
+			install -o root -g wheel -m 0640  src/etc/iked.conf /etc/
+			custom
+			for vpnc_ip in $(dig vpnc.$domainname A +short @8.8.8.8)
+			do
+				vpnc_host=$(dig -x $vpnc_ip +short @8.8.8.8 | sed 's/.$//')
+>>>>>>> master
+>>>>>>> Stashed changes
 				vpnc_ips[i]="$vpnc_ip"
 				vpnc_hosts[i]="$vpnc_host"
 				if [ ! -d "/tmp/$vpnc_host" ]; then
@@ -277,6 +1479,56 @@ function configuration {
 					rm -rf "/tmp/$vpnc_host"
 					mkdir "/tmp/$vpnc_host"
 				fi
+<<<<<<< Updated upstream
+				
+=======
+<<<<<<< HEAD
+
+>>>>>>> Stashed changes
+				echo include \"/etc/iked.conf.$vpnc_host\" >> /etc/iked.conf
+				if [[ $(nc -w1  $vpnc_ip 22 | grep -c "ROSSSH") -eq 1 ]]; then
+					install -o root -g wheel -m 0640 src/etc/iked.conf.mikrotik "/etc/iked.conf.$vpnc_host"
+					if [[ -e "/tmp/$vpnc_host/$vpnc_host.rsc" ]]; then
+						rm -rf "/tmp/$vpnc_host/$vpnc_host.rsc"
+					fi
+					cp src/mikrotik/ipsec.rsc "/tmp/$vpnc_host/$vpnc_host.rsc"
+					sed -i "s/\/POPIP\//$vpnc_ip/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
+					sed -i "s/\/POP\//$vpnc_ip/g" "/tmp/$vpnc_host/$vpnc_host.rsc"
+				elif [[ $(nc -w1  $vpnc_ip 22 | grep -c "ROSSSH") -eq 0 ]]; then
+					install -o root -g wheel -m 0640 src/etc/iked.conf.openbsd "/etc/iked.conf.$vpnc_host"
+					cp src/openbsd/iked.conf.openbsd "/tmp/$vpnc_host/iked.conf.$publichost"
+					x=$((RANDOM%2+1))
+					case $x in
+						1)
+							sed -i "s/\/TYPE\//active/g" "/etc/iked.conf.$vpnc_host"
+							sed -i "s/\/TYPE\//passive/g" "/tmp/$vpnc_host/iked.conf.$publichost"
+							
+						;;
+						2)
+							sed -i "s/\/TYPE\//passive/g" "/etc/iked.conf.$vpnc_host"
+							sed -i "s/\/TYPE\//active/g" "/tmp/$vpnc_host/iked.conf.$publichost"
+						;;
+					esac 
+					sed -i "s/\/POPIP\//$vpnc_ip/g" "/tmp/$vpnc_host/iked.conf.$publichost"
+					sed -i "s/\/POP\//$vpnc_host/g" "/tmp/$vpnc_host/iked.conf.$publichost"
+					srcid=$(print $vpnc_host | cut -d . -f1)
+					for a in $(dig ipsec20591.$domainname TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+						b=$(echo $a | cut -d : -f1)
+						if [ "$b" = "$srcid" ]; then
+							srcid=$(echo $a | cut -d : -f2)
+						fi
+					done
+					sed -i "s/\/POPID\//$srcid/g" "/tmp/$vpnc_host/iked.conf.$publichost"
+				fi
+				sed -i "s/\/POPIP\//$vpnc_ip/g" "/etc/iked.conf.$vpnc_host"
+				sed -i "s/\/POP\//$vpnc_host/g" "/etc/iked.conf.$vpnc_host"
+<<<<<<< Updated upstream
+				sed -i "s/\/X\//$i/g" "/etc/iked.conf.$vpnc_host"
+				install -o root -g wheel -m 0640 src/etc/hostname.enc-X- "/etc/hostname.enc$i"
+=======
+				sed -i "s|/X/|$i|g" "/etc/iked.conf.$vpnc_host"
+				install -o root -g wheel -m 0640 $basedir/src/etc/hostname.enc-X- "/etc/hostname.enc$i"
+=======
 				
 				echo include \"/etc/iked.conf.$vpnc_host\" >> /etc/iked.conf
 				if [[ $(nc -w1  $vpnc_ip 22 | grep -c "ROSSSH") -eq 1 ]]; then
@@ -317,10 +1569,48 @@ function configuration {
 				sed -i "s/\/POP\//$vpnc_host/g" "/etc/iked.conf.$vpnc_host"
 				sed -i "s/\/X\//$i/g" "/etc/iked.conf.$vpnc_host"
 				install -o root -g wheel -m 0640 src/etc/hostname.enc-X- "/etc/hostname.enc$i"
+>>>>>>> master
+>>>>>>> Stashed changes
 				sed -i "s/\/POP\//$vpnc_host/g" "/etc/hostname.enc$i"
 				sh /etc/netstart "enc$i"
 				i=$i+1
 			done
+<<<<<<< Updated upstream
+			dyndnshost=$(dig vpnc.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')
+			if [[ ! -d "/tmp/$dyndnshost" ]]; then
+				mkdir "/tmp/$dyndnshost"
+			else
+				rm -rf "/tmp/$dyndnshost"
+				mkdir "/tmp/$dyndnshost"
+			fi
+			echo include \"/etc/iked.conf.$dyndnshost\" >> /etc/iked.conf
+			install -o root -g wheel -m 0640 src/etc/iked.conf.edgeos "/etc/iked.conf.$dyndnshost"
+			sed -i "s/\/POPIP\//$(dig $dyndnshost A +short | tail -n 1)/g" "/etc/iked.conf.$dyndnshost"
+			sed -i "s/\/POP\//$dyndnshost/g" "/etc/iked.conf.$dyndnshost"
+			sed -i "s/\/X\//$i/g" "/etc/iked.conf.$dyndnshost"
+			install -o root -g wheel -m 0640 src/etc/hostname.enc-X- "/etc/hostname.enc$i"
+			sed -i "s/\/POP\//$dyndnshost/g" "/etc/hostname.enc$i"
+			sh /etc/netstart "enc$i"
+			cp src/edgeos/ipsec.conf "/tmp/$dyndnshost/"
+			cp "/etc/iked/certs/$publichost.crt" "/tmp/$dyndnshost/"
+			find /etc/ -type f -name "iked.*" | xargs -I {} 
+			custom
+=======
+<<<<<<< HEAD
+			find /etc/ -type f -name "iked.*" | xargs -I {}
+			custom "/tmp" "2"
+			custom "/etc" "1"
+>>>>>>> Stashed changes
+			rcctl start iked ||  error_exit "$LINENO: ERROR: IKED failed."
+			;;
+		"gre")	
+			if [[ -e "/etc/hostname.gre0" ]]; then
+				rm -rf /etc/hostname.gre?
+			fi
+<<<<<<< Updated upstream
+=======
+			(: "${routeridlast?}") 2>/dev/null || routeridlast=$(echo $routerid | cut -d . -f4)
+=======
 			dyndnshost=$(dig vpnc.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')
 			if [[ ! -d "/tmp/$dyndnshost" ]]; then
 				mkdir "/tmp/$dyndnshost"
@@ -346,32 +1636,127 @@ function configuration {
 			if [[ -e "/etc/hostname.gre0" ]]; then
 				rm -rf /etc/hostname.gre?
 			fi
+>>>>>>> master
+>>>>>>> Stashed changes
 			typeset -i i
 			typeset -i lasttun
 			lasttun=$(dig gre18994.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')
 			lasttun=$lasttun+1
 			i=0
 			for file in $(find /etc -maxdepth 1 -name "iked.conf.*") ; do
+<<<<<<< Updated upstream
 				install -o root -g wheel -m 0640 src/etc/hostname.gre-X- "/etc/hostname.gre$i"
 				pophost=$(echo $file | sed "s/\/etc\/iked.conf.//")
 				sed -i "s/\/POPHOST\//$pophost/g" "/etc/hostname.gre$i"
 				sed -i "s/\/PUBLICIP\//$publicip/g" "/etc/hostname.gre$i"
 				sed -i "s/\/X\//$i/g" "/etc/hostname.gre$i"
+=======
+<<<<<<< HEAD
+				index=$(cat $file | tail -n 1 | awk '{print $4}' | sed 's/enc//')
+				[[ "${index}" = [0-9] ]] || index=$(cat $file | tail -n 1 | awk '{print $5}' | sed 's/enc//')
+				echo "${index}"
+				install -o root -g wheel -m 0640 "$basedir/src/etc/hostname.gre-X-" "/etc/hostname.gre$index"
+				pophost=$(echo $file | sed "s/\/etc\/iked.conf.//")
+				sed -i "s/\/POPHOST\//$pophost/g" "/etc/hostname.gre$index"
+				if [[ "$pophost" == "uk.telecomlobby.com" ]]; then
+					sed -i "s/\/GROUP\//nsd/g" "/etc/hostname.gre$index"
+				else
+					sed -i "s/\/GROUP\//gre/g" "/etc/hostname.gre$index"
+				fi
+				sed -i "s/\/PUBLICIP\//$publicip/g" "/etc/hostname.gre$index"
+				sed -i "s/\/X\//$index/g" "/etc/hostname.gre$index"
+				sed -i "s/\/ROUTERIDLAST\//$routeridlast/g" "/etc/hostname.gre$index"
+=======
+				install -o root -g wheel -m 0640 src/etc/hostname.gre-X- "/etc/hostname.gre$i"
+				pophost=$(echo $file | sed "s/\/etc\/iked.conf.//")
+				sed -i "s/\/POPHOST\//$pophost/g" "/etc/hostname.gre$i"
+				sed -i "s/\/PUBLICIP\//$publicip/g" "/etc/hostname.gre$i"
+				sed -i "s/\/X\//$i/g" "/etc/hostname.gre$i"
+>>>>>>> master
+>>>>>>> Stashed changes
 				count=$(dig $pophost A +short @8.8.8.8 | wc -l)
 				if [[ $count -gt 1 ]]; then
 					popip=$(dig $pophost A +short @8.8.8.8 | tail -n 1)
 				else
 					popip=$(dig $pophost A +short @8.8.8.8)
 				fi
+<<<<<<< Updated upstream
 				sed -i "s/\/POPIP\//$popip/g" "/etc/hostname.gre$i"
 				if [ $i -eq 0 ]; then
 					typeset -i lastnet
 					lastnet=$(dig gre7058.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')
+=======
+<<<<<<< HEAD
+				sed -i "s/\/POPIP\//$popip/g" "/etc/hostname.gre$index"
+				if [ $i -eq 0 ]; then
+					typeset -i lastnet
+					ctrl=
+					while [ -z $ctrl ]
+					do
+						echo 'Type last gre network or get from DNS? [net|dns]: '
+						read ctrl
+					done
+					case "${ctrl}" in
+						"net")
+							lastnet=
+							while [ -z $net ]
+							do
+								echo 'Type last octet used in gre networks [0-255]: '
+								read lastnet
+							done
+						;;
+						"dns")
+							lastnet=$(dig gre7058.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')
+						;;
+					esac
+=======
+				sed -i "s/\/POPIP\//$popip/g" "/etc/hostname.gre$i"
+				if [ $i -eq 0 ]; then
+					typeset -i lastnet
+					lastnet=$(dig gre7058.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')
+>>>>>>> master
+>>>>>>> Stashed changes
 				else
 					lastnet=$lastnet-4
 				fi
 				typeset -i grepopip
 				grepopip=$lastnet-2
+<<<<<<< Updated upstream
+				sed -i "s/\/GREPOPIP\//10.10.10.$grepopip/g" "/etc/hostname.gre$i"
+=======
+<<<<<<< HEAD
+				sed -i "s/\/GREPOPIP\//"${grecursubnet}".$grepopip/g" "/etc/hostname.gre$index"
+>>>>>>> Stashed changes
+				typeset -i  grelocalip
+				grelocalip=$lastnet-3
+				sed -i "s/\/GRELOCALIP\//10.10.10.$grelocalip/g" "/etc/hostname.gre$i"
+				if grep -q "ecp384" $file; then
+					cat src/mikrotik/gre.rsc >> "/tmp/$pophost/$pophost.rsc"
+					sed -i "s/\/GREPOPIP\//10.10.10.$grepopip\/32/g" "/tmp/$pophost/$pophost.rsc"
+				elif grep -q "ecp256" $file; then
+					cp src/edgeos/scripts/ES-SRCID-_netwatch.sh "/tmp/$pophost/ES-${publichostname}_netwatch.sh" 
+					cp src/edgeos/scripts/ES-SRCID--updown.sh "/tmp/$pophost/ES-$publichostname-updown.sh"
+					cp src/edgeos/gre.sh "/tmp/$pophost/"
+					sed -i "s/\/GREPOPIP\//10.10.10.$grepopip/g" "/tmp/$pophost/ES-${publichostname}_netwatch.sh"
+					sed -i "s/\/GREPOPIP\//10.10.10.$grepopip/g" "/tmp/$pophost/gre.sh"
+					sed -i "s/\/PUBLICHOSTNAME\//$publichostname/g" "/tmp/$pophost/ES-${publichostname}_netwatch.sh"
+					sed -i "s/\/TUN\//tun$lasttun/g" "/tmp/$pophost/ES-${publichostname}_netwatch.sh"
+					sed -i "s/\/TUN\//tun$lasttun/g" "/tmp/$pophost/ES-$publichostname-updown.sh"
+					sed -i "s/\/TUN\//tun$lasttun/g" "/tmp/$pophost/gre.sh"
+				else
+					cp src/openbsd/hostname.gre.openbsd "/tmp/$pophost/hostname.gre$lasttun"
+					sed -i "s/\/PUBLICHOST\//$publichost/g" "/tmp/$pophost/hostname.gre$lasttun"
+					sed -i "s/\/X\//$lasttun/g" "/tmp/$pophost/hostname.gre$lasttun"
+					sed -i "s/\/POPIP\//$popip/g" "/tmp/$pophost/hostname.gre$lasttun"
+					sed -i "s/\/PUBLICIP\//$publicip/g" "/tmp/$pophost/hostname.gre$lasttun"
+<<<<<<< Updated upstream
+					sed -i "s/\/GREPOPIP\//10.10.10.$grepopip/g" "/tmp/$pophost/hostname.gre$lasttun"
+					sed -i "s/\/GRELOCALIP\//10.10.10.$grelocalip/g" "/tmp/$pophost/hostname.gre$lasttun"
+=======
+					sed -i "s/\/GREPOPIP\//"${grecursubnet}".$grepopip/g" "/tmp/$pophost/hostname.gre$lasttun"
+					sed -i "s/\/GRELOCALIP\//"${grecursubnet}".$grelocalip/g" "/tmp/$pophost/hostname.gre$lasttun"
+					sed -i "s/\/ROUTERIDLAST\//$routeridlast/g" "/tmp/$pophost/hostname.gre$lasttun"
+=======
 				sed -i "s/\/GREPOPIP\//10.10.10.$grepopip/g" "/etc/hostname.gre$i"
 				typeset -i  grelocalip
 				grelocalip=$lastnet-3
@@ -397,12 +1782,43 @@ function configuration {
 					sed -i "s/\/PUBLICIP\//$publicip/g" "/tmp/$pophost/hostname.gre$lasttun"
 					sed -i "s/\/GREPOPIP\//10.10.10.$grepopip/g" "/tmp/$pophost/hostname.gre$lasttun"
 					sed -i "s/\/GRELOCALIP\//10.10.10.$grelocalip/g" "/tmp/$pophost/hostname.gre$lasttun"
+>>>>>>> master
+>>>>>>> Stashed changes
 				fi
 				i=$i+1
 			done
 			lastnet=$lastnet-4
 			echo "update gre7058.$domainname TXT to $lastnet \
 			      \n gre18994.$domainname TXT to $lasttun \n"
+<<<<<<< Updated upstream
+		      	custom
+			for file in /etc/hostname.gre? ; do
+=======
+<<<<<<< HEAD
+	      	custom "/etc" "1"
+			sleep 2
+				for file in /etc/hostname.gre*[0-9] ; do
+>>>>>>> Stashed changes
+				sh /etc/netstart $(echo $file | awk -F. '{print $2}')
+			done
+			cleanold "/etc/"
+			;;
+		"pf")
+			for file in src/etc/pf.* ; do
+				if [[ -e "$file" ]]; then
+					install -o root -g wheel -m 0640  $file /etc/
+				fi
+			done 
+			cleanold "/etc/"
+			for vpnc_ip in $(dig vpnc.$domainname A +short @8.8.8.8); do
+				echo "$vpnc_ip/32" >> /etc/pf.conf.table.ipsec
+			done
+			for file in $(find /tmp -name "*.rsc"); do
+				cat src/mikrotik/firewall.rsc >> "$file"
+			done
+<<<<<<< Updated upstream
+=======
+=======
 		      	custom
 			for file in /etc/hostname.gre? ; do
 				sh /etc/netstart $(echo $file | awk -F. '{print $2}')
@@ -422,6 +1838,7 @@ function configuration {
 			for file in $(find /tmp -name "*.rsc"); do
 				cat src/mikrotik/firewall.rsc >> "$file"
 			done
+>>>>>>> Stashed changes
 			find /etc -type f -maxdepth 1 | xargs -I {} sed -i "s/\/PUBV6\//${ipv6egress}/g" {}
 			find /etc -type f -maxdepth 1 | xargs -I {} sed -i "s/\/PREFIX\//${ipv6prefix}/g" {}
 			if [[ -e "/etc/mygate" ]]; then
@@ -430,6 +1847,10 @@ function configuration {
 					route add -inet6 default $(cat "/etc/mygate")
 				fi
 			fi
+<<<<<<< Updated upstream
+=======
+>>>>>>> master
+>>>>>>> Stashed changes
 			for file in $(find /etc -maxdepth 1 -name "iked.conf.*") ; do
 				tagged=$(echo $file | sed "s/\/etc\/iked.conf.//")
 				count=$(dig $tagged A +short @8.8.8.8 | wc -l)
@@ -438,33 +1859,98 @@ function configuration {
 				else
 					iptagged=$(dig $tagged A +short @8.8.8.8)
 				fi
+<<<<<<< Updated upstream
+				sed -i "s/\/TAGGED\//${tagged}/g" /etc/pf.conf.macro.enc.{in,out}	
+=======
+<<<<<<< HEAD
+				sed -i "s/\/TAGGED\//${tagged}/g" /etc/pf.conf.macro.enc.{in,out}
+>>>>>>> Stashed changes
+				sed -i "s/\/IPTAGGED\//${iptagged}/g" /etc/pf.conf.macro.enc.{in,out}
+				cat src/openbsd/pf.conf.openbsd | head -n 1 >> /etc/pf.conf.macro.enc.in
+				cat src/openbsd/pf.conf.openbsd | tail -n 1 >> /etc/pf.conf.macro.enc.out
+			done
+			sed -i '$d' /etc/pf.conf.macro.enc.{in,out}
+<<<<<<< Updated upstream
+=======
+
+			custom "/etc" "1"
+=======
 				sed -i "s/\/TAGGED\//${tagged}/g" /etc/pf.conf.macro.enc.{in,out}	
 				sed -i "s/\/IPTAGGED\//${iptagged}/g" /etc/pf.conf.macro.enc.{in,out}
 				cat src/openbsd/pf.conf.openbsd | head -n 1 >> /etc/pf.conf.macro.enc.in
 				cat src/openbsd/pf.conf.openbsd | tail -n 1 >> /etc/pf.conf.macro.enc.out
 			done
 			sed -i '$d' /etc/pf.conf.macro.enc.{in,out}
+>>>>>>> Stashed changes
 			sed -i "s/\/LANDOMAINNAME\//${landomainname}/g" /etc/pf.conf
 			arp -s $defaultv4router $macdefaultv4router
 			if [[ $(grep -c "arp" /etc/rc.local) -ne 1 ]]; then
 				echo "arp -s $defaultv4router $macdefaultv4router" >> /etc/rc.local
 			fi
 			custom
+<<<<<<< Updated upstream
+=======
+>>>>>>> master
+>>>>>>> Stashed changes
 			pfctrl=$(pfctl -nf /etc/pf.conf)
 			if [[ -z $pfctrl ]]; then
 				echo "PF ruleset OK"
 			fi
+<<<<<<< Updated upstream
+			;;
+=======
+<<<<<<< HEAD
+		;;
+>>>>>>> Stashed changes
+		"ospf")
+			rcctl enable ospfd
+			install -o root -g wheel -m 0600  src/etc/ospfd.conf /etc/
+			sed -i "s/\/ROUTERID\//$routerid/g" /etc/ospfd.conf
+<<<<<<< Updated upstream
+			for file in $(find /etc/ -name "hostname.gre?" -maxdepth 1); do
+=======
+			for file in $(find /etc/ -name "hostname.gre*[0-9]" -maxdepth 1); do
+=======
 			;;
 		"ospf")
 			rcctl enable ospfd
 			install -o root -g wheel -m 0600  src/etc/ospfd.conf /etc/
 			sed -i "s/\/ROUTERID\//$routerid/g" /etc/ospfd.conf
 			for file in $(find /etc/ -name "hostname.gre?" -maxdepth 1); do
+>>>>>>> master
+>>>>>>> Stashed changes
 				x=$(basename $file | cut -d . -f2 | sed "s/gre//g")
 				sed -i "s/\/X\//$x/g" /etc/ospfd.conf
 				ospfmd5=$(tr -cd '[:alnum:],.' < /dev/urandom | fold -w 15 | head -n 1)
 				sed -i "s/\/OSPFMD5\//${ospfmd5}/g" /etc/ospfd.conf
 				pophost=$(cat /etc/`basename $file` | head -n 1 | cut -d ' ' -f2 | sed "s/\"//g")
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+				#popip=$(dig $pophost A +short @8.8.8.8)
+>>>>>>> Stashed changes
+				typeset -i latency=$(ping -c4 $pophost | tail -1| awk '{print $4}' | cut -d '/' -f 2 | cut -d . -f1)
+				typeset -i metric=$(expr $latency / 2)
+				sed -i "s/\/METRIC\//${metric}/g" /etc/ospfd.conf
+				cat src/openbsd/ospfd.conf.openbsd >> /etc/ospfd.conf	
+				if [[ $(ls "/tmp/$pophost/" | grep -c "hostname") -eq 1 ]]; then
+					typeset -i lasttun
+					lasttun=$(dig gre18994.$domainname TXT +short @8.8.8.8 | sed 's/\"//g')
+					lasttun=$lasttun+1
+					cp src/openbsd/ospfd.conf.openbsd "/tmp/$pophost/ospfd.conf"
+					sed -i "s/\/X\//$lasttun/g" "/tmp/$pophost/ospfd.conf"	
+					sed -i "s/\/METRIC\//${metric}/g" "/tmp/$pophost/ospfd.conf"	
+					sed -i "s/\/OSPFMD5\//${ospfmd5}/g" "/tmp/$pophost/ospfd.conf"
+				elif [[ $(ls "/tmp/$pophost/" | grep -c "rsc") -eq 1 ]]; then
+					pophostname=$(echo $pophost | cut -d . -f1)
+					cp src/mikrotik/ospfd.rsc "/tmp/$pophost"
+					sed -i "s/\/HOSTNAME\//${hostname}/g" "/tmp/$pophost/ospfd.rsc"
+					sed -i "s/\/OSPFMD5\//${ospfmd5}/g" "/tmp/$pophost/ospfd.rsc"
+<<<<<<< Updated upstream
+					sed -i "s/\/METRIC\//${metric}/g" "/tmp/$pophost/ospfd.rsc"
+=======
+					#sed -i "s/\/METRIC\//${metric}/g" "/tmp/$pophost/ospfd.rsc"
+=======
 				typeset -i latency=$(ping -c4 $pophost | tail -1| awk '{print $4}' | cut -d '/' -f 2 | cut -d . -f1)
 				typeset -i metric=$(expr $latency / 2)
 				sed -i "s/\/METRIC\//${metric}/g" /etc/ospfd.conf
@@ -483,12 +1969,36 @@ function configuration {
 					sed -i "s/\/HOSTNAME\//${hostname}/g" "/tmp/$pophost/ospfd.rsc"
 					sed -i "s/\/OSPFMD5\//${ospfmd5}/g" "/tmp/$pophost/ospfd.rsc"
 					sed -i "s/\/METRIC\//${metric}/g" "/tmp/$pophost/ospfd.rsc"
+>>>>>>> master
+>>>>>>> Stashed changes
 					typeset -u pophostname=$pophostname
 					sed -i "s/\/POPHOSTNAME\//${pophostname}/g" "/tmp/$pophost/ospfd.rsc"
 					greip=$(ifconfig `basename $file | cut -d . -f2` |  grep inet | cut -d ' ' -f2 | tail -n 1)
 					grenetwork=$(ipcalc -c $greip / 30 | grep network | awk '{ print $3 }')
 					sed -i "s/\/GRENETWORK\//${grenetwork}/g" "/tmp/$pophost/ospfd.rsc"
 					cat "/tmp/$pophost/ospfd.rsc" >> "/tmp/$pophost/$pophost.rsc"
+<<<<<<< Updated upstream
+				else
+=======
+<<<<<<< HEAD
+				elif [[ $(ls "/tmp/$pophost/" | grep -c "netwatch") -eq 1 ]]; then
+>>>>>>> Stashed changes
+					tunif=$(cat "/tmp/$pophost/gre.sh" | awk '{ print $4 }' | grep tun | head -n 1)
+					cp src/edgeos/ospf.sh "/tmp/$pophost/"
+					sed -i "s/\/TUNIF\//${tunif}/g" "/tmp/$pophost/ospf.sh"
+					sed -i "s/\/OSPFMD5\//${ospfmd5}/g" "/tmp/$pophost/ospf.sh"
+					sed -i "s/\/METRIC\//${metric}/g" "/tmp/$pophost/ospf.sh"
+				fi
+			done
+			cat /etc/ospfd.conf | sed -n -e :a -e '1,12!{P;N;D;};N;ba' > /tmp/ospfd.conf
+			mv /tmp/ospfd.conf /etc/ospfd.conf
+			echo "}" >> /etc/ospfd.conf
+			chmod 600 /etc/ospfd.conf
+<<<<<<< Updated upstream
+			custom
+=======
+			custom "/etc" "1"
+=======
 				else
 					tunif=$(cat "/tmp/$pophost/gre.sh" | awk '{ print $4 }' | grep tun | head -n 1)
 					cp src/edgeos/ospf.sh "/tmp/$pophost/"
@@ -502,12 +2012,30 @@ function configuration {
 			echo "}" >> /etc/ospfd.conf
 			chmod 600 /etc/ospfd.conf
 			custom
+>>>>>>> master
+>>>>>>> Stashed changes
 			pidof_ospfd=$(pidof "ospfd")
 			if [[ -z $pidof_ospfd ]]; then
 				rcctl start ospfd ||  error_exit "$LINENO: ERROR: OSPFD failed."
 			else
 				rcctl restart ospfd ||  error_exit "$LINENO: ERROR: OSPFD failed."
 			fi
+<<<<<<< Updated upstream
+			;;
+=======
+<<<<<<< HEAD
+		;;
+>>>>>>> Stashed changes
+		"ntpd")
+			install -o root -g wheel -m 0644  src/etc/ntpd.conf /etc/
+			cleanold "/etc/"
+			rcctl restart ntpd  ||  error_exit "$LINENO: ERROR: NTPD failed."
+			;;	
+		"remote")
+<<<<<<< Updated upstream
+=======
+
+=======
 			;;
 		"ntpd")
 			install -o root -g wheel -m 0644  src/etc/ntpd.conf /etc/
@@ -515,10 +2043,411 @@ function configuration {
 			rcctl restart ntpd  ||  error_exit "$LINENO: ERROR: NTPD failed."
 			;;	
 		"remote")
+>>>>>>> master
+>>>>>>> Stashed changes
 			for file in $(find /tmp -type d -maxdepth 1); do
 				filename=$(basename $file)
 				typeset -i dots=$(echo $filename| tr -cd '.' | wc -c)
 				if [[ $dots -eq 2 ]]; then
+<<<<<<< Updated upstream
+					tar -cvf "/tmp/$filename.tar" -C /tmp -s /tmp// $file
+					sha256 -q "$file.tar" > "/tmp/$filename.sha256"
+=======
+<<<<<<< HEAD
+					if [[ $(ls $file/ | grep -c "hostname") -eq 2 ]]; then
+						tar -cvf "/tmp/$filename.tar" -C /tmp -s /tmp// $file
+						sha256 -q "$file.tar" > "/tmp/$filename.sha256"
+						if [[ ! -d "/var/www/htdocs/$publichost" ]]; then
+							mkdir "/var/www/htdocs/$publichost"
+						fi
+						mv "/tmp/$filename.tar" "/var/www/htdocs/$publichost"
+						mv "/tmp/$filename.sha256" "/var/www/htdocs/$publichost"
+						rm -rf $file
+					fi
+>>>>>>> Stashed changes
+				fi
+			done
+			;;	
+	esac
+}
+
+configini=
+if [[ ! -e "/tmp/config.ini" ]]; then
+	touch "/tmp/config.ini"
+else
+	echo -n "Type 1 to use /tmp/config.ini "
+	read configini 
+fi
+
+
+
+echo "changing installurl"
+if [[ $configini -eq 1 ]]; then
+	install -o root -g wheel -m 0644 src/etc/installurl /etc/
+else
+	ctrl=
+	while [ -z $ctrl ]
+	do
+		echo -n 'Go ahead type 1 '
+		read ctrl
+		if [[ "$ctrl" -eq 1 ]]; then
+			install -o root -g wheel -m 0644 src/etc/installurl /etc/
+			echo "installurl#$ctrl" > /tmp/config.ini
+		else
+			error_exit "$LINENO: EXIT FROM USER." 
+		fi
+	    
+	done		
+fi
+echo "adding basic shell packages"
+if [[ $configini -eq 1 ]]; then
+	pkg "shell"
+else
+ctrl=
+	while [ -z $ctrl ]
+	do
+		echo -n 'Go ahead type 1 '
+		read ctrl
+		if [[ "$ctrl" -eq 1 ]]; then
+			pkg "shell"
+			echo "shell#$ctrl" >> /tmp/config.ini
+		else
+			error_exit "$LINENO: EXIT FROM USER." 
+		fi
+	    
+	done
+fi
+
+rcctl disable {sndiod,slaacd,check_quotas}
+rcctl stop {sndiod,slaacd}
+
+echo "configuring users"
+if [[ $configini -eq 1 ]]; then
+	if [ ! -d /root/Bin ]; then 
+		mkdir /root/Bin
+		chmod 700 /root/Bin
+	fi
+	if [ ! -d /root/Backups ]; then 
+		mkdir /root/Backups
+		chmod 700 /root/Backups
+	fi
+	if [ ! -d /home/taglio/Bin ]; then 
+		mkdir /home/taglio/Bin 
+		chown taglio:wheel /home/taglio/Bin
+	fi
+	
+	configuration "users"
+	configuration "scripts"
+else
+	ctrl=
+	while [ -z $ctrl ]
+	do
+		echo -n 'Go ahead type 1 '
+		read ctrl
+		if [[ "$ctrl" -eq 1 ]]; then
+			if [ ! -d /root/Bin ]; then 
+				mkdir /root/Bin
+				chmod 700 /root/Bin
+			fi
+			if [ ! -d /root/Backups ]; then 
+				mkdir /root/Backups
+				chmod 700 /root/Backups
+			fi
+			if [ ! -d /home/taglio/Bin ]; then 
+				mkdir /home/taglio/Bin 
+				chown taglio:wheel /home/taglio/Bin
+			fi
+			
+			configuration "users"
+			configuration "scripts"
+			echo "users#$ctrl" >> /tmp/config.ini
+		else
+			error_exit "$LINENO: EXIT FROM USER." 
+		fi
+	    
+	done
+fi
+if [[ $configini -eq 1 ]]; then
+	hostname=$(cat /tmp/config.ini  | grep hostname |cut -d \# -f2)
+else
+	hostname=
+	while [ -z $hostname ]
+	do
+		echo -n 'Type the hostname '
+		read hostname
+		echo "hostname#$hostname" >> /tmp/config.ini
+	done
+fi
+if [[ $configini -eq 1 ]]; then
+	landomainname=$(cat /tmp/config.ini  | grep landomainname |cut -d \# -f2)
+else
+	landomainname=
+	while [ -z $landomainname ]
+	do
+		echo -n 'Type the LAN domain name '
+		read landomainname
+		echo "landomainname#$landomainname" >> /tmp/config.ini
+	done
+fi
+if [[ $configini -eq 1 ]]; then
+	routerid=$(cat /tmp/config.ini  | grep routerid |cut -d \# -f2)
+else
+	routerid=
+	while [ -z $routerid ]
+	do
+		echo -n 'Type the routerid '
+		read routerid
+		echo "routerid#$routerid" >> /tmp/config.ini
+	done
+fi
+srcid=$(print $publichost | cut -d . -f1)
+typeset -u publichostname=$srcid
+domainname=$(print $publichost | sed "s/$srcid.//")
+for a in $(dig ipsec20591.$domainname TXT +short @8.8.8.8 | sed "s/\"//g" | tr \; '\n' | sed '$d'); do
+	b=$(echo $a | cut -d : -f1)
+	if [ "$b" = "$srcid" ]; then
+		srcid=$(echo $a | cut -d : -f2)
+	fi
+done
+
+echo "configuring basic"
+if [[ $configini -eq 1 ]]; then
+	configuration "basic" 
+else
+	ctrl=
+	while [ -z $ctrl ]
+	do
+		echo -n 'Go ahead type 1 '
+		read ctrl
+		if [[ "$ctrl" -eq 1 ]]; then
+			configuration "basic" 
+			echo "basic#$ctrl" >> /tmp/config.ini
+		else
+			error_exit "$LINENO: EXIT FROM USER." 
+		fi
+	    
+	done
+fi
+
+echo "configuring unbound"
+if [[ $configini -eq 1 ]]; then
+	sleep 3
+	configuration "unbound" "local"
+else
+	ctrl=
+	while [ -z $ctrl ]
+	do
+		echo -n 'Go ahead type 1 '
+		read ctrl
+		if [[ "$ctrl" -eq 1 ]]; then
+			configuration "unbound" "local"
+			echo "unbound#$ctrl" >> /tmp/config.ini
+		else
+			error_exit "$LINENO: EXIT FROM USER." 
+		fi
+	    
+	done
+fi
+echo -n "configuring ssh \n"
+if [[ $configini -eq 1 ]]; then
+	configuration "ssh" "public"
+else
+	ctrl=
+	while [ -z $ctrl ]
+	do
+		echo -n 'Go ahead type 1 '
+		read ctrl
+		if [[ "$ctrl" -eq 1 ]]; then
+			configuration "ssh" "public"
+			echo "ssh#$ctrl" >> /tmp/config.ini
+		else
+			error_exit "$LINENO: EXIT FROM USER." 
+		fi
+	done
+fi
+echo -n "configuring ipsec \
+	\nplease add ${publicip}/32 to \
+	\n/etc/pf.conf/table.ipsec \
+	\nto the others nodes and reload them! \
+	\n"
+if [[ $configini -eq 1 ]]; then
+	configuration "ipsec" 
+else
+	ctrl=
+	while [ -z $ctrl ]
+	do
+		echo -n 'Go ahead type 1 '
+		read ctrl
+		if [[ "$ctrl" -eq 1 ]]; then
+			configuration "ipsec" 
+			echo "ipsec#$ctrl" >> /tmp/config.ini
+		else
+			error_exit "$LINENO: EXIT FROM USER." 
+		fi
+	done
+fi
+if [[ $configini -eq 1 ]]; then
+	configuration "gre" 
+else
+	echo -n "configuring gre interfaces \
+		\n"
+	ctrl=
+	while [ -z $ctrl ]
+	do
+		echo -n 'Go ahead type 1 '
+		read ctrl
+		if [[ "$ctrl" -eq 1 ]]; then
+			configuration "gre" 
+			echo "gre#$ctrl" >> /tmp/config.ini
+		else
+			error_exit "$LINENO: EXIT FROM USER." 
+		fi
+	done
+fi
+
+ipv6ctrl=
+ipv6egress=
+ipv6prefix=
+ipv6defrouter=
+
+if [[ $configini -eq 1 ]]; then
+	ipv6ctrl=$(cat /tmp/config.ini  | grep ipv6ctrl |cut -d \# -f2)
+	case $ipv6ctrl in
+		"static")
+			ipv6egress=$(cat /tmp/config.ini  | grep ipv6egress |cut -d \# -f2)
+			ipv6prefix=$(cat /tmp/config.ini  | grep ipv6prefix |cut -d \# -f2)
+			ipv6defrouter=$(cat /tmp/config.ini  | grep ipv6defrouter |cut -d \# -f2)
+			;;
+		"dynamic")
+			ipv6egress=$(ifconfig egress | grep inet6 | grep -v fe80 |cut -d ' ' -f2)
+			;;
+	esac
+	if [[ ! -z ipv6defrouter ]]; then
+		install -o root -g wheel -m 0640 src/etc/hostname-ipv6s.vio0 /etc/hostname.vio0
+		install -o root -g wheel -m 0640 src/etc/mygate-ipv6s /etc/mygate
+		sed -i "s/\/ROUTEV6\//$ipv6defrouter/g" /etc/mygate
+	fi
+else	
+	while [ -z $ipv6ctrl ]
+	do
+		echo -n 'Is the IPv6 address on the egress interface static or dynamic?\n'
+		read ipv6ctrl
+		echo "ipv6ctrl#$ipv6ctrl" >> /tmp/config.ini
+		case $ipv6ctrl in
+			"static")
+				echo -n 'Type the IPv6 address without prefixlen '
+				read ipv6egress
+				echo -n 'Type the prefixlen '
+				read ipv6prefix
+				echo -n 'Type the IPv6 default route '
+				read ipv6defrouter
+				echo "ipv6egress#$ipv6egress" >> /tmp/config.ini
+				echo "ipv6prefix#$ipv6prefix" >> /tmp/config.ini
+				echo "ipv6defrouter#$ipv6defrouter" >> /tmp/config.ini
+				;;
+			"dynamic")
+				ipv6egress=$(ifconfig egress | grep inet6 | grep -v fe80 |cut -d ' ' -f2)
+				echo "ipv6egress#$ipv6egress" >> /tmp/config.ini
+				;;
+			*)
+				echo -n "Please type static or dynamic \n"
+				continue
+				;;
+		esac	
+		if [[ ! -z ipv6defrouter ]]; then
+			install -o root -g wheel -m 0640 src/etc/hostname-ipv6s.vio0 /etc/hostname.vio0
+			install -o root -g wheel -m 0640 src/etc/mygate-ipv6s /etc/mygate
+			sed -i "s/\/ROUTEV6\//$ipv6defrouter/g" /etc/mygate
+		fi
+		
+	done
+fi
+
+echo -n "configuring PF firewall and others environments \n"
+if [[ $configini -eq 1 ]]; then
+	configuration "pf"
+else 
+	ctrl=
+	while [ -z $ctrl ]
+	do
+		echo -n 'Go ahead type 1 '
+		read ctrl
+		if [[ "$ctrl" -eq 1 ]]; then
+			configuration "pf" 
+			echo "pf#$ctrl" >> /tmp/config.ini
+		else
+			error_exit "$LINENO: EXIT FROM USER." 
+		fi
+	done
+fi
+
+echo -n "configuring OSPF routing protocol \n"
+if [[ $configini -eq 1 ]]; then
+	configuration "ospf"
+else 
+	ctrl=
+	while [ -z $ctrl ]
+	do
+		echo -n 'Go ahead type 1 '
+		read ctrl
+		if [[ "$ctrl" -eq 1 ]]; then
+			configuration "ospf" 
+			echo "ospf#$ctrl" >> /tmp/config.ini
+		else
+			error_exit "$LINENO: EXIT FROM USER." 
+		fi
+	done
+fi
+
+echo -n "preparing archives, signing them and start the remote install procedure \n"
+if [[ $configini -eq 1 ]]; then
+	configuration "remote"
+else 
+	ctrl=
+	while [ -z $ctrl ]
+	do
+		echo -n 'Go ahead type 1 '
+		read ctrl
+		if [[ "$ctrl" -eq 1 ]]; then
+			configuration "remote" 
+			echo "remote#$ctrl" >> /tmp/config.ini
+		else
+			error_exit "$LINENO: EXIT FROM USER." 
+		fi
+	done
+fi
+
+
+<<<<<<< Updated upstream
+=======
+	;;
+	"-A")
+		if [[ $# -ne 2 ]]; then
+			print $0 "ADMINISTRATE option must be followed by: \
+				\n \
+				\ncleanlast \
+				\nsslcareq \
+				\notheros \
+				\n"
+			exit 1
+		fi
+		case $2 in
+			"cleanlast")
+				admin "cleanlast"
+			;;
+			"sslcareq")
+				admin "sslcareq"
+			;;
+			"otheros")
+				admin "otheros"
+			;;
+		esac
+	;;
+	*)
+		exit 1
+	;;
+esac
+=======
 					tar -cvf "/tmp/$filename.tar" -C /tmp -s /tmp// $file
 					sha256 -q "$file.tar" > "/tmp/$filename.sha256"
 				fi
@@ -874,3 +2803,5 @@ else
 fi
 
 
+>>>>>>> master
+>>>>>>> Stashed changes

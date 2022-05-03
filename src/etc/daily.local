@@ -1,3 +1,52 @@
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+next_part "Checking local 4.4BSD.dist files and directories:"
+
+if [ -O /etc/mtree/4.4BSD.dist -a \
+     -G /etc/mtree/4.4BSD.dist -a \
+   ! -L /etc/mtree/4.4BSD.dist -a \
+     -r /etc/mtree/4.4BSD.dist -a \
+     -w /etc/mtree/4.4BSD.dist -a \
+   ! -x /etc/mtree/4.4BSD.dist ]; then
+	echo "\tcriteria (shouldbe, reallyis)"
+	mtree -e -p / -f /etc/mtree/4.4BSD.dist
+fi
+
+next_part "Checking local special files and directories:"
+
+if [ -O /etc/mtree/special -a \
+     -G /etc/mtree/special -a \
+   ! -L /etc/mtree/special -a \
+     -r /etc/mtree/special -a \
+     -w /etc/mtree/special -a \
+   ! -x /etc/mtree/special ]; then
+	echo "\tcriteria (shouldbe, reallyis)"
+	mtree -e -p / -f /etc/mtree/special
+fi
+
+next_part "Checking local special.local files and directories:"
+if [ -O /etc/mtree/special.local -a \
+     -G /etc/mtree/special.local -a \
+   ! -L /etc/mtree/special.local -a \
+     -r /etc/mtree/special.local -a \
+     -w /etc/mtree/special.local -a \
+   ! -x /etc/mtree/special.local ]; then
+	echo "\tcriteria (shouldbe, reallyis)"
+	mtree -e -p / -f /etc/mtree/special.local
+fi
+
+>>>>>>> Stashed changes
 next_part "Checking packages:"
 pkg_add -u
 
+<<<<<<< Updated upstream
+=======
+next_part "DNS statistics:"
+unbound-control stats
+=======
+next_part "Checking packages:"
+pkg_add -u
+
+>>>>>>> master
+>>>>>>> Stashed changes

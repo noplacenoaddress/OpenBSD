@@ -1,3 +1,12 @@
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+Host *.telecomlobby.com
+	IdentityFile /root/.ssh/id_ed25519
+	User root
+
+=======
+>>>>>>> Stashed changes
 Host *
 	IdentityFile ~/.ssh/id_ed25519
 	SendEnv LANG LC_*
@@ -5,5 +14,9 @@ Host *
 	GSSAPIAuthentication yes
 	VerifyHostKeyDNS ask
 	VisualHostKey yes
+<<<<<<< Updated upstream
+=======
+>>>>>>> master
+>>>>>>> Stashed changes
 
 

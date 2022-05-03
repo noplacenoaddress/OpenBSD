@@ -1,2 +1,10 @@
+<<<<<<< Updated upstream
 pass in quick on enc proto gre from $pub to /IPTAGGED/ tagged /TAGGED/
+=======
+<<<<<<< HEAD
+pass in quick on enc proto gre from /IPTAGGED/ to $pub tagged /TAGGED/
+=======
+pass in quick on enc proto gre from $pub to /IPTAGGED/ tagged /TAGGED/
+>>>>>>> master
+>>>>>>> Stashed changes
 pass out quick on enc proto gre from $pub to /IPTAGGED/ tagged /TAGGED/

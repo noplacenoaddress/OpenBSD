@@ -2,9 +2,25 @@
 # /sbin/pfctl -t users -T add -f /etc/pf.conf.table.users
 # /sbin/pfctl -t users -T show
 #
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+172.16.23.0/24
+>>>>>>> Stashed changes
+172.16.19.0/24
+172.16.16.0/24
+172.16.18.0/24
+172.16.17.106/32
+<<<<<<< Updated upstream
+140.82.54.216/32
+
+=======
+=======
 172.16.19.0/24
 172.16.16.0/24
 172.16.18.0/24
 172.16.17.106/32
 140.82.54.216/32
 
+>>>>>>> master
+>>>>>>> Stashed changes

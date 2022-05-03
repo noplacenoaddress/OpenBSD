@@ -1,3 +1,24 @@
+<<<<<<< Updated upstream
+ikev2 "/PUBLICHOST/" /TYPE/ transport \
+=======
+<<<<<<< HEAD
+ikev2 "/PUBLICHOST/" active transport \
+>>>>>>> Stashed changes
+	proto gre \
+	from /POPIP/ to /PUBLICIP/ \
+        local /POP/ peer /PUBLICHOST/ \
+	ikesa  prf hmac-sha2-512  enc aes-256-gcm-12 group brainpool512  \
+<<<<<<< Updated upstream
+        childsa  enc chacha20-poly1305 group curve25519 \
+	srcid "/POPID/@ca./DOMAINNAME/" \
+        ikelifetime 86400 lifetime 3600 	
+=======
+	childsa  enc chacha20-poly1305 group curve25519 \
+	srcid "//POPASN1/" \
+	dstid "//ASN1/" \
+	ikelifetime 86400 lifetime 3600 \
+	rfc7427 tag /PUBLICHOST/ tap enc/X/
+=======
 ikev2 "/PUBLICHOST/" /TYPE/ transport \
 	proto gre \
 	from /POPIP/ to /PUBLICIP/ \
@@ -6,3 +27,5 @@ ikev2 "/PUBLICHOST/" /TYPE/ transport \
         childsa  enc chacha20-poly1305 group curve25519 \
 	srcid "/POPID/@ca./DOMAINNAME/" \
         ikelifetime 86400 lifetime 3600 	
+>>>>>>> master
+>>>>>>> Stashed changes

@@ -1,1 +1,9 @@
+<<<<<<< Updated upstream
 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIME2gY2u8Ak+TbahmYdbs7QznHeyzj0Tk16fhx/6AbmX taglio@trimurti
+=======
+<<<<<<< HEAD
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMTORaosZA7u9Be4yIt6Zkpg3DthuRxD6W5P9wVc2Ers taglio@telecom.lobby
+=======
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIME2gY2u8Ak+TbahmYdbs7QznHeyzj0Tk16fhx/6AbmX taglio@trimurti
+>>>>>>> master
+>>>>>>> Stashed changes

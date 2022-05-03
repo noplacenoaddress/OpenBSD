@@ -1,4 +1,19 @@
+<<<<<<< Updated upstream
 server "ganesha.telecom.lobby" {
 	listen on vether0 port 80
 	root "htdocs/ganesha.telecom.lobby"
+=======
+<<<<<<< HEAD
+server "/HOSTNAME/./LANDOMAINNAME/" {
+	listen on vether0 port 80
+	root "htdocs//HOSTNAME/./LANDOMAINNAME/"
+	location "/*" {
+                directory auto index
+        }
+=======
+server "ganesha.telecom.lobby" {
+	listen on vether0 port 80
+	root "htdocs/ganesha.telecom.lobby"
+>>>>>>> master
+>>>>>>> Stashed changes
 }

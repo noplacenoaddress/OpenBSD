@@ -3,4 +3,12 @@ keepalive 5 2
 mtu 1392
 !ifconfig gre/X/ /GREPOPIP/ /GRELOCALIP/ netmask 0xfffffffc up
 !ifconfig gre/X/ tunnel /POPIP/ /PUBLICIP/
+<<<<<<< Updated upstream
 
+=======
+<<<<<<< HEAD
+!route -T /ROUTERIDLAST/ add default /GRELOCALIP/ 
+=======
+
+>>>>>>> master
+>>>>>>> Stashed changes

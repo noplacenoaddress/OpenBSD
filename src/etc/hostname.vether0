@@ -1,4 +1,12 @@
 -inet
 -inet6
 lladdr random
+<<<<<<< Updated upstream
 inet /ROUTERID/
+=======
+<<<<<<< HEAD
+inet /ROUTERID//32
+=======
+inet /ROUTERID/
+>>>>>>> master
+>>>>>>> Stashed changes

@@ -1,5 +1,16 @@
 pub="/PUBLICIP/"
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+pub_v6="/PUBV6/"
+local_v6="/LOCALV6/"
+=======
+>>>>>>> Stashed changes
 pub_v6="/PUBV6///PREFIX/"
 
 
 
+<<<<<<< Updated upstream
+=======
+>>>>>>> master
+>>>>>>> Stashed changes
